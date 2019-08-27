@@ -27,6 +27,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         stopKoin()
     }
 
+    @SuppressWarnings("LongMethod")
     @Test
     fun `integration test`() {
         startKoin {
@@ -36,6 +37,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             })
         }
 
+        @Suppress("UNUSED_VARIABLE")
         val dsl = ScriptGeneratorDsl(DefaultVariableContainer.of(), DefaultTaskContainer.of()) {
             val session by variables.creating(InferenceSession::class) {
                 modelPath = "/model.onnx"

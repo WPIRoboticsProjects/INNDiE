@@ -17,6 +17,9 @@ import org.koin.test.KoinTest
 
 internal class InferenceSessionTest : KoinTest {
 
+    private val varName = "varName"
+    private val pathName = "pathName"
+
     @AfterEach
     fun afterEach() {
         stopKoin()
@@ -24,7 +27,7 @@ internal class InferenceSessionTest : KoinTest {
 
     @Test
     fun `invalid variable name but valid path`() {
-        val mockVariableNameValidator = mockVariableNameValidator("name" to false)
+        val mockVariableNameValidator = mockVariableNameValidator(varName to false)
         val mockPathValidator = mockPathValidator("pathName" to true)
 
         startKoin {
@@ -34,7 +37,7 @@ internal class InferenceSessionTest : KoinTest {
             })
         }
 
-        val session = InferenceSession("name").apply {
+        val session = InferenceSession(varName).apply {
             modelPath = "pathName"
         }
 
@@ -43,14 +46,14 @@ internal class InferenceSessionTest : KoinTest {
             isFalse()
         )
 
-        verify { mockVariableNameValidator.isValidVariableName("name") }
+        verify { mockVariableNameValidator.isValidVariableName(varName) }
         verify(exactly = 0) { mockPathValidator.isValidPathName(any()) }
         confirmVerified(mockVariableNameValidator, mockPathValidator)
     }
 
     @Test
     fun `valid variable name but unconfigured path`() {
-        val mockVariableNameValidator = mockVariableNameValidator("name" to true)
+        val mockVariableNameValidator = mockVariableNameValidator(varName to true)
 
         startKoin {
             modules(module {
@@ -60,18 +63,18 @@ internal class InferenceSessionTest : KoinTest {
         }
 
         assertThat(
-            InferenceSession("name").isConfiguredCorrectly(),
+            InferenceSession(varName).isConfiguredCorrectly(),
             isFalse()
         )
 
-        verify { mockVariableNameValidator.isValidVariableName("name") }
+        verify { mockVariableNameValidator.isValidVariableName(varName) }
         confirmVerified(mockVariableNameValidator)
     }
 
     @Test
     fun `invalid path name`() {
-        val mockVariableNameValidator = mockVariableNameValidator("name" to true)
-        val mockPathValidator = mockPathValidator("pathName" to false)
+        val mockVariableNameValidator = mockVariableNameValidator(varName to true)
+        val mockPathValidator = mockPathValidator(pathName to false)
 
         startKoin {
             modules(module {
@@ -81,24 +84,24 @@ internal class InferenceSessionTest : KoinTest {
         }
 
         val session = InferenceSession(
-            "name"
+            varName
         ).apply {
-            modelPath = "pathName"
+            modelPath = pathName
         }
 
         assertThat(session.isConfiguredCorrectly(), isFalse())
 
         verify {
-            mockVariableNameValidator.isValidVariableName("name")
-            mockPathValidator.isValidPathName("pathName")
+            mockVariableNameValidator.isValidVariableName(varName)
+            mockPathValidator.isValidPathName(pathName)
         }
         confirmVerified(mockVariableNameValidator, mockPathValidator)
     }
 
     @Test
     fun `valid variable name and valid path name`() {
-        val mockVariableNameValidator = mockVariableNameValidator("name" to true)
-        val mockPathValidator = mockPathValidator("pathName" to true)
+        val mockVariableNameValidator = mockVariableNameValidator(varName to true)
+        val mockPathValidator = mockPathValidator(pathName to true)
 
         startKoin {
             modules(module {
@@ -108,15 +111,15 @@ internal class InferenceSessionTest : KoinTest {
         }
 
         val session = InferenceSession(
-            "name"
+            varName
         ).apply {
-            modelPath = "pathName"
+            modelPath = pathName
         }
 
         assertThat(session.isConfiguredCorrectly(), isTrue())
         verify {
-            mockVariableNameValidator.isValidVariableName("name")
-            mockPathValidator.isValidPathName("pathName")
+            mockVariableNameValidator.isValidVariableName(varName)
+            mockPathValidator.isValidPathName(pathName)
         }
         confirmVerified(mockVariableNameValidator, mockPathValidator)
     }

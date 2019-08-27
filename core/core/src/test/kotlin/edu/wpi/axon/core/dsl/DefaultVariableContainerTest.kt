@@ -15,6 +15,8 @@ import org.koin.test.KoinTest
 
 internal class DefaultVariableContainerTest : KoinTest {
 
+    private val varName = "varName"
+
     @AfterEach
     fun afterEach() {
         stopKoin()
@@ -24,20 +26,20 @@ internal class DefaultVariableContainerTest : KoinTest {
     fun `calling create with a name adds a new variable`() {
         startKoin {
             modules(module {
-                single { mockVariableNameValidator("varName" to true) }
+                single { mockVariableNameValidator(varName to true) }
             })
         }
 
         val container = DefaultVariableContainer.of()
-        container.create("varName", MockVariable::class)
-        assertThat(container, hasElementWhere { name == "varName" })
+        container.create(varName, MockVariable::class)
+        assertThat(container, hasElementWhere { name == varName })
     }
 
     @Test
     fun `calling create with a name and config adds a new variable and calls configure`() {
         startKoin {
             modules(module {
-                single { mockVariableNameValidator("varName" to true) }
+                single { mockVariableNameValidator(varName to true) }
             })
         }
 
@@ -46,9 +48,9 @@ internal class DefaultVariableContainerTest : KoinTest {
         var called = false
         val mockConfigure: Variable.() -> Unit = { called = true }
 
-        container.create("varName", MockVariable::class, mockConfigure)
+        container.create(varName, MockVariable::class, mockConfigure)
 
-        assertThat(container, hasElementWhere { name == "varName" })
+        assertThat(container, hasElementWhere { name == varName })
         assertThat(called, isTrue())
     }
 
@@ -59,7 +61,7 @@ internal class DefaultVariableContainerTest : KoinTest {
         abstract class AbstractVariable(name: String) : Variable(name)
 
         assertThrows<IllegalArgumentException> {
-            container.create("varName", AbstractVariable::class)
+            container.create(varName, AbstractVariable::class)
         }
     }
 
@@ -68,7 +70,7 @@ internal class DefaultVariableContainerTest : KoinTest {
         val container = DefaultVariableContainer.of()
 
         assertThrows<IllegalArgumentException> {
-            container.create("varName", TestVariable.Companion::class)
+            container.create(varName, TestVariable.Companion::class)
         }
     }
 
@@ -77,7 +79,7 @@ internal class DefaultVariableContainerTest : KoinTest {
         val container = DefaultVariableContainer.of()
 
         assertThrows<IllegalArgumentException> {
-            container.create("varName", TestVariable::class)
+            container.create(varName, TestVariable::class)
         }
     }
 
