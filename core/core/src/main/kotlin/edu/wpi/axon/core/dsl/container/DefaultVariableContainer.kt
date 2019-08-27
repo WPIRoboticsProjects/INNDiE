@@ -6,7 +6,7 @@ import kotlin.reflect.full.defaultType
 
 class DefaultVariableContainer(
     private val backingList: MutableCollection<Variable>
-) : PolymorphicDomainObjectContainer<Variable>, Collection<Variable> by backingList {
+) : PolymorphicNamedDomainObjectContainer<Variable>, Collection<Variable> by backingList {
 
     override fun <U : Variable> create(
         name: String,
