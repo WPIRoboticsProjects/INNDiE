@@ -1,4 +1,4 @@
-package edu.wpi.axon.core.dsl
+package edu.wpi.axon.core.dsl.validator.path
 
 interface PathValidator {
 

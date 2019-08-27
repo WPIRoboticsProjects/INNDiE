@@ -2,7 +2,7 @@ package edu.wpi.axon.core.dsl.variable
 
 import edu.wpi.axon.core.dsl.Configurable
 import edu.wpi.axon.core.dsl.Import
-import edu.wpi.axon.core.dsl.VariableNameValidator
+import edu.wpi.axon.core.dsl.validator.variablename.VariableNameValidator
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 

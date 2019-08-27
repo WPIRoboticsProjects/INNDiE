@@ -1,5 +1,7 @@
 package edu.wpi.axon.core.dsl
 
+import edu.wpi.axon.core.dsl.validator.path.PathValidator
+import edu.wpi.axon.core.dsl.validator.variablename.VariableNameValidator
 import io.mockk.every
 import io.mockk.mockk
 

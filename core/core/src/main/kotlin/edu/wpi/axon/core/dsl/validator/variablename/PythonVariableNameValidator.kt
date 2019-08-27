@@ -1,6 +1,7 @@
-package edu.wpi.axon.core.dsl
+package edu.wpi.axon.core.dsl.validator.variablename
 
-class PythonVariableNameValidator : VariableNameValidator {
+class PythonVariableNameValidator :
+    VariableNameValidator {
 
     override fun isValidVariableName(name: String) = when (name) {
         "_" -> false

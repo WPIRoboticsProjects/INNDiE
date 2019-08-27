@@ -1,4 +1,4 @@
-package edu.wpi.axon.core.dsl
+package edu.wpi.axon.core.dsl.validator.path
 
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths

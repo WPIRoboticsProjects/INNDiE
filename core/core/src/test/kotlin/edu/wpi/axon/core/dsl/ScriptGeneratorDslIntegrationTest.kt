@@ -6,6 +6,10 @@ import edu.wpi.axon.core.dsl.task.InferenceTask
 import edu.wpi.axon.core.dsl.task.InferenceTaskOutput
 import edu.wpi.axon.core.dsl.task.YoloV3PostprocessTask
 import edu.wpi.axon.core.dsl.task.Yolov3PostprocessOutput
+import edu.wpi.axon.core.dsl.validator.path.DefaultPathValidator
+import edu.wpi.axon.core.dsl.validator.path.PathValidator
+import edu.wpi.axon.core.dsl.validator.variablename.PythonVariableNameValidator
+import edu.wpi.axon.core.dsl.validator.variablename.VariableNameValidator
 import edu.wpi.axon.core.dsl.variable.ClassLabels
 import edu.wpi.axon.core.dsl.variable.ImageInputData
 import edu.wpi.axon.core.dsl.variable.InferenceSession

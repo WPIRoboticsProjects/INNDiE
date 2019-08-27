@@ -1,6 +1,7 @@
 package edu.wpi.axon.core.dsl
 
 import com.natpryce.hamkrest.assertion.assertThat
+import edu.wpi.axon.core.dsl.validator.path.DefaultPathValidator
 import edu.wpi.axon.core.isFalse
 import edu.wpi.axon.core.isTrue
 import org.junit.jupiter.api.Test

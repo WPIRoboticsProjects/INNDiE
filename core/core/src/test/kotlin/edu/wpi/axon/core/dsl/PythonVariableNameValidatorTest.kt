@@ -2,13 +2,15 @@ package edu.wpi.axon.core.dsl
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import edu.wpi.axon.core.dsl.validator.variablename.PythonVariableNameValidator
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class PythonVariableNameValidatorTest {
 
-    private val validator = PythonVariableNameValidator()
+    private val validator =
+        PythonVariableNameValidator()
 
     @ParameterizedTest
     @MethodSource("pythonNameSource")

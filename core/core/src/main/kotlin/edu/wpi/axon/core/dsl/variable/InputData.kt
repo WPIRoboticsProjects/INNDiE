@@ -1,6 +1,6 @@
 package edu.wpi.axon.core.dsl.variable
 
-import edu.wpi.axon.core.dsl.PathValidator
+import edu.wpi.axon.core.dsl.validator.path.PathValidator
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
