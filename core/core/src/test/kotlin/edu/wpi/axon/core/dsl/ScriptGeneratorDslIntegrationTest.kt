@@ -1,5 +1,7 @@
 package edu.wpi.axon.core.dsl
 
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.core.dsl.container.DefaultTaskContainer
 import edu.wpi.axon.core.dsl.container.DefaultVariableContainer
 import edu.wpi.axon.core.dsl.task.InferenceTask
@@ -29,7 +31,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
 
     @SuppressWarnings("LongMethod")
     @Test
-    fun `integration test`() {
+    fun `run yolov3 model`() {
         startKoin {
             modules(module {
                 single<VariableNameValidator> { PythonVariableNameValidator() }
@@ -66,5 +68,16 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
 
             scriptOutput = postProcessedOutput
         }
+
+        assertThat(
+            dsl.computeImports(), equalTo(
+                setOf(
+                    Import.ModuleOnly("onnxruntime"),
+                    Import.ModuleAndIdentifier("PIL", "Image"),
+                    Import.ModuleOnly("onnx"),
+                    Import.ModuleAndIdentifier("axon", "postprocessYolov3")
+                )
+            )
+        )
     }
 }

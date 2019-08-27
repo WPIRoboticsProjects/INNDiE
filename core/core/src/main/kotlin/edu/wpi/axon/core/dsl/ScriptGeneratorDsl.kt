@@ -21,6 +21,11 @@ class ScriptGeneratorDsl(
     init {
         configure()
     }
+
+    fun computeImports(): Set<Import> {
+        // TODO: What imports need to be considered duplicates?
+        return (variables.flatMap { it.imports } + tasks.flatMap { it.imports }).toSet()
+    }
 }
 
 fun <T : Any, U : T> PolymorphicNamedDomainObjectContainer<T>.creating(
