@@ -4,67 +4,101 @@ import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.core.dsl.variable.InferenceSession
 import edu.wpi.axon.core.isFalse
 import edu.wpi.axon.core.isTrue
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Paths
 
 internal class InferenceSessionTest {
 
     @Test
-    fun `name must be specified`() {
-        assertThat(InferenceSession("").isConfiguredCorrectly(), isFalse())
-    }
+    fun `invalid variable name`() {
+        val mockVariableNameValidator = mockk<VariableNameValidator> {
+            every { isValidVariableName("name") } returns false
+        }
 
-    @Test
-    fun `name must not contain whitespace`() {
-        assertThat(InferenceSession("n me").isConfiguredCorrectly(), isFalse())
-    }
-
-    @Test
-    fun `name must not contain special characters`() {
-        assertThat(InferenceSession("n*me").isConfiguredCorrectly(), isFalse())
-    }
-
-    @Test
-    fun `path name must be configured`() {
         assertThat(
-            InferenceSession("name").isConfiguredCorrectly(),
+            InferenceSession(
+                "name",
+                mockVariableNameValidator,
+                mockk()
+            ).isConfiguredCorrectly(), isFalse()
+        )
+
+        verify { mockVariableNameValidator.isValidVariableName("name") }
+        confirmVerified(mockVariableNameValidator)
+    }
+
+    @Test
+    fun `valid variable name but unconfigured path`() {
+        val mockVariableNameValidator = mockk<VariableNameValidator> {
+            every { isValidVariableName("name") } returns true
+        }
+
+        assertThat(
+            InferenceSession(
+                "name",
+                mockVariableNameValidator,
+                mockk()
+            ).isConfiguredCorrectly(),
             isFalse()
         )
+
+        verify { mockVariableNameValidator.isValidVariableName("name") }
+        confirmVerified(mockVariableNameValidator)
     }
 
     @Test
-    fun `path name must not be empty`() {
-        val session = InferenceSession("name").apply { modelPath = "" }
-        assertThat(session.isConfiguredCorrectly(), isFalse())
-    }
+    fun `invalid path name`() {
+        val mockVariableNameValidator = mockk<VariableNameValidator> {
+            every { isValidVariableName("name") } returns true
+        }
 
-    @Test
-    fun `path name must be valid`() {
-        val session = InferenceSession("name").apply { modelPath = "" }
-        assertThat(session.isConfiguredCorrectly(), isFalse())
-    }
+        val mockPathValidator = mockk<PathValidator> {
+            every { isValidPathName("pathName") } returns false
+        }
 
-    @Test
-    fun `path name must be a valid file`(@TempDir tempDir: File) {
-        val session = InferenceSession("name").apply {
-            modelPath = tempDir.absolutePath // A directory is not a valid file
+        val session = InferenceSession(
+            "name",
+            mockVariableNameValidator,
+            mockPathValidator
+        ).apply {
+            modelPath = "pathName"
         }
 
         assertThat(session.isConfiguredCorrectly(), isFalse())
+
+        verify {
+            mockVariableNameValidator.isValidVariableName("name")
+            mockPathValidator.isValidPathName("pathName")
+        }
+        confirmVerified(mockVariableNameValidator, mockPathValidator)
     }
 
     @Test
-    fun `correctly configured session`(@TempDir tempDir: File) {
-        val mockModelFile = Paths.get(tempDir.absolutePath, "mockModel.onnx").toFile().apply {
-            createNewFile()
+    fun `valid variable name and valid path name`() {
+        val mockVariableNameValidator = mockk<VariableNameValidator> {
+            every { isValidVariableName("name") } returns true
         }
 
-        val session = InferenceSession("name").apply {
-            modelPath = mockModelFile.absolutePath
+        val mockPathValidator = mockk<PathValidator> {
+            every { isValidPathName("pathName") } returns true
+        }
+
+        val session = InferenceSession(
+            "name",
+            mockVariableNameValidator,
+            mockPathValidator
+        ).apply {
+            modelPath = "pathName"
         }
 
         assertThat(session.isConfiguredCorrectly(), isTrue())
+        verify {
+            mockVariableNameValidator.isValidVariableName("name")
+            mockPathValidator.isValidPathName("pathName")
+        }
+        confirmVerified(mockVariableNameValidator, mockPathValidator)
     }
 }

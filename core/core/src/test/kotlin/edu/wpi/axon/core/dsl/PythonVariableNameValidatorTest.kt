@@ -6,12 +6,14 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-internal class PythonNameValidatorTest {
+internal class PythonVariableNameValidatorTest {
+
+    private val validator = PythonVariableNameValidator()
 
     @ParameterizedTest
     @MethodSource("pythonNameSource")
     fun testPythonNames(name: String, isValid: Boolean) {
-        assertThat(isValidPythonIdentifier(name), equalTo(isValid))
+        assertThat(validator.isValidVariableName(name), equalTo(isValid))
     }
 
     companion object {

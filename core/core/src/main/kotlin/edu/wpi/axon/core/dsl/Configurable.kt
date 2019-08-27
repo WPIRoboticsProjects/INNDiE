@@ -1,6 +1,6 @@
 package edu.wpi.axon.core.dsl
 
-interface Configurable<T : Any> {
+interface Configurable {
 
     fun isConfiguredCorrectly(): Boolean
 }

@@ -1,8 +1,12 @@
 package edu.wpi.axon.core.dsl.variable
 
 import edu.wpi.axon.core.dsl.Configurable
+import edu.wpi.axon.core.dsl.VariableNameValidator
 
-interface Variable : Configurable<Variable> {
+abstract class Variable(
+    val name: String,
+    private val variableNameValidator: VariableNameValidator
+) : Configurable {
 
-    val name: String
+    override fun isConfiguredCorrectly() = variableNameValidator.isValidVariableName(name)
 }

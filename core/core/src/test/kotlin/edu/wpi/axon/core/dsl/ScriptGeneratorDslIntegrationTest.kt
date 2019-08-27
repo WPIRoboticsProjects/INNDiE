@@ -3,7 +3,9 @@ package edu.wpi.axon.core.dsl
 import edu.wpi.axon.core.dsl.container.DefaultTaskContainer
 import edu.wpi.axon.core.dsl.container.DefaultVariableContainer
 import edu.wpi.axon.core.dsl.task.InferenceTask
+import edu.wpi.axon.core.dsl.task.InferenceTaskOutput
 import edu.wpi.axon.core.dsl.task.YoloV3PostprocessTask
+import edu.wpi.axon.core.dsl.task.Yolov3PostprocessOutput
 import edu.wpi.axon.core.dsl.variable.ClassLabels
 import edu.wpi.axon.core.dsl.variable.ImageInputData
 import edu.wpi.axon.core.dsl.variable.InferenceSession
@@ -26,12 +28,20 @@ internal class ScriptGeneratorDslIntegrationTest {
                 path = "/image.png"
             }
 
-            val outputData by tasks.creating(InferenceTask::class) {
+            val inferenceOutput by variables.creating(InferenceTaskOutput::class)
+            val inferenceTask by tasks.running(InferenceTask::class) {
                 input = inputData
                 inferenceSession = session
+                output = inferenceOutput
             }
 
-            val postProcessedData by tasks.creating(YoloV3PostprocessTask::class)
+            val postProcessedOutput by variables.creating(Yolov3PostprocessOutput::class)
+            val postProcessTask by tasks.running(YoloV3PostprocessTask::class) {
+                input = inferenceOutput
+                output = postProcessedOutput
+            }
+
+            scriptOutput(postProcessedOutput)
         }
     }
 }

@@ -17,9 +17,18 @@ class ScriptGeneratorDsl(
     init {
         configure()
     }
+
+    fun scriptOutput(output: Variable) {
+        TODO("not implemented")
+    }
 }
 
 fun <T : Any, U : T> PolymorphicDomainObjectContainer<T>.creating(
+    type: KClass<U>,
+    configuration: (U.() -> Unit)? = null
+) = PolymorphicDomainObjectContainerDelegateProvider.of(this, type, configuration)
+
+fun <T : Task, U : T> PolymorphicDomainObjectContainer<T>.running(
     type: KClass<U>,
     configuration: (U.() -> Unit)? = null
 ) = PolymorphicDomainObjectContainerDelegateProvider.of(this, type, configuration)

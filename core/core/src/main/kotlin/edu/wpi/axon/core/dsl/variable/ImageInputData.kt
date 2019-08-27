@@ -1,11 +1,11 @@
 package edu.wpi.axon.core.dsl.variable
 
-class ImageInputData(
-    override val name: String,
-    override var path: String
-) : InputData {
+import edu.wpi.axon.core.dsl.PathValidator
+import edu.wpi.axon.core.dsl.VariableNameValidator
 
-    override fun isConfiguredCorrectly(): Boolean {
-        TODO("not implemented")
-    }
-}
+// TODO: Validate image format
+class ImageInputData(
+    name: String,
+    variableNameValidator: VariableNameValidator,
+    pathValidator: PathValidator
+) : InputData(name, variableNameValidator, pathValidator)
