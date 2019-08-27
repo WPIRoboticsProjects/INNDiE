@@ -11,6 +11,9 @@ description = "The core project."
 fun DependencyHandler.arrow(name: String) =
     create(group = "io.arrow-kt", name = name, version = property("arrow.version") as String)
 
+fun DependencyHandler.koin(name: String) =
+    create(group = "org.koin", name = name, version = property("koin.version") as String)
+
 dependencies {
     api(arrow("arrow-core-data"))
     api(arrow("arrow-core-extensions"))
@@ -24,6 +27,8 @@ dependencies {
     api(arrow("arrow-recursion-extensions"))
     kapt(arrow("arrow-meta"))
 
+    implementation(koin("koin-core"))
+
     testImplementation(
         group = "com.natpryce",
         name = "hamkrest",
@@ -34,4 +39,5 @@ dependencies {
         name = "mockk",
         version = property("mockk.version") as String
     )
+    testImplementation(koin("koin-test"))
 }

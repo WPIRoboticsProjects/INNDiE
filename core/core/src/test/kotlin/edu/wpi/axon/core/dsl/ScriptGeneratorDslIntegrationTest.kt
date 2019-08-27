@@ -9,12 +9,29 @@ import edu.wpi.axon.core.dsl.task.Yolov3PostprocessOutput
 import edu.wpi.axon.core.dsl.variable.ClassLabels
 import edu.wpi.axon.core.dsl.variable.ImageInputData
 import edu.wpi.axon.core.dsl.variable.InferenceSession
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 
-internal class ScriptGeneratorDslIntegrationTest {
+internal class ScriptGeneratorDslIntegrationTest : KoinTest {
+
+    @AfterEach
+    fun afterEach() {
+        stopKoin()
+    }
 
     @Test
     fun `integration test`() {
+        startKoin {
+            modules(module {
+                single<VariableNameValidator> { PythonVariableNameValidator() }
+                single<PathValidator> { DefaultPathValidator() }
+            })
+        }
+
         val dsl = ScriptGeneratorDsl(DefaultVariableContainer.of(), DefaultTaskContainer.of()) {
             val session by variables.creating(InferenceSession::class) {
                 modelPath = "/model.onnx"

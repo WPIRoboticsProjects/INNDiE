@@ -5,43 +5,61 @@ import edu.wpi.axon.core.dsl.variable.InferenceSession
 import edu.wpi.axon.core.isFalse
 import edu.wpi.axon.core.isTrue
 import io.mockk.confirmVerified
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 
-internal class InferenceSessionTest {
+internal class InferenceSessionTest : KoinTest {
+
+    @AfterEach
+    fun afterEach() {
+        stopKoin()
+    }
 
     @Test
-    fun `invalid variable name`() {
-        val mockVariableNameValidator = mockk<VariableNameValidator> {
-            every { isValidVariableName("name") } returns false
+    fun `invalid variable name but valid path`() {
+        val mockVariableNameValidator = mockVariableNameValidator("name" to false)
+        val mockPathValidator = mockPathValidator("pathName" to true)
+
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator }
+                single { mockPathValidator }
+            })
+        }
+
+        val session = InferenceSession("name").apply {
+            modelPath = "pathName"
         }
 
         assertThat(
-            InferenceSession(
-                "name",
-                mockVariableNameValidator,
-                mockk()
-            ).isConfiguredCorrectly(), isFalse()
+            session.isConfiguredCorrectly(),
+            isFalse()
         )
 
         verify { mockVariableNameValidator.isValidVariableName("name") }
-        confirmVerified(mockVariableNameValidator)
+        verify(exactly = 0) { mockPathValidator.isValidPathName(any()) }
+        confirmVerified(mockVariableNameValidator, mockPathValidator)
     }
 
     @Test
     fun `valid variable name but unconfigured path`() {
-        val mockVariableNameValidator = mockk<VariableNameValidator> {
-            every { isValidVariableName("name") } returns true
+        val mockVariableNameValidator = mockVariableNameValidator("name" to true)
+
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator }
+                single { mockk<PathValidator>() }
+            })
         }
 
         assertThat(
-            InferenceSession(
-                "name",
-                mockVariableNameValidator,
-                mockk()
-            ).isConfiguredCorrectly(),
+            InferenceSession("name").isConfiguredCorrectly(),
             isFalse()
         )
 
@@ -51,18 +69,18 @@ internal class InferenceSessionTest {
 
     @Test
     fun `invalid path name`() {
-        val mockVariableNameValidator = mockk<VariableNameValidator> {
-            every { isValidVariableName("name") } returns true
-        }
+        val mockVariableNameValidator = mockVariableNameValidator("name" to true)
+        val mockPathValidator = mockPathValidator("pathName" to false)
 
-        val mockPathValidator = mockk<PathValidator> {
-            every { isValidPathName("pathName") } returns false
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator }
+                single { mockPathValidator }
+            })
         }
 
         val session = InferenceSession(
-            "name",
-            mockVariableNameValidator,
-            mockPathValidator
+            "name"
         ).apply {
             modelPath = "pathName"
         }
@@ -78,18 +96,18 @@ internal class InferenceSessionTest {
 
     @Test
     fun `valid variable name and valid path name`() {
-        val mockVariableNameValidator = mockk<VariableNameValidator> {
-            every { isValidVariableName("name") } returns true
-        }
+        val mockVariableNameValidator = mockVariableNameValidator("name" to true)
+        val mockPathValidator = mockPathValidator("pathName" to true)
 
-        val mockPathValidator = mockk<PathValidator> {
-            every { isValidPathName("pathName") } returns true
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator }
+                single { mockPathValidator }
+            })
         }
 
         val session = InferenceSession(
-            "name",
-            mockVariableNameValidator,
-            mockPathValidator
+            "name"
         ).apply {
             modelPath = "pathName"
         }

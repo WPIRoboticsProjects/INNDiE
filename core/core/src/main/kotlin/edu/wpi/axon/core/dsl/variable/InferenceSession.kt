@@ -1,15 +1,17 @@
 package edu.wpi.axon.core.dsl.variable
 
+import edu.wpi.axon.core.dsl.Import
 import edu.wpi.axon.core.dsl.PathValidator
-import edu.wpi.axon.core.dsl.VariableNameValidator
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 
-class InferenceSession(
-    name: String,
-    variableNameValidator: VariableNameValidator,
-    private val pathValidator: PathValidator
-) : Variable(name, variableNameValidator) {
+class InferenceSession(name: String) : Variable(name), KoinComponent {
 
     var modelPath: String? = null
+
+    private val pathValidator: PathValidator by inject()
+
+    override val imports = setOf(Import.ModuleOnly("onnxruntime"))
 
     override fun isConfiguredCorrectly() =
         super.isConfiguredCorrectly() && modelPath != null &&
