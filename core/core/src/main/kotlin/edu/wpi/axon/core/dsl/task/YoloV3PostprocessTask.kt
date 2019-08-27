@@ -17,7 +17,5 @@ class YoloV3PostprocessTask : Task {
         Import.ModuleAndIdentifier("axon", "postprocessYolov3")
     )
 
-    override fun isConfiguredCorrectly(): Boolean {
-        TODO("not implemented")
-    }
+    override fun isConfiguredCorrectly() = input != null && output != null
 }
