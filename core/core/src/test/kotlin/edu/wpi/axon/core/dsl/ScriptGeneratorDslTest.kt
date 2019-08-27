@@ -1,5 +1,7 @@
 package edu.wpi.axon.core.dsl
 
+import edu.wpi.axon.core.dsl.variable.InferenceSession
+import edu.wpi.axon.core.dsl.variable.Variable
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
@@ -16,7 +18,7 @@ internal class ScriptGeneratorDslTest {
             }
         }
 
-        ScriptGeneratorDsl(mockVariableContainer) {
+        ScriptGeneratorDsl(mockVariableContainer, mockk()) {
             @Suppress("UNUSED_VARIABLE")
             val session by variables.creating(InferenceSession::class) {
             }

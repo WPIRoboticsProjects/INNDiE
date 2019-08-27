@@ -1,10 +1,11 @@
 package edu.wpi.axon.core.dsl
 
+import edu.wpi.axon.core.dsl.variable.Variable
 import kotlin.reflect.KClass
 
 class DefaultVariableContainer(
     private val backingList: MutableCollection<Variable>
-) : VariableContainer, Collection<Variable> by backingList {
+) : PolymorphicDomainObjectContainer<Variable>, Collection<Variable> by backingList {
 
     override fun <U : Variable> create(name: String, type: KClass<U>): U {
         TODO()

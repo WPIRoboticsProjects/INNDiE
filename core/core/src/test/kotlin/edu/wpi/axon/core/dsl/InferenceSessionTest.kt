@@ -1,6 +1,7 @@
 package edu.wpi.axon.core.dsl
 
 import com.natpryce.hamkrest.assertion.assertThat
+import edu.wpi.axon.core.dsl.variable.InferenceSession
 import edu.wpi.axon.core.isFalse
 import edu.wpi.axon.core.isTrue
 import org.junit.jupiter.api.Test
@@ -35,20 +36,20 @@ internal class InferenceSessionTest {
 
     @Test
     fun `path name must not be empty`() {
-        val session = InferenceSession("name").apply { modelPathName = "" }
+        val session = InferenceSession("name").apply { modelPath = "" }
         assertThat(session.isConfiguredCorrectly(), isFalse())
     }
 
     @Test
     fun `path name must be valid`() {
-        val session = InferenceSession("name").apply { modelPathName = "" }
+        val session = InferenceSession("name").apply { modelPath = "" }
         assertThat(session.isConfiguredCorrectly(), isFalse())
     }
 
     @Test
     fun `path name must be a valid file`(@TempDir tempDir: File) {
         val session = InferenceSession("name").apply {
-            modelPathName = tempDir.absolutePath // A directory is not a valid file
+            modelPath = tempDir.absolutePath // A directory is not a valid file
         }
 
         assertThat(session.isConfiguredCorrectly(), isFalse())
@@ -61,7 +62,7 @@ internal class InferenceSessionTest {
         }
 
         val session = InferenceSession("name").apply {
-            modelPathName = mockModelFile.absolutePath
+            modelPath = mockModelFile.absolutePath
         }
 
         assertThat(session.isConfiguredCorrectly(), isTrue())

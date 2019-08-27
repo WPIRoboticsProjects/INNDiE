@@ -1,16 +1,19 @@
-package edu.wpi.axon.core.dsl
+package edu.wpi.axon.core.dsl.variable
 
+import edu.wpi.axon.core.dsl.isValidPythonIdentifier
+import edu.wpi.axon.core.dsl.task.InferenceTask
+import edu.wpi.axon.core.dsl.task.TaskInput
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
 
 class InferenceSession(
     override val name: String
-) : Variable {
+) : Variable, TaskInput<InferenceTask> {
 
-    var modelPathName: String = ""
+    var modelPath: String = ""
 
     override fun isConfiguredCorrectly() =
-        isValidPythonIdentifier(name) && isValidPathName(modelPathName)
+        isValidPythonIdentifier(name) && isValidPathName(modelPath)
 
     @SuppressWarnings("SwallowedException")
     private fun isValidPathName(pathName: String): Boolean {
