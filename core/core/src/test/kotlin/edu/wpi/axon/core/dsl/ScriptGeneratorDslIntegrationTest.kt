@@ -58,7 +58,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
                 output = postProcessedOutput
             }
 
-            scriptOutput(postProcessedOutput)
+            scriptOutput = postProcessedOutput
         }
     }
 }

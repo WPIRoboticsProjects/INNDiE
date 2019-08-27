@@ -16,12 +16,10 @@ class ScriptGeneratorDsl(
     configure: ScriptGeneratorDsl.() -> Unit
 ) {
 
+    var scriptOutput: Variable? = null
+
     init {
         configure()
-    }
-
-    fun scriptOutput(output: Variable) {
-        TODO("not implemented")
     }
 }
 
