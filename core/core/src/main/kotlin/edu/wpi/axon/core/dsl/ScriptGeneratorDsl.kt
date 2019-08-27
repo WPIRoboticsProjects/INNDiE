@@ -9,7 +9,7 @@ import edu.wpi.axon.core.dsl.variable.Variable
 import kotlin.reflect.KClass
 
 @SuppressWarnings("UseDataClass")
-@AxonDslMarker
+@ScriptGeneratorDslMarker
 class ScriptGeneratorDsl(
     val variables: PolymorphicNamedDomainObjectContainer<Variable>,
     val tasks: PolymorphicDomainObjectContainer<Task>,
