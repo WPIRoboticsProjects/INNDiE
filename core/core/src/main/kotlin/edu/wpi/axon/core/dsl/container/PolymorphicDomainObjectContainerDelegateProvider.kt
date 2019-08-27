@@ -1,4 +1,4 @@
-package edu.wpi.axon.core.dsl
+package edu.wpi.axon.core.dsl.container
 
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -14,9 +14,19 @@ private constructor(
             container: PolymorphicDomainObjectContainer<T>,
             type: KClass<U>,
             configuration: (U.() -> Unit)? = null
-        ) = PolymorphicDomainObjectContainerDelegateProvider(container, type, configuration)
+        ) = PolymorphicDomainObjectContainerDelegateProvider(
+            container,
+            type,
+            configuration
+        )
     }
 
     operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): DslDelegate<U> =
-        DslDelegate.of(container.create(property.name, type, configuration))
+        DslDelegate.of(
+            container.create(
+                property.name,
+                type,
+                configuration
+            )
+        )
 }
