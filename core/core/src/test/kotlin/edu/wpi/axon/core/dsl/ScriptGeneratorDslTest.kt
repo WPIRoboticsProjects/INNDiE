@@ -1,6 +1,6 @@
 package edu.wpi.axon.core.dsl
 
-import edu.wpi.axon.core.dsl.variable.InferenceSession
+import edu.wpi.axon.core.dsl.task.Task
 import edu.wpi.axon.core.dsl.variable.Variable
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -13,18 +13,32 @@ internal class ScriptGeneratorDslTest {
     @Test
     fun `create a new variable`() {
         val mockVariableContainer = mockk<PolymorphicDomainObjectContainer<Variable>> {
-            every { create("session", InferenceSession::class, any()) } returns mockk {
+            every { create("session", MockVariable::class, any()) } returns mockk {
                 every { name } returns "session"
             }
         }
 
         ScriptGeneratorDsl(mockVariableContainer, mockk()) {
             @Suppress("UNUSED_VARIABLE")
-            val session by variables.creating(InferenceSession::class) {
-            }
+            val session by variables.creating(MockVariable::class)
         }
 
-        verify { mockVariableContainer.create("session", InferenceSession::class, any()) }
+        verify { mockVariableContainer.create("session", MockVariable::class, any()) }
         confirmVerified(mockVariableContainer)
+    }
+
+    @Test
+    fun `create a new task`() {
+        val mockTaskContainer = mockk<PolymorphicDomainObjectContainer<Task>> {
+            every { create("task1", MockTask::class, any()) } returns mockk()
+        }
+
+        ScriptGeneratorDsl(mockk(), mockTaskContainer) {
+            @Suppress("UNUSED_VARIABLE")
+            val task1 by tasks.creating(MockTask::class)
+        }
+
+        verify { mockTaskContainer.create("task1", MockTask::class, any()) }
+        confirmVerified(mockTaskContainer)
     }
 }

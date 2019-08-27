@@ -18,10 +18,5 @@ private constructor(
     }
 
     operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): DslDelegate<U> =
-        DslDelegate.of(
-            when (configuration) {
-                null -> container.create(property.name, type)
-                else -> container.create(property.name, type, configuration)
-            }
-        )
+        DslDelegate.of(container.create(property.name, type, configuration))
 }

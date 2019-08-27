@@ -7,14 +7,7 @@ class DefaultTaskContainer(
     private val backingList: MutableCollection<Task>
 ) : PolymorphicDomainObjectContainer<Task>, Collection<Task> by backingList {
 
-    override fun <U : Task> create(name: String, type: KClass<U>): U {
-        TODO()
-        // val variable = DefaultVariable(name)
-        // backingList.add(variable)
-        // return variable
-    }
-
-    override fun <U : Task> create(name: String, type: KClass<U>, configure: U.() -> Unit): U {
+    override fun <U : Task> create(name: String, type: KClass<U>, configure: (U.() -> Unit)?): U {
         TODO()
         // val variable = DefaultVariable(name)
         // variable.configure()
