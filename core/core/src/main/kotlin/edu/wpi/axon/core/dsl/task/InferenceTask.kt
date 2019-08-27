@@ -18,7 +18,6 @@ class InferenceTask : Task {
 
     override val imports: Set<Import> = setOf(Import.ModuleOnly("onnx"))
 
-    override fun isConfiguredCorrectly(): Boolean {
-        TODO("not implemented")
-    }
+    override fun isConfiguredCorrectly() =
+        input != null && inferenceSession != null && output != null
 }
