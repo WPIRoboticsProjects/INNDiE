@@ -9,8 +9,9 @@ class InferenceSession(
     private val pathValidator: PathValidator
 ) : Variable(name, variableNameValidator) {
 
-    var modelPath: String = ""
+    var modelPath: String? = null
 
     override fun isConfiguredCorrectly() =
-        super.isConfiguredCorrectly() && pathValidator.isValidPathName(modelPath)
+        super.isConfiguredCorrectly() && modelPath != null &&
+            pathValidator.isValidPathName(modelPath!!)
 }
