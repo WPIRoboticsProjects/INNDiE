@@ -4,7 +4,7 @@ import edu.wpi.axon.core.dsl.validator.path.PathValidator
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
-abstract class InputData(name: String) : Variable(name), KoinComponent {
+abstract class InputData(name: String) : Variable(name), Code, KoinComponent {
 
     var path: String? = null
 

@@ -42,15 +42,15 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         @Suppress("UNUSED_VARIABLE")
         val dsl = ScriptGeneratorDsl(DefaultVariableContainer.of(), DefaultTaskContainer.of()) {
             val session by variables.creating(InferenceSession::class) {
-                modelPath = "/model.onnx"
+                path = "yolov3.onnx"
             }
 
             val classes by variables.creating(ClassLabels::class) {
-                path = "/classes.txt"
+                path = "coco_classes.txt"
             }
 
             val inputData by variables.creating(ImageInputData::class) {
-                path = "/image.png"
+                path = "horses.jpg"
             }
 
             val inferenceOutput by variables.creating(InferenceTaskOutput::class)
@@ -75,9 +75,12 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
                     Import.ModuleOnly("onnxruntime"),
                     Import.ModuleAndIdentifier("PIL", "Image"),
                     Import.ModuleOnly("onnx"),
-                    Import.ModuleAndIdentifier("axon", "postprocessYolov3")
+                    Import.ModuleAndIdentifier("axon", "postprocessYolov3"),
+                    Import.ModuleAndName("numpy", "np")
                 )
             )
         )
+
+        println(dsl.code(true))
     }
 }

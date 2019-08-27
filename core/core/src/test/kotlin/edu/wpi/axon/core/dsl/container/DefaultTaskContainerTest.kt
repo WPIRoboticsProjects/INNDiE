@@ -6,6 +6,8 @@ import com.natpryce.hamkrest.hasSize
 import edu.wpi.axon.core.dsl.Import
 import edu.wpi.axon.core.dsl.MockTask
 import edu.wpi.axon.core.dsl.task.Task
+import edu.wpi.axon.core.dsl.variable.InputData
+import edu.wpi.axon.core.dsl.variable.Variable
 import edu.wpi.axon.core.isTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -64,11 +66,19 @@ internal class DefaultTaskContainerTest {
         @Suppress("UNUSED_PARAMETER") anotherParameter: Int
     ) : Task {
         override val imports: Set<Import> = emptySet()
+        override val inputVariables: Set<Variable> = emptySet()
+        override val inputData: Set<InputData> = emptySet()
+        override val output: Variable? = null
         override fun isConfiguredCorrectly() = true
+        override fun code() = ""
 
         companion object : Task {
             override val imports: Set<Import> = emptySet()
+            override val inputVariables: Set<Variable> = emptySet()
+            override val inputData: Set<InputData> = emptySet()
+            override val output: Variable? = null
             override fun isConfiguredCorrectly() = true
+            override fun code() = ""
         }
     }
 }

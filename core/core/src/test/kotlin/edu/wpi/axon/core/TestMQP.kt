@@ -11,7 +11,6 @@ import edu.wpi.axon.core.postprocess.PostprocessStrategy
 import edu.wpi.axon.core.postprocess.Yolov3PostprocessStrategy
 import edu.wpi.axon.core.preprocess.ImagePreprocessStrategy
 import edu.wpi.axon.core.preprocess.PilImagePreprocessStrategy
-import edu.wpi.axon.core.preprocess.TensorProtoImagePreprocessStrategy
 import org.junit.jupiter.api.Test
 
 internal class TestMQP {
@@ -136,17 +135,17 @@ internal class TestMQP {
         val scoresVariableName = "scores"
         val indicesVariableName = "indices"
 
-        // val yolov3ImagePreprocessStrategy = PilImagePreprocessStrategy(
-        //     imageVariableName,
-        //     imageDataVariableName,
-        //     imageSizeVariableName
-        // )
-
-        val yolov3ImagePreprocessStrategy = TensorProtoImagePreprocessStrategy(
+        val yolov3ImagePreprocessStrategy = PilImagePreprocessStrategy(
             imageVariableName,
             imageDataVariableName,
             imageSizeVariableName
         )
+
+        // val yolov3ImagePreprocessStrategy = TensorProtoImagePreprocessStrategy(
+        //     imageVariableName,
+        //     imageDataVariableName,
+        //     imageSizeVariableName
+        // )
 
         val dictionaryInputStrategy = DictionaryInputStrategy(
             imageDataVariableName,

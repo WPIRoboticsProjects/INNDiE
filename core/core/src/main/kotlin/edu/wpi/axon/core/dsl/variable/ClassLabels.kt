@@ -6,4 +6,8 @@ import edu.wpi.axon.core.dsl.Import
 class ClassLabels(name: String) : InputData(name) {
 
     override val imports: Set<Import> = emptySet()
+
+    override fun code(): String {
+        TODO("not implemented")
+    }
 }

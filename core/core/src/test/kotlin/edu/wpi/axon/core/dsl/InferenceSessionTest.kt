@@ -38,7 +38,7 @@ internal class InferenceSessionTest : KoinTest {
         }
 
         val session = InferenceSession(varName).apply {
-            modelPath = "pathName"
+            path = "pathName"
         }
 
         assertThat(
@@ -86,7 +86,7 @@ internal class InferenceSessionTest : KoinTest {
         val session = InferenceSession(
             varName
         ).apply {
-            modelPath = pathName
+            path = pathName
         }
 
         assertThat(session.isConfiguredCorrectly(), isFalse())
@@ -113,7 +113,7 @@ internal class InferenceSessionTest : KoinTest {
         val session = InferenceSession(
             varName
         ).apply {
-            modelPath = pathName
+            path = pathName
         }
 
         assertThat(session.isConfiguredCorrectly(), isTrue())
