@@ -17,7 +17,7 @@ class LoadImageData(name: String) : Task(name), KoinComponent {
     /**
      * The file path to load this data from.
      */
-    var path: String? = null
+    var imagePath: String? = null
 
     /**
      * The output the image data will be stored in.
@@ -30,7 +30,7 @@ class LoadImageData(name: String) : Task(name), KoinComponent {
     var imageSizeOutput: Variable? = null
 
     /**
-     * Validates the [path].
+     * Validates the [imagePath].
      */
     private val pathValidator: PathValidator by inject()
 
@@ -46,11 +46,12 @@ class LoadImageData(name: String) : Task(name), KoinComponent {
 
     override val dependencies: Set<Code<*>> = emptySet()
 
-    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() && path != null &&
-        pathValidator.isValidPathName(path!!) && imageDataOutput != null && imageSizeOutput != null
+    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() && imagePath != null &&
+        pathValidator.isValidPathName(imagePath!!) && imageDataOutput != null &&
+        imageSizeOutput != null
 
     override fun code() = """
-        |$name = Image.open('${path!!}')
+        |$name = Image.open('${imagePath!!}')
         |${imageDataOutput!!.name} = preprocess($name)
         |${imageSizeOutput!!.name} = np.array([$name.size[1], $name.size[0]], dtype=np.float32).reshape(1, 2)
     """.trimMargin()

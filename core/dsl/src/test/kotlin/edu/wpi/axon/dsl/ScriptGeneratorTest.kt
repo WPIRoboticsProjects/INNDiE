@@ -10,7 +10,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 
 @Suppress("UNUSED_VARIABLE")
-internal class ScriptGeneratorDslTest {
+internal class ScriptGeneratorTest {
 
     @Test
     fun `create a new variable`() {
@@ -20,7 +20,7 @@ internal class ScriptGeneratorDslTest {
             }
         }
 
-        ScriptGeneratorDsl(mockVariableContainer, mockk()) {
+        ScriptGenerator(mockVariableContainer, mockk()) {
             val session by variables.creating(MockVariable::class)
         }
 
@@ -34,7 +34,7 @@ internal class ScriptGeneratorDslTest {
             every { create("task1", MockTask::class, any()) } returns mockk()
         }
 
-        ScriptGeneratorDsl(mockk(), mockTaskContainer) {
+        ScriptGenerator(mockk(), mockTaskContainer) {
             val task1 by tasks.running(MockTask::class)
         }
 

@@ -9,8 +9,8 @@ import edu.wpi.axon.dsl.validator.path.DefaultPathValidator
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
 import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
-import edu.wpi.axon.dsl.variable.ClassLabels
 import edu.wpi.axon.dsl.variable.ConstructYoloV3ImageInput
+import edu.wpi.axon.dsl.variable.LoadClassLabels
 import edu.wpi.axon.dsl.variable.LoadImageData
 import edu.wpi.axon.dsl.variable.MakeNewInferenceSession
 import edu.wpi.axon.dsl.variable.Variable
@@ -25,7 +25,7 @@ import java.util.concurrent.CountDownLatch
 
 @Suppress("UNUSED_VARIABLE")
 @SuppressWarnings("LargeClass")
-internal class ScriptGeneratorDslIntegrationTest : KoinTest {
+internal class ScriptGeneratorIntegrationTest : KoinTest {
 
     @AfterEach
     fun afterEach() {
@@ -42,7 +42,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             })
         }
 
-        val dsl = ScriptGeneratorDsl(
+        val dsl = ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
         ) {
@@ -52,20 +52,23 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
                 sessionOutput = session
             }
 
-            val classes by variables.creating(ClassLabels::class) {
-                path = "coco_classes.txt"
+            val classes by variables.creating(Variable::class)
+            val loadClassLabels by tasks.running(LoadClassLabels::class) {
+                classLabelsPath = "coco_classes.txt"
+                classOutput = classes
             }
+
+            requireGeneration(classes)
 
             val imageData by variables.creating(Variable::class)
             val imageSize by variables.creating(Variable::class)
             val loadImageData by tasks.running(LoadImageData::class) {
-                path = "horses.jpg"
+                imagePath = "horses.jpg"
                 imageDataOutput = imageData
                 imageSizeOutput = imageSize
             }
 
-            val inferenceInput by variables.creating(Variable::class) {
-            }
+            val inferenceInput by variables.creating(Variable::class)
             val makeYolov3Input by tasks.running(ConstructYoloV3ImageInput::class) {
                 imageDataInput = imageData
                 imageSizeInput = imageSize
@@ -122,6 +125,9 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             |inferenceOutput = session.run(None, inferenceInput)
             |
             |postProcessedOutput = postprocessYolov3(inferenceOutput)
+            |
+            |
+            |classes = [line.rstrip('\n') for line in open('coco_classes.txt')]
             """.trimMargin(),
             code
         )
@@ -137,7 +143,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         }
 
         val codeLatch = CountDownLatch(2)
-        ScriptGeneratorDsl(
+        ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
         ) {
@@ -166,7 +172,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         }
 
         val codeLatch = CountDownLatch(3)
-        ScriptGeneratorDsl(
+        ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
         ) {
@@ -195,7 +201,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         }
 
         val task1CodeLatch = CountDownLatch(2)
-        ScriptGeneratorDsl(
+        ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
         ) {
@@ -224,7 +230,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         }
 
         val task1CodeLatch = CountDownLatch(2)
-        ScriptGeneratorDsl(
+        ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
         ) {

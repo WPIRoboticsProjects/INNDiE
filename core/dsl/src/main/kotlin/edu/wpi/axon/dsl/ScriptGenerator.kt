@@ -12,10 +12,10 @@ import edu.wpi.axon.dsl.variable.Variable
  * @param configure Configures the script so it is ready for generation.
  */
 @SuppressWarnings("UseDataClass")
-class ScriptGeneratorDsl(
+class ScriptGenerator(
     val variables: PolymorphicNamedDomainObjectContainer<Variable>,
     val tasks: PolymorphicNamedDomainObjectContainer<Task>,
-    configure: ScriptGeneratorDsl.() -> Unit
+    configure: ScriptGenerator.() -> Unit
 ) : Configurable {
 
     // TODO: Do something with this (probably make the script implement a method and return this)
@@ -24,12 +24,24 @@ class ScriptGeneratorDsl(
     // TODO: Find an intelligent way to derive this instead of needing it to be specified
     var lastTask: Task? = null
 
+    private val requiredVariables = mutableSetOf<Variable>()
+
     init {
         configure()
         // Don't check isConfiguredCorrectly here because some tests need an unconfigured script
     }
 
     override fun isConfiguredCorrectly() = lastTask != null
+
+    /**
+     * Requires that the [Variable] is emitted in the generated code. Any tasks that output to this
+     * [Variable] will also be generated.
+     *
+     * @param variable The [Variable].
+     */
+    fun requireGeneration(variable: Variable) {
+        requiredVariables += variable
+    }
 
     /**
      * TODO: What imports need to be considered duplicates?
@@ -47,20 +59,26 @@ class ScriptGeneratorDsl(
             "The DSl was not configured correctly."
         }
 
-        (variables + tasks).filter { !it.value.isConfiguredCorrectly() }.let {
-            if (it.isNotEmpty()) {
-                throw IllegalArgumentException(
-                    """
-                    |Incorrectly configured:
-                    |${it.values.joinToString("\n")}
-                    """.trimMargin()
-                )
+        (variables.values + tasks.values + requiredVariables)
+            .filter { !it.isConfiguredCorrectly() }
+            .let {
+                if (it.isNotEmpty()) {
+                    throw IllegalArgumentException(
+                        """
+                        |Incorrectly configured:
+                        |${it.joinToString("\n")}
+                        """.trimMargin()
+                    )
+                }
             }
-        }
+
+        val handledNodes = mutableSetOf<Code<Code<*>>>() // The nodes that code gen has run for
 
         appendImports(generateDebugComments)
         append('\n')
-        appendTaskCode(generateDebugComments)
+        appendTaskCode(generateDebugComments, handledNodes)
+        append('\n')
+        appendRequiredVariables(generateDebugComments, handledNodes)
     }.trim()
 
     /**
@@ -88,11 +106,14 @@ class ScriptGeneratorDsl(
      * Appends all the needed task code.
      *
      * @param generateDebugComments Whether to insert debugging comments.
+     * @param handledNodes The nodes that code generation has already run for.
      */
-    private fun StringBuilder.appendTaskCode(generateDebugComments: Boolean) {
+    private fun StringBuilder.appendTaskCode(
+        generateDebugComments: Boolean,
+        handledNodes: MutableSet<Code<Code<*>>>
+    ) {
         @Suppress("UNCHECKED_CAST")
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<Code<Code<*>>>).graph
-        val handledNodes = mutableSetOf<Code<Code<*>>>() // The nodes that code gen has run for
 
         fun appendNode(node: Code<Code<*>>) {
             if (node !in handledNodes) {
@@ -106,19 +127,48 @@ class ScriptGeneratorDsl(
                         appendNode(it)
                     }
 
-                if (generateDebugComments) {
-                    append("# ${toString()}")
-                    append('\n')
-                }
-
                 println("Generating $node")
-                append(node.code())
-                append('\n')
-                append('\n')
-                handledNodes += node
+                appendCode(node, generateDebugComments, handledNodes)
             }
         }
 
         appendNode(lastTask!!)
+    }
+
+    /**
+     * Appends code for all the explicitly required variables.
+     *
+     * @param generateDebugComments Whether to insert debugging comments.
+     * @param handledNodes The nodes that code generation has already run for.
+     */
+    private fun StringBuilder.appendRequiredVariables(
+        generateDebugComments: Boolean,
+        handledNodes: MutableSet<Code<Code<*>>>
+    ) {
+        requiredVariables.forEach { variable ->
+            tasks.forEach { _, task ->
+                if (task !in handledNodes && variable in task.outputs) {
+                    println("Generating $task because of required variable $variable")
+                    appendCode(task, generateDebugComments, handledNodes)
+                }
+            }
+        }
+    }
+
+    private fun StringBuilder.appendCode(
+        node: Code<Code<*>>,
+        generateDebugComments: Boolean,
+        handledNodes: MutableSet<Code<Code<*>>>
+    ) {
+        if (generateDebugComments) {
+            append("# $node")
+            append('\n')
+        }
+
+        append(node.code())
+        append('\n')
+        append('\n')
+
+        handledNodes += node
     }
 }
