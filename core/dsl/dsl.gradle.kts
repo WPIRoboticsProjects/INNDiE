@@ -35,11 +35,7 @@ dependencies {
 
     implementation(koin("koin-core"))
 
-    testImplementation(
-        group = "com.natpryce",
-        name = "hamkrest",
-        version = property("hamkrest.version") as String
-    )
+    testImplementation(project(":test-util"))
     testImplementation(
         group = "io.mockk",
         name = "mockk",

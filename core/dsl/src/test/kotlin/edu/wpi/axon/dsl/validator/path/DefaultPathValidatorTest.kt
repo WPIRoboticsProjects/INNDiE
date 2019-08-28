@@ -1,8 +1,8 @@
 package edu.wpi.axon.dsl.validator.path
 
 import com.natpryce.hamkrest.assertion.assertThat
-import edu.wpi.axon.dsl.isFalse
-import edu.wpi.axon.dsl.isTrue
+import edu.wpi.axon.testutil.isFalse
+import edu.wpi.axon.testutil.isTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File

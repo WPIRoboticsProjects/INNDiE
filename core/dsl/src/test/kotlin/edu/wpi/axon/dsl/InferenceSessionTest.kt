@@ -3,6 +3,8 @@ package edu.wpi.axon.dsl
 import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.variable.InferenceSession
+import edu.wpi.axon.testutil.isFalse
+import edu.wpi.axon.testutil.isTrue
 import io.mockk.confirmVerified
 import io.mockk.mockk
 import io.mockk.verify

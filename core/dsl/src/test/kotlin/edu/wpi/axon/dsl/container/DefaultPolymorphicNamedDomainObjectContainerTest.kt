@@ -4,8 +4,8 @@ import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.MockVariable
 import edu.wpi.axon.dsl.mockVariableNameValidator
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.dsl.isTrue
-import edu.wpi.axon.dsl.mapHasElementWhere
+import edu.wpi.axon.testutil.isTrue
+import edu.wpi.axon.testutil.mapHasElementWhere
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
