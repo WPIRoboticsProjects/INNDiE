@@ -8,9 +8,11 @@ import org.junit.jupiter.api.Test
 
 internal class YoloV3PostprocessTaskTest {
 
+    private val taskName = "task"
+
     @Test
     fun `input cannot be null`() {
-        val task = YoloV3PostprocessTask().apply {
+        val task = YoloV3PostprocessTask(taskName).apply {
             output = mockk()
         }
 
@@ -19,7 +21,7 @@ internal class YoloV3PostprocessTaskTest {
 
     @Test
     fun `output cannot be null`() {
-        val task = YoloV3PostprocessTask().apply {
+        val task = YoloV3PostprocessTask(taskName).apply {
             input = mockk()
         }
 
@@ -28,7 +30,7 @@ internal class YoloV3PostprocessTaskTest {
 
     @Test
     fun `configured correctly when all parameters are non-null`() {
-        val task = YoloV3PostprocessTask().apply {
+        val task = YoloV3PostprocessTask(taskName).apply {
             input = mockk()
             output = mockk()
         }

@@ -1,7 +1,5 @@
 package edu.wpi.axon.core.dsl
 
-import edu.wpi.axon.core.dsl.container.PolymorphicDomainObjectContainer
-import edu.wpi.axon.core.dsl.container.PolymorphicDomainObjectContainerDelegateProvider
 import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainerDelegateProvider
 import edu.wpi.axon.core.dsl.task.Task
@@ -18,7 +16,7 @@ import kotlin.reflect.KClass
 @SuppressWarnings("UseDataClass")
 class ScriptGeneratorDsl(
     val variables: PolymorphicNamedDomainObjectContainer<Variable>,
-    val tasks: PolymorphicDomainObjectContainer<Task>,
+    val tasks: PolymorphicNamedDomainObjectContainer<Task>,
     configure: ScriptGeneratorDsl.() -> Unit
 ) {
 
@@ -34,24 +32,23 @@ class ScriptGeneratorDsl(
      */
     fun computeImports(): Set<Import> {
         // TODO: What imports need to be considered duplicates?
-        return tasks.flatMap { it.imports }.toSet()
+        return tasks.flatMap { it.value.imports }.toSet()
     }
 
     /**
      * @return The entire generated script.
      */
     fun code(generateDebugComments: Boolean = false) = buildString {
-        (variables + tasks).filter { !it.isConfiguredCorrectly() }.let {
+        (variables + tasks).filter { !it.value.isConfiguredCorrectly() }.let {
             if (it.isNotEmpty()) {
                 throw IllegalArgumentException(
                     """
                     |Incorrectly configured:
-                    |${it.joinToString("\n")}
+                    |${it.values.joinToString("\n")}
                     """.trimMargin()
                 )
             }
         }
-
 
         appendImports(generateDebugComments)
         append('\n')
@@ -79,21 +76,21 @@ class ScriptGeneratorDsl(
             appendTaskDependencies(task, generateDebugComments)
 
             if (generateDebugComments) {
-                append("# class=${task::class.simpleName}")
+                append("# class=${task::class.simpleName}, name=${task.key}")
                 append('\n')
             }
 
-            append(task.code())
+            append(task.value.code())
             append('\n')
             append('\n')
         }
     }
 
     private fun StringBuilder.appendTaskDependencies(
-        task: Task,
+        task: Map.Entry<String, Task>,
         generateDebugComments: Boolean
     ) {
-        task.dependencies.forEach { inputData ->
+        task.value.dependencies.forEach { inputData ->
             if (generateDebugComments) {
                 append("# class=${inputData::class.simpleName}")
                 append('\n')
@@ -117,7 +114,7 @@ fun <T : Variable, U : T> PolymorphicNamedDomainObjectContainer<T>.creating(
 /**
  * Creates a new task and configures it.
  */
-fun <T : Task, U : T> PolymorphicDomainObjectContainer<T>.running(
+fun <T : Task, U : T> PolymorphicNamedDomainObjectContainer<T>.running(
     type: KClass<U>,
     configuration: (U.() -> Unit)? = null
-) = PolymorphicDomainObjectContainerDelegateProvider.of(this, type, configuration)
+) = PolymorphicNamedDomainObjectContainerDelegateProvider.of(this, type, configuration)

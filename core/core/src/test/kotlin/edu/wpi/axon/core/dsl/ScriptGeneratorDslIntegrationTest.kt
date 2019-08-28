@@ -2,8 +2,7 @@ package edu.wpi.axon.core.dsl
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-import edu.wpi.axon.core.dsl.container.DefaultTaskContainer
-import edu.wpi.axon.core.dsl.container.DefaultVariableContainer
+import edu.wpi.axon.core.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.core.dsl.task.InferenceTask
 import edu.wpi.axon.core.dsl.task.YoloV3PostprocessTask
 import edu.wpi.axon.core.dsl.validator.path.DefaultPathValidator
@@ -21,7 +20,9 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
+import java.util.concurrent.CountDownLatch
 
+@Suppress("UNUSED_VARIABLE")
 internal class ScriptGeneratorDslIntegrationTest : KoinTest {
 
     @AfterEach
@@ -39,8 +40,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             })
         }
 
-        @Suppress("UNUSED_VARIABLE")
-        val dsl = ScriptGeneratorDsl(DefaultVariableContainer.of(), DefaultTaskContainer.of()) {
+        val dsl = ScriptGeneratorDsl(DefaultPolymorphicNamedDomainObjectContainer.of(), DefaultPolymorphicNamedDomainObjectContainer.of()) {
             val session by variables.creating(InferenceSession::class) {
                 path = "yolov3.onnx"
             }
@@ -103,5 +103,52 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             """.trimMargin(),
             code
         )
+    }
+
+    @Test
+    fun `code dependencies should be called`() {
+        startKoin {
+            modules(module {
+                single<VariableNameValidator> { PythonVariableNameValidator() }
+                single<PathValidator> { DefaultPathValidator() }
+            })
+        }
+
+        val codeLatch = CountDownLatch(2)
+        ScriptGeneratorDsl(DefaultPolymorphicNamedDomainObjectContainer.of(), DefaultPolymorphicNamedDomainObjectContainer.of()) {
+            val task1 by tasks.running(MockTask::class) {
+                latch = codeLatch
+            }
+
+            val task2 by tasks.running(MockTask::class) {
+                latch = codeLatch
+            }
+        }.code()
+
+        assertThat(codeLatch.count, equalTo(0L))
+    }
+
+    @Test
+    fun `recursive code dependencies should not cause task code gen to happen multiple times`() {
+        startKoin {
+            modules(module {
+                single<VariableNameValidator> { PythonVariableNameValidator() }
+                single<PathValidator> { DefaultPathValidator() }
+            })
+        }
+
+        val codeLatch = CountDownLatch(3)
+        ScriptGeneratorDsl(DefaultPolymorphicNamedDomainObjectContainer.of(), DefaultPolymorphicNamedDomainObjectContainer.of()) {
+            val task1 by tasks.running(MockTask::class) {
+                latch = codeLatch
+            }
+
+            val task2 by tasks.running(MockTask::class) {
+                latch = codeLatch
+                dependencies += task1
+            }
+        }.code()
+
+        assertThat(codeLatch.count, equalTo(1L))
     }
 }

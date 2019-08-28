@@ -3,11 +3,11 @@ package edu.wpi.axon.core.dsl.container
 import kotlin.reflect.KClass
 
 /**
- * A container for nameless domain objects. Names are given to new objects via a constructor.
+ * A container for named domain objects. Names are given to new objects via a constructor.
  *
  * @param T The type of object in the container.
  */
-interface PolymorphicNamedDomainObjectContainer<T : Any> : Collection<T> {
+interface PolymorphicNamedDomainObjectContainer<T : Any> : Map<String, T> {
 
     /**
      * Creates a new domain object and adds it to the container.

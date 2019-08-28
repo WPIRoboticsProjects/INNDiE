@@ -8,7 +8,8 @@ import org.koin.core.inject
 /**
  * A [Variable] is literally a variable in the generated code.
  *
- * @param name The name of this [Variable] (this will become the name in the code).
+ * @param name The name of this [Variable] (this will become the name in the code). This name is
+ * also used to assure variable uniqueness.
  */
 open class Variable(val name: String) : Configurable, KoinComponent {
 

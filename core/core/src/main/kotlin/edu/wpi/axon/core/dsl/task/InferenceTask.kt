@@ -8,7 +8,7 @@ import edu.wpi.axon.core.dsl.variable.Variable
 /**
  * A [Task] that runs inference.
  */
-class InferenceTask : Task {
+class InferenceTask(override val name: String) : Task {
 
     /**
      * The data input to the first layer of the model.

@@ -4,8 +4,8 @@ import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.core.dsl.MockVariable
 import edu.wpi.axon.core.dsl.mockVariableNameValidator
 import edu.wpi.axon.core.dsl.variable.Variable
-import edu.wpi.axon.core.hasElementWhere
 import edu.wpi.axon.core.isTrue
+import edu.wpi.axon.core.mapHasElementWhere
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -14,7 +14,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 
-internal class DefaultVariableContainerTest : KoinTest {
+internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTest {
 
     private val varName = "varName"
 
@@ -31,9 +31,9 @@ internal class DefaultVariableContainerTest : KoinTest {
             })
         }
 
-        val container = DefaultVariableContainer.of()
+        val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
         container.create(varName, MockVariable::class)
-        assertThat(container, hasElementWhere { name == varName })
+        assertThat(container, mapHasElementWhere { key == varName })
     }
 
     @Test
@@ -44,20 +44,35 @@ internal class DefaultVariableContainerTest : KoinTest {
             })
         }
 
-        val container = DefaultVariableContainer.of()
+        val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
 
         var called = false
         val mockConfigure: Variable.() -> Unit = { called = true }
 
         container.create(varName, MockVariable::class, mockConfigure)
 
-        assertThat(container, hasElementWhere { name == varName })
+        assertThat(container, mapHasElementWhere { key == varName })
         assertThat(called, isTrue())
     }
 
     @Test
+    fun `calling create with two variables of the same name throws an error`() {
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator(varName to true) }
+            })
+        }
+
+        val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
+        container.create(varName, MockVariable::class)
+        assertThrows<IllegalArgumentException> {
+            container.create(varName, MockVariable::class)
+        }
+    }
+
+    @Test
     fun `cannot create a variable from an abstract class`() {
-        val container = DefaultVariableContainer.of()
+        val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
 
         abstract class AbstractVariable(name: String) : Variable(name)
 
@@ -68,7 +83,7 @@ internal class DefaultVariableContainerTest : KoinTest {
 
     @Test
     fun `cannot create a variable from a companion object`() {
-        val container = DefaultVariableContainer.of()
+        val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
 
         assertThrows<IllegalArgumentException> {
             container.create(varName, TestVariable::class)
@@ -77,7 +92,7 @@ internal class DefaultVariableContainerTest : KoinTest {
 
     @Test
     fun `cannot create a variable without a matching constructor`() {
-        val container = DefaultVariableContainer.of()
+        val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
 
         assertThrows<IllegalArgumentException> {
             container.create(varName, TestVariable::class)

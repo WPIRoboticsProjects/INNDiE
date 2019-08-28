@@ -15,9 +15,9 @@ import kotlin.reflect.KProperty
  */
 class PolymorphicNamedDomainObjectContainerDelegateProvider<T : Any, U : T>
 private constructor(
-    internal val container: PolymorphicNamedDomainObjectContainer<T>,
-    internal val type: KClass<U>,
-    internal val configuration: (U.() -> Unit)? = null
+    private val container: PolymorphicNamedDomainObjectContainer<T>,
+    private val type: KClass<U>,
+    private val configuration: (U.() -> Unit)? = null
 ) {
     companion object {
         fun <T : Any, U : T> of(

@@ -8,9 +8,11 @@ import org.junit.jupiter.api.Test
 
 internal class InferenceTaskTest {
 
+    private val inferenceTaskName = "task"
+
     @Test
     fun `input cannot be null`() {
-        val task = InferenceTask().apply {
+        val task = InferenceTask(inferenceTaskName).apply {
             inferenceSession = mockk()
             output = mockk()
         }
@@ -20,7 +22,7 @@ internal class InferenceTaskTest {
 
     @Test
     fun `inferenceSession cannot be null`() {
-        val task = InferenceTask().apply {
+        val task = InferenceTask(inferenceTaskName).apply {
             input = mockk()
             output = mockk()
         }
@@ -30,7 +32,7 @@ internal class InferenceTaskTest {
 
     @Test
     fun `output cannot be null`() {
-        val task = InferenceTask().apply {
+        val task = InferenceTask(inferenceTaskName).apply {
             input = mockk()
             inferenceSession = mockk()
         }
@@ -40,7 +42,7 @@ internal class InferenceTaskTest {
 
     @Test
     fun `configured correctly when all parameters are non-null`() {
-        val task = InferenceTask().apply {
+        val task = InferenceTask(inferenceTaskName).apply {
             input = mockk()
             inferenceSession = mockk()
             output = mockk()

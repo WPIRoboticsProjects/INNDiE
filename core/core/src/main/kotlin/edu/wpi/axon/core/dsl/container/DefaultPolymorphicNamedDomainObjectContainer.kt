@@ -1,21 +1,18 @@
 package edu.wpi.axon.core.dsl.container
 
-import edu.wpi.axon.core.dsl.variable.Variable
 import kotlin.reflect.KClass
 import kotlin.reflect.full.defaultType
 
 /**
- * A container for Variables.
+ * A container for named domain objects. Names are given to new objects via a constructor.
+ *
+ * @param T The type of object in the container.
  */
-class DefaultVariableContainer(
-    private val backingList: MutableCollection<Variable>
-) : PolymorphicNamedDomainObjectContainer<Variable>, Collection<Variable> by backingList {
+class DefaultPolymorphicNamedDomainObjectContainer<T : Any>(
+    private val backingMap: MutableMap<String, T>
+) : PolymorphicNamedDomainObjectContainer<T>, Map<String, T> by backingMap {
 
-    override fun <U : Variable> create(
-        name: String,
-        type: KClass<U>,
-        configure: (U.() -> Unit)?
-    ): U {
+    override fun <U : T> create(name: String, type: KClass<U>, configure: (U.() -> Unit)?): U {
         require(!type.isAbstract) {
             "This container cannot use abstract classes."
         }
@@ -24,8 +21,12 @@ class DefaultVariableContainer(
             "This container cannot use companion objects."
         }
 
+        require(backingMap.none { it.key == name }) {
+            "Cannot add domain object with name $name because that name is already present."
+        }
+
         // Find a constructor we can call to instantiate the variable
-        val ctor = type.constructors.firstOrNull() {
+        val ctor = type.constructors.firstOrNull {
             val nonOptionalParams = it.parameters.filter { !it.isOptional }
             nonOptionalParams.size == 1 && nonOptionalParams.first().type == String::class.defaultType
         }
@@ -37,11 +38,11 @@ class DefaultVariableContainer(
 
         val obj = ctor.call(name)
         configure?.let { obj.it() }
-        backingList.add(obj)
+        backingMap[name] = obj
         return obj
     }
 
     companion object {
-        fun of() = DefaultVariableContainer(mutableListOf())
+        fun <T : Any> of() = DefaultPolymorphicNamedDomainObjectContainer<T>(mutableMapOf())
     }
 }

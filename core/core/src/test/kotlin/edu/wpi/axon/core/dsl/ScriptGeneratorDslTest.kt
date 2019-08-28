@@ -1,6 +1,5 @@
 package edu.wpi.axon.core.dsl
 
-import edu.wpi.axon.core.dsl.container.PolymorphicDomainObjectContainer
 import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.core.dsl.task.Task
 import edu.wpi.axon.core.dsl.variable.Variable
@@ -10,6 +9,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 
+@Suppress("UNUSED_VARIABLE")
 internal class ScriptGeneratorDslTest {
 
     @Test
@@ -21,7 +21,6 @@ internal class ScriptGeneratorDslTest {
         }
 
         ScriptGeneratorDsl(mockVariableContainer, mockk()) {
-            @Suppress("UNUSED_VARIABLE")
             val session by variables.creating(MockVariable::class)
         }
 
@@ -31,16 +30,15 @@ internal class ScriptGeneratorDslTest {
 
     @Test
     fun `create a new task`() {
-        val mockTaskContainer = mockk<PolymorphicDomainObjectContainer<Task>> {
-            every { create(MockTask::class, any()) } returns mockk()
+        val mockTaskContainer = mockk<PolymorphicNamedDomainObjectContainer<Task>> {
+            every { create("task1", MockTask::class, any()) } returns mockk()
         }
 
         ScriptGeneratorDsl(mockk(), mockTaskContainer) {
-            @Suppress("UNUSED_VARIABLE")
             val task1 by tasks.running(MockTask::class)
         }
 
-        verify { mockTaskContainer.create(MockTask::class, any()) }
+        verify { mockTaskContainer.create("task1", MockTask::class, any()) }
         confirmVerified(mockTaskContainer)
     }
 }
