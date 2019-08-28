@@ -18,6 +18,8 @@ interface Task : Configurable, Code {
     /**
      * The [Code] this [Task] depends on. The code generation for these will happen before the
      * code generation for this [Task].
+     *
+     * TODO: Test this for dependencies of both variables and other tasks
      */
     val dependencies: Set<Code>
 }
