@@ -10,7 +10,7 @@ import kotlin.reflect.KProperty
  */
 class DslDelegate<T>
 private constructor(
-    internal val delegate: T
+    private val delegate: T
 ) {
 
     operator fun getValue(receiver: Any?, property: KProperty<*>): T = delegate
