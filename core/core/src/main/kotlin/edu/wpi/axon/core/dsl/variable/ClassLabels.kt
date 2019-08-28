@@ -11,7 +11,11 @@ class ClassLabels(name: String) : FileInputData(name) {
 
     override val imports: Set<Import> = emptySet()
 
-    override val dependencies: Set<Code> = emptySet()
+    override val inputs: Set<Variable> = emptySet()
+
+    override val outputs: Set<Variable> = emptySet()
+
+    override val dependencies: Set<Code<*>> = emptySet()
 
     override fun code(): String {
         TODO("not implemented")

@@ -1,6 +1,7 @@
 package edu.wpi.axon.core.dsl.task
 
 import edu.wpi.axon.core.dsl.Import
+import edu.wpi.axon.core.dsl.variable.Code
 import edu.wpi.axon.core.dsl.variable.InferenceSession
 import edu.wpi.axon.core.dsl.variable.ModelInputData
 import edu.wpi.axon.core.dsl.variable.Variable
@@ -29,7 +30,13 @@ class InferenceTask(override val name: String) : Task {
         get() = (dependencies.flatMapTo(mutableSetOf()) { it.imports } +
             Import.ModuleOnly("onnx")).toSet()
 
-    override val dependencies
+    override val inputs: Set<Variable>
+        get() = emptySet()
+
+    override val outputs: Set<Variable>
+        get() = setOf(output!!)
+
+    override val dependencies: Set<Code<*>>
         get() = setOf(input!!, inferenceSession!!)
 
     override fun isConfiguredCorrectly() =

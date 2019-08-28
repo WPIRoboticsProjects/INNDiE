@@ -1,7 +1,7 @@
 package edu.wpi.axon.core.dsl.task
 
 import edu.wpi.axon.core.dsl.Import
-import edu.wpi.axon.core.dsl.variable.FileInputData
+import edu.wpi.axon.core.dsl.variable.Code
 import edu.wpi.axon.core.dsl.variable.Variable
 
 /**
@@ -23,7 +23,13 @@ class YoloV3PostprocessTask(override val name: String) : Task {
         get() = (dependencies.flatMapTo(mutableSetOf()) { it.imports } +
             Import.ModuleAndIdentifier("axon", "postprocessYolov3")).toSet()
 
-    override val dependencies: Set<FileInputData>
+    override val inputs: Set<Variable>
+        get() = setOf(input!!)
+
+    override val outputs: Set<Variable>
+        get() = setOf(output!!)
+
+    override val dependencies: Set<Code<*>>
         get() = emptySet()
 
     override fun isConfiguredCorrectly() = input != null && output != null

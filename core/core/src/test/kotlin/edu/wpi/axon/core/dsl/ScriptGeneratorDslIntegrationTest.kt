@@ -16,6 +16,7 @@ import edu.wpi.axon.core.dsl.variable.Variable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -67,6 +68,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             }
 
             scriptOutput = postProcessedOutput
+            lastTask = postProcessTask
         }
 
         assertThat(
@@ -129,7 +131,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
     }
 
     @Test
-    fun `recursive code dependencies should not cause task code gen to happen multiple times`() {
+    fun `recursive code dependencies are not allowed`() {
         startKoin {
             modules(module {
                 single<VariableNameValidator> { PythonVariableNameValidator() }
@@ -138,7 +140,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         }
 
         val codeLatch = CountDownLatch(3)
-        ScriptGeneratorDsl(DefaultPolymorphicNamedDomainObjectContainer.of(), DefaultPolymorphicNamedDomainObjectContainer.of()) {
+        val dsl = ScriptGeneratorDsl(DefaultPolymorphicNamedDomainObjectContainer.of(), DefaultPolymorphicNamedDomainObjectContainer.of()) {
             val task1 by tasks.running(MockTask::class) {
                 latch = codeLatch
             }
@@ -147,8 +149,8 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
                 latch = codeLatch
                 dependencies += task1
             }
-        }.code()
+        }
 
-        assertThat(codeLatch.count, equalTo(1L))
+        assertThrows<IllegalArgumentException> { dsl.code() }
     }
 }

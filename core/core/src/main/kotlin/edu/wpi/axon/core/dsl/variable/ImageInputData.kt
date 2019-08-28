@@ -6,6 +6,7 @@ import edu.wpi.axon.core.dsl.Import
  * Loads an image.
  *
  * TODO: Validate image format
+ * TODO: Should this use [Variable] instead of imageData and imageSize
  */
 class ImageInputData(name: String) : ModelInputData(name) {
 
@@ -17,7 +18,12 @@ class ImageInputData(name: String) : ModelInputData(name) {
         Import.ModuleAndName("numpy", "np")
     )
 
-    override val dependencies: Set<Code> = emptySet()
+    override val inputs: Set<Variable> = emptySet()
+
+    override val outputs: Set<Variable>
+        get() = emptySet()
+
+    override val dependencies: Set<Code<*>> = emptySet()
 
     override fun code() = """
         |$name = Image.open('${path!!}')

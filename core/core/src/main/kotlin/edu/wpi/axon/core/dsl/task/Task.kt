@@ -7,7 +7,7 @@ import edu.wpi.axon.core.dsl.variable.Code
  * A [Task] is analogous to a method call. If this [Task] has an(y) output variable(s), it should
  * assign to them during [Code.code].
  */
-interface Task : Configurable, Code {
+interface Task : Configurable, Code<Code<*>> {
 
     /**
      * The name of this task. This does now have an impact on the generated code, it is only used

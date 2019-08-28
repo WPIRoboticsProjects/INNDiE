@@ -12,14 +12,14 @@ import edu.wpi.axon.core.dsl.variable.Code
  */
 @Suppress("UnstableApiUsage")
 class CodeGraph(
-    private val container: PolymorphicNamedDomainObjectContainer<Code>
+    private val container: PolymorphicNamedDomainObjectContainer<Code<Code<*>>>
 ) {
 
-    val graph: ImmutableGraph<Code> by lazy {
+    val graph: ImmutableGraph<Code<Code<*>>> by lazy {
         val mutableGraph = GraphBuilder.directed()
             .allowsSelfLoops(false)
             .expectedNodeCount(container.size)
-            .build<Code>()
+            .build<Code<Code<*>>>()
 
         container.forEach { (_, code) ->
             populateGraph(mutableGraph, code)
@@ -30,8 +30,8 @@ class CodeGraph(
 
     @Suppress("UnstableApiUsage")
     private fun populateGraph(
-        graph: MutableGraph<Code>,
-        code: Code
+        graph: MutableGraph<Code<Code<*>>>,
+        code: Code<Code<*>>
     ) {
         // Make sure nodes without dependencies are in the graph
         graph.addNode(code)
@@ -48,10 +48,12 @@ class CodeGraph(
                 }
             }
         }
+
+        // TODO: Find pairs of tasks where one task's output is the other's input and add an edge
     }
 
-    private fun hasCircuits(graph: MutableGraph<Code>): Boolean {
-        val visited = mutableSetOf<Code>()
+    private fun hasCircuits(graph: MutableGraph<Code<Code<*>>>): Boolean {
+        val visited = mutableSetOf<Code<Code<*>>>()
 
         graph.nodes().forEach { node ->
             val reachable = bfs(graph, node)
@@ -66,9 +68,9 @@ class CodeGraph(
         return false
     }
 
-    private fun bfs(graph: MutableGraph<Code>, root: Code): Set<Code> {
-        val visited = mutableSetOf<Code>()
-        val queue = mutableListOf<Code>()
+    private fun bfs(graph: MutableGraph<Code<Code<*>>>, root: Code<Code<*>>): Set<Code<Code<*>>> {
+        val visited = mutableSetOf<Code<Code<*>>>()
+        val queue = mutableListOf<Code<Code<*>>>()
 
         visited += root
         queue += root

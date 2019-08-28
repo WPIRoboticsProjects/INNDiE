@@ -3,6 +3,7 @@ package edu.wpi.axon.core.dsl
 import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainerDelegateProvider
 import edu.wpi.axon.core.dsl.task.Task
+import edu.wpi.axon.core.dsl.variable.Code
 import edu.wpi.axon.core.dsl.variable.Variable
 import kotlin.reflect.KClass
 
@@ -23,6 +24,9 @@ class ScriptGeneratorDsl(
     // TODO: Do something with this (probably make the script implement a method and return this)
     var scriptOutput: Variable? = null
 
+    // TODO: Find an intelligent way to derive this instead of needing it to be specified
+    var lastTask: Task? = null
+
     init {
         configure()
     }
@@ -36,6 +40,7 @@ class ScriptGeneratorDsl(
     }
 
     /**
+     * @param generateDebugComments Whether to insert debugging comments.
      * @return The entire generated script.
      */
     fun code(generateDebugComments: Boolean = false) = buildString {
@@ -55,6 +60,11 @@ class ScriptGeneratorDsl(
         appendTaskCode(generateDebugComments)
     }.trim()
 
+    /**
+     * Appends all the needed Imports.
+     *
+     * @param generateDebugComments Whether to insert debugging comments.
+     */
     private fun StringBuilder.appendImports(generateDebugComments: Boolean) {
         val imports = computeImports()
             .map { it to it.code() }
@@ -71,27 +81,50 @@ class ScriptGeneratorDsl(
         }
     }
 
+    /**
+     * Appends all the needed task code.
+     *
+     * @param generateDebugComments Whether to insert debugging comments.
+     */
     private fun StringBuilder.appendTaskCode(generateDebugComments: Boolean) {
-        // TODO: Use CodeGraph instead of tasks directly
-        tasks.forEach { task ->
-            appendTaskDependencies(task, generateDebugComments)
+        @Suppress("UNCHECKED_CAST")
+        val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<Code<Code<*>>>).graph
 
-            if (generateDebugComments) {
-                append("# class=${task::class.simpleName}, name=${task.key}")
-                append('\n')
+        fun appendNode(node: Code<Code<*>>) {
+            graph.successors(node).forEach {
+                appendNode(it)
             }
 
-            append(task.value.code())
-            append('\n')
-            append('\n')
+            when (node) {
+                is Variable -> {
+                    if (generateDebugComments) {
+                        append("# class=${node::class.simpleName}, name=${node.name}")
+                        append('\n')
+                    }
+
+                    append(node.code())
+                    append('\n')
+                    append('\n')
+                }
+
+                is Task -> {
+                    if (generateDebugComments) {
+                        append("# class=${node::class.simpleName}, name=${node.name}")
+                        append('\n')
+                    }
+
+                    append(node.code())
+                    append('\n')
+                    append('\n')
+                }
+            }
         }
+
+        appendNode(lastTask!!)
     }
 
-    private fun StringBuilder.appendTaskDependencies(
-        task: Map.Entry<String, Task>,
-        generateDebugComments: Boolean
-    ) {
-        task.value.dependencies.forEach { inputData ->
+    private fun StringBuilder.appendTaskDependencies(task: Task, generateDebugComments: Boolean) {
+        task.dependencies.forEach { inputData ->
             if (generateDebugComments) {
                 append("# class=${inputData::class.simpleName}")
                 append('\n')
