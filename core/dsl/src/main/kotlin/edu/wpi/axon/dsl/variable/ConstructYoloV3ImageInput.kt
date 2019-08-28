@@ -14,8 +14,7 @@ class ConstructYoloV3ImageInput(name: String) : Task(name) {
     var sessionInput: Variable? = null
     var output: Variable? = null
 
-    override val imports: Set<Import>
-        get() = setOf(Import.ModuleOnly("onnx"))
+    override val imports: Set<Import> = setOf(Import.ModuleOnly("onnx"))
 
     override val inputs: Set<Variable>
         get() = setOf(imageDataInput!!, imageSizeInput!!, sessionInput!!)

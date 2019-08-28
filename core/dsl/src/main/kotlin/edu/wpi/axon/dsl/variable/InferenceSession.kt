@@ -1,28 +1,45 @@
 package edu.wpi.axon.dsl.variable
 
+import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Import
+import edu.wpi.axon.dsl.task.Task
+import edu.wpi.axon.dsl.validator.path.PathValidator
 import org.koin.core.KoinComponent
+import org.koin.core.inject
 
-/**
- * Makes a new ONNX inference session.
- */
-class InferenceSession(name: String) : FileInputData(name), KoinComponent {
+class MakeNewInferenceSession(name: String) : Task(name), KoinComponent {
 
-    override val imports = setOf(Import.ModuleOnly("onnxruntime"))
+    /**
+     * The path to load the ONNX model from.
+     */
+    var modelPathInput: String? = null
 
-    override val inputs: Set<Variable> = emptySet()
+    /**
+     * The variable to save the session in
+     */
+    var sessionOutput: Variable? = null
 
-    override val outputs: Set<Variable> = emptySet()
+    /**
+     * Validates the [modelPathInput].
+     */
+    private val pathValidator: PathValidator by inject()
 
-    override val dependencies: Set<FileInputData> = emptySet()
+    override val imports: Set<Import> = setOf(Import.ModuleOnly("onnxruntime"))
 
-    override fun isConfiguredCorrectly() =
-        super.isConfiguredCorrectly() && path != null &&
-            pathValidator.isValidPathName(path!!)
+    override val inputs: Set<Variable>
+        get() = setOf()
 
-    override fun code(): String {
-        return """
-            |$name = onnxruntime.InferenceSession('${path!!}')
-        """.trimMargin()
-    }
+    override val outputs: Set<Variable>
+        get() = setOf(sessionOutput!!)
+
+    override val dependencies: Set<Code<*>>
+        get() = setOf()
+
+    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() &&
+        modelPathInput != null && pathValidator.isValidPathName(modelPathInput!!) &&
+        sessionOutput != null
+
+    override fun code() = """
+        |${sessionOutput!!.name} = onnxruntime.InferenceSession('${modelPathInput!!}')
+    """.trimMargin()
 }

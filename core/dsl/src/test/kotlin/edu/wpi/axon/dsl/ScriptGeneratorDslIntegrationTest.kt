@@ -11,8 +11,8 @@ import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
 import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
 import edu.wpi.axon.dsl.variable.ClassLabels
 import edu.wpi.axon.dsl.variable.ConstructYoloV3ImageInput
-import edu.wpi.axon.dsl.variable.InferenceSession
 import edu.wpi.axon.dsl.variable.LoadImageData
+import edu.wpi.axon.dsl.variable.MakeNewInferenceSession
 import edu.wpi.axon.dsl.variable.Variable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -45,8 +45,10 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
         ) {
-            val session by variables.creating(InferenceSession::class) {
-                path = "yolov3.onnx"
+            val session by variables.creating(Variable::class)
+            val makeNewInferenceSession by tasks.running(MakeNewInferenceSession::class) {
+                modelPathInput = "yolov3.onnx"
+                sessionOutput = session
             }
 
             val classes by variables.creating(ClassLabels::class) {
@@ -180,5 +182,69 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         }.code()
 
         assertThat(codeLatch.count, equalTo(1L))
+    }
+
+    @Test
+    fun `two tasks that depend on the same task does not duplicate code gen`() {
+        startKoin {
+            modules(module {
+                single<VariableNameValidator> { PythonVariableNameValidator() }
+                single<PathValidator> { DefaultPathValidator() }
+            })
+        }
+
+        val task1CodeLatch = CountDownLatch(2)
+        ScriptGeneratorDsl(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
+            val task1 by tasks.running(MockTask::class) {
+                latch = task1CodeLatch
+            }
+            val task2 by tasks.running(MockTask::class) {
+                dependencies += task1
+            }
+            val task3 by tasks.running(MockTask::class) {
+                dependencies += task1
+            }
+            lastTask = task3
+        }.code()
+
+        assertThat(task1CodeLatch.count, equalTo(1L))
+    }
+
+    @Test
+    fun `two tasks that depend on the same task linked by a variable does not duplicate code gen`() {
+        startKoin {
+            modules(module {
+                single<VariableNameValidator> { PythonVariableNameValidator() }
+                single<PathValidator> { DefaultPathValidator() }
+            })
+        }
+
+        val task1CodeLatch = CountDownLatch(2)
+        ScriptGeneratorDsl(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
+            val task1Var by variables.creating(Variable::class)
+            val task1 by tasks.running(MockTask::class) {
+                latch = task1CodeLatch
+                outputs += task1Var
+            }
+
+            val task2 by tasks.running(MockTask::class) {
+                inputs += task1Var
+            }
+
+            val task3 by tasks.running(MockTask::class) {
+                inputs += task1Var
+                dependencies += task2
+            }
+
+            lastTask = task3
+        }.code()
+
+        assertThat(task1CodeLatch.count, equalTo(1L))
     }
 }

@@ -1,5 +1,7 @@
 package edu.wpi.axon.dsl
 
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
@@ -8,6 +10,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CountDownLatch
 
 @Suppress("UNUSED_VARIABLE")
 internal class ScriptGeneratorDslTest {

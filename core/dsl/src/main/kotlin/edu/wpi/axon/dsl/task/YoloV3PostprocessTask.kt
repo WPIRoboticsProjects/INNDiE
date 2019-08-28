@@ -1,7 +1,7 @@
 package edu.wpi.axon.dsl.task
 
-import edu.wpi.axon.dsl.Import
 import edu.wpi.axon.dsl.Code
+import edu.wpi.axon.dsl.Import
 import edu.wpi.axon.dsl.variable.Variable
 
 /**
@@ -32,7 +32,8 @@ class YoloV3PostprocessTask(name: String) : Task(name) {
     override val dependencies: Set<Code<*>>
         get() = emptySet()
 
-    override fun isConfiguredCorrectly() = input != null && output != null
+    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() && input != null &&
+        output != null
 
     override fun code() = """
         |${output!!.name} = postprocessYolov3(${input!!.name})

@@ -30,6 +30,8 @@ interface Code<out T : Code<T>> {
     val dependencies: Set<T>
 
     /**
+     * This method must be pure.
+     *
      * @return The code for this component.
      */
     fun code(): String

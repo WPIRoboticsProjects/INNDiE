@@ -92,26 +92,30 @@ class ScriptGeneratorDsl(
     private fun StringBuilder.appendTaskCode(generateDebugComments: Boolean) {
         @Suppress("UNCHECKED_CAST")
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<Code<Code<*>>>).graph
+        val handledNodes = mutableSetOf<Code<Code<*>>>() // The nodes that code gen has run for
 
         fun appendNode(node: Code<Code<*>>) {
-            // Append the predecessors first because they are the dependencies of this node
-            graph.predecessors(node)
-                .sortedBy { it.code().length } // Need to make the ordering consistent
-                .forEach {
-                    appendNode(it)
-                }
-
-            when (node) {
-                is Variable, is Task -> {
-                    if (generateDebugComments) {
-                        append("# ${toString()}")
-                        append('\n')
+            if (node !in handledNodes) {
+                // Append the predecessors first because they are the dependencies of this node
+                graph.predecessors(node)
+                    .sortedBy {
+                        // Need to make the ordering consistent. Process more complex nodes first.
+                        graph.predecessors(it).size
+                    }
+                    .forEach {
+                        appendNode(it)
                     }
 
-                    append(node.code())
-                    append('\n')
+                if (generateDebugComments) {
+                    append("# ${toString()}")
                     append('\n')
                 }
+
+                println("Generating $node")
+                append(node.code())
+                append('\n')
+                append('\n')
+                handledNodes += node
             }
         }
 
