@@ -14,6 +14,7 @@ class MockTask(name: String) : Task(name) {
 
     override fun isConfiguredCorrectly() = true
 
+    // TODO: Calling countDown in here is bad because this method should be stateless
     override fun code() = "".also { latch?.countDown() }
 
     override fun toString() = "MockTask(name='$name')"
