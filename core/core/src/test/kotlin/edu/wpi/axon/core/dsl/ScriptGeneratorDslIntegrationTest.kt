@@ -14,8 +14,8 @@ import edu.wpi.axon.core.dsl.variable.ClassLabels
 import edu.wpi.axon.core.dsl.variable.ImageInputData
 import edu.wpi.axon.core.dsl.variable.InferenceSession
 import edu.wpi.axon.core.dsl.variable.Variable
-import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -29,7 +29,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         stopKoin()
     }
 
-    @SuppressWarnings("LongMethod")
+    @SuppressWarnings("LongMethod", "MaxLineLength")
     @Test
     fun `run yolov3 model`() {
         startKoin {
