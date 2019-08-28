@@ -184,4 +184,38 @@ internal class CodeGraphTest {
             )
         )
     }
+
+    @Test
+    fun `tasks connected by a variable cannot form a circuit`() {
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator("variable1" to true) }
+            })
+        }
+
+        val codes = mutableMapOf(
+            "task1" to MockTask("task1"),
+            "task2" to MockTask("task2")
+        )
+
+        val variable1 = MockVariable("variable1")
+
+        codes["task1"]!!.dependencies += codes["task2"]!!
+        codes["task1"]!!.outputs += variable1
+        codes["task2"]!!.inputs += variable1
+
+        val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
+            Map<String, Code<Code<*>>> by codes {
+            override fun <U : Code<Code<*>>> create(
+                name: String,
+                type: KClass<U>,
+                configure: (U.() -> Unit)?
+            ): U {
+                TODO("not implemented")
+            }
+        }
+
+        val graph = CodeGraph(container)
+        assertThrows<IllegalArgumentException> { graph.graph }
+    }
 }
