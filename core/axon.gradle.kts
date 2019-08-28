@@ -21,19 +21,23 @@ plugins {
 }
 
 val coreProject = project(":core")
+val dslProject = project(":dsl")
 
 val kotlinProjects = setOf(
-    coreProject
+    coreProject,
+    dslProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
-    coreProject
+    coreProject,
+    dslProject
 )
 
 val pitestProjects = setOf(
-    coreProject
+    coreProject,
+    dslProject
 )
 
 // val spotlessLicenseHeaderDelimiter = "(@|package|import)"

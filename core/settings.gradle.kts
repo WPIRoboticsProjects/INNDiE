@@ -23,6 +23,7 @@ pluginManagement {
 rootProject.name = "axon"
 
 include(":core")
+include(":dsl")
 
 /**
  * This configures the gradle build so we can use non-standard build file names.
