@@ -33,12 +33,11 @@ class ScriptGeneratorDsl(
     override fun isConfiguredCorrectly() = lastTask != null
 
     /**
+     * TODO: What imports need to be considered duplicates?
+     *
      * @return The set of Imports needed by the [variables] and [tasks].
      */
-    fun computeImports(): Set<Import> {
-        // TODO: What imports need to be considered duplicates?
-        return tasks.flatMap { it.value.imports }.toSet()
-    }
+    fun computeImports(): Set<Import> = tasks.flatMap { it.value.imports }.toSet()
 
     /**
      * @param generateDebugComments Whether to insert debugging comments.
