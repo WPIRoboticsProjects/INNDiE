@@ -42,6 +42,12 @@ class ScriptGeneratorDsl(
      * @return The entire generated script.
      */
     fun code(generateDebugComments: Boolean = false) = buildString {
+        appendImports(generateDebugComments)
+        append('\n')
+        appendTaskCode(generateDebugComments)
+    }.trim()
+
+    private fun StringBuilder.appendImports(generateDebugComments: Boolean) {
         val imports = computeImports()
             .map { it to it.code() }
             .sortedBy { it.second }
@@ -55,20 +61,11 @@ class ScriptGeneratorDsl(
             append(code)
             append('\n')
         }
+    }
 
-        append('\n')
-
+    private fun StringBuilder.appendTaskCode(generateDebugComments: Boolean) {
         tasks.forEach { task ->
-            task.inputData.forEach { inputData ->
-                if (generateDebugComments) {
-                    append("# class=${inputData::class.simpleName}")
-                    append('\n')
-                }
-
-                append(inputData.code())
-                append('\n')
-                append('\n')
-            }
+            appendTaskDependencies(task, generateDebugComments)
 
             if (generateDebugComments) {
                 append("# class=${task::class.simpleName}")
@@ -79,7 +76,23 @@ class ScriptGeneratorDsl(
             append('\n')
             append('\n')
         }
-    }.trim()
+    }
+
+    private fun StringBuilder.appendTaskDependencies(
+        task: Task,
+        generateDebugComments: Boolean
+    ) {
+        task.inputData.forEach { inputData ->
+            if (generateDebugComments) {
+                append("# class=${inputData::class.simpleName}")
+                append('\n')
+            }
+
+            append(inputData.code())
+            append('\n')
+            append('\n')
+        }
+    }
 }
 
 /**
