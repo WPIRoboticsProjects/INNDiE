@@ -7,7 +7,7 @@ import edu.wpi.axon.core.dsl.variable.Variable
 /**
  * A [Task] that post-processes the output from a YoloV3 model.
  */
-class YoloV3PostprocessTask(override val name: String) : Task {
+class YoloV3PostprocessTask(name: String) : Task(name) {
 
     /**
      * The input data, typically the output of [InferenceTask].

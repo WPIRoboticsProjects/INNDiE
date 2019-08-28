@@ -125,5 +125,3 @@ class CodeGraph(
         return visited
     }
 }
-
-private infix fun <E> Iterable<E>.anyIn(other: Iterable<E>) = any { it in other }

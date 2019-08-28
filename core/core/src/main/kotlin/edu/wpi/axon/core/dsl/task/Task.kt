@@ -6,12 +6,11 @@ import edu.wpi.axon.core.dsl.variable.Code
 /**
  * A [Task] is analogous to a method call. If this [Task] has an(y) output variable(s), it should
  * assign to them during [Code.code].
+ *
+ * @param name The name of this task. This does now have an impact on the generated code, it is only
+ * used to assure task uniqueness.
  */
-interface Task : Configurable, Code<Code<*>> {
+abstract class Task(val name: String) : Configurable, Code<Code<*>> {
 
-    /**
-     * The name of this task. This does now have an impact on the generated code, it is only used
-     * to assure task uniqueness.
-     */
-    val name: String
+    override fun toString() = "Task(name='$name', class='${this::class.simpleName}')"
 }

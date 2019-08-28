@@ -1,11 +1,9 @@
 package edu.wpi.axon.core.dsl
 
 import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainer
-import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainerDelegateProvider
 import edu.wpi.axon.core.dsl.task.Task
 import edu.wpi.axon.core.dsl.variable.Code
 import edu.wpi.axon.core.dsl.variable.Variable
-import kotlin.reflect.KClass
 
 /**
  * Generates a script from a DSL description of the script.
@@ -98,6 +96,7 @@ class ScriptGeneratorDsl(
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<Code<Code<*>>>).graph
 
         fun appendNode(node: Code<Code<*>>) {
+            // Append the predecessors first because they are the dependencies of this node
             graph.predecessors(node)
                 .sortedBy { it.code().length } // Need to make the ordering consistent
                 .forEach {
@@ -105,20 +104,9 @@ class ScriptGeneratorDsl(
                 }
 
             when (node) {
-                is Variable -> {
+                is Variable, is Task -> {
                     if (generateDebugComments) {
-                        append("# class=${node::class.simpleName}, name=${node.name}")
-                        append('\n')
-                    }
-
-                    append(node.code())
-                    append('\n')
-                    append('\n')
-                }
-
-                is Task -> {
-                    if (generateDebugComments) {
-                        append("# class=${node::class.simpleName}, name=${node.name}")
+                        append("# ${toString()}")
                         append('\n')
                     }
 
@@ -131,33 +119,4 @@ class ScriptGeneratorDsl(
 
         appendNode(lastTask!!)
     }
-
-    private fun StringBuilder.appendTaskDependencies(task: Task, generateDebugComments: Boolean) {
-        task.dependencies.forEach { inputData ->
-            if (generateDebugComments) {
-                append("# class=${inputData::class.simpleName}")
-                append('\n')
-            }
-
-            append(inputData.code())
-            append('\n')
-            append('\n')
-        }
-    }
 }
-
-/**
- * Creates a new variable and configures it.
- */
-fun <T : Variable, U : T> PolymorphicNamedDomainObjectContainer<T>.creating(
-    type: KClass<U>,
-    configuration: (U.() -> Unit)? = null
-) = PolymorphicNamedDomainObjectContainerDelegateProvider.of(this, type, configuration)
-
-/**
- * Creates a new task and configures it.
- */
-fun <T : Task, U : T> PolymorphicNamedDomainObjectContainer<T>.running(
-    type: KClass<U>,
-    configuration: (U.() -> Unit)? = null
-) = PolymorphicNamedDomainObjectContainerDelegateProvider.of(this, type, configuration)
