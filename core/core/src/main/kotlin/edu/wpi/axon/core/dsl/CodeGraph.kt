@@ -25,6 +25,8 @@ class CodeGraph(
             populateGraph(mutableGraph, code)
         }
 
+        // TODO: Verify there are no islands in the final graph
+
         ImmutableGraph.copyOf(mutableGraph)
     }
 
