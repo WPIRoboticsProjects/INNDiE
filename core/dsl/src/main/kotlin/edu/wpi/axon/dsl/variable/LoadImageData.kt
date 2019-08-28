@@ -46,9 +46,9 @@ class LoadImageData(name: String) : Task(name), KoinComponent {
 
     override val dependencies: Set<Code<*>> = emptySet()
 
-    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() && imagePath != null &&
+    override fun isConfiguredCorrectly() = imagePath != null &&
         pathValidator.isValidPathName(imagePath!!) && imageDataOutput != null &&
-        imageSizeOutput != null
+        imageSizeOutput != null && super.isConfiguredCorrectly()
 
     override fun code() = """
         |$name = Image.open('${imagePath!!}')

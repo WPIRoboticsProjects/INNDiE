@@ -3,6 +3,7 @@ package edu.wpi.axon.dsl.task
 import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.testutil.isFalse
 import edu.wpi.axon.testutil.isTrue
+import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
@@ -31,8 +32,8 @@ internal class YoloV3PostprocessTaskTest {
     @Test
     fun `configured correctly when all parameters are non-null`() {
         val task = YoloV3PostprocessTask(taskName).apply {
-            input = mockk()
-            output = mockk()
+            input = mockk { every { isConfiguredCorrectly() } returns true }
+            output = mockk { every { isConfiguredCorrectly() } returns true }
         }
 
         assertThat(task.isConfiguredCorrectly(), isTrue())

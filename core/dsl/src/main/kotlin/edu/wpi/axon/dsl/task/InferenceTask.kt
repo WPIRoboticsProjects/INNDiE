@@ -24,9 +24,7 @@ class InferenceTask(name: String) : Task(name) {
      */
     var output: Variable? = null
 
-    override val imports
-        get() = (dependencies.flatMapTo(mutableSetOf()) { it.imports } +
-            Import.ModuleOnly("onnx")).toSet() // TODO: Shouldn't need to include deps imports
+    override val imports: Set<Import> = setOf(Import.ModuleOnly("onnx"))
 
     override val inputs: Set<Variable>
         get() = setOf(input!!, inferenceSession!!)
@@ -37,8 +35,8 @@ class InferenceTask(name: String) : Task(name) {
     override val dependencies: Set<Code<*>>
         get() = setOf()
 
-    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() && input != null &&
-        inferenceSession != null && output != null
+    override fun isConfiguredCorrectly() = input != null && inferenceSession != null &&
+        output != null && super.isConfiguredCorrectly()
 
     override fun code() = """
         |${output!!.name} = ${inferenceSession!!.name}.run(None, ${input!!.name})

@@ -26,7 +26,7 @@ class ConstructYoloV3ImageInput(name: String) : Task(name) {
         get() = setOf()
 
     override fun isConfiguredCorrectly() = imageDataInput != null && imageSizeInput != null &&
-        sessionInput != null && output != null
+        sessionInput != null && output != null && super.isConfiguredCorrectly()
 
     override fun code() = """
         |${output!!.name} = {${sessionInput!!.name}.get_inputs()[0].name: ${imageDataInput!!.name}, ${sessionInput!!.name}.get_inputs()[1].name: ${imageSizeInput!!.name}}

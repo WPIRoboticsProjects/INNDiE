@@ -35,9 +35,9 @@ class MakeNewInferenceSession(name: String) : Task(name), KoinComponent {
     override val dependencies: Set<Code<*>>
         get() = setOf()
 
-    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() &&
-        modelPathInput != null && pathValidator.isValidPathName(modelPathInput!!) &&
-        sessionOutput != null
+    override fun isConfiguredCorrectly() = modelPathInput != null &&
+        pathValidator.isValidPathName(modelPathInput!!) && sessionOutput != null &&
+        super.isConfiguredCorrectly()
 
     override fun code() = """
         |${sessionOutput!!.name} = onnxruntime.InferenceSession('${modelPathInput!!}')

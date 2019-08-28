@@ -41,9 +41,9 @@ class LoadClassLabels(name: String) : Task(name), KoinComponent {
     override val dependencies: Set<Code<*>>
         get() = setOf()
 
-    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() &&
-        classLabelsPath != null && pathValidator.isValidPathName(classLabelsPath!!) &&
-        classOutput != null
+    override fun isConfiguredCorrectly() = classLabelsPath != null &&
+        pathValidator.isValidPathName(classLabelsPath!!) && classOutput != null &&
+        super.isConfiguredCorrectly()
 
     override fun code() = """
         |${classOutput!!.name} = [line.rstrip('\n') for line in open('${classLabelsPath!!}')]

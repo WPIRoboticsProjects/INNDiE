@@ -32,8 +32,8 @@ class YoloV3PostprocessTask(name: String) : Task(name) {
     override val dependencies: Set<Code<*>>
         get() = emptySet()
 
-    override fun isConfiguredCorrectly() = super.isConfiguredCorrectly() && input != null &&
-        output != null
+    override fun isConfiguredCorrectly() = input != null && output != null &&
+        super.isConfiguredCorrectly()
 
     override fun code() = """
         |${output!!.name} = postprocessYolov3(${input!!.name})
