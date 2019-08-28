@@ -34,15 +34,25 @@ class ScriptGeneratorDsl(
      */
     fun computeImports(): Set<Import> {
         // TODO: What imports need to be considered duplicates?
-        return tasks.flatMap {
-            it.imports + it.inputData.flatMap { it.imports }
-        }.toSet()
+        return tasks.flatMap { it.imports }.toSet()
     }
 
     /**
      * @return The entire generated script.
      */
     fun code(generateDebugComments: Boolean = false) = buildString {
+        (variables + tasks).filter { !it.isConfiguredCorrectly() }.let {
+            if (it.isNotEmpty()) {
+                throw IllegalArgumentException(
+                    """
+                    |Incorrectly configured:
+                    |${it.joinToString("\n")}
+                    """.trimMargin()
+                )
+            }
+        }
+
+
         appendImports(generateDebugComments)
         append('\n')
         appendTaskCode(generateDebugComments)
@@ -83,7 +93,7 @@ class ScriptGeneratorDsl(
         task: Task,
         generateDebugComments: Boolean
     ) {
-        task.inputData.forEach { inputData ->
+        task.dependencies.forEach { inputData ->
             if (generateDebugComments) {
                 append("# class=${inputData::class.simpleName}")
                 append('\n')

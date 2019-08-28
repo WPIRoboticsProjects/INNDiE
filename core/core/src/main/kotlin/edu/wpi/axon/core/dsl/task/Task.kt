@@ -3,7 +3,6 @@ package edu.wpi.axon.core.dsl.task
 import edu.wpi.axon.core.dsl.Configurable
 import edu.wpi.axon.core.dsl.Import
 import edu.wpi.axon.core.dsl.variable.Code
-import edu.wpi.axon.core.dsl.variable.InputData
 
 /**
  * A [Task] is analogous to a method call. If this [Task] has an(y) output variable(s), it should
@@ -17,8 +16,8 @@ interface Task : Configurable, Code {
     val imports: Set<Import>
 
     /**
-     * The [InputData] this [Task] depends on. The code generation for these will happen before the
+     * The [Code] this [Task] depends on. The code generation for these will happen before the
      * code generation for this [Task].
      */
-    val inputData: Set<InputData>
+    val dependencies: Set<Code>
 }

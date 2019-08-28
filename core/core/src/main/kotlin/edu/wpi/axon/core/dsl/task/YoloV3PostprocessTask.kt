@@ -1,7 +1,7 @@
 package edu.wpi.axon.core.dsl.task
 
 import edu.wpi.axon.core.dsl.Import
-import edu.wpi.axon.core.dsl.variable.InputData
+import edu.wpi.axon.core.dsl.variable.FileInputData
 import edu.wpi.axon.core.dsl.variable.Variable
 
 /**
@@ -10,7 +10,7 @@ import edu.wpi.axon.core.dsl.variable.Variable
 class YoloV3PostprocessTask : Task {
 
     /**
-     * The input data, typically an [InferenceTaskOutput].
+     * The input data, typically the output of [InferenceTask].
      */
     var input: Variable? = null
 
@@ -19,11 +19,11 @@ class YoloV3PostprocessTask : Task {
      */
     var output: Variable? = null
 
-    override val imports: Set<Import> = setOf(
-        Import.ModuleAndIdentifier("axon", "postprocessYolov3")
-    )
+    override val imports
+        get() = (dependencies.flatMapTo(mutableSetOf()) { it.imports } +
+            Import.ModuleAndIdentifier("axon", "postprocessYolov3")).toSet()
 
-    override val inputData: Set<InputData>
+    override val dependencies: Set<FileInputData>
         get() = emptySet()
 
     override fun isConfiguredCorrectly() = input != null && output != null

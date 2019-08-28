@@ -47,4 +47,12 @@ internal class DefaultPathValidatorTest {
             isTrue()
         )
     }
+
+    @Test
+    fun `relative path is valid`() {
+        assertThat(
+            validator.isValidPathName("mockModel.onnx"),
+            isTrue()
+        )
+    }
 }

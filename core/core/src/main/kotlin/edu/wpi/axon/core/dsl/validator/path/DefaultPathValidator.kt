@@ -16,7 +16,7 @@ class DefaultPathValidator : PathValidator {
 
         return try {
             val file = Paths.get(pathName).toFile()
-            file.isFile
+            !(file.exists() && file.isDirectory)
         } catch (ex: InvalidPathException) {
             false
         }
