@@ -1,7 +1,8 @@
-package edu.wpi.axon.core.dsl
+package edu.wpi.axon.core.dsl.container
 
 import com.natpryce.hamkrest.assertion.assertThat
-import edu.wpi.axon.core.dsl.container.DefaultVariableContainer
+import edu.wpi.axon.core.dsl.MockVariable
+import edu.wpi.axon.core.dsl.mockVariableNameValidator
 import edu.wpi.axon.core.dsl.variable.Variable
 import edu.wpi.axon.core.hasElementWhere
 import edu.wpi.axon.core.isTrue
@@ -70,7 +71,7 @@ internal class DefaultVariableContainerTest : KoinTest {
         val container = DefaultVariableContainer.of()
 
         assertThrows<IllegalArgumentException> {
-            container.create(varName, TestVariable.Companion::class)
+            container.create(varName, TestVariable::class)
         }
     }
 

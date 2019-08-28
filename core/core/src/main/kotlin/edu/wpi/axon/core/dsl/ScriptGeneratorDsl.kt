@@ -22,6 +22,7 @@ class ScriptGeneratorDsl(
     configure: ScriptGeneratorDsl.() -> Unit
 ) {
 
+    // TODO: Do something with this (probably make the script implement a method and return this)
     var scriptOutput: Variable? = null
 
     init {
