@@ -24,8 +24,8 @@ interface Code<out T : Code<T>> {
     val outputs: Set<Variable>
 
     /**
-     * The [Code] this [Code] depends on. The code generation for these will happen before the
-     * code generation for this [Code].
+     * The [Code] this [Code] depends on. The code generation for these will happen before the code
+     * generation for this [Code].
      */
     val dependencies: Set<T>
 

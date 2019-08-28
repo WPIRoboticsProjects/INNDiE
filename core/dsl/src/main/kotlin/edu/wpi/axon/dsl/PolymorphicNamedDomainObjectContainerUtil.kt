@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
  */
 fun <T : Variable, U : T> PolymorphicNamedDomainObjectContainer<T>.creating(
     type: KClass<U>,
-    configuration: (U.() -> Unit)? = null
+    configuration: (U.() -> Unit)? = null // TODO: Remove configuration for variables
 ) = PolymorphicNamedDomainObjectContainerDelegateProvider.of(this, type, configuration)
 
 /**

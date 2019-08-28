@@ -10,8 +10,9 @@ import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
 import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
 import edu.wpi.axon.dsl.variable.ClassLabels
-import edu.wpi.axon.dsl.variable.ImageInputData
+import edu.wpi.axon.dsl.variable.ConstructYoloV3ImageInput
 import edu.wpi.axon.dsl.variable.InferenceSession
+import edu.wpi.axon.dsl.variable.LoadImageData
 import edu.wpi.axon.dsl.variable.Variable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -52,13 +53,26 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
                 path = "coco_classes.txt"
             }
 
-            val inputData by variables.creating(ImageInputData::class) {
+            val imageData by variables.creating(Variable::class)
+            val imageSize by variables.creating(Variable::class)
+            val loadImageData by tasks.running(LoadImageData::class) {
                 path = "horses.jpg"
+                imageDataOutput = imageData
+                imageSizeOutput = imageSize
+            }
+
+            val inferenceInput by variables.creating(Variable::class) {
+            }
+            val makeYolov3Input by tasks.running(ConstructYoloV3ImageInput::class) {
+                imageDataInput = imageData
+                imageSizeInput = imageSize
+                sessionInput = session
+                output = inferenceInput
             }
 
             val inferenceOutput by variables.creating(Variable::class)
             val inferenceTask by tasks.running(InferenceTask::class) {
-                input = inputData
+                input = inferenceInput
                 inferenceSession = session
                 output = inferenceOutput
             }
@@ -96,12 +110,13 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             |
             |session = onnxruntime.InferenceSession('yolov3.onnx')
             |
-            |inputData = Image.open('horses.jpg')
-            |imageData = preprocess(inputData)
-            |imageSize = np.array([inputData.size[1], inputData.size[0]], dtype=np.float32).reshape(1, 2)
+            |loadImageData = Image.open('horses.jpg')
+            |imageData = preprocess(loadImageData)
+            |imageSize = np.array([loadImageData.size[1], loadImageData.size[0]], dtype=np.float32).reshape(1, 2)
             |
-            |sessionInputNames = session.get_inputs()
-            |inferenceOutput = session.run(None, {sessionInputNames[0].name: imageData, sessionInputNames[1].name: imageSize})
+            |inferenceInput = {session.get_inputs()[0].name: imageData, session.get_inputs()[1].name: imageSize}
+            |
+            |inferenceOutput = session.run(None, inferenceInput)
             |
             |postProcessedOutput = postprocessYolov3(inferenceOutput)
             """.trimMargin(),
