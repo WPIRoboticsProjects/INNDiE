@@ -4,6 +4,9 @@ import edu.wpi.axon.core.dsl.variable.Variable
 import kotlin.reflect.KClass
 import kotlin.reflect.full.defaultType
 
+/**
+ * A container for Variables.
+ */
 class DefaultVariableContainer(
     private val backingList: MutableCollection<Variable>
 ) : PolymorphicNamedDomainObjectContainer<Variable>, Collection<Variable> by backingList {

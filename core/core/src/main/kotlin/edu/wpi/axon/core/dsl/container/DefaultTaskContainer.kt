@@ -3,6 +3,9 @@ package edu.wpi.axon.core.dsl.container
 import edu.wpi.axon.core.dsl.task.Task
 import kotlin.reflect.KClass
 
+/**
+ * A container for Tasks.
+ */
 class DefaultTaskContainer(
     private val backingList: MutableCollection<Task>
 ) : PolymorphicDomainObjectContainer<Task>, Collection<Task> by backingList {

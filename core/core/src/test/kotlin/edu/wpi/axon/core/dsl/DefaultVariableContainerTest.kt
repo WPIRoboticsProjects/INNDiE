@@ -87,10 +87,6 @@ internal class DefaultVariableContainerTest : KoinTest {
         name: String,
         @Suppress("UNUSED_PARAMETER") anotherParameter: Int
     ) : Variable(name) {
-        override val imports: Set<Import> = emptySet()
-
-        companion object : Variable("companionName") {
-            override val imports: Set<Import> = emptySet()
-        }
+        companion object : Variable("companionName")
     }
 }

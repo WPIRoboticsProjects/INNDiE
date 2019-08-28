@@ -3,6 +3,9 @@ package edu.wpi.axon.core.dsl.validator.path
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
 
+/**
+ * Validates file paths for the default file system.
+ */
 class DefaultPathValidator : PathValidator {
 
     @SuppressWarnings("SwallowedException")

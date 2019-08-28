@@ -8,8 +8,14 @@ import edu.wpi.axon.core.dsl.task.Task
 import edu.wpi.axon.core.dsl.variable.Variable
 import kotlin.reflect.KClass
 
+/**
+ * Generates a script from a DSL description of the script.
+ *
+ * @param variables The script variables container.
+ * @param tasks The script tasks container.
+ * @param configure Configures the script so it is ready for generation.
+ */
 @SuppressWarnings("UseDataClass")
-@ScriptGeneratorDslMarker
 class ScriptGeneratorDsl(
     val variables: PolymorphicNamedDomainObjectContainer<Variable>,
     val tasks: PolymorphicDomainObjectContainer<Task>,
@@ -27,7 +33,9 @@ class ScriptGeneratorDsl(
      */
     fun computeImports(): Set<Import> {
         // TODO: What imports need to be considered duplicates?
-        return (variables.flatMap { it.imports } + tasks.flatMap { it.imports }).toSet()
+        return tasks.flatMap {
+            it.imports + it.inputData.flatMap { it.imports }
+        }.toSet()
     }
 
     /**
@@ -71,11 +79,17 @@ class ScriptGeneratorDsl(
     }
 }
 
-fun <T : Any, U : T> PolymorphicNamedDomainObjectContainer<T>.creating(
+/**
+ * Creates a new variable and configures it.
+ */
+fun <T : Variable, U : T> PolymorphicNamedDomainObjectContainer<T>.creating(
     type: KClass<U>,
     configuration: (U.() -> Unit)? = null
 ) = PolymorphicNamedDomainObjectContainerDelegateProvider.of(this, type, configuration)
 
+/**
+ * Creates a new task and configures it.
+ */
 fun <T : Task, U : T> PolymorphicDomainObjectContainer<T>.running(
     type: KClass<U>,
     configuration: (U.() -> Unit)? = null

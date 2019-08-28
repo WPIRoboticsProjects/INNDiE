@@ -2,6 +2,12 @@ package edu.wpi.axon.core.dsl.container
 
 import kotlin.reflect.KProperty
 
+/**
+ * Provides an implementation for delegation.
+ *
+ * @param T The type of the delegate.
+ * @param delegate The delegate implementation.
+ */
 class DslDelegate<T>
 private constructor(
     internal val delegate: T

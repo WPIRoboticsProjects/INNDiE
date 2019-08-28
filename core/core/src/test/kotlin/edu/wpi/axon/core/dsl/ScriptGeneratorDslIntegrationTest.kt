@@ -5,9 +5,7 @@ import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.core.dsl.container.DefaultTaskContainer
 import edu.wpi.axon.core.dsl.container.DefaultVariableContainer
 import edu.wpi.axon.core.dsl.task.InferenceTask
-import edu.wpi.axon.core.dsl.task.InferenceTaskOutput
 import edu.wpi.axon.core.dsl.task.YoloV3PostprocessTask
-import edu.wpi.axon.core.dsl.task.Yolov3PostprocessOutput
 import edu.wpi.axon.core.dsl.validator.path.DefaultPathValidator
 import edu.wpi.axon.core.dsl.validator.path.PathValidator
 import edu.wpi.axon.core.dsl.validator.variablename.PythonVariableNameValidator
@@ -15,6 +13,7 @@ import edu.wpi.axon.core.dsl.validator.variablename.VariableNameValidator
 import edu.wpi.axon.core.dsl.variable.ClassLabels
 import edu.wpi.axon.core.dsl.variable.ImageInputData
 import edu.wpi.axon.core.dsl.variable.InferenceSession
+import edu.wpi.axon.core.dsl.variable.Variable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
@@ -53,14 +52,14 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
                 path = "horses.jpg"
             }
 
-            val inferenceOutput by variables.creating(InferenceTaskOutput::class)
+            val inferenceOutput by variables.creating(Variable::class)
             val inferenceTask by tasks.running(InferenceTask::class) {
                 input = inputData
                 inferenceSession = session
                 output = inferenceOutput
             }
 
-            val postProcessedOutput by variables.creating(Yolov3PostprocessOutput::class)
+            val postProcessedOutput by variables.creating(Variable::class)
             val postProcessTask by tasks.running(YoloV3PostprocessTask::class) {
                 input = inferenceOutput
                 output = postProcessedOutput

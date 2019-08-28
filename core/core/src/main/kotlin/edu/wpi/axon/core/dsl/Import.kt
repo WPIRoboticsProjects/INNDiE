@@ -1,5 +1,8 @@
 package edu.wpi.axon.core.dsl
 
+/**
+ * An import statement.
+ */
 sealed class Import {
 
     abstract fun code(): String

@@ -2,7 +2,11 @@ package edu.wpi.axon.core.dsl.variable
 
 import edu.wpi.axon.core.dsl.Import
 
-// TODO: Validate image format
+/**
+ * Loads an image.
+ *
+ * TODO: Validate image format
+ */
 class ImageInputData(name: String) : ModelInputData(name) {
 
     private val imageDataName = "imageData"
