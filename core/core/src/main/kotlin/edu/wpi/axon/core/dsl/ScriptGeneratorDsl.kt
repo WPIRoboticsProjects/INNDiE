@@ -43,13 +43,16 @@ class ScriptGeneratorDsl(
      */
     fun code(generateDebugComments: Boolean = false) = buildString {
         val imports = computeImports()
-        imports.forEach { import ->
+            .map { it to it.code() }
+            .sortedBy { it.second }
+
+        imports.forEach { (import, code) ->
             if (generateDebugComments) {
                 append("# class=${import::class.simpleName}")
                 append('\n')
             }
 
-            append(import.code())
+            append(code)
             append('\n')
         }
 
@@ -76,7 +79,7 @@ class ScriptGeneratorDsl(
             append('\n')
             append('\n')
         }
-    }
+    }.trim()
 }
 
 /**

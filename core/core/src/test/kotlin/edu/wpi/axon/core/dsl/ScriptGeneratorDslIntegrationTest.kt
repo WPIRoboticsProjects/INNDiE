@@ -14,6 +14,7 @@ import edu.wpi.axon.core.dsl.variable.ClassLabels
 import edu.wpi.axon.core.dsl.variable.ImageInputData
 import edu.wpi.axon.core.dsl.variable.InferenceSession
 import edu.wpi.axon.core.dsl.variable.Variable
+import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
@@ -80,6 +81,27 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             )
         )
 
-        println(dsl.code(true))
+        val code = dsl.code()
+        assertEquals(
+            """
+            |from PIL import Image
+            |from axon import postprocessYolov3
+            |import numpy as np
+            |import onnx
+            |import onnxruntime
+            |
+            |inputData = Image.open('horses.jpg')
+            |imageData = preprocess(inputData)
+            |imageSize = np.array([inputData.size[1], inputData.size[0]], dtype=np.float32).reshape(1, 2)
+            |
+            |session = onnxruntime.InferenceSession('yolov3.onnx')
+            |
+            |sessionInputNames = session.get_inputs()
+            |inferenceOutput = session.run(None, {sessionInputNames[0].name: imageData, sessionInputNames[1].name: imageSize})
+            |
+            |postProcessedOutput = postprocessYolov3(inferenceOutput)
+            """.trimMargin(),
+            code
+        )
     }
 }
