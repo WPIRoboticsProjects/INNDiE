@@ -24,6 +24,7 @@ import org.koin.test.KoinTest
 import java.util.concurrent.CountDownLatch
 
 @Suppress("UNUSED_VARIABLE")
+@SuppressWarnings("LargeClass")
 internal class ScriptGeneratorDslIntegrationTest : KoinTest {
 
     @AfterEach

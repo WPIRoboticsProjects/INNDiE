@@ -22,9 +22,7 @@ internal class CodeGraphTest {
 
     @Test
     fun `adding one task creates one node`() {
-        val codes = mutableMapOf(
-            "task1" to MockTask("task1")
-        )
+        val codes = makeMockTasks("task1")
 
         val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
             Map<String, Code<Code<*>>> by codes {
@@ -44,11 +42,7 @@ internal class CodeGraphTest {
 
     @Test
     fun `adding a task with a dependency task adds two nodes and an edge`() {
-        val codes = mutableMapOf(
-            "task1" to MockTask("task1"),
-            "task2" to MockTask("task2")
-        )
-
+        val codes = makeMockTasks("task1", "task2")
         codes["task1"]!!.dependencies += codes["task2"]!!
 
         val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
@@ -77,11 +71,7 @@ internal class CodeGraphTest {
 
     @Test
     fun `add multiple tasks with multiple dependencies`() {
-        val codes = mutableMapOf(
-            "task1" to MockTask("task1"),
-            "task2" to MockTask("task2")
-        )
-
+        val codes = makeMockTasks("task1", "task2")
         val task3 = MockTask("task3")
         val task4 = MockTask("task4")
 
@@ -119,11 +109,7 @@ internal class CodeGraphTest {
 
     @Test
     fun `circular dependencies are not allowed`() {
-        val codes = mutableMapOf(
-            "task1" to MockTask("task1"),
-            "task2" to MockTask("task2")
-        )
-
+        val codes = makeMockTasks("task1", "task2")
         codes["task1"]!!.dependencies += codes["task2"]!!
         codes["task2"]!!.dependencies += codes["task1"]!!
 
@@ -150,13 +136,8 @@ internal class CodeGraphTest {
             })
         }
 
-        val codes = mutableMapOf(
-            "task1" to MockTask("task1"),
-            "task2" to MockTask("task2")
-        )
-
+        val codes = makeMockTasks("task1", "task2")
         val variable1 = MockVariable("variable1")
-
         codes["task1"]!!.outputs += variable1
         codes["task2"]!!.inputs += variable1
 
@@ -192,13 +173,8 @@ internal class CodeGraphTest {
             })
         }
 
-        val codes = mutableMapOf(
-            "task1" to MockTask("task1"),
-            "task2" to MockTask("task2")
-        )
-
+        val codes = makeMockTasks("task1", "task2")
         val variable1 = MockVariable("variable1")
-
         codes["task1"]!!.dependencies += codes["task2"]!!
         codes["task1"]!!.outputs += variable1
         codes["task2"]!!.inputs += variable1
@@ -217,4 +193,7 @@ internal class CodeGraphTest {
         val graph = CodeGraph(container)
         assertThrows<IllegalArgumentException> { graph.graph }
     }
+
+    private fun makeMockTasks(vararg names: String) =
+        names.map { it to MockTask(it) }.toMap().toMutableMap()
 }

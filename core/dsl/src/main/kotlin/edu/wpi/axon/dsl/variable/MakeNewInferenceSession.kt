@@ -15,7 +15,7 @@ class MakeNewInferenceSession(name: String) : Task(name), KoinComponent {
     var modelPathInput: String? = null
 
     /**
-     * The variable to save the session in
+     * The variable to save the session in.
      */
     var sessionOutput: Variable? = null
 
