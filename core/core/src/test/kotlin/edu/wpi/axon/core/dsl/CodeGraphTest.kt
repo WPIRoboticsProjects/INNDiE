@@ -70,7 +70,7 @@ internal class CodeGraphTest {
             graph.edges(),
             equalTo(
                 setOf<EndpointPair<Code<Code<*>>>>(
-                    EndpointPair.ordered(codes["task1"], codes["task2"])
+                    EndpointPair.ordered(codes["task2"], codes["task1"])
                 )
             )
         )
@@ -109,10 +109,10 @@ internal class CodeGraphTest {
             graph.edges(),
             equalTo(
                 setOf<EndpointPair<Code<Code<*>>>>(
-                    EndpointPair.ordered(codes["task1"], codes["task2"]),
-                    EndpointPair.ordered(codes["task1"], task3),
-                    EndpointPair.ordered(codes["task2"], task3),
-                    EndpointPair.ordered(task3, task4)
+                    EndpointPair.ordered(codes["task2"], codes["task1"]),
+                    EndpointPair.ordered(task3, codes["task1"]),
+                    EndpointPair.ordered(task3, codes["task2"]),
+                    EndpointPair.ordered(task4, task3)
                 )
             )
         )
@@ -179,7 +179,7 @@ internal class CodeGraphTest {
             graph.edges(),
             equalTo(
                 setOf<EndpointPair<Code<Code<*>>>>(
-                    EndpointPair.ordered(codes["task2"], codes["task1"])
+                    EndpointPair.ordered(codes["task1"], codes["task2"])
                 )
             )
         )
