@@ -1,7 +1,7 @@
 package edu.wpi.axon.core.dsl.task
 
 import edu.wpi.axon.core.dsl.Configurable
-import edu.wpi.axon.core.dsl.variable.Code
+import edu.wpi.axon.core.dsl.Code
 
 /**
  * A [Task] is analogous to a method call. If this [Task] has an(y) output variable(s), it should
@@ -10,7 +10,8 @@ import edu.wpi.axon.core.dsl.variable.Code
  * @param name The name of this task. This does now have an impact on the generated code, it is only
  * used to assure task uniqueness.
  */
-abstract class Task(val name: String) : Configurable, Code<Code<*>> {
+abstract class Task(val name: String) : Configurable,
+    Code<Code<*>> {
 
     override fun toString() = "Task(name='$name', class='${this::class.simpleName}')"
 }

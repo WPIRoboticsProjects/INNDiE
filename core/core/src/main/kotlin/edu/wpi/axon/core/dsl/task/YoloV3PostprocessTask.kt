@@ -1,7 +1,7 @@
 package edu.wpi.axon.core.dsl.task
 
 import edu.wpi.axon.core.dsl.Import
-import edu.wpi.axon.core.dsl.variable.Code
+import edu.wpi.axon.core.dsl.Code
 import edu.wpi.axon.core.dsl.variable.Variable
 
 /**

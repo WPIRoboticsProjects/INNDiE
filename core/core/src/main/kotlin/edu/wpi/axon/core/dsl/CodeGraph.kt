@@ -8,7 +8,6 @@ import com.google.common.graph.GraphBuilder
 import com.google.common.graph.ImmutableGraph
 import com.google.common.graph.MutableGraph
 import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainer
-import edu.wpi.axon.core.dsl.variable.Code
 
 /**
  * Parses a [PolymorphicNamedDomainObjectContainer] of [Code] into an [ImmutableGraph], assuring

@@ -1,10 +1,12 @@
 package edu.wpi.axon.core.dsl.variable
 
+import edu.wpi.axon.core.dsl.Code
 import edu.wpi.axon.core.dsl.validator.path.PathValidator
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
-abstract class FileInputData(name: String) : Variable(name), Code<Code<*>>, KoinComponent {
+abstract class FileInputData(name: String) : Variable(name),
+    Code<Code<*>>, KoinComponent {
 
     /**
      * The file path to load this data from.

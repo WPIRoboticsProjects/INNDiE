@@ -2,7 +2,6 @@ package edu.wpi.axon.core.dsl
 
 import edu.wpi.axon.core.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.core.dsl.task.Task
-import edu.wpi.axon.core.dsl.variable.Code
 import edu.wpi.axon.core.dsl.variable.Variable
 
 /**

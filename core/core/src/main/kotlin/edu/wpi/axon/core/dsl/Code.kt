@@ -1,6 +1,6 @@
-package edu.wpi.axon.core.dsl.variable
+package edu.wpi.axon.core.dsl
 
-import edu.wpi.axon.core.dsl.Import
+import edu.wpi.axon.core.dsl.variable.Variable
 
 /**
  * A "typeclass" for generating code. The code this interface means is (possibly multiline)
