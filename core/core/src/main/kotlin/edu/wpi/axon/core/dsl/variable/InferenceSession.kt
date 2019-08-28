@@ -10,6 +10,8 @@ class InferenceSession(name: String) : FileInputData(name), KoinComponent {
 
     override val imports = setOf(Import.ModuleOnly("onnxruntime"))
 
+    override val dependencies: Set<Code> = emptySet()
+
     override fun isConfiguredCorrectly() =
         super.isConfiguredCorrectly() && path != null &&
             pathValidator.isValidPathName(path!!)

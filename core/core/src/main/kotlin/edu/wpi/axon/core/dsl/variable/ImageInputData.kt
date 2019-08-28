@@ -17,6 +17,8 @@ class ImageInputData(name: String) : ModelInputData(name) {
         Import.ModuleAndName("numpy", "np")
     )
 
+    override val dependencies: Set<Code> = emptySet()
+
     override fun code() = """
         |$name = Image.open('${path!!}')
         |$imageDataName = preprocess($name)
