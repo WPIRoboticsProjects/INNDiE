@@ -72,6 +72,7 @@ class ScriptGeneratorDsl(
     }
 
     private fun StringBuilder.appendTaskCode(generateDebugComments: Boolean) {
+        // TODO: Use CodeGraph instead of tasks directly
         tasks.forEach { task ->
             appendTaskDependencies(task, generateDebugComments)
 

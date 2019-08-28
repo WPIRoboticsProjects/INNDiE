@@ -13,4 +13,6 @@ class MockTask(override val name: String) : Task {
     override fun isConfiguredCorrectly() = true
 
     override fun code() = "".also { latch?.countDown() }
+
+    override fun toString() = "MockTask(name='$name')"
 }
