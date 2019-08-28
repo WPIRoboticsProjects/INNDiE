@@ -9,10 +9,10 @@ import edu.wpi.axon.dsl.validator.path.DefaultPathValidator
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
 import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
-import edu.wpi.axon.dsl.variable.ConstructYoloV3ImageInput
-import edu.wpi.axon.dsl.variable.LoadClassLabels
-import edu.wpi.axon.dsl.variable.LoadImageData
-import edu.wpi.axon.dsl.variable.MakeNewInferenceSession
+import edu.wpi.axon.dsl.task.ConstructYoloV3ImageInput
+import edu.wpi.axon.dsl.task.LoadClassLabels
+import edu.wpi.axon.dsl.task.LoadImageData
+import edu.wpi.axon.dsl.task.MakeNewInferenceSession
 import edu.wpi.axon.dsl.variable.Variable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals

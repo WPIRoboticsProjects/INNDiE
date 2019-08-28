@@ -1,9 +1,9 @@
-package edu.wpi.axon.dsl.variable
+package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Import
-import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.validator.path.PathValidator
+import edu.wpi.axon.dsl.variable.Variable
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
