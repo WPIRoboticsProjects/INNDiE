@@ -16,7 +16,6 @@ import edu.wpi.axon.core.dsl.variable.Variable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -41,7 +40,10 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             })
         }
 
-        val dsl = ScriptGeneratorDsl(DefaultPolymorphicNamedDomainObjectContainer.of(), DefaultPolymorphicNamedDomainObjectContainer.of()) {
+        val dsl = ScriptGeneratorDsl(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
             val session by variables.creating(InferenceSession::class) {
                 path = "yolov3.onnx"
             }
@@ -67,7 +69,7 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
                 output = postProcessedOutput
             }
 
-            scriptOutput = postProcessedOutput
+            // scriptOutput = postProcessedOutput
             lastTask = postProcessTask
         }
 
@@ -92,11 +94,11 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
             |import onnx
             |import onnxruntime
             |
+            |session = onnxruntime.InferenceSession('yolov3.onnx')
+            |
             |inputData = Image.open('horses.jpg')
             |imageData = preprocess(inputData)
             |imageSize = np.array([inputData.size[1], inputData.size[0]], dtype=np.float32).reshape(1, 2)
-            |
-            |session = onnxruntime.InferenceSession('yolov3.onnx')
             |
             |sessionInputNames = session.get_inputs()
             |inferenceOutput = session.run(None, {sessionInputNames[0].name: imageData, sessionInputNames[1].name: imageSize})
@@ -117,30 +119,10 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
         }
 
         val codeLatch = CountDownLatch(2)
-        ScriptGeneratorDsl(DefaultPolymorphicNamedDomainObjectContainer.of(), DefaultPolymorphicNamedDomainObjectContainer.of()) {
-            val task1 by tasks.running(MockTask::class) {
-                latch = codeLatch
-            }
-
-            val task2 by tasks.running(MockTask::class) {
-                latch = codeLatch
-            }
-        }.code()
-
-        assertThat(codeLatch.count, equalTo(0L))
-    }
-
-    @Test
-    fun `recursive code dependencies are not allowed`() {
-        startKoin {
-            modules(module {
-                single<VariableNameValidator> { PythonVariableNameValidator() }
-                single<PathValidator> { DefaultPathValidator() }
-            })
-        }
-
-        val codeLatch = CountDownLatch(3)
-        val dsl = ScriptGeneratorDsl(DefaultPolymorphicNamedDomainObjectContainer.of(), DefaultPolymorphicNamedDomainObjectContainer.of()) {
+        ScriptGeneratorDsl(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
             val task1 by tasks.running(MockTask::class) {
                 latch = codeLatch
             }
@@ -149,8 +131,39 @@ internal class ScriptGeneratorDslIntegrationTest : KoinTest {
                 latch = codeLatch
                 dependencies += task1
             }
+
+            lastTask = task2
+        }.code()
+
+        assertThat(codeLatch.count, equalTo(0L))
+    }
+
+    @Test
+    fun `tasks are not run multiple times`() {
+        startKoin {
+            modules(module {
+                single<VariableNameValidator> { PythonVariableNameValidator() }
+                single<PathValidator> { DefaultPathValidator() }
+            })
         }
 
-        assertThrows<IllegalArgumentException> { dsl.code() }
+        val codeLatch = CountDownLatch(3)
+        ScriptGeneratorDsl(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
+            val task1 by tasks.running(MockTask::class) {
+                latch = codeLatch
+            }
+
+            val task2 by tasks.running(MockTask::class) {
+                latch = codeLatch
+                dependencies += task1
+            }
+
+            lastTask = task2
+        }.code()
+
+        assertThat(codeLatch.count, equalTo(1L))
     }
 }

@@ -19,17 +19,20 @@ class ScriptGeneratorDsl(
     val variables: PolymorphicNamedDomainObjectContainer<Variable>,
     val tasks: PolymorphicNamedDomainObjectContainer<Task>,
     configure: ScriptGeneratorDsl.() -> Unit
-) {
+) : Configurable {
 
     // TODO: Do something with this (probably make the script implement a method and return this)
-    var scriptOutput: Variable? = null
+    // var scriptOutput: Variable? = null
 
     // TODO: Find an intelligent way to derive this instead of needing it to be specified
     var lastTask: Task? = null
 
     init {
         configure()
+        // Don't check isConfiguredCorrectly here because some tests need an unconfigured script
     }
+
+    override fun isConfiguredCorrectly() = lastTask != null
 
     /**
      * @return The set of Imports needed by the [variables] and [tasks].
@@ -44,6 +47,10 @@ class ScriptGeneratorDsl(
      * @return The entire generated script.
      */
     fun code(generateDebugComments: Boolean = false) = buildString {
+        require(isConfiguredCorrectly()) {
+            "The DSl was not configured correctly."
+        }
+
         (variables + tasks).filter { !it.value.isConfiguredCorrectly() }.let {
             if (it.isNotEmpty()) {
                 throw IllegalArgumentException(
@@ -91,9 +98,11 @@ class ScriptGeneratorDsl(
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<Code<Code<*>>>).graph
 
         fun appendNode(node: Code<Code<*>>) {
-            graph.successors(node).forEach {
-                appendNode(it)
-            }
+            graph.predecessors(node)
+                .sortedBy { it.code().length } // Need to make the ordering consistent
+                .forEach {
+                    appendNode(it)
+                }
 
             when (node) {
                 is Variable -> {
