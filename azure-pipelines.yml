@@ -9,7 +9,7 @@ trigger:
 stages:
 - stage: Build_Core
   jobs:
-    - job: Linux_x64
+    - job: Linux
 
       pool:
         vmImage: ubuntu-16.04
@@ -18,7 +18,7 @@ stages:
         - task: Gradle@2
           displayName: 'Check'
           inputs:
-            workingDirectory: 'core'
+            workingDirectory: './core'
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
@@ -43,7 +43,7 @@ stages:
         - task: Gradle@2
           displayName: 'Check'
           inputs:
-            workingDirectory: 'core'
+            workingDirectory: './core'
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
@@ -62,7 +62,7 @@ stages:
         - task: Gradle@2
           displayName: 'Check'
           inputs:
-            workingDirectory: 'core'
+            workingDirectory: './core'
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
