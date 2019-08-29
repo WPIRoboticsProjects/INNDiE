@@ -34,6 +34,7 @@ dependencies {
     )
 
     implementation(koin("koin-core"))
+    implementation(project(":util"))
 
     testImplementation(project(":test-util"))
     testImplementation(

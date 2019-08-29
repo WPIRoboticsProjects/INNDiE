@@ -4,6 +4,7 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Import
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.util.singleAssign
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
@@ -17,12 +18,12 @@ class LoadClassLabels(name: String) : Task(name), KoinComponent {
     /**
      * The path for the class labels file.
      */
-    var classLabelsPath: String? = null
+    var classLabelsPath: String by singleAssign()
 
     /**
      * The [Variable] to output to.
      */
-    var classOutput: Variable? = null
+    var classOutput: Variable by singleAssign()
 
     /**
      * Validates the [classLabelsPath].
@@ -36,16 +37,15 @@ class LoadClassLabels(name: String) : Task(name), KoinComponent {
         get() = setOf()
 
     override val outputs: Set<Variable>
-        get() = setOf(classOutput!!)
+        get() = setOf(classOutput)
 
     override val dependencies: Set<Code<*>>
         get() = setOf()
 
-    override fun isConfiguredCorrectly() = classLabelsPath != null &&
-        pathValidator.isValidPathName(classLabelsPath!!) && classOutput != null &&
+    override fun isConfiguredCorrectly() = pathValidator.isValidPathName(classLabelsPath) &&
         super.isConfiguredCorrectly()
 
     override fun code() = """
-        |${classOutput!!.name} = [line.rstrip('\n') for line in open('${classLabelsPath!!}')]
+        |${classOutput.name} = [line.rstrip('\n') for line in open('$classLabelsPath')]
     """.trimMargin()
 }

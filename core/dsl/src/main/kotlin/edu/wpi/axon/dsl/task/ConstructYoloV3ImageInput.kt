@@ -3,32 +3,30 @@ package edu.wpi.axon.dsl.task
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Import
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.util.singleAssign
 
 /**
  * Constructs the input argument for the YoloV3 model.
  */
 class ConstructYoloV3ImageInput(name: String) : Task(name) {
 
-    var imageDataInput: Variable? = null
-    var imageSizeInput: Variable? = null
-    var sessionInput: Variable? = null
-    var output: Variable? = null
+    var imageDataInput: Variable by singleAssign()
+    var imageSizeInput: Variable by singleAssign()
+    var sessionInput: Variable by singleAssign()
+    var output: Variable by singleAssign()
 
     override val imports: Set<Import> = setOf(Import.ModuleOnly("onnx"))
 
     override val inputs: Set<Variable>
-        get() = setOf(imageDataInput!!, imageSizeInput!!, sessionInput!!)
+        get() = setOf(imageDataInput, imageSizeInput, sessionInput)
 
     override val outputs: Set<Variable>
-        get() = setOf(output!!)
+        get() = setOf(output)
 
     override val dependencies: Set<Code<*>>
         get() = setOf()
 
-    override fun isConfiguredCorrectly() = imageDataInput != null && imageSizeInput != null &&
-        sessionInput != null && output != null && super.isConfiguredCorrectly()
-
     override fun code() = """
-        |${output!!.name} = {${sessionInput!!.name}.get_inputs()[0].name: ${imageDataInput!!.name}, ${sessionInput!!.name}.get_inputs()[1].name: ${imageSizeInput!!.name}}
+        |${output.name} = {${sessionInput.name}.get_inputs()[0].name: ${imageDataInput.name}, ${sessionInput.name}.get_inputs()[1].name: ${imageSizeInput.name}}
     """.trimMargin()
 }

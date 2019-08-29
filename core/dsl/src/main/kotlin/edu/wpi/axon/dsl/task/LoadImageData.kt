@@ -4,6 +4,7 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Import
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.util.singleAssign
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
@@ -17,17 +18,17 @@ class LoadImageData(name: String) : Task(name), KoinComponent {
     /**
      * The file path to load this data from.
      */
-    var imagePath: String? = null
+    var imagePath: String by singleAssign()
 
     /**
      * The output the image data will be stored in.
      */
-    var imageDataOutput: Variable? = null
+    var imageDataOutput: Variable by singleAssign()
 
     /**
      * The output the image size will be stored in.
      */
-    var imageSizeOutput: Variable? = null
+    var imageSizeOutput: Variable by singleAssign()
 
     /**
      * Validates the [imagePath].
@@ -42,17 +43,16 @@ class LoadImageData(name: String) : Task(name), KoinComponent {
     override val inputs: Set<Variable> = emptySet()
 
     override val outputs: Set<Variable>
-        get() = setOf(imageDataOutput!!, imageSizeOutput!!)
+        get() = setOf(imageDataOutput, imageSizeOutput)
 
     override val dependencies: Set<Code<*>> = emptySet()
 
-    override fun isConfiguredCorrectly() = imagePath != null &&
-        pathValidator.isValidPathName(imagePath!!) && imageDataOutput != null &&
-        imageSizeOutput != null && super.isConfiguredCorrectly()
+    override fun isConfiguredCorrectly() = pathValidator.isValidPathName(imagePath) &&
+        super.isConfiguredCorrectly()
 
     override fun code() = """
-        |$name = Image.open('${imagePath!!}')
-        |${imageDataOutput!!.name} = preprocess($name)
-        |${imageSizeOutput!!.name} = np.array([$name.size[1], $name.size[0]], dtype=np.float32).reshape(1, 2)
+        |$name = Image.open('$imagePath')
+        |${imageDataOutput.name} = preprocess($name)
+        |${imageSizeOutput.name} = np.array([$name.size[1], $name.size[0]], dtype=np.float32).reshape(1, 2)
     """.trimMargin()
 }

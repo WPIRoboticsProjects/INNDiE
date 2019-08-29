@@ -1,11 +1,10 @@
 package edu.wpi.axon.dsl.task
 
 import com.natpryce.hamkrest.assertion.assertThat
-import edu.wpi.axon.testutil.isFalse
+import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.testutil.isTrue
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class YoloV3PostprocessTaskTest {
 
@@ -14,26 +13,26 @@ internal class YoloV3PostprocessTaskTest {
     @Test
     fun `input cannot be null`() {
         val task = YoloV3PostprocessTask(taskName).apply {
-            output = mockk()
+            output = configuredCorrectly()
         }
 
-        assertThat(task.isConfiguredCorrectly(), isFalse())
+        assertThrows<UninitializedPropertyAccessException> { task.isConfiguredCorrectly() }
     }
 
     @Test
     fun `output cannot be null`() {
         val task = YoloV3PostprocessTask(taskName).apply {
-            input = mockk()
+            input = configuredCorrectly()
         }
 
-        assertThat(task.isConfiguredCorrectly(), isFalse())
+        assertThrows<UninitializedPropertyAccessException> { task.isConfiguredCorrectly() }
     }
 
     @Test
     fun `configured correctly when all parameters are non-null`() {
         val task = YoloV3PostprocessTask(taskName).apply {
-            input = mockk { every { isConfiguredCorrectly() } returns true }
-            output = mockk { every { isConfiguredCorrectly() } returns true }
+            input = configuredCorrectly()
+            output = configuredCorrectly()
         }
 
         assertThat(task.isConfiguredCorrectly(), isTrue())

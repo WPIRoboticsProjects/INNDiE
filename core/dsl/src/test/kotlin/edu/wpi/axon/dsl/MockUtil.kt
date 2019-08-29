@@ -18,3 +18,9 @@ fun mockPathValidator(vararg pathValidations: Pair<String, Boolean>) =
             every { isValidPathName(name) } returns isValid
         }
     }
+
+inline fun <reified T : Configurable> configuredCorrectly() =
+    mockk<T> { every { isConfiguredCorrectly() } returns true }
+
+inline fun <reified T : Configurable> configuredIncorrectly() =
+    mockk<T> { every { isConfiguredCorrectly() } returns false }

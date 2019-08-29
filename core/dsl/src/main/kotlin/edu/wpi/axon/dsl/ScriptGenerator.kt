@@ -3,6 +3,7 @@ package edu.wpi.axon.dsl
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.util.singleAssign
 
 /**
  * Generates a script from a DSL description of the script.
@@ -19,12 +20,12 @@ class ScriptGenerator(
 ) : Configurable {
 
     // TODO: Do something with this (probably make the script implement a method and return this)
-    // Once CodeGraph verifies there are no islands, we should be able to start from any node and
-    // find the last node in the DAG.
     // var scriptOutput: Variable? = null
 
     // TODO: Find an intelligent way to derive this instead of needing it to be specified
-    var lastTask: Task? = null
+    // Once CodeGraph verifies there are no islands, we should be able to start from any node and
+    // find the last node in the DAG.
+    var lastTask: Task by singleAssign()
 
     private val requiredVariables = mutableSetOf<Variable>()
 
@@ -33,7 +34,7 @@ class ScriptGenerator(
         // Don't check isConfiguredCorrectly here because some tests need an unconfigured script
     }
 
-    override fun isConfiguredCorrectly() = lastTask != null
+    override fun isConfiguredCorrectly() = true
 
     /**
      * Requires that the [Variable] is emitted in the generated code. Any tasks that output to this
@@ -132,7 +133,7 @@ class ScriptGenerator(
             }
         }
 
-        appendNode(lastTask!!)
+        appendNode(lastTask)
     }
 
     /**

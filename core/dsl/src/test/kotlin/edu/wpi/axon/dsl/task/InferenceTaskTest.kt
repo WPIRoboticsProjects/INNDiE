@@ -1,52 +1,53 @@
 package edu.wpi.axon.dsl.task
 
 import com.natpryce.hamkrest.assertion.assertThat
+import edu.wpi.axon.dsl.configuredCorrectly
+import edu.wpi.axon.dsl.configuredIncorrectly
 import edu.wpi.axon.testutil.isFalse
 import edu.wpi.axon.testutil.isTrue
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class InferenceTaskTest {
 
     private val inferenceTaskName = "task"
 
     @Test
-    fun `input cannot be null`() {
+    fun `input cannot be uninitialized`() {
         val task = InferenceTask(inferenceTaskName).apply {
-            inferenceSession = mockk()
-            output = mockk()
+            inferenceSession = configuredCorrectly()
+            output = configuredCorrectly()
         }
 
-        assertThat(task.isConfiguredCorrectly(), isFalse())
+        assertThrows<UninitializedPropertyAccessException> { task.isConfiguredCorrectly() }
     }
 
     @Test
-    fun `inferenceSession cannot be null`() {
+    fun `inferenceSession cannot be uninitialized`() {
         val task = InferenceTask(inferenceTaskName).apply {
-            input = mockk()
-            output = mockk()
+            input = configuredCorrectly()
+            output = configuredCorrectly()
         }
 
-        assertThat(task.isConfiguredCorrectly(), isFalse())
+        assertThrows<UninitializedPropertyAccessException> { task.isConfiguredCorrectly() }
     }
 
     @Test
-    fun `output cannot be null`() {
+    fun `output cannot be uninitialized`() {
         val task = InferenceTask(inferenceTaskName).apply {
-            input = mockk()
-            inferenceSession = mockk()
+            input = configuredCorrectly()
+            inferenceSession = configuredCorrectly()
         }
 
-        assertThat(task.isConfiguredCorrectly(), isFalse())
+        assertThrows<UninitializedPropertyAccessException> { task.isConfiguredCorrectly() }
     }
 
     @Test
     fun `all inputs must be configured correctly`() {
         val task = InferenceTask(inferenceTaskName).apply {
-            input = mockk { every { isConfiguredCorrectly() } returns true }
-            inferenceSession = mockk { every { isConfiguredCorrectly() } returns false }
-            output = mockk { every { isConfiguredCorrectly() } returns true }
+            input = configuredCorrectly()
+            inferenceSession = configuredIncorrectly()
+            output = configuredCorrectly()
         }
 
         assertThat(task.isConfiguredCorrectly(), isFalse())
@@ -55,9 +56,9 @@ internal class InferenceTaskTest {
     @Test
     fun `all outputs must be configured correctly`() {
         val task = InferenceTask(inferenceTaskName).apply {
-            input = mockk { every { isConfiguredCorrectly() } returns true }
-            inferenceSession = mockk { every { isConfiguredCorrectly() } returns true }
-            output = mockk { every { isConfiguredCorrectly() } returns false }
+            input = configuredCorrectly()
+            inferenceSession = configuredCorrectly()
+            output = configuredIncorrectly()
         }
 
         assertThat(task.isConfiguredCorrectly(), isFalse())
@@ -66,9 +67,9 @@ internal class InferenceTaskTest {
     @Test
     fun `configured correctly when all parameters are non-null and all inputs and outputs are configured correctly`() {
         val task = InferenceTask(inferenceTaskName).apply {
-            input = mockk { every { isConfiguredCorrectly() } returns true }
-            inferenceSession = mockk { every { isConfiguredCorrectly() } returns true }
-            output = mockk { every { isConfiguredCorrectly() } returns true }
+            input = configuredCorrectly()
+            inferenceSession = configuredCorrectly()
+            output = configuredCorrectly()
         }
 
         assertThat(task.isConfiguredCorrectly(), isTrue())
