@@ -72,7 +72,7 @@ class ScriptGenerator(
                 }
             }
 
-        val handledNodes = mutableSetOf<Code<Code<*>>>() // The nodes that code gen has run for
+        val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
 
         appendImports(generateDebugComments)
         append('\n')
@@ -110,12 +110,12 @@ class ScriptGenerator(
      */
     private fun StringBuilder.appendTaskCode(
         generateDebugComments: Boolean,
-        handledNodes: MutableSet<Code<Code<*>>>
+        handledNodes: MutableSet<AnyCode>
     ) {
         @Suppress("UNCHECKED_CAST")
-        val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<Code<Code<*>>>).graph
+        val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
 
-        fun appendNode(node: Code<Code<*>>) {
+        fun appendNode(node: AnyCode) {
             if (node !in handledNodes) {
                 // Append the predecessors first because they are the dependencies of this node
                 graph.predecessors(node)
@@ -143,7 +143,7 @@ class ScriptGenerator(
      */
     private fun StringBuilder.appendRequiredVariables(
         generateDebugComments: Boolean,
-        handledNodes: MutableSet<Code<Code<*>>>
+        handledNodes: MutableSet<AnyCode>
     ) {
         requiredVariables.forEach { variable ->
             tasks.forEach { _, task ->
@@ -156,9 +156,9 @@ class ScriptGenerator(
     }
 
     private fun StringBuilder.appendCode(
-        node: Code<Code<*>>,
+        node: AnyCode,
         generateDebugComments: Boolean,
-        handledNodes: MutableSet<Code<Code<*>>>
+        handledNodes: MutableSet<AnyCode>
     ) {
         if (generateDebugComments) {
             append("# $node")

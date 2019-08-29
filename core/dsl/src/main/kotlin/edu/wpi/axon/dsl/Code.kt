@@ -2,9 +2,11 @@ package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.variable.Variable
 
+typealias AnyCode = Code<Code<*>>
+
 /**
  * A "typeclass" for generating code. The code this interface means is (possibly multiline)
- * computations that can assign to variables and can depends on other variables or computations.
+ * computations that can assign to variables and can depend on other variables or computations.
  */
 interface Code<out T : Code<T>> {
 

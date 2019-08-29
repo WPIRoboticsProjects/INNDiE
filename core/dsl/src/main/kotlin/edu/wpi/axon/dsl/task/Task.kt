@@ -1,5 +1,6 @@
 package edu.wpi.axon.dsl.task
 
+import edu.wpi.axon.dsl.AnyCode
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Configurable
 
@@ -10,8 +11,7 @@ import edu.wpi.axon.dsl.Configurable
  * @param name The name of this task. This does now have an impact on the generated code, it is only
  * used to assure task uniqueness.
  */
-abstract class Task(val name: String) : Configurable,
-    Code<Code<*>> {
+abstract class Task(val name: String) : Configurable, AnyCode {
 
     override fun isConfiguredCorrectly() =
         inputs.all { it.isConfiguredCorrectly() } && outputs.all { it.isConfiguredCorrectly() }

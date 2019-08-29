@@ -9,7 +9,7 @@ class MockTask(name: String) : Task(name) {
     override val imports: Set<Import> = emptySet()
     override val inputs: MutableSet<Variable> = mutableSetOf()
     override val outputs: MutableSet<Variable> = mutableSetOf()
-    override val dependencies: MutableSet<Code<Code<*>>> = mutableSetOf()
+    override val dependencies: MutableSet<AnyCode> = mutableSetOf()
     var latch: CountDownLatch? = null
 
     override fun isConfiguredCorrectly() = true

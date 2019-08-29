@@ -11,18 +11,29 @@ import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 
 /**
  * Parses a [PolymorphicNamedDomainObjectContainer] of [Code] into an [ImmutableGraph], assuring
- * that all [Code] nodes are unique and dependencies are properly ordered.
+ * that all [Code] nodes are unique and dependencies are properly ordered. Nodes on separate
+ * branches of the graph will not be deduplicated to preserve those dependencies. For example,
+ * this is a possible output graph:
+ * +---+      +---+
+ * | A +----->+ B +--------+
+ * +---+      +---+        v
+ *                       +-+-+
+ *                       | D |
+ *                       +-+-+
+ * +---+      +---+        ^
+ * | A +----->+ C +--------+
+ * +---+      +---+
  */
 @Suppress("UnstableApiUsage")
 class CodeGraph(
-    private val container: PolymorphicNamedDomainObjectContainer<Code<Code<*>>>
+    private val container: PolymorphicNamedDomainObjectContainer<AnyCode>
 ) {
 
-    val graph: ImmutableGraph<Code<Code<*>>> by lazy {
+    val graph: ImmutableGraph<AnyCode> by lazy {
         val mutableGraph = GraphBuilder.directed()
             .allowsSelfLoops(false)
             .expectedNodeCount(container.size)
-            .build<Code<Code<*>>>()
+            .build<AnyCode>()
 
         container.forEach { (_, code) ->
             populateGraphUsingDependencies(mutableGraph, code)
@@ -39,14 +50,14 @@ class CodeGraph(
      * Add nodes for codes and edges between codes that are linked with [Code.dependencies].
      */
     private fun populateGraphUsingDependencies(
-        graph: MutableGraph<Code<Code<*>>>,
-        code: Code<Code<*>>
+        graph: MutableGraph<AnyCode>,
+        code: AnyCode
     ) {
         // Make sure nodes without dependencies are in the graph
         graph.addNode(code)
 
         code.dependencies.forEach {
-            // Don't recursive if the edge was already in the graph
+            // Don't recurse if the edge was already in the graph
             if (graph.putEdge(it, code)) {
                 require(!hasCircuits(graph, code)) {
                     "Adding an edge from $it to $code caused a circuit."
@@ -64,8 +75,8 @@ class CodeGraph(
      * [Code.inputs].
      */
     private fun populateGraphUsingVariables(
-        graph: MutableGraph<Code<Code<*>>>,
-        container: PolymorphicNamedDomainObjectContainer<Code<Code<*>>>
+        graph: MutableGraph<AnyCode>,
+        container: PolymorphicNamedDomainObjectContainer<AnyCode>
     ) {
         val codesK = container.values.toList().k()
         ListK.applicative()
@@ -83,18 +94,16 @@ class CodeGraph(
     }
 
     private fun hasCircuits(
-        graph: MutableGraph<Code<Code<*>>>,
-        root: Code<Code<*>>,
-        visited: Set<Code<Code<*>>> = emptySet()
+        graph: MutableGraph<AnyCode>,
+        root: AnyCode,
+        visited: Set<AnyCode> = emptySet()
     ): Boolean {
         graph.successors(root).forEach { node ->
             val reachable = bfs(graph, node)
 
-            if (visited anyIn reachable) {
-                return true
-            }
-
-            if (hasCircuits(graph, node, visited + node)) {
+            // Finding an already visited node in the new reachable set implies a circuit. The
+            // reachable set will strictly decrease for successor nodes in a DAG.
+            if (visited anyIn reachable || hasCircuits(graph, node, visited + node)) {
                 return true
             }
         }
@@ -102,9 +111,9 @@ class CodeGraph(
         return false
     }
 
-    private fun bfs(graph: MutableGraph<Code<Code<*>>>, root: Code<Code<*>>): Set<Code<Code<*>>> {
-        val visited = mutableSetOf<Code<Code<*>>>()
-        val queue = mutableListOf<Code<Code<*>>>()
+    private fun bfs(graph: MutableGraph<AnyCode>, root: AnyCode): Set<AnyCode> {
+        val visited = mutableSetOf<AnyCode>()
+        val queue = mutableListOf<AnyCode>()
 
         visited += root
         queue += root

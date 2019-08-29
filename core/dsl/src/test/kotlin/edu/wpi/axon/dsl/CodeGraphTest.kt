@@ -25,9 +25,9 @@ internal class CodeGraphTest {
     fun `adding one task creates one node`() {
         val codes = makeMockTasks("task1")
 
-        val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
-            Map<String, Code<Code<*>>> by codes {
-            override fun <U : Code<Code<*>>> create(
+        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
+            Map<String, AnyCode> by codes {
+            override fun <U : AnyCode> create(
                 name: String,
                 type: KClass<U>,
                 configure: (U.() -> Unit)?
@@ -38,7 +38,7 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        assertThat(graph.nodes(), equalTo(codes.values.toSet<Code<Code<*>>>()))
+        assertThat(graph.nodes(), equalTo(codes.values.toSet<AnyCode>()))
     }
 
     @Test
@@ -46,9 +46,9 @@ internal class CodeGraphTest {
         val codes = makeMockTasks("task1", "task2")
         codes["task1"]!!.dependencies += codes["task2"]!!
 
-        val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
-            Map<String, Code<Code<*>>> by codes {
-            override fun <U : Code<Code<*>>> create(
+        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
+            Map<String, AnyCode> by codes {
+            override fun <U : AnyCode> create(
                 name: String,
                 type: KClass<U>,
                 configure: (U.() -> Unit)?
@@ -59,11 +59,11 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        assertThat(graph.nodes(), equalTo(codes.values.toSet<Code<Code<*>>>()))
+        assertThat(graph.nodes(), equalTo(codes.values.toSet<AnyCode>()))
         assertThat(
             graph.edges(),
             equalTo(
-                setOf<EndpointPair<Code<Code<*>>>>(
+                setOf<EndpointPair<AnyCode>>(
                     EndpointPair.ordered(codes["task2"], codes["task1"])
                 )
             )
@@ -81,9 +81,9 @@ internal class CodeGraphTest {
         codes["task2"]!!.dependencies += task3
         task3.dependencies += task4
 
-        val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
-            Map<String, Code<Code<*>>> by codes {
-            override fun <U : Code<Code<*>>> create(
+        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
+            Map<String, AnyCode> by codes {
+            override fun <U : AnyCode> create(
                 name: String,
                 type: KClass<U>,
                 configure: (U.() -> Unit)?
@@ -94,11 +94,11 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        assertThat(graph.nodes(), equalTo(codes.values.toSet<Code<Code<*>>>() + task3 + task4))
+        assertThat(graph.nodes(), equalTo(codes.values.toSet<AnyCode>() + task3 + task4))
         assertThat(
             graph.edges(),
             equalTo(
-                setOf<EndpointPair<Code<Code<*>>>>(
+                setOf<EndpointPair<AnyCode>>(
                     EndpointPair.ordered(codes["task2"], codes["task1"]),
                     EndpointPair.ordered(task3, codes["task1"]),
                     EndpointPair.ordered(task3, codes["task2"]),
@@ -114,9 +114,9 @@ internal class CodeGraphTest {
         codes["task1"]!!.dependencies += codes["task2"]!!
         codes["task2"]!!.dependencies += codes["task1"]!!
 
-        val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
-            Map<String, Code<Code<*>>> by codes {
-            override fun <U : Code<Code<*>>> create(
+        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
+            Map<String, AnyCode> by codes {
+            override fun <U : AnyCode> create(
                 name: String,
                 type: KClass<U>,
                 configure: (U.() -> Unit)?
@@ -142,9 +142,9 @@ internal class CodeGraphTest {
         codes["task1"]!!.outputs += variable1
         codes["task2"]!!.inputs += variable1
 
-        val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
-            Map<String, Code<Code<*>>> by codes {
-            override fun <U : Code<Code<*>>> create(
+        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
+            Map<String, AnyCode> by codes {
+            override fun <U : AnyCode> create(
                 name: String,
                 type: KClass<U>,
                 configure: (U.() -> Unit)?
@@ -155,11 +155,11 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        assertThat(graph.nodes(), equalTo(codes.values.toSet<Code<Code<*>>>()))
+        assertThat(graph.nodes(), equalTo(codes.values.toSet<AnyCode>()))
         assertThat(
             graph.edges(),
             equalTo(
-                setOf<EndpointPair<Code<Code<*>>>>(
+                setOf<EndpointPair<AnyCode>>(
                     EndpointPair.ordered(codes["task1"], codes["task2"])
                 )
             )
@@ -180,9 +180,9 @@ internal class CodeGraphTest {
         codes["task1"]!!.outputs += variable1
         codes["task2"]!!.inputs += variable1
 
-        val container = object : PolymorphicNamedDomainObjectContainer<Code<Code<*>>>,
-            Map<String, Code<Code<*>>> by codes {
-            override fun <U : Code<Code<*>>> create(
+        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
+            Map<String, AnyCode> by codes {
+            override fun <U : AnyCode> create(
                 name: String,
                 type: KClass<U>,
                 configure: (U.() -> Unit)?
