@@ -1,0 +1,73 @@
+trigger:
+  branches:
+    include:
+      - '*'
+  tags:
+    include:
+      - '*'
+
+stages:
+- stage: Build_Core
+  jobs:
+    - job: Linux
+
+      pool:
+        vmImage: ubuntu-16.04
+
+      steps:
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: './core'
+            gradleWrapperFile: './core/gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/TEST-*.xml'
+            tasks: 'check jacocoTestReport'
+
+        - bash: bash <(curl -s https://codecov.io/bash)
+          displayName: 'CodeCov'
+          env:
+            CODECOV_TOKEN: $(CODECOV_TOKEN)
+
+    - job: MacOS
+
+      pool:
+        vmImage: macOS-10.14
+
+      steps:
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: './core'
+            gradleWrapperFile: './core/gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'check jacocoTestReport'
+
+    - job: Windows
+
+      pool:
+        vmImage: windows-2019
+
+      steps:
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: './core'
+            gradleWrapperFile: './core/gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: false
+            tasks: 'check jacocoTestReport'
