@@ -40,6 +40,6 @@ class MakeNewInferenceSession(name: String) : Task(name), KoinComponent {
         super.isConfiguredCorrectly()
 
     override fun code() = """
-        |${sessionOutput.name} = onnxruntime.InferenceSession('${modelPathInput}')
+        |${sessionOutput.name} = onnxruntime.InferenceSession('$modelPathInput')
     """.trimMargin()
 }

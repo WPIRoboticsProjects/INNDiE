@@ -1,3 +1,5 @@
+@file:SuppressWarnings("StringLiteralDuplication")
+
 package edu.wpi.axon.dsl
 
 import com.google.common.graph.EndpointPair
@@ -13,7 +15,6 @@ import org.koin.dsl.module
 import kotlin.reflect.KClass
 
 @Suppress("UnstableApiUsage")
-@SuppressWarnings("StringLiteralDuplication")
 internal class CodeGraphTest {
 
     @AfterEach
