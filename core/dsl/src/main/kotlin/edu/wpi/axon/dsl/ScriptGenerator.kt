@@ -19,6 +19,8 @@ class ScriptGenerator(
 ) : Configurable {
 
     // TODO: Do something with this (probably make the script implement a method and return this)
+    // Once CodeGraph verifies there are no islands, we should be able to start from any node and
+    // find the last node in the DAG.
     // var scriptOutput: Variable? = null
 
     // TODO: Find an intelligent way to derive this instead of needing it to be specified
@@ -62,13 +64,11 @@ class ScriptGenerator(
         (variables.values + tasks.values + requiredVariables)
             .filter { !it.isConfiguredCorrectly() }
             .let {
-                if (it.isNotEmpty()) {
-                    throw IllegalArgumentException(
-                        """
-                        |Incorrectly configured:
-                        |${it.joinToString("\n")}
-                        """.trimMargin()
-                    )
+                require(it.isEmpty()) {
+                    """
+                    |Incorrectly configured:
+                    |${it.joinToString("\n")}
+                    """.trimMargin()
                 }
             }
 
