@@ -4,12 +4,12 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.task.InferenceTask
-import edu.wpi.axon.dsl.task.YoloV3PostprocessTask
+import edu.wpi.axon.dsl.task.yolov3.YoloV3PostprocessTask
 import edu.wpi.axon.dsl.validator.path.DefaultPathValidator
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
 import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
-import edu.wpi.axon.dsl.task.ConstructYoloV3ImageInput
+import edu.wpi.axon.dsl.task.yolov3.ConstructYoloV3ImageInput
 import edu.wpi.axon.dsl.task.LoadClassLabels
 import edu.wpi.axon.dsl.task.LoadImageData
 import edu.wpi.axon.dsl.task.MakeNewInferenceSession

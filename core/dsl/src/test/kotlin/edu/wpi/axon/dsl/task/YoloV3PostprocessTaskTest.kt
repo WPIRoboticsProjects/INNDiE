@@ -2,6 +2,7 @@ package edu.wpi.axon.dsl.task
 
 import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.configuredCorrectly
+import edu.wpi.axon.dsl.task.yolov3.YoloV3PostprocessTask
 import edu.wpi.axon.testutil.isTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
