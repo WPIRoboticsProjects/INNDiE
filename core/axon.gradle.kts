@@ -23,11 +23,13 @@ plugins {
 val coreProject = project(":core")
 val dslProject = project(":dsl")
 val testUtilProject = project(":test-util")
+val utilProject = project(":util")
 
 val kotlinProjects = setOf(
     coreProject,
     dslProject,
-    testUtilProject
+    testUtilProject,
+    utilProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
