@@ -19,7 +19,7 @@ stages:
           displayName: 'Check'
           inputs:
             workingDirectory: './core'
-            gradleWrapperFile: 'gradlew'
+            gradleWrapperFile: './core/gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
             javaHomeOption: 'JDKVersion'
@@ -44,7 +44,7 @@ stages:
           displayName: 'Check'
           inputs:
             workingDirectory: './core'
-            gradleWrapperFile: 'gradlew'
+            gradleWrapperFile: './core/gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
             javaHomeOption: 'JDKVersion'
@@ -63,7 +63,7 @@ stages:
           displayName: 'Check'
           inputs:
             workingDirectory: './core'
-            gradleWrapperFile: 'gradlew'
+            gradleWrapperFile: './core/gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
             javaHomeOption: 'JDKVersion'
