@@ -5,6 +5,11 @@ package edu.wpi.axon.dsl
  */
 sealed class Import {
 
+    /**
+     * This method must be pure.
+     *
+     * @return The code for this [Import].
+     */
     abstract fun code(): String
 
     data class ModuleOnly(val module: String) : Import() {
