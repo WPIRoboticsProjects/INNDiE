@@ -1,7 +1,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.Code
-import edu.wpi.axon.dsl.Import
+import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
 

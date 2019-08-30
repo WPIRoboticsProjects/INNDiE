@@ -1,5 +1,6 @@
 package edu.wpi.axon.dsl
 
+import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
 
 typealias AnyCode = Code<Code<*>>

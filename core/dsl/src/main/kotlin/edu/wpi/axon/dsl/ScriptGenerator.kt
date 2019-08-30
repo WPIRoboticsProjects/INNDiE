@@ -4,6 +4,7 @@ package edu.wpi.axon.dsl
 
 import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
+import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
