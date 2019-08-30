@@ -93,18 +93,6 @@ internal class ScriptGeneratorIntegrationTest : KoinTest {
             lastTask = postProcessTask
         }
 
-        assertThat(
-            dsl.computeImports(), equalTo(
-                setOf(
-                    Import.ModuleOnly("onnxruntime"),
-                    Import.ModuleAndIdentifier("PIL", "Image"),
-                    Import.ModuleOnly("onnx"),
-                    Import.ModuleAndIdentifier("axon", "postprocessYolov3"),
-                    Import.ModuleAndName("numpy", "np")
-                )
-            )
-        )
-
         val code = dsl.code()
         assertEquals(
             """
