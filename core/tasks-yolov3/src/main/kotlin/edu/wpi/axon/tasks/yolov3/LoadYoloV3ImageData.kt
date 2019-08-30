@@ -1,4 +1,4 @@
-package edu.wpi.axon.dsl.task.yolov3
+package edu.wpi.axon.tasks.yolov3
 
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Import
@@ -7,7 +7,7 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
 
 /**
- * Loads an image.
+ * Loads an image for YoloV3.
  *
  * TODO: Validate image format
  */
@@ -29,7 +29,7 @@ class LoadYoloV3ImageData(name: String) : Task(name) {
     var imageSizeOutput: Variable by singleAssign()
 
     override val imports = setOf(
-        Import.ModuleAndIdentifier("PIL", "Image"),
+        Import.ModuleAndIdentifier("axon", "preprocessYoloV3"),
         Import.ModuleAndName("numpy", "np")
     )
 

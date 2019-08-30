@@ -1,8 +1,7 @@
-package edu.wpi.axon.dsl.task
+package edu.wpi.axon.tasks.yolov3
 
 import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.configuredCorrectly
-import edu.wpi.axon.dsl.task.yolov3.YoloV3PostprocessTask
 import edu.wpi.axon.testutil.isTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -12,7 +11,7 @@ internal class YoloV3PostprocessTaskTest {
     private val taskName = "task"
 
     @Test
-    fun `input cannot be null`() {
+    fun `input cannot be unconfigured`() {
         val task = YoloV3PostprocessTask(taskName).apply {
             output = configuredCorrectly()
         }
@@ -21,7 +20,7 @@ internal class YoloV3PostprocessTaskTest {
     }
 
     @Test
-    fun `output cannot be null`() {
+    fun `output cannot be unconfigured`() {
         val task = YoloV3PostprocessTask(taskName).apply {
             input = configuredCorrectly()
         }
@@ -30,7 +29,7 @@ internal class YoloV3PostprocessTaskTest {
     }
 
     @Test
-    fun `configured correctly when all parameters are non-null`() {
+    fun `configured correctly when all parameters are configured correctly`() {
         val task = YoloV3PostprocessTask(taskName).apply {
             input = configuredCorrectly()
             output = configuredCorrectly()

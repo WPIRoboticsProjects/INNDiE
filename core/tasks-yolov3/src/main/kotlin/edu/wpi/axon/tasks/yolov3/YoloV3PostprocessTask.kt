@@ -1,4 +1,4 @@
-package edu.wpi.axon.dsl.task.yolov3
+package edu.wpi.axon.tasks.yolov3
 
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Import
