@@ -35,6 +35,6 @@ class YoloV3PostprocessTask(name: String) : Task(name) {
         get() = emptySet()
 
     override fun code() = """
-        |${output.name} = postprocessYolov3(${input.name})
+        |${output.name} = postprocessYoloV3(${input.name})
     """.trimMargin()
 }

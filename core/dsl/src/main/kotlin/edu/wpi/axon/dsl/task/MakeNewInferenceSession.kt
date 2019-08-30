@@ -8,6 +8,9 @@ import edu.wpi.axon.util.singleAssign
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
+/**
+ * Creates a new ONNX InferenceSession.
+ */
 class MakeNewInferenceSession(name: String) : Task(name), KoinComponent {
 
     /**

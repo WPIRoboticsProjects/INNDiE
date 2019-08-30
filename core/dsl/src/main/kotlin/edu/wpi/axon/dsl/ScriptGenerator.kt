@@ -1,5 +1,8 @@
+@file:Suppress("UnstableApiUsage")
+
 package edu.wpi.axon.dsl
 
+import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
@@ -47,13 +50,6 @@ class ScriptGenerator(
     }
 
     /**
-     * TODO: What imports need to be considered duplicates?
-     *
-     * @return The set of Imports needed by the [variables] and [tasks].
-     */
-    fun computeImports(): Set<Import> = tasks.flatMap { it.value.imports }.toSet()
-
-    /**
      * @param generateDebugComments Whether to insert debugging comments.
      * @return The entire generated script.
      */
@@ -75,9 +71,12 @@ class ScriptGenerator(
 
         val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
 
-        appendImports(generateDebugComments)
+        @Suppress("UNCHECKED_CAST")
+        val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
+
+        appendImports(generateDebugComments, graph)
         append('\n')
-        appendTaskCode(generateDebugComments, handledNodes)
+        appendTaskCode(generateDebugComments, graph, handledNodes)
         append('\n')
         appendRequiredVariables(generateDebugComments, handledNodes)
     }.trim()
@@ -86,9 +85,13 @@ class ScriptGenerator(
      * Appends all the needed Imports.
      *
      * @param generateDebugComments Whether to insert debugging comments.
+     * @param graph The [CodeGraph] to generate from.
      */
-    private fun StringBuilder.appendImports(generateDebugComments: Boolean) {
-        val imports = computeImports()
+    private fun StringBuilder.appendImports(
+        generateDebugComments: Boolean,
+        graph: ImmutableGraph<AnyCode>
+    ) {
+        val imports = computeImports(graph)
             .map { it to it.code() }
             .sortedBy { it.second }
 
@@ -104,18 +107,26 @@ class ScriptGenerator(
     }
 
     /**
+     * TODO: What imports need to be considered duplicates?
+     *
+     * @param graph The [CodeGraph] to generate from.
+     * @return The set of Imports needed by the [variables] and [tasks].
+     */
+    private fun computeImports(graph: ImmutableGraph<AnyCode>): Set<Import> =
+        graph.nodes().flatMap { it.imports }.toSet()
+
+    /**
      * Appends all the needed task code.
      *
      * @param generateDebugComments Whether to insert debugging comments.
+     * @param graph The [CodeGraph] to generate from.
      * @param handledNodes The nodes that code generation has already run for.
      */
     private fun StringBuilder.appendTaskCode(
         generateDebugComments: Boolean,
+        graph: ImmutableGraph<AnyCode>,
         handledNodes: MutableSet<AnyCode>
     ) {
-        @Suppress("UNCHECKED_CAST")
-        val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
-
         fun appendNode(node: AnyCode) {
             if (node !in handledNodes) {
                 // Append the predecessors first because they are the dependencies of this node
