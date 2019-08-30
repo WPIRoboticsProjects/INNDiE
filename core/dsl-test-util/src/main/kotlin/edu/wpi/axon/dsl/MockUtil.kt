@@ -5,8 +5,6 @@ import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
 import io.mockk.every
 import io.mockk.mockk
 
-// TODO: Find a way to only have one of these files
-
 fun mockVariableNameValidator(vararg nameValidations: Pair<String, Boolean>) =
     mockk<VariableNameValidator> {
         nameValidations.forEach { (name, isValid) ->
