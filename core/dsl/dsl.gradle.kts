@@ -33,14 +33,10 @@ dependencies {
         version = property("kt-guava-core.version") as String
     )
 
-    implementation(koin("koin-core"))
+    api(koin("koin-core"))
+    api(project(":dsl-interface"))
+
     implementation(project(":util"))
 
-    testImplementation(project(":test-util"))
-    testImplementation(
-        group = "io.mockk",
-        name = "mockk",
-        version = property("mockk.version") as String
-    )
-    testImplementation(koin("koin-test"))
+    testImplementation(project(":dsl-test-util"))
 }

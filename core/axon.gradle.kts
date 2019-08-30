@@ -22,12 +22,18 @@ plugins {
 
 val coreProject = project(":core")
 val dslProject = project(":dsl")
+val dslInterfaceProject = project(":dsl-interface")
+val dslTestUtilProject = project(":dsl-test-util")
+val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
     coreProject,
     dslProject,
+    dslInterfaceProject,
+    dslTestUtilProject,
+    tasksYolov3Project,
     testUtilProject,
     utilProject
 )
@@ -36,12 +42,17 @@ val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
     coreProject,
-    dslProject
+    dslProject,
+    dslInterfaceProject,
+    tasksYolov3Project,
+    utilProject
 )
 
 val pitestProjects = setOf(
     coreProject,
-    dslProject
+    dslProject,
+    tasksYolov3Project,
+    utilProject
 )
 
 // val spotlessLicenseHeaderDelimiter = "(@|package|import)"

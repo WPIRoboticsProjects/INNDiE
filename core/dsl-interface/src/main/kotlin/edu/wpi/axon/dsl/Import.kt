@@ -2,6 +2,12 @@ package edu.wpi.axon.dsl
 
 /**
  * An import statement.
+ *
+ * TODO: Make a DSL to write Imports like:
+ * ```kotlin
+ * Import { from "axon" import "preprocessYolov3" }
+ * Import { import "numpy" as "np" }
+ * ```
  */
 sealed class Import {
 
