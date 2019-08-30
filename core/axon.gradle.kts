@@ -21,19 +21,27 @@ plugins {
 }
 
 val coreProject = project(":core")
+val dslProject = project(":dsl")
+val testUtilProject = project(":test-util")
+val utilProject = project(":util")
 
 val kotlinProjects = setOf(
-    coreProject
+    coreProject,
+    dslProject,
+    testUtilProject,
+    utilProject
 )
 
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
-    coreProject
+    coreProject,
+    dslProject
 )
 
 val pitestProjects = setOf(
-    coreProject
+    coreProject,
+    dslProject
 )
 
 // val spotlessLicenseHeaderDelimiter = "(@|package|import)"
@@ -67,6 +75,7 @@ allprojects {
         jcenter()
         mavenCentral()
         maven("https://oss.sonatype.org/content/repositories/staging/")
+        maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
