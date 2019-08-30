@@ -1,24 +1,22 @@
-package edu.wpi.axon.dsl.task
+package edu.wpi.axon.dsl.task.yolov3
 
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.Import
-import edu.wpi.axon.dsl.validator.path.PathValidator
+import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
-import org.koin.core.KoinComponent
-import org.koin.core.inject
 
 /**
  * Loads an image.
  *
  * TODO: Validate image format
  */
-class LoadImageData(name: String) : Task(name), KoinComponent {
+class LoadYoloV3ImageData(name: String) : Task(name) {
 
     /**
-     * The file path to load this data from.
+     * The input holding the image.
      */
-    var imagePath: String by singleAssign()
+    var imageInput: Variable by singleAssign()
 
     /**
      * The output the image data will be stored in.
@@ -30,29 +28,21 @@ class LoadImageData(name: String) : Task(name), KoinComponent {
      */
     var imageSizeOutput: Variable by singleAssign()
 
-    /**
-     * Validates the [imagePath].
-     */
-    private val pathValidator: PathValidator by inject()
-
     override val imports = setOf(
         Import.ModuleAndIdentifier("PIL", "Image"),
         Import.ModuleAndName("numpy", "np")
     )
 
-    override val inputs: Set<Variable> = emptySet()
+    override val inputs: Set<Variable>
+        get() = setOf(imageInput)
 
     override val outputs: Set<Variable>
         get() = setOf(imageDataOutput, imageSizeOutput)
 
     override val dependencies: Set<Code<*>> = emptySet()
 
-    override fun isConfiguredCorrectly() = pathValidator.isValidPathName(imagePath) &&
-        super.isConfiguredCorrectly()
-
     override fun code() = """
-        |$name = Image.open('$imagePath')
-        |${imageDataOutput.name} = preprocess($name)
-        |${imageSizeOutput.name} = np.array([$name.size[1], $name.size[0]], dtype=np.float32).reshape(1, 2)
+        |${imageDataOutput.name} = preprocessYoloV3(${imageInput.name})
+        |${imageSizeOutput.name} = np.array([${imageInput.name}.size[1], ${imageInput.name}.size[0]], dtype=np.float32).reshape(1, 2)
     """.trimMargin()
 }
