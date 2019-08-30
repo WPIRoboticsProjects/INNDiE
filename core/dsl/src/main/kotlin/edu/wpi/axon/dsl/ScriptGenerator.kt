@@ -59,6 +59,7 @@ class ScriptGenerator(
             "The DSl was not configured correctly."
         }
 
+        // TODO: Don't throw in here
         (variables.values + tasks.values + requiredVariables)
             .filter { !it.isConfiguredCorrectly() }
             .let {

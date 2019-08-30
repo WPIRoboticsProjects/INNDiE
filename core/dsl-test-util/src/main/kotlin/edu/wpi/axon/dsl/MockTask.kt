@@ -7,7 +7,7 @@ import java.util.concurrent.CountDownLatch
 
 class MockTask(override val name: String) : Task {
 
-    override val imports: Set<Import> = emptySet()
+    override val imports: MutableSet<Import> = mutableSetOf()
     override val inputs: MutableSet<Variable> = mutableSetOf()
     override val outputs: MutableSet<Variable> = mutableSetOf()
     override val dependencies: MutableSet<AnyCode> = mutableSetOf()
