@@ -1,19 +1,36 @@
 package edu.wpi.axon.dsl.task
 
 import com.natpryce.hamkrest.assertion.assertThat
+import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.configuredIncorrectly
 import edu.wpi.axon.testutil.isFalse
 import edu.wpi.axon.testutil.isTrue
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 
-internal class InferenceTaskTest {
+internal class InferenceTaskTest : KoinTest {
 
     private val inferenceTaskName = "task"
 
+    @AfterEach
+    fun afterEach() {
+        stopKoin()
+    }
+
     @Test
     fun `input cannot be uninitialized`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
         val task = InferenceTask(inferenceTaskName).apply {
             inferenceSession = configuredCorrectly()
             output = configuredCorrectly()
@@ -24,6 +41,12 @@ internal class InferenceTaskTest {
 
     @Test
     fun `inferenceSession cannot be uninitialized`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
         val task = InferenceTask(inferenceTaskName).apply {
             input = configuredCorrectly()
             output = configuredCorrectly()
@@ -34,6 +57,12 @@ internal class InferenceTaskTest {
 
     @Test
     fun `output cannot be uninitialized`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
         val task = InferenceTask(inferenceTaskName).apply {
             input = configuredCorrectly()
             inferenceSession = configuredCorrectly()
@@ -44,6 +73,12 @@ internal class InferenceTaskTest {
 
     @Test
     fun `all inputs must be configured correctly`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
         val task = InferenceTask(inferenceTaskName).apply {
             input = configuredCorrectly()
             inferenceSession = configuredIncorrectly()
@@ -55,6 +90,12 @@ internal class InferenceTaskTest {
 
     @Test
     fun `all outputs must be configured correctly`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
         val task = InferenceTask(inferenceTaskName).apply {
             input = configuredCorrectly()
             inferenceSession = configuredCorrectly()
@@ -66,6 +107,12 @@ internal class InferenceTaskTest {
 
     @Test
     fun `configured correctly when all parameters are non-null and all inputs and outputs are configured correctly`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
         val task = InferenceTask(inferenceTaskName).apply {
             input = configuredCorrectly()
             inferenceSession = configuredCorrectly()

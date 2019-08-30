@@ -2,9 +2,9 @@ package edu.wpi.axon.dsl.task
 
 import arrow.data.Invalid
 import arrow.data.Nel
-import arrow.data.Valid
 import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.Code
+import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredIncorrectly
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.ImportValidator
@@ -30,9 +30,7 @@ internal class BaseTaskTest : KoinTest {
     fun `an invalid input means the task is invalid`() {
         startKoin {
             modules(module {
-                single<ImportValidator> {
-                    mockk { every { validateImports(any()) } returns Valid(emptySet()) }
-                }
+                alwaysValidImportValidator()
             })
         }
 
@@ -44,9 +42,7 @@ internal class BaseTaskTest : KoinTest {
     fun `an invalid output means the task is invalid`() {
         startKoin {
             modules(module {
-                single<ImportValidator> {
-                    mockk { every { validateImports(any()) } returns Valid(emptySet()) }
-                }
+                alwaysValidImportValidator()
             })
         }
 
