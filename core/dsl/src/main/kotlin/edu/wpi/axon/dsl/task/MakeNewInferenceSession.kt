@@ -11,7 +11,7 @@ import org.koin.core.inject
 /**
  * Creates a new ONNX InferenceSession.
  */
-class MakeNewInferenceSession(name: String) : Task(name), KoinComponent {
+class MakeNewInferenceSession(name: String) : BaseTask(name), KoinComponent {
 
     /**
      * The path to load the ONNX model from.

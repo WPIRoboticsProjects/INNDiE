@@ -2,14 +2,14 @@ package edu.wpi.axon.tasks.yolov3
 
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
-import edu.wpi.axon.dsl.task.Task
+import edu.wpi.axon.dsl.task.BaseTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
 
 /**
- * A [Task] that post-processes the output from a YoloV3 model.
+ * Post-processes the output from a YoloV3 model.
  */
-class YoloV3PostprocessTask(name: String) : Task(name) {
+class YoloV3PostprocessTask(name: String) : BaseTask(name) {
 
     /**
      * The input data, typically the output of [InferenceTask].

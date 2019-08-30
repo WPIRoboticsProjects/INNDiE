@@ -6,9 +6,9 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
 
 /**
- * A [Task] that runs inference.
+ * Runs inference using the ONNX runtime.
  */
-class InferenceTask(name: String) : Task(name) {
+class InferenceTask(name: String) : BaseTask(name) {
 
     /**
      * The data input to the first layer of the model.

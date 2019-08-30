@@ -13,7 +13,7 @@ import org.koin.core.inject
  *
  * TODO: Need to detect the format of the labels or maybe ask the user what it is in the UI
  */
-class LoadClassLabels(name: String) : Task(name), KoinComponent {
+class LoadClassLabels(name: String) : BaseTask(name), KoinComponent {
 
     /**
      * The path for the class labels file.

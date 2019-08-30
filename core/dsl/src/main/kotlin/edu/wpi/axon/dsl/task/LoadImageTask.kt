@@ -11,7 +11,7 @@ import org.koin.core.inject
 /**
  * Loads an image from a file.
  */
-class LoadImageTask(name: String) : Task(name), KoinComponent {
+class LoadImageTask(name: String) : BaseTask(name), KoinComponent {
 
     /**
      * The file path to load this data from.

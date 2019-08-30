@@ -2,14 +2,14 @@ package edu.wpi.axon.tasks.yolov3
 
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
-import edu.wpi.axon.dsl.task.Task
+import edu.wpi.axon.dsl.task.BaseTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
 
 /**
  * Constructs the input argument for the YoloV3 model.
  */
-class ConstructYoloV3ImageInput(name: String) : Task(name) {
+class ConstructYoloV3ImageInput(name: String) : BaseTask(name) {
 
     var imageDataInput: Variable by singleAssign()
     var imageSizeInput: Variable by singleAssign()
