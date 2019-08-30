@@ -128,7 +128,10 @@ class ScriptGenerator(
                         appendNode(it)
                     }
 
-                println("Generating $node")
+                if (generateDebugComments) {
+                    println("Generating $node")
+                }
+
                 appendCode(node, generateDebugComments, handledNodes)
             }
         }
@@ -149,7 +152,10 @@ class ScriptGenerator(
         requiredVariables.forEach { variable ->
             tasks.forEach { _, task ->
                 if (task !in handledNodes && variable in task.outputs) {
-                    println("Generating $task because of required variable $variable")
+                    if (generateDebugComments) {
+                        println("Generating $task because of required variable $variable")
+                    }
+
                     appendCode(task, generateDebugComments, handledNodes)
                 }
             }
