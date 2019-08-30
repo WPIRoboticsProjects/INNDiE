@@ -69,6 +69,7 @@ internal class BaseTaskTest : KoinTest {
         assertThat(task.isConfiguredCorrectly(), isFalse())
     }
 
+    @SuppressWarnings("LongParameterList")
     private fun stubTask(
         name: String = "task1",
         imports: Set<Import> = setOf(),
