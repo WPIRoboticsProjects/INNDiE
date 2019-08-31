@@ -37,6 +37,12 @@ sealed class Import(val components: Set<String>) {
     }
 }
 
+/**
+ * Makes an [Import] from the equivalent Python statement.
+ *
+ * @param import The Python import string.
+ * @return The equivalent [Import].
+ */
 fun makeImport(import: String): Import {
     val components = import.split(Regex("\\s"))
     return (when (components.size) {
