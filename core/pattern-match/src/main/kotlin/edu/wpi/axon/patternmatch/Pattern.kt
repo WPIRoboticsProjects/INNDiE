@@ -3,6 +3,7 @@ package edu.wpi.axon.patternmatch
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import arrow.core.some
 
 object Variable
 
@@ -25,17 +26,15 @@ class Pattern<T : List<E>, E : Any>(private val values: List<Any>) {
             return None
         }
 
-        val matchIndices = values.mapIndexedNotNull { index, value ->
+        return values.mapIndexedNotNull { index, value ->
             when (value) {
-                Variable -> index
+                Variable -> valueToMatch[index]
                 else -> if (valueToMatch[index] != values[index]) {
                     return None
                 } else {
                     null
                 }
             }
-        }
-
-        return Some(matchIndices.map { valueToMatch[it] })
+        }.some()
     }
 }
