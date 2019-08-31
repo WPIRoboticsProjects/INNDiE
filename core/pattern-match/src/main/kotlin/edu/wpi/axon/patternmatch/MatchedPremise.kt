@@ -14,7 +14,7 @@ class MatchedPremise<T : List<E>, E : Any>(
 ) {
 
     private val variables by lazy {
-        (pattern.matches(value) as Some).t
+        (pattern.match(value) as Some).t
     }
 
     fun firstMatch(): E = variables[0]

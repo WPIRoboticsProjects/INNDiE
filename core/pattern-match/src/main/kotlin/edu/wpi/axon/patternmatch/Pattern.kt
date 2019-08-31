@@ -20,7 +20,7 @@ class Pattern<T : List<E>, E : Any>(private val values: List<Any>) {
      * @param valueToMatch The value to match.
      * @return [Some] for a match (containing the values of the variables), [None] for no match.
      */
-    fun matches(valueToMatch: T): Option<List<E>> {
+    fun match(valueToMatch: T): Option<List<E>> {
         if (valueToMatch.size != values.size) {
             return None
         }

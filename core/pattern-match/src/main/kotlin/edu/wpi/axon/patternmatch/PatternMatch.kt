@@ -45,7 +45,7 @@ class PatternMatch<T : List<E>, E : Any, R : Any> {
      * @return [Some] on a match, [None] on no match.
      */
     fun evaluate(value: T): Option<R> = patterns.firstOrNone {
-        it.matches(value) is Some
+        it.match(value) is Some
     }.map {
         val conclusion = returnValues[it]!!
         MatchedPremise(it, value).conclusion()
