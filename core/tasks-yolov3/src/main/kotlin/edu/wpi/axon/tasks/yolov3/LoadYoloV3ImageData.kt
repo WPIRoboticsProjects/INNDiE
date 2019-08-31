@@ -30,7 +30,7 @@ class LoadYoloV3ImageData(name: String) : BaseTask(name) {
 
     override val imports = setOf(
         makeImport("from axon import preprocessYoloV3"),
-        makeImport("from numpy import np")
+        makeImport("import numpy as np")
     )
 
     override val inputs: Set<Variable>

@@ -22,7 +22,7 @@ class YoloV3PostprocessTask(name: String) : BaseTask(name) {
     var output: Variable by singleAssign()
 
     override val imports
-        get() = setOf(makeImport("from axon import postprocessYolov3"))
+        get() = setOf(makeImport("from axon import postprocessYoloV3"))
 
     override val inputs: Set<Variable>
         get() = setOf(input)

@@ -94,7 +94,7 @@ internal class Yolov3IntegrationTest : KoinTest {
         assertEquals(
             """
             |from PIL import Image
-            |from axon import postprocessYolov3
+            |from axon import postprocessYoloV3
             |from axon import preprocessYoloV3
             |import numpy as np
             |import onnx
