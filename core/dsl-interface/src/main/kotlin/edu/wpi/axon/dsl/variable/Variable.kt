@@ -16,7 +16,7 @@ open class Variable(val name: String) : Configurable, KoinComponent {
     /**
      * Validates the variable name.
      */
-    protected val variableNameValidator: VariableNameValidator by inject()
+    private val variableNameValidator: VariableNameValidator by inject()
 
     override fun isConfiguredCorrectly() = variableNameValidator.isValidVariableName(name)
 }
