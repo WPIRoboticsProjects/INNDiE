@@ -69,6 +69,17 @@ fun <A, B> isRight(): Matcher<Either<A, B>?> = object : Matcher<Either<A, B>?> {
     }
 }
 
+fun <A, B> isValid(): Matcher<Validated<A, B>?> = object : Matcher<Validated<A, B>?> {
+
+    override val description = "is Valid"
+
+    override fun invoke(actual: Validated<A, B>?) = when (actual) {
+        is Invalid -> MatchResult.Mismatch("was Invalid")
+        is Valid -> MatchResult.Match
+        null -> MatchResult.Mismatch("was null")
+    }
+}
+
 fun <A, B> isInvalid(): Matcher<Validated<A, B>?> = object : Matcher<Validated<A, B>?> {
 
     override val description = "is Invalid"

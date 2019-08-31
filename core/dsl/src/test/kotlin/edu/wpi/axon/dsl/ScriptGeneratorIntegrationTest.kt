@@ -1,15 +1,16 @@
 package edu.wpi.axon.dsl
 
-import com.natpryce.hamkrest.assertion.assertThat
-import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
+import io.kotlintest.assertions.arrow.nel.shouldHaveSize
+import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
+import io.kotlintest.assertions.arrow.validation.shouldBeValid
+import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
 import java.util.concurrent.CountDownLatch
 
@@ -40,7 +41,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             lastTask = task2
         }.code()
 
-        assertThat(codeLatch.count, equalTo(0L))
+        codeLatch.count shouldBe 0
     }
 
     @Test
@@ -66,7 +67,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             lastTask = task2
         }.code()
 
-        assertThat(codeLatch.count, equalTo(1L))
+        codeLatch.count shouldBe 1
     }
 
     @Test
@@ -92,7 +93,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             lastTask = task3
         }.code()
 
-        assertThat(task1CodeLatch.count, equalTo(1L))
+        task1CodeLatch.count shouldBe 1
     }
 
     @Test
@@ -124,7 +125,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             lastTask = task3
         }.code()
 
-        assertThat(task1CodeLatch.count, equalTo(1L))
+        task1CodeLatch.count shouldBe 1
     }
 
     @Test
@@ -133,18 +134,21 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val script = ScriptGenerator(
+        val badImport = Import.ModuleOnly("spaces in name")
+        val scriptGenerator = ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
         ) {
             val task1 by tasks.running(EmptyBaseTask::class) {
-                imports += Import.ModuleOnly("spaces in name")
+                imports += badImport
             }
 
             lastTask = task1
         }
 
-        assertThrows<IllegalArgumentException> { script.code() }
+        scriptGenerator.code().shouldBeInvalid { (nel) ->
+            nel.shouldHaveSize(1)
+        }
     }
 
     @Test
@@ -169,10 +173,10 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             requireGeneration(var1)
         }
 
-        val code = scriptGenerator.code()
-
-        assertFalse(code.contains("task1"))
-        assertTrue(code.contains("task2"))
+        scriptGenerator.code().shouldBeValid { (code) ->
+            assertFalse(code.contains("task1"))
+            assertTrue(code.contains("task2"))
+        }
     }
 
     @Test
@@ -197,9 +201,9 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             requireGeneration(var1)
         }
 
-        val code = scriptGenerator.code()
-
-        assertTrue(code.contains("task1"))
-        assertTrue(code.contains("task2"))
+        scriptGenerator.code().shouldBeValid { (code) ->
+            assertTrue(code.contains("task1"))
+            assertTrue(code.contains("task2"))
+        }
     }
 }

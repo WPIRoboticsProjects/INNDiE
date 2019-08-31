@@ -5,7 +5,7 @@ import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import java.util.concurrent.CountDownLatch
 
-class MockTask(override val name: String) : Task {
+data class MockTask(override val name: String) : Task {
 
     override val imports: MutableSet<Import> = mutableSetOf()
     override val inputs: MutableSet<Variable> = mutableSetOf()

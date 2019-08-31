@@ -3,12 +3,13 @@ package edu.wpi.axon.dsl
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
+import io.kotlintest.assertions.arrow.nel.shouldHaveSize
+import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 @Suppress("UNUSED_VARIABLE")
 internal class ScriptGeneratorTest {
@@ -62,7 +63,9 @@ internal class ScriptGeneratorTest {
             val task1 by tasks.running(MockTask::class)
         }
 
-        assertThrows<IllegalArgumentException> { scriptGenerator.code() }
+        scriptGenerator.code().shouldBeInvalid { (nel) ->
+            nel.shouldHaveSize(1)
+        }
 
         verify { mockTask.isConfiguredCorrectly() }
         verify { mockVariableContainer.values }

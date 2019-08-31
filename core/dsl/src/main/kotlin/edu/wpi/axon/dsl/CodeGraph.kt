@@ -1,5 +1,11 @@
 package edu.wpi.axon.dsl
 
+import arrow.Kind2
+import arrow.core.Either
+import arrow.core.ForEither
+import arrow.core.Left
+import arrow.core.Right
+import arrow.core.extensions.either.monad.binding
 import arrow.data.ListK
 import arrow.data.extensions.listk.applicative.applicative
 import arrow.data.fix
@@ -29,21 +35,22 @@ class CodeGraph(
     private val container: PolymorphicNamedDomainObjectContainer<AnyCode>
 ) {
 
-    val graph: ImmutableGraph<AnyCode> by lazy {
+    val graph: Either<String, ImmutableGraph<AnyCode>> by lazy {
         val mutableGraph = GraphBuilder.directed()
             .allowsSelfLoops(false)
             .expectedNodeCount(container.size)
             .build<AnyCode>()
 
-        container.forEach { (_, code) ->
-            populateGraphUsingDependencies(mutableGraph, code)
+        binding<String, ImmutableGraph<AnyCode>> {
+            container.forEach { (_, code) ->
+                populateGraphUsingDependencies(mutableGraph, code).bind()
+            }
+
+            populateGraphUsingVariables(mutableGraph, container).bind()
+
+            // TODO: Verify there are no islands in the final graph
+            ImmutableGraph.copyOf(mutableGraph)
         }
-
-        populateGraphUsingVariables(mutableGraph, container)
-
-        // TODO: Verify there are no islands in the final graph
-
-        ImmutableGraph.copyOf(mutableGraph)
     }
 
     /**
@@ -52,15 +59,15 @@ class CodeGraph(
     private fun populateGraphUsingDependencies(
         graph: MutableGraph<AnyCode>,
         code: AnyCode
-    ) {
+    ): Kind2<ForEither, String, Unit> {
         // Make sure nodes without dependencies are in the graph
         graph.addNode(code)
 
         code.dependencies.forEach {
             // Don't recurse if the edge was already in the graph
             if (graph.putEdge(it, code)) {
-                require(!hasCircuits(graph, code)) {
-                    "Adding an edge from $it to $code caused a circuit."
+                if (hasCircuits(graph, code)) {
+                    return Left("Adding an edge from $it to $code caused a circuit.")
                 }
 
                 it.dependencies.forEach {
@@ -68,6 +75,8 @@ class CodeGraph(
                 }
             }
         }
+
+        return Right(Unit)
     }
 
     /**
@@ -77,7 +86,7 @@ class CodeGraph(
     private fun populateGraphUsingVariables(
         graph: MutableGraph<AnyCode>,
         container: PolymorphicNamedDomainObjectContainer<AnyCode>
-    ) {
+    ): Either<String, Unit> {
         val codesK = container.values.toList().k()
         ListK.applicative()
             .tupled(codesK, codesK)
@@ -87,10 +96,15 @@ class CodeGraph(
             }
             .forEach { (codeWithOutputs, codeWithInputs) ->
                 graph.putEdge(codeWithOutputs, codeWithInputs)
-                require(!hasCircuits(graph, codeWithInputs)) {
-                    "Adding an edge between $codeWithOutputs and $codeWithInputs caused a circuit."
+                if (hasCircuits(graph, codeWithInputs)) {
+                    return Left(
+                        "Adding an edge between $codeWithOutputs and " +
+                            "$codeWithInputs caused a circuit."
+                    )
                 }
             }
+
+        return Right(Unit)
     }
 
     private fun hasCircuits(

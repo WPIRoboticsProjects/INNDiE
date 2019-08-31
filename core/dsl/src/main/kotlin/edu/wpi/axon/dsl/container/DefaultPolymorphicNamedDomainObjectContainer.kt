@@ -1,7 +1,7 @@
 package edu.wpi.axon.dsl.container
 
 import kotlin.reflect.KClass
-import kotlin.reflect.full.defaultType
+import kotlin.reflect.full.createType
 
 /**
  * A container for named domain objects. Names are given to new objects via a constructor.
@@ -28,7 +28,8 @@ class DefaultPolymorphicNamedDomainObjectContainer<T : Any>(
         // Find a constructor we can call to instantiate the variable
         val ctor = type.constructors.firstOrNull {
             val nonOptionalParams = it.parameters.filter { !it.isOptional }
-            nonOptionalParams.size == 1 && nonOptionalParams.first().type == String::class.defaultType
+            nonOptionalParams.size == 1 &&
+                nonOptionalParams.first().type == String::class.createType()
         }
 
         require(ctor != null) {
