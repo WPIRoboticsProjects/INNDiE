@@ -3,20 +3,13 @@ package edu.wpi.axon.dsl
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
-import edu.wpi.axon.dsl.imports.DefaultImportValidator
 import edu.wpi.axon.dsl.imports.Import
-import edu.wpi.axon.dsl.imports.ImportValidator
-import edu.wpi.axon.dsl.validator.path.DefaultPathValidator
-import edu.wpi.axon.dsl.validator.path.PathValidator
-import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
-import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
 import edu.wpi.axon.dsl.variable.Variable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
-import org.koin.dsl.module
 import org.koin.test.KoinTest
 import java.util.concurrent.CountDownLatch
 
@@ -32,10 +25,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTest {
     @Test
     fun `code dependencies should be called`() {
         startKoin {
-            modules(module {
-                single<VariableNameValidator> { PythonVariableNameValidator() }
-                single<PathValidator> { DefaultPathValidator() }
-            })
+            modules(defaultModule())
         }
 
         val codeLatch = CountDownLatch(2)
@@ -61,10 +51,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTest {
     @Test
     fun `tasks are not run multiple times`() {
         startKoin {
-            modules(module {
-                single<VariableNameValidator> { PythonVariableNameValidator() }
-                single<PathValidator> { DefaultPathValidator() }
-            })
+            modules(defaultModule())
         }
 
         val codeLatch = CountDownLatch(3)
@@ -90,10 +77,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTest {
     @Test
     fun `two tasks that depend on the same task does not duplicate code gen`() {
         startKoin {
-            modules(module {
-                single<VariableNameValidator> { PythonVariableNameValidator() }
-                single<PathValidator> { DefaultPathValidator() }
-            })
+            modules(defaultModule())
         }
 
         val task1CodeLatch = CountDownLatch(2)
@@ -119,10 +103,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTest {
     @Test
     fun `two tasks that depend on the same task linked by a variable does not duplicate code gen`() {
         startKoin {
-            modules(module {
-                single<VariableNameValidator> { PythonVariableNameValidator() }
-                single<PathValidator> { DefaultPathValidator() }
-            })
+            modules(defaultModule())
         }
 
         val task1CodeLatch = CountDownLatch(2)
@@ -154,11 +135,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTest {
     @Test
     fun `a task with invalid imports makes the script invalid`() {
         startKoin {
-            modules(module {
-                single<VariableNameValidator> { PythonVariableNameValidator() }
-                single<PathValidator> { DefaultPathValidator() }
-                single<ImportValidator> { DefaultImportValidator() }
-            })
+            modules(defaultModule())
         }
 
         val script = ScriptGenerator(

@@ -6,7 +6,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.koin.core.module.Module
 
-internal fun Module.alwaysValidImportValidator() =
+fun Module.alwaysValidImportValidator() =
     single<ImportValidator> {
         mockk { every { validateImports(any()) } returns Valid(emptySet()) }
     }

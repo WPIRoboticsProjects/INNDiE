@@ -3,22 +3,18 @@ package edu.wpi.axon.tasks.yolov3
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
+import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.InferenceTask
 import edu.wpi.axon.dsl.task.LoadClassLabels
 import edu.wpi.axon.dsl.task.LoadImageTask
 import edu.wpi.axon.dsl.task.MakeNewInferenceSession
-import edu.wpi.axon.dsl.validator.path.DefaultPathValidator
-import edu.wpi.axon.dsl.validator.path.PathValidator
-import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
-import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
 import edu.wpi.axon.dsl.variable.Variable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
-import org.koin.dsl.module
 import org.koin.test.KoinTest
 
 @Suppress("UNUSED_VARIABLE")
@@ -34,10 +30,7 @@ internal class Yolov3IntegrationTest : KoinTest {
     @Test
     fun `generate yolov3 run script`() {
         startKoin {
-            modules(module {
-                single<VariableNameValidator> { PythonVariableNameValidator() }
-                single<PathValidator> { DefaultPathValidator() }
-            })
+            modules(defaultModule())
         }
 
         val dsl = ScriptGenerator(
