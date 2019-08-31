@@ -4,10 +4,11 @@ package edu.wpi.axon.dsl
 
 import com.google.common.graph.EndpointPair
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
+import io.kotlintest.assertions.arrow.either.shouldBeLeft
+import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.equality.shouldBeEqualToUsingFields
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -38,7 +39,9 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        graph.nodes().shouldBeEqualToUsingFields(codes.values)
+        graph.shouldBeRight {
+            it.nodes().shouldBeEqualToUsingFields(codes.values)
+        }
     }
 
     @Test
@@ -59,10 +62,12 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        graph.nodes().shouldBeEqualToUsingFields(codes.values)
-        graph.edges().shouldBeEqualToUsingFields(
-            setOf(EndpointPair.ordered(codes["task2"], codes["task1"]))
-        )
+        graph.shouldBeRight {
+            it.nodes().shouldBeEqualToUsingFields(codes.values)
+            it.edges().shouldBeEqualToUsingFields(
+                setOf(EndpointPair.ordered(codes["task2"], codes["task1"]))
+            )
+        }
     }
 
     @Test
@@ -89,15 +94,17 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        graph.nodes().shouldBeEqualToUsingFields(codes.values + task3 + task4)
-        graph.edges().shouldBeEqualToUsingFields(
-            setOf(
-                EndpointPair.ordered(codes["task2"], codes["task1"]),
-                EndpointPair.ordered(task3, codes["task1"]),
-                EndpointPair.ordered(task3, codes["task2"]),
-                EndpointPair.ordered(task4, task3)
+        graph.shouldBeRight {
+            it.nodes().shouldBeEqualToUsingFields(codes.values + task3 + task4)
+            it.edges().shouldBeEqualToUsingFields(
+                setOf(
+                    EndpointPair.ordered(codes["task2"], codes["task1"]),
+                    EndpointPair.ordered(task3, codes["task1"]),
+                    EndpointPair.ordered(task3, codes["task2"]),
+                    EndpointPair.ordered(task4, task3)
+                )
             )
-        )
+        }
     }
 
     @Test
@@ -118,7 +125,8 @@ internal class CodeGraphTest {
         }
 
         val graph = CodeGraph(container)
-        assertThrows<IllegalArgumentException> { graph.graph }
+
+        graph.graph.shouldBeLeft()
     }
 
     @Test
@@ -147,10 +155,12 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        graph.nodes().shouldBeEqualToUsingFields(codes.values)
-        graph.edges().shouldBeEqualToUsingFields(
-            setOf(EndpointPair.ordered(codes["task1"], codes["task2"]))
-        )
+        graph.shouldBeRight {
+            it.nodes().shouldBeEqualToUsingFields(codes.values)
+            it.edges().shouldBeEqualToUsingFields(
+                setOf(EndpointPair.ordered(codes["task1"], codes["task2"]))
+            )
+        }
     }
 
     @Test
@@ -179,7 +189,7 @@ internal class CodeGraphTest {
         }
 
         val graph = CodeGraph(container)
-        assertThrows<IllegalArgumentException> { graph.graph }
+        graph.graph.shouldBeLeft()
     }
 
     private fun makeMockTasks(vararg names: String) =

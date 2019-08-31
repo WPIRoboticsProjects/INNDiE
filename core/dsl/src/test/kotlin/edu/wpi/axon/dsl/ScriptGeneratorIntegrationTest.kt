@@ -1,10 +1,10 @@
 package edu.wpi.axon.dsl
 
-import arrow.data.Nel
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
+import io.kotlintest.assertions.arrow.nel.shouldHaveSize
 import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.shouldBe
@@ -146,11 +146,9 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             lastTask = task1
         }
 
-        scriptGenerator.code().shouldBeInvalid(
-            Nel.just(EmptyBaseTask("task1").apply {
-                imports += badImport
-            })
-        )
+        scriptGenerator.code().shouldBeInvalid { (nel) ->
+            nel.shouldHaveSize(1)
+        }
     }
 
     @Test

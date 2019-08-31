@@ -2,6 +2,7 @@
 
 package edu.wpi.axon.dsl
 
+import arrow.core.Either
 import arrow.data.Invalid
 import arrow.data.Nel
 import arrow.data.Validated
@@ -58,31 +59,39 @@ class ScriptGenerator(
      * @param generateDebugComments Whether to insert debugging comments.
      * @return The entire generated script.
      */
-    fun code(generateDebugComments: Boolean = false): Validated<Nel<Configurable>, String> {
+    fun code(generateDebugComments: Boolean = false): Validated<Nel<String>, String> {
         if (!isConfiguredCorrectly()) {
-            return Invalid(Nel.just(this))
+            return Invalid(Nel.just("$this is configured incorrectly."))
         }
 
         (variables.values + tasks.values + requiredVariables)
             .filter { !it.isConfiguredCorrectly() }
             .let {
                 if (it.isNotEmpty()) {
-                    return Invalid(Nel.fromListUnsafe(it))
+                    return Invalid(Nel.fromListUnsafe(it).map { "$it is configured incorrectly." })
                 }
             }
 
-        return buildString {
-            val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
+        val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
 
-            @Suppress("UNCHECKED_CAST")
-            val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
+        @Suppress("UNCHECKED_CAST")
+        val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
 
-            appendImports(generateDebugComments, graph)
-            append('\n')
-            appendTaskCode(generateDebugComments, graph, handledNodes)
-            append('\n')
-            appendRequiredVariables(generateDebugComments, handledNodes)
-        }.trim().valid()
+        return when (graph) {
+            is Either.Left -> {
+                Invalid(Nel.just(graph.a))
+            }
+
+            is Either.Right -> {
+                buildString {
+                    appendImports(generateDebugComments, graph.b)
+                    append('\n')
+                    appendTaskCode(generateDebugComments, graph.b, handledNodes)
+                    append('\n')
+                    appendRequiredVariables(generateDebugComments, handledNodes)
+                }.trim().valid()
+            }
+        }
     }
 
     /**
