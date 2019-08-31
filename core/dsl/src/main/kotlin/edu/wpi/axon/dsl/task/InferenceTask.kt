@@ -1,14 +1,14 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.Code
-import edu.wpi.axon.dsl.Import
+import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
 
 /**
- * A [Task] that runs inference.
+ * Runs inference using the ONNX runtime.
  */
-class InferenceTask(name: String) : Task(name) {
+class InferenceTask(name: String) : BaseTask(name) {
 
     /**
      * The data input to the first layer of the model.

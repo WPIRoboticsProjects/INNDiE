@@ -1,8 +1,8 @@
 package edu.wpi.axon.tasks.yolov3
 
 import edu.wpi.axon.dsl.Code
-import edu.wpi.axon.dsl.Import
-import edu.wpi.axon.dsl.task.Task
+import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.task.BaseTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
 
@@ -11,7 +11,7 @@ import edu.wpi.axon.util.singleAssign
  *
  * TODO: Validate image format
  */
-class LoadYoloV3ImageData(name: String) : Task(name) {
+class LoadYoloV3ImageData(name: String) : BaseTask(name) {
 
     /**
      * The input holding the image.
