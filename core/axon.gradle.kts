@@ -151,6 +151,12 @@ configure(javaProjects) {
             version = property("junit-jupiter.version") as String
         )
 
+        testImplementation(
+            group = "io.kotlintest",
+            name = "kotlintest-runner-junit5",
+            version = property("kotlintest.version") as String
+        )
+
         testRuntime(
             group = "org.junit.platform",
             name = "junit-platform-launcher",

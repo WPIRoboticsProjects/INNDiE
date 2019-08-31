@@ -12,4 +12,10 @@ dependencies {
         name = "hamkrest",
         version = property("hamkrest.version") as String
     )
+
+    api(
+        group = "io.kotlintest",
+        name = "kotlintest-assertions-arrow",
+        version = property("kotlintest.version") as String
+    )
 }
