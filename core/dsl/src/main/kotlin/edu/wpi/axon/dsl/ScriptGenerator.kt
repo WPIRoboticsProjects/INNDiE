@@ -2,9 +2,6 @@
 
 package edu.wpi.axon.dsl
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
 import arrow.data.Invalid
 import arrow.data.Nel
 import arrow.data.Validated
@@ -61,16 +58,16 @@ class ScriptGenerator(
      * @param generateDebugComments Whether to insert debugging comments.
      * @return The entire generated script.
      */
-    fun code(generateDebugComments: Boolean = false): Validated<Either<Nel<String>, Nel<Configurable>>, String> {
+    fun code(generateDebugComments: Boolean = false): Validated<Nel<Configurable>, String> {
         if (!isConfiguredCorrectly()) {
-            return Invalid(Nel.just("The DSl was not configured correctly.").left())
+            return Invalid(Nel.just(this))
         }
 
         (variables.values + tasks.values + requiredVariables)
             .filter { !it.isConfiguredCorrectly() }
             .let {
                 if (it.isNotEmpty()) {
-                    return Invalid(Nel.fromListUnsafe(it).right())
+                    return Invalid(Nel.fromListUnsafe(it))
                 }
             }
 

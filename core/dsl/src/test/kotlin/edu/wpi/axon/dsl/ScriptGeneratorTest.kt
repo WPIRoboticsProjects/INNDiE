@@ -1,10 +1,10 @@
 package edu.wpi.axon.dsl
 
-import com.natpryce.hamkrest.assertion.assertThat
+import arrow.data.Nel
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.testutil.isInvalid
+import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
@@ -63,7 +63,7 @@ internal class ScriptGeneratorTest {
             val task1 by tasks.running(MockTask::class)
         }
 
-        assertThat(scriptGenerator.code(), isInvalid())
+        scriptGenerator.code().shouldBeInvalid(Nel.just(mockTask))
 
         verify { mockTask.isConfiguredCorrectly() }
         verify { mockVariableContainer.values }

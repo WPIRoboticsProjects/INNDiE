@@ -3,9 +3,8 @@
 package edu.wpi.axon.dsl
 
 import com.google.common.graph.EndpointPair
-import com.natpryce.hamkrest.assertion.assertThat
-import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
+import io.kotlintest.matchers.equality.shouldBeEqualToUsingFields
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -39,7 +38,7 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        assertThat(graph.nodes(), equalTo(codes.values.toSet<AnyCode>()))
+        graph.nodes().shouldBeEqualToUsingFields(codes.values)
     }
 
     @Test
@@ -60,14 +59,9 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        assertThat(graph.nodes(), equalTo(codes.values.toSet<AnyCode>()))
-        assertThat(
-            graph.edges(),
-            equalTo(
-                setOf<EndpointPair<AnyCode>>(
-                    EndpointPair.ordered(codes["task2"], codes["task1"])
-                )
-            )
+        graph.nodes().shouldBeEqualToUsingFields(codes.values)
+        graph.edges().shouldBeEqualToUsingFields(
+            setOf(EndpointPair.ordered(codes["task2"], codes["task1"]))
         )
     }
 
@@ -95,16 +89,13 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        assertThat(graph.nodes(), equalTo(codes.values.toSet<AnyCode>() + task3 + task4))
-        assertThat(
-            graph.edges(),
-            equalTo(
-                setOf<EndpointPair<AnyCode>>(
-                    EndpointPair.ordered(codes["task2"], codes["task1"]),
-                    EndpointPair.ordered(task3, codes["task1"]),
-                    EndpointPair.ordered(task3, codes["task2"]),
-                    EndpointPair.ordered(task4, task3)
-                )
+        graph.nodes().shouldBeEqualToUsingFields(codes.values + task3 + task4)
+        graph.edges().shouldBeEqualToUsingFields(
+            setOf(
+                EndpointPair.ordered(codes["task2"], codes["task1"]),
+                EndpointPair.ordered(task3, codes["task1"]),
+                EndpointPair.ordered(task3, codes["task2"]),
+                EndpointPair.ordered(task4, task3)
             )
         )
     }
@@ -156,14 +147,9 @@ internal class CodeGraphTest {
 
         val graph = CodeGraph(container).graph
 
-        assertThat(graph.nodes(), equalTo(codes.values.toSet<AnyCode>()))
-        assertThat(
-            graph.edges(),
-            equalTo(
-                setOf<EndpointPair<AnyCode>>(
-                    EndpointPair.ordered(codes["task1"], codes["task2"])
-                )
-            )
+        graph.nodes().shouldBeEqualToUsingFields(codes.values)
+        graph.edges().shouldBeEqualToUsingFields(
+            setOf(EndpointPair.ordered(codes["task1"], codes["task2"]))
         )
     }
 
