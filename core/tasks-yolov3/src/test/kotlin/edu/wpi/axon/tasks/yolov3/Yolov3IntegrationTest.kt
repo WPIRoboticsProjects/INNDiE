@@ -10,21 +10,14 @@ import edu.wpi.axon.dsl.task.LoadClassLabels
 import edu.wpi.axon.dsl.task.LoadImageTask
 import edu.wpi.axon.dsl.task.MakeNewInferenceSession
 import edu.wpi.axon.dsl.variable.Variable
-import org.junit.jupiter.api.AfterEach
+import edu.wpi.axon.testutil.KoinTestFixture
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
-import org.koin.test.KoinTest
 
 @Suppress("UNUSED_VARIABLE")
 @SuppressWarnings("LargeClass")
-internal class Yolov3IntegrationTest : KoinTest {
-
-    @AfterEach
-    fun afterEach() {
-        stopKoin()
-    }
+internal class Yolov3IntegrationTest : KoinTestFixture() {
 
     @SuppressWarnings("LongMethod", "MaxLineLength")
     @Test

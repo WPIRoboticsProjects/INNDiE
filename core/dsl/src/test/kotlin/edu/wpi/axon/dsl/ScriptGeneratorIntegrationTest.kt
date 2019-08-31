@@ -5,24 +5,17 @@ import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
-import org.junit.jupiter.api.AfterEach
+import edu.wpi.axon.testutil.KoinTestFixture
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
-import org.koin.test.KoinTest
 import java.util.concurrent.CountDownLatch
 
 @Suppress("UNUSED_VARIABLE")
 @SuppressWarnings("LargeClass")
-internal class ScriptGeneratorIntegrationTest : KoinTest {
-
-    @AfterEach
-    fun afterEach() {
-        stopKoin()
-    }
+internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
 
     @Test
     fun `code dependencies should be called`() {

@@ -9,22 +9,15 @@ import edu.wpi.axon.dsl.configuredIncorrectly
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.ImportValidator
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.testutil.isFalse
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import org.koin.test.KoinTest
 
-internal class BaseTaskTest : KoinTest {
-
-    @AfterEach
-    fun afterEach() {
-        stopKoin()
-    }
+internal class BaseTaskTest : KoinTestFixture() {
 
     @Test
     fun `an invalid input means the task is invalid`() {
