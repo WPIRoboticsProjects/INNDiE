@@ -11,4 +11,8 @@ dependencies {
     api(arrow("arrow-extras-data"))
 
     api(koin("koin-core"))
+
+    api(project(":pattern-match"))
+
+    testImplementation(project(":dsl-test-util"))
 }

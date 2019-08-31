@@ -24,6 +24,7 @@ val coreProject = project(":core")
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
+val patternMatchProject = project(":pattern-match")
 val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
 val utilProject = project(":util")
@@ -33,6 +34,7 @@ val kotlinProjects = setOf(
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
+    patternMatchProject,
     tasksYolov3Project,
     testUtilProject,
     utilProject
@@ -44,6 +46,7 @@ val publishedProjects = setOf(
     coreProject,
     dslProject,
     dslInterfaceProject,
+    patternMatchProject,
     tasksYolov3Project,
     utilProject
 )
@@ -51,6 +54,7 @@ val publishedProjects = setOf(
 val pitestProjects = setOf(
     coreProject,
     dslProject,
+    patternMatchProject,
     tasksYolov3Project,
     utilProject
 )
