@@ -2,6 +2,7 @@ package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
 
@@ -25,7 +26,7 @@ class InferenceTask(name: String) : BaseTask(name) {
      */
     var output: Variable by singleAssign()
 
-    override val imports: Set<Import> = setOf(Import.ModuleOnly("onnx"))
+    override val imports: Set<Import> = setOf(makeImport("import onnx"))
 
     override val inputs: Set<Variable>
         get() = setOf(input, inferenceSession)

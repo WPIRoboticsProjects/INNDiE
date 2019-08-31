@@ -1,7 +1,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.Code
-import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
@@ -28,9 +28,7 @@ class LoadImageTask(name: String) : BaseTask(name), KoinComponent {
      */
     private val pathValidator: PathValidator by inject()
 
-    override val imports = setOf(
-        Import.ModuleAndIdentifier("PIL", "Image")
-    )
+    override val imports = setOf(makeImport("from PIL import Image"))
 
     override val inputs: Set<Variable> = emptySet()
 

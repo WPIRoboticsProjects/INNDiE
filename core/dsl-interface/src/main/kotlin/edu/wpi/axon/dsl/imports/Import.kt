@@ -1,15 +1,13 @@
 package edu.wpi.axon.dsl.imports
 
+import arrow.core.Some
+import edu.wpi.axon.patternmatch.Variable
+import edu.wpi.axon.patternmatch.match
+
 /**
  * An import statement.
  *
  * @param components The component parts of the import (not including syntax).
- *
- * TODO: Make a DSL to write Imports like:
- * ```kotlin
- * Import { from "axon" import "preprocessYolov3" }
- * Import { import "numpy" as "np" }
- * ```
  */
 sealed class Import(val components: Set<String>) {
 
@@ -37,4 +35,35 @@ sealed class Import(val components: Set<String>) {
         Import(setOf(module, identifier, name)) {
         override fun code() = "from $module import $identifier as $name"
     }
+}
+
+/**
+ * Makes an [Import] from the equivalent Python statement.
+ *
+ * @param import The Python import string.
+ * @return The equivalent [Import].
+ */
+fun makeImport(import: String): Import {
+    val components = import.split(Regex("\\s"))
+    return (when (components.size) {
+        2, 4, 6 -> match<List<String>, String, Import>(components) {
+            pattern("import", Variable) returns {
+                Import.ModuleOnly(firstMatch())
+            }
+
+            pattern("from", Variable, "import", Variable) returns {
+                Import.ModuleAndIdentifier(firstMatch(), secondMatch())
+            }
+
+            pattern("import", Variable, "as", Variable) returns {
+                Import.ModuleAndName(firstMatch(), secondMatch())
+            }
+
+            pattern("from", Variable, "import", Variable, "as", Variable) returns {
+                Import.FullImport(firstMatch(), secondMatch(), thirdMatch())
+            }
+        }
+
+        else -> throw IllegalArgumentException("Invalid import string: $import")
+    } as Some).t
 }
