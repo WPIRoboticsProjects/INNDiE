@@ -47,7 +47,9 @@ internal class CodeGraphTest {
     @Test
     fun `adding a task with a dependency task adds two nodes and an edge`() {
         val codes = makeMockTasks("task1", "task2")
-        codes["task1"]!!.dependencies += codes["task2"]!!
+        val task1 = codes["task1"]!!
+        val task2 = codes["task2"]!!
+        task1.dependencies += task2
 
         val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
             Map<String, AnyCode> by codes {
@@ -65,7 +67,7 @@ internal class CodeGraphTest {
         graph.shouldBeRight {
             it.nodes().shouldBeEqualToUsingFields(codes.values)
             it.edges().shouldBeEqualToUsingFields(
-                setOf(EndpointPair.ordered(codes["task2"], codes["task1"]))
+                setOf(EndpointPair.ordered(task2, task1))
             )
         }
     }
@@ -73,12 +75,14 @@ internal class CodeGraphTest {
     @Test
     fun `add multiple tasks with multiple dependencies`() {
         val codes = makeMockTasks("task1", "task2")
+        val task1 = codes["task1"]!!
+        val task2 = codes["task2"]!!
         val task3 = MockTask("task3")
         val task4 = MockTask("task4")
 
-        codes["task1"]!!.dependencies += codes["task2"]!!
-        codes["task1"]!!.dependencies += task3
-        codes["task2"]!!.dependencies += task3
+        task1.dependencies += task2
+        task1.dependencies += task3
+        task2.dependencies += task3
         task3.dependencies += task4
 
         val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
@@ -98,9 +102,9 @@ internal class CodeGraphTest {
             it.nodes().shouldBeEqualToUsingFields(codes.values + task3 + task4)
             it.edges().shouldBeEqualToUsingFields(
                 setOf(
-                    EndpointPair.ordered(codes["task2"], codes["task1"]),
-                    EndpointPair.ordered(task3, codes["task1"]),
-                    EndpointPair.ordered(task3, codes["task2"]),
+                    EndpointPair.ordered(task2, task1),
+                    EndpointPair.ordered(task3, task1),
+                    EndpointPair.ordered(task3, task2),
                     EndpointPair.ordered(task4, task3)
                 )
             )
@@ -110,8 +114,11 @@ internal class CodeGraphTest {
     @Test
     fun `circular dependencies are not allowed`() {
         val codes = makeMockTasks("task1", "task2")
-        codes["task1"]!!.dependencies += codes["task2"]!!
-        codes["task2"]!!.dependencies += codes["task1"]!!
+        val task1 = codes["task1"]!!
+        val task2 = codes["task2"]!!
+
+        task1.dependencies += task2
+        task2.dependencies += task1
 
         val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
             Map<String, AnyCode> by codes {
@@ -138,9 +145,12 @@ internal class CodeGraphTest {
         }
 
         val codes = makeMockTasks("task1", "task2")
+        val task1 = codes["task1"]!!
+        val task2 = codes["task2"]!!
         val variable1 = MockVariable("variable1")
-        codes["task1"]!!.outputs += variable1
-        codes["task2"]!!.inputs += variable1
+
+        task1.outputs += variable1
+        task2.inputs += variable1
 
         val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
             Map<String, AnyCode> by codes {
@@ -158,7 +168,7 @@ internal class CodeGraphTest {
         graph.shouldBeRight {
             it.nodes().shouldBeEqualToUsingFields(codes.values)
             it.edges().shouldBeEqualToUsingFields(
-                setOf(EndpointPair.ordered(codes["task1"], codes["task2"]))
+                setOf(EndpointPair.ordered(task1, task2))
             )
         }
     }
@@ -172,10 +182,13 @@ internal class CodeGraphTest {
         }
 
         val codes = makeMockTasks("task1", "task2")
+        val task1 = codes["task1"]!!
+        val task2 = codes["task2"]!!
         val variable1 = MockVariable("variable1")
-        codes["task1"]!!.dependencies += codes["task2"]!!
-        codes["task1"]!!.outputs += variable1
-        codes["task2"]!!.inputs += variable1
+
+        task1.dependencies += task2
+        task1.outputs += variable1
+        task2.inputs += variable1
 
         val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
             Map<String, AnyCode> by codes {
