@@ -7,6 +7,7 @@ import edu.wpi.axon.dsl.configuredIncorrectly
 import edu.wpi.axon.testutil.isFalse
 import edu.wpi.axon.testutil.isTrue
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
@@ -120,5 +121,22 @@ internal class InferenceTaskTest : KoinTest {
         }
 
         assertThat(task.isConfiguredCorrectly(), isTrue())
+    }
+
+    @Test
+    fun `test code`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
+        val task = InferenceTask(inferenceTaskName).apply {
+            input = configuredCorrectly("input1")
+            inferenceSession = configuredCorrectly("input2")
+            output = configuredCorrectly("output1")
+        }
+
+        assertEquals("output1 = input2.run(None, input1)", task.code())
     }
 }
