@@ -1,7 +1,7 @@
 package edu.wpi.axon.tasks.yolov3
 
 import edu.wpi.axon.dsl.Code
-import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.task.BaseTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
@@ -22,8 +22,7 @@ class YoloV3PostprocessTask(name: String) : BaseTask(name) {
     var output: Variable by singleAssign()
 
     override val imports
-        get() = (dependencies.flatMapTo(mutableSetOf()) { it.imports } +
-            Import.ModuleAndIdentifier("axon", "postprocessYolov3")).toSet()
+        get() = setOf(makeImport("from axon import postprocessYolov3"))
 
     override val inputs: Set<Variable>
         get() = setOf(input)

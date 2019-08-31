@@ -1,7 +1,7 @@
 package edu.wpi.axon.tasks.yolov3
 
 import edu.wpi.axon.dsl.Code
-import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.task.BaseTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
@@ -29,8 +29,8 @@ class LoadYoloV3ImageData(name: String) : BaseTask(name) {
     var imageSizeOutput: Variable by singleAssign()
 
     override val imports = setOf(
-        Import.ModuleAndIdentifier("axon", "preprocessYoloV3"),
-        Import.ModuleAndName("numpy", "np")
+        makeImport("from axon import preprocessYoloV3"),
+        makeImport("from numpy import np")
     )
 
     override val inputs: Set<Variable>

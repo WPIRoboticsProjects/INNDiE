@@ -2,6 +2,7 @@ package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
@@ -28,7 +29,7 @@ class MakeNewInferenceSession(name: String) : BaseTask(name), KoinComponent {
      */
     private val pathValidator: PathValidator by inject()
 
-    override val imports: Set<Import> = setOf(Import.ModuleOnly("onnxruntime"))
+    override val imports: Set<Import> = setOf(makeImport("import onnxruntime"))
 
     override val inputs: Set<Variable>
         get() = setOf()
