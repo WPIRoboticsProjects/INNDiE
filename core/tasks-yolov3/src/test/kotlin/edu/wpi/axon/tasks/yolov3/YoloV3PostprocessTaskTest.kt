@@ -3,23 +3,16 @@ package edu.wpi.axon.tasks.yolov3
 import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
+import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.testutil.isTrue
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import org.koin.test.KoinTest
 
-internal class YoloV3PostprocessTaskTest : KoinTest {
+internal class YoloV3PostprocessTaskTest : KoinTestFixture() {
 
     private val taskName = "task"
-
-    @AfterEach
-    fun afterEach() {
-        stopKoin()
-    }
 
     @Test
     fun `input cannot be unconfigured`() {

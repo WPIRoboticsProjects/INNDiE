@@ -11,12 +11,14 @@ class MockTask(override val name: String) : Task {
     override val inputs: MutableSet<Variable> = mutableSetOf()
     override val outputs: MutableSet<Variable> = mutableSetOf()
     override val dependencies: MutableSet<AnyCode> = mutableSetOf()
+
     var latch: CountDownLatch? = null
+    var code = ""
 
     override fun isConfiguredCorrectly() = true
 
     // TODO: Calling countDown in here is bad because this method should be stateless
-    override fun code() = "".also { latch?.countDown() }
+    override fun code() = code.also { latch?.countDown() }
 
     override fun toString() = "MockTask(name='$name')"
 }

@@ -2,6 +2,7 @@ package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
+import edu.wpi.axon.dsl.variable.Variable
 import io.mockk.every
 import io.mockk.mockk
 
@@ -19,8 +20,20 @@ fun mockPathValidator(vararg pathValidations: Pair<String, Boolean>) =
         }
     }
 
-inline fun <reified T : Configurable> configuredCorrectly() =
-    mockk<T> { every { isConfiguredCorrectly() } returns true }
+inline fun <reified T : Variable> configuredCorrectly(inputName: String? = null) =
+    mockk<T> {
+        if (inputName != null) {
+            every { name } returns inputName
+        }
 
-inline fun <reified T : Configurable> configuredIncorrectly() =
-    mockk<T> { every { isConfiguredCorrectly() } returns false }
+        every { isConfiguredCorrectly() } returns true
+    }
+
+inline fun <reified T : Variable> configuredIncorrectly(inputName: String? = null) =
+    mockk<T> {
+        if (inputName != null) {
+            every { name } returns inputName
+        }
+
+        every { isConfiguredCorrectly() } returns false
+    }

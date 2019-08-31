@@ -4,24 +4,18 @@ import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.configuredIncorrectly
+import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.testutil.isFalse
 import edu.wpi.axon.testutil.isTrue
-import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import org.koin.test.KoinTest
 
-internal class InferenceTaskTest : KoinTest {
+internal class InferenceTaskTest : KoinTestFixture() {
 
     private val inferenceTaskName = "task"
-
-    @AfterEach
-    fun afterEach() {
-        stopKoin()
-    }
 
     @Test
     fun `input cannot be uninitialized`() {
@@ -120,5 +114,22 @@ internal class InferenceTaskTest : KoinTest {
         }
 
         assertThat(task.isConfiguredCorrectly(), isTrue())
+    }
+
+    @Test
+    fun `test code`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
+        val task = InferenceTask(inferenceTaskName).apply {
+            input = configuredCorrectly("input1")
+            inferenceSession = configuredCorrectly("input2")
+            output = configuredCorrectly("output1")
+        }
+
+        assertEquals("output1 = input2.run(None, input1)", task.code())
     }
 }

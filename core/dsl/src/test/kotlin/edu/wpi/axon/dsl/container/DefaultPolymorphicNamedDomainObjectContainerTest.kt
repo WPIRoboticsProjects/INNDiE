@@ -4,24 +4,17 @@ import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.MockVariable
 import edu.wpi.axon.dsl.mockVariableNameValidator
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.testutil.isTrue
 import edu.wpi.axon.testutil.mapHasElementWhere
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import org.koin.test.KoinTest
 
-internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTest {
+internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixture() {
 
     private val varName = "varName"
-
-    @AfterEach
-    fun afterEach() {
-        stopKoin()
-    }
 
     @Test
     fun `calling create with a name adds a new variable`() {

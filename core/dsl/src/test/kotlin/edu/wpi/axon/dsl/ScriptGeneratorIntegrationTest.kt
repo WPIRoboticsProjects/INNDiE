@@ -5,22 +5,17 @@ import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
-import org.junit.jupiter.api.AfterEach
+import edu.wpi.axon.testutil.KoinTestFixture
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
-import org.koin.test.KoinTest
 import java.util.concurrent.CountDownLatch
 
 @Suppress("UNUSED_VARIABLE")
 @SuppressWarnings("LargeClass")
-internal class ScriptGeneratorIntegrationTest : KoinTest {
-
-    @AfterEach
-    fun afterEach() {
-        stopKoin()
-    }
+internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
 
     @Test
     fun `code dependencies should be called`() {
@@ -150,5 +145,61 @@ internal class ScriptGeneratorIntegrationTest : KoinTest {
         }
 
         assertThrows<IllegalArgumentException> { script.code() }
+    }
+
+    @Test
+    fun `a required variable as an input does not cause a task to be generated`() {
+        startKoin {
+            modules(defaultModule())
+        }
+
+        val scriptGenerator = ScriptGenerator(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
+            val var1 by variables.creating(MockVariable::class)
+            val task1 by tasks.running(MockTask::class) {
+                inputs += var1
+                code = "task1"
+            }
+            val task2 by tasks.running(MockTask::class) {
+                code = "task2"
+            }
+            lastTask = task2
+            requireGeneration(var1)
+        }
+
+        val code = scriptGenerator.code()
+
+        assertFalse(code.contains("task1"))
+        assertTrue(code.contains("task2"))
+    }
+
+    @Test
+    fun `a required variable as an output causes a task to be generated`() {
+        startKoin {
+            modules(defaultModule())
+        }
+
+        val scriptGenerator = ScriptGenerator(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
+            val var1 by variables.creating(MockVariable::class)
+            val task1 by tasks.running(MockTask::class) {
+                outputs += var1
+                code = "task1"
+            }
+            val task2 by tasks.running(MockTask::class) {
+                code = "task2"
+            }
+            lastTask = task2
+            requireGeneration(var1)
+        }
+
+        val code = scriptGenerator.code()
+
+        assertTrue(code.contains("task1"))
+        assertTrue(code.contains("task2"))
     }
 }
