@@ -11,7 +11,7 @@ import edu.wpi.axon.dsl.task.LoadImageTask
 import edu.wpi.axon.dsl.task.MakeNewInferenceSession
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
-import org.junit.jupiter.api.Assertions.assertEquals
+import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 
@@ -84,7 +84,7 @@ internal class Yolov3IntegrationTest : KoinTestFixture() {
         }
 
         val code = dsl.code()
-        assertEquals(
+        code.shouldBeValid {
             """
             |from PIL import Image
             |from axon import postprocessYoloV3
@@ -108,8 +108,7 @@ internal class Yolov3IntegrationTest : KoinTestFixture() {
             |
             |
             |classes = [line.rstrip('\n') for line in open('coco_classes.txt')]
-            """.trimMargin(),
-            code
-        )
+            """.trimMargin()
+        }
     }
 }

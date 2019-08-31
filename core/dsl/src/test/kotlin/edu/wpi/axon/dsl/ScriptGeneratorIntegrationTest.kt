@@ -1,15 +1,17 @@
 package edu.wpi.axon.dsl
 
+import arrow.data.Valid
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.axon.testutil.isInvalid
+import edu.wpi.axon.testutil.isValid
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
 import java.util.concurrent.CountDownLatch
 
@@ -133,7 +135,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val script = ScriptGenerator(
+        val scriptGenerator = ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
         ) {
@@ -144,7 +146,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             lastTask = task1
         }
 
-        assertThrows<IllegalArgumentException> { script.code() }
+        assertThat(scriptGenerator.code(), isInvalid())
     }
 
     @Test
@@ -171,8 +173,10 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
 
         val code = scriptGenerator.code()
 
-        assertFalse(code.contains("task1"))
-        assertTrue(code.contains("task2"))
+        assertThat(code, isValid())
+        code as Valid
+        assertFalse(code.a.contains("task1"))
+        assertTrue(code.a.contains("task2"))
     }
 
     @Test
@@ -199,7 +203,9 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
 
         val code = scriptGenerator.code()
 
-        assertTrue(code.contains("task1"))
-        assertTrue(code.contains("task2"))
+        assertThat(code, isValid())
+        code as Valid
+        assertTrue(code.a.contains("task1"))
+        assertTrue(code.a.contains("task2"))
     }
 }

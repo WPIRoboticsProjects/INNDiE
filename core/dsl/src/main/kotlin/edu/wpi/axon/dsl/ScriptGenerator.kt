@@ -2,6 +2,13 @@
 
 package edu.wpi.axon.dsl
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
+import arrow.data.Invalid
+import arrow.data.Nel
+import arrow.data.Validated
+import arrow.data.valid
 import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
@@ -54,34 +61,32 @@ class ScriptGenerator(
      * @param generateDebugComments Whether to insert debugging comments.
      * @return The entire generated script.
      */
-    fun code(generateDebugComments: Boolean = false) = buildString {
-        require(isConfiguredCorrectly()) {
-            "The DSl was not configured correctly."
+    fun code(generateDebugComments: Boolean = false): Validated<Either<Nel<String>, Nel<Configurable>>, String> {
+        if (!isConfiguredCorrectly()) {
+            return Invalid(Nel.just("The DSl was not configured correctly.").left())
         }
 
-        // TODO: Don't throw in here
         (variables.values + tasks.values + requiredVariables)
             .filter { !it.isConfiguredCorrectly() }
             .let {
-                require(it.isEmpty()) {
-                    """
-                    |Incorrectly configured:
-                    |${it.joinToString("\n")}
-                    """.trimMargin()
+                if (it.isNotEmpty()) {
+                    return Invalid(Nel.fromListUnsafe(it).right())
                 }
             }
 
-        val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
+        return buildString {
+            val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
 
-        @Suppress("UNCHECKED_CAST")
-        val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
+            @Suppress("UNCHECKED_CAST")
+            val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
 
-        appendImports(generateDebugComments, graph)
-        append('\n')
-        appendTaskCode(generateDebugComments, graph, handledNodes)
-        append('\n')
-        appendRequiredVariables(generateDebugComments, handledNodes)
-    }.trim()
+            appendImports(generateDebugComments, graph)
+            append('\n')
+            appendTaskCode(generateDebugComments, graph, handledNodes)
+            append('\n')
+            appendRequiredVariables(generateDebugComments, handledNodes)
+        }.trim().valid()
+    }
 
     /**
      * Appends all the needed Imports.

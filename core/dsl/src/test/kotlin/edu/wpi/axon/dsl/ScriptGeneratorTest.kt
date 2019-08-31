@@ -1,14 +1,15 @@
 package edu.wpi.axon.dsl
 
+import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.testutil.isInvalid
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 @Suppress("UNUSED_VARIABLE")
 internal class ScriptGeneratorTest {
@@ -62,7 +63,7 @@ internal class ScriptGeneratorTest {
             val task1 by tasks.running(MockTask::class)
         }
 
-        assertThrows<IllegalArgumentException> { scriptGenerator.code() }
+        assertThat(scriptGenerator.code(), isInvalid())
 
         verify { mockTask.isConfiguredCorrectly() }
         verify { mockVariableContainer.values }
