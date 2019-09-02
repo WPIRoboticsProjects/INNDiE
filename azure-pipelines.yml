@@ -27,7 +27,7 @@ stages:
             jdkArchitectureOption: 'x64'
             publishJUnitResults: true
             testResultsFiles: '**/TEST-*.xml'
-            tasks: 'check jacocoTestReport'
+            tasks: 'check jacocoTestReport mergeReports'
 
         - bash: bash <(curl -s https://codecov.io/bash)
           displayName: 'CodeCov'
@@ -51,7 +51,7 @@ stages:
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
             publishJUnitResults: false
-            tasks: 'check jacocoTestReport'
+            tasks: 'check jacocoTestReport mergeReports'
 
     - job: Windows
 
@@ -70,4 +70,4 @@ stages:
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
             publishJUnitResults: false
-            tasks: 'check jacocoTestReport'
+            tasks: 'check jacocoTestReport mergeReports'
