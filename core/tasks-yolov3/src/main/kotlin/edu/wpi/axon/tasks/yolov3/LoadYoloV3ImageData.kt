@@ -11,7 +11,7 @@ import edu.wpi.axon.util.singleAssign
  *
  * TODO: Validate image format
  */
-class LoadYoloV3ImageData(name: String) : BaseTask(name) {
+class LoadYoloV3ImageData   (name: String) : BaseTask(name) {
 
     /**
      * The input holding the image.

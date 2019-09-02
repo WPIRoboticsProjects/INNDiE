@@ -10,8 +10,6 @@ import org.koin.dsl.module
 
 internal class InferenceTaskTest : KoinTestFixture() {
 
-    private val inferenceTaskName = "task"
-
     @Test
     fun `test code`() {
         startKoin {
@@ -20,7 +18,7 @@ internal class InferenceTaskTest : KoinTestFixture() {
             })
         }
 
-        val task = InferenceTask(inferenceTaskName).apply {
+        val task = InferenceTask("task").apply {
             input = configuredCorrectly("input1")
             inferenceSession = configuredCorrectly("input2")
             output = configuredCorrectly("output1")
