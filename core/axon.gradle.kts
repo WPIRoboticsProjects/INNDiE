@@ -171,7 +171,7 @@ configure(javaProjects) {
         options.isIncremental = true
     }
 
-    tasks.withType<Test> {
+    val test by tasks.getting(Test::class) {
         @Suppress("UnstableApiUsage")
         useJUnitPlatform {
             filter {
@@ -225,7 +225,6 @@ configure(javaProjects) {
     }
 
     tasks.withType<JacocoReport> {
-        @Suppress("UnstableApiUsage")
         reports {
             html.isEnabled = true
             xml.isEnabled = true
@@ -325,6 +324,21 @@ configure(kotlinProjects) {
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
     }
+}
+
+val jacocoMerge by tasks.creating(JacocoMerge::class) {
+    subprojects.forEach { subproject ->
+        if (subproject !in listOf(utilProject, testUtilProject, dslTestUtilProject)) {
+            executionData(subproject.tasks.withType<Test>())
+        }
+    }
+}
+
+val mergeReports by tasks.creating(JacocoReport::class) {
+    executionData(jacocoMerge.destinationFile)
+    dependsOn(jacocoMerge)
+    sourceDirectories.from(sourceSets.main.get().allSource.sourceDirectories)
+    classDirectories.from(sourceSets.main.get().output)
 }
 
 configure(pitestProjects) {
