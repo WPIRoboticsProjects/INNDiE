@@ -6,6 +6,9 @@ import edu.wpi.axon.dsl.task.LoadImageTask
 import edu.wpi.axon.dsl.task.MakeNewInferenceSession
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.tasks.yolov3.ConstructYoloV3ImageInput
+import edu.wpi.axon.tasks.yolov3.LoadYoloV3ImageData
+import edu.wpi.axon.tasks.yolov3.YoloV3PostprocessTask
 import edu.wpi.axon.testutil.KoinTestFixture
 import io.kotlintest.matchers.boolean.shouldBeFalse
 import io.kotlintest.shouldThrow
@@ -90,6 +93,27 @@ internal class GeneralTaskConfigurationTest : KoinTestFixture() {
             Arguments.of(
                 { MakeNewInferenceSession("").apply { modelPathInput = "" } },
                 listOf(MakeNewInferenceSession::sessionOutput)
+            ),
+            Arguments.of(
+                { ConstructYoloV3ImageInput("") },
+                listOf(
+                    ConstructYoloV3ImageInput::imageDataInput,
+                    ConstructYoloV3ImageInput::imageSizeInput,
+                    ConstructYoloV3ImageInput::sessionInput,
+                    ConstructYoloV3ImageInput::output
+                )
+            ),
+            Arguments.of(
+                { LoadYoloV3ImageData("") },
+                listOf(
+                    LoadYoloV3ImageData::imageInput,
+                    LoadYoloV3ImageData::imageDataOutput,
+                    LoadYoloV3ImageData::imageSizeOutput
+                )
+            ),
+            Arguments.of(
+                { YoloV3PostprocessTask("") },
+                listOf(YoloV3PostprocessTask::input, YoloV3PostprocessTask::output)
             )
         )
     }
