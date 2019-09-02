@@ -78,19 +78,15 @@ class ScriptGenerator(
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
 
         return when (graph) {
-            is Either.Left -> {
-                Invalid(Nel.just(graph.a))
-            }
+            is Either.Left -> Invalid(Nel.just(graph.a))
 
-            is Either.Right -> {
-                buildString {
-                    appendImports(generateDebugComments, graph.b)
-                    append('\n')
-                    appendTaskCode(generateDebugComments, graph.b, handledNodes)
-                    append('\n')
-                    appendRequiredVariables(generateDebugComments, handledNodes)
-                }.trim().valid()
-            }
+            is Either.Right -> buildString {
+                appendImports(generateDebugComments, graph.b)
+                append('\n')
+                appendTaskCode(generateDebugComments, graph.b, handledNodes)
+                append('\n')
+                appendRequiredVariables(generateDebugComments, handledNodes)
+            }.trim().valid()
         }
     }
 

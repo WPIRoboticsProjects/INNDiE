@@ -3,7 +3,6 @@
 package edu.wpi.axon.dsl
 
 import com.google.common.graph.EndpointPair
-import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.equality.shouldBeEqualToUsingFields
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import kotlin.reflect.KClass
 
 @Suppress("UnstableApiUsage")
 internal class CodeGraphTest {
@@ -25,18 +23,7 @@ internal class CodeGraphTest {
     @Test
     fun `adding one task creates one node`() {
         val codes = makeMockTasks("task1")
-
-        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
-            Map<String, AnyCode> by codes {
-            override fun <U : AnyCode> create(
-                name: String,
-                type: KClass<U>,
-                configure: (U.() -> Unit)?
-            ): U {
-                TODO("not implemented")
-            }
-        }
-
+        val container = mockContainer(codes)
         val graph = CodeGraph(container).graph
 
         graph.shouldBeRight {
@@ -51,17 +38,7 @@ internal class CodeGraphTest {
         val task2 = codes["task2"]!!
         task1.dependencies += task2
 
-        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
-            Map<String, AnyCode> by codes {
-            override fun <U : AnyCode> create(
-                name: String,
-                type: KClass<U>,
-                configure: (U.() -> Unit)?
-            ): U {
-                TODO("not implemented")
-            }
-        }
-
+        val container = mockContainer(codes)
         val graph = CodeGraph(container).graph
 
         graph.shouldBeRight {
@@ -85,17 +62,7 @@ internal class CodeGraphTest {
         task2.dependencies += task3
         task3.dependencies += task4
 
-        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
-            Map<String, AnyCode> by codes {
-            override fun <U : AnyCode> create(
-                name: String,
-                type: KClass<U>,
-                configure: (U.() -> Unit)?
-            ): U {
-                TODO("not implemented")
-            }
-        }
-
+        val container = mockContainer(codes)
         val graph = CodeGraph(container).graph
 
         graph.shouldBeRight {
@@ -120,17 +87,7 @@ internal class CodeGraphTest {
         task1.dependencies += task2
         task2.dependencies += task1
 
-        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
-            Map<String, AnyCode> by codes {
-            override fun <U : AnyCode> create(
-                name: String,
-                type: KClass<U>,
-                configure: (U.() -> Unit)?
-            ): U {
-                TODO("not implemented")
-            }
-        }
-
+        val container = mockContainer(codes)
         val graph = CodeGraph(container)
 
         graph.graph.shouldBeLeft()
@@ -152,17 +109,7 @@ internal class CodeGraphTest {
         task1.outputs += variable1
         task2.inputs += variable1
 
-        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
-            Map<String, AnyCode> by codes {
-            override fun <U : AnyCode> create(
-                name: String,
-                type: KClass<U>,
-                configure: (U.() -> Unit)?
-            ): U {
-                TODO("not implemented")
-            }
-        }
-
+        val container = mockContainer(codes)
         val graph = CodeGraph(container).graph
 
         graph.shouldBeRight {
@@ -190,17 +137,7 @@ internal class CodeGraphTest {
         task1.outputs += variable1
         task2.inputs += variable1
 
-        val container = object : PolymorphicNamedDomainObjectContainer<AnyCode>,
-            Map<String, AnyCode> by codes {
-            override fun <U : AnyCode> create(
-                name: String,
-                type: KClass<U>,
-                configure: (U.() -> Unit)?
-            ): U {
-                TODO("not implemented")
-            }
-        }
-
+        val container = mockContainer(codes)
         val graph = CodeGraph(container)
         graph.graph.shouldBeLeft()
     }

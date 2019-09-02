@@ -1,3 +1,5 @@
+@file:SuppressWarnings("LargeClass")
+
 package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
@@ -15,7 +17,6 @@ import org.koin.core.context.startKoin
 import java.util.concurrent.CountDownLatch
 
 @Suppress("UNUSED_VARIABLE")
-@SuppressWarnings("LargeClass")
 internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
 
     @Test
