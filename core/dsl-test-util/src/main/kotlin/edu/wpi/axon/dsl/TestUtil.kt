@@ -16,3 +16,8 @@ fun Module.alwaysValidPathValidator() =
     single<PathValidator> {
         mockk { every { isValidPathName(any()) } returns true }
     }
+
+fun Module.alwaysInvalidPathValidator() =
+    single<PathValidator> {
+        mockk { every { isValidPathName(any()) } returns false }
+    }
