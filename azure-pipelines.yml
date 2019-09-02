@@ -29,7 +29,7 @@ stages:
             testResultsFiles: '**/TEST-*.xml'
             tasks: 'check jacocoTestReport mergeReports'
 
-        - bash: bash <(curl -s https://codecov.io/bash) -f build/jacoco/jacocoMerge.exec
+        - bash: bash <(curl -s https://codecov.io/bash) -f build/reports/jacoco/mergeReports/mergeReports.xml
           displayName: 'CodeCov'
           workingDirectory: './core'
           env:

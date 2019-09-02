@@ -339,6 +339,11 @@ val mergeReports by tasks.creating(JacocoReport::class) {
     dependsOn(jacocoMerge)
     sourceDirectories.from(sourceSets.main.get().allSource.sourceDirectories)
     classDirectories.from(sourceSets.main.get().output)
+    reports {
+        html.isEnabled = true
+        xml.isEnabled = true
+        csv.isEnabled = false
+    }
 }
 
 configure(pitestProjects) {
