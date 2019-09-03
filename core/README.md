@@ -15,7 +15,7 @@ The flow of information through the DSL to the generated code is structured as
 follows:
 
 1. Information is input using the DSL via the `ScriptGenerator`. This forms a
-"program" configuration which completely described the code which will be
+"program" configuration which completely describes the code which will be
 generated.
 2. This configuration is checked for correctness by the `ScriptGenerator` inside
 `ScriptGenerator.code`.
