@@ -170,7 +170,7 @@ class ScriptGenerator(
     }
 
     /**
-     * Appends code for all the explicitly required variables.
+     * Adds dependencies on the tasks that output to any of the explicitly required variables.
      *
      * @param generateDebugComments Whether to insert debugging comments.
      */
