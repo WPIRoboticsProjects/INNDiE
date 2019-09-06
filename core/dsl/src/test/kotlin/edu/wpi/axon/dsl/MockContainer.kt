@@ -5,7 +5,7 @@ import org.junit.jupiter.api.fail
 import kotlin.reflect.KClass
 
 class MockContainer<T : Any>(
-    val backingMap: MutableMap<String, T>
+    private val backingMap: MutableMap<String, T>
 ) : PolymorphicNamedDomainObjectContainer<T>, Map<String, T> by backingMap {
     override fun <U : T> create(name: String, type: KClass<U>, configure: (U.() -> Unit)?): U {
         fail { "create is not implemented." }
@@ -13,9 +13,9 @@ class MockContainer<T : Any>(
 }
 
 @Suppress("UNCHECKED_CAST")
-fun mockContainer(
-    backingMap: MutableMap<String, out Any>
-): PolymorphicNamedDomainObjectContainer<AnyCode> = when (backingMap.values.first()) {
-    is AnyCode -> MockContainer(backingMap) as PolymorphicNamedDomainObjectContainer<AnyCode>
+internal fun mockContainer(
+    backingMap: MutableMap<String, out Any> = mutableMapOf()
+): PolymorphicNamedDomainObjectContainer<AnyCode> = when (backingMap.values.firstOrNull()) {
+    is AnyCode, null -> MockContainer(backingMap) as PolymorphicNamedDomainObjectContainer<AnyCode>
     else -> fail { "Unknown map value type." }
 }
