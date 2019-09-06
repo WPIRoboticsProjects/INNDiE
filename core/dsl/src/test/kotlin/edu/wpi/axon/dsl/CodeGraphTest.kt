@@ -164,7 +164,7 @@ internal class CodeGraphTest {
         val task1 = codes["task1"]!!
         val task2 = codes["task2"]!!
 
-        // Don't connect task3 so it forms an islands
+        // Don't connect task3 so it forms an island
         task1.dependencies += task2
 
         val container = mockContainer(codes)
