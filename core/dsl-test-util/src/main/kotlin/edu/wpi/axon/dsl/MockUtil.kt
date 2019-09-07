@@ -20,18 +20,18 @@ fun mockPathValidator(vararg pathValidations: Pair<String, Boolean>) =
         }
     }
 
-inline fun <reified T : Variable> configuredCorrectly(inputName: String? = null) =
+inline fun <reified T : Configurable> configuredCorrectly(inputName: String? = null) =
     mockk<T> {
-        if (inputName != null) {
+        if (inputName != null && this is Variable) {
             every { name } returns inputName
         }
 
         every { isConfiguredCorrectly() } returns true
     }
 
-inline fun <reified T : Variable> configuredIncorrectly(inputName: String? = null) =
+inline fun <reified T : Configurable> configuredIncorrectly(inputName: String? = null) =
     mockk<T> {
-        if (inputName != null) {
+        if (inputName != null && this is Variable) {
             every { name } returns inputName
         }
 

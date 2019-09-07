@@ -5,6 +5,7 @@ package edu.wpi.axon.dsl
 import com.google.common.graph.EndpointPair
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
 import io.kotlintest.assertions.arrow.either.shouldBeRight
+import io.kotlintest.matchers.collections.shouldBeEmpty
 import io.kotlintest.matchers.equality.shouldBeEqualToUsingFields
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -18,6 +19,15 @@ internal class CodeGraphTest {
     @AfterEach
     fun afterEach() {
         stopKoin()
+    }
+
+    @Test
+    fun `an empty container generates an empty graph`() {
+        val graph = CodeGraph(mockContainer()).graph
+        graph.shouldBeRight {
+            it.nodes().shouldBeEmpty()
+            it.edges().shouldBeEmpty()
+        }
     }
 
     @Test
@@ -136,6 +146,26 @@ internal class CodeGraphTest {
         task1.dependencies += task2
         task1.outputs += variable1
         task2.inputs += variable1
+
+        val container = mockContainer(codes)
+        val graph = CodeGraph(container)
+        graph.graph.shouldBeLeft()
+    }
+
+    @Test
+    fun `islands are not allowed`() {
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator("variable1" to true) }
+            })
+        }
+
+        val codes = makeMockTasks("task1", "task2", "task3")
+        val task1 = codes["task1"]!!
+        val task2 = codes["task2"]!!
+
+        // Don't connect task3 so it forms an island
+        task1.dependencies += task2
 
         val container = mockContainer(codes)
         val graph = CodeGraph(container)

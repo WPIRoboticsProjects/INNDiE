@@ -48,8 +48,31 @@ class CodeGraph(
 
             populateGraphUsingVariables(mutableGraph, container).bind()
 
-            // TODO: Verify there are no islands in the final graph
+            checkIslands(mutableGraph).bind()
             ImmutableGraph.copyOf(mutableGraph)
+        }
+    }
+
+    private fun checkIslands(mutableGraph: MutableGraph<AnyCode>): Kind2<ForEither, String, Unit> {
+        val allNodes = mutableGraph.nodes()
+        if (allNodes.isEmpty()) {
+            // Can't have islands with an empty graph.
+            return Right(Unit)
+        }
+
+        // BFS should find every node if there is only one island. Starting node does not matter.
+        // Supply a custom nextNode function because the direction BFS moves in is irrelevant,
+        // it just has to touch every node in an island.
+        val reachable = bfs(mutableGraph, allNodes.first()) { successors(it) + predecessors(it) }
+        return if (reachable == allNodes) {
+            Right(Unit)
+        } else {
+            Left(
+                """
+                |The following nodes are not reachable:
+                |${(allNodes - reachable).joinToString()}
+                """.trimMargin()
+            )
         }
     }
 
@@ -125,7 +148,12 @@ class CodeGraph(
         return false
     }
 
-    private fun bfs(graph: MutableGraph<AnyCode>, root: AnyCode): Set<AnyCode> {
+    private fun bfs(
+        graph: MutableGraph<AnyCode>,
+        root: AnyCode,
+        nextNodes: MutableGraph<AnyCode>.(AnyCode) -> Set<AnyCode> =
+            MutableGraph<AnyCode>::successors
+    ): Set<AnyCode> {
         val visited = mutableSetOf<AnyCode>()
         val queue = mutableListOf<AnyCode>()
 
@@ -136,7 +164,7 @@ class CodeGraph(
             val node = queue.first()
             queue.remove(node)
 
-            graph.successors(node).forEach {
+            graph.nextNodes(node).forEach {
                 if (it !in visited) {
                     visited += it
                     queue += it

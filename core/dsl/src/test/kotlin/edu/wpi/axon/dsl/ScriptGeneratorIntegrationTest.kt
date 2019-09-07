@@ -4,13 +4,13 @@ package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.task.EmptyBaseTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
 import io.kotlintest.assertions.arrow.nel.shouldHaveSize
 import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.shouldBe
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
@@ -174,10 +174,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             requireGeneration(var1)
         }
 
-        scriptGenerator.code().shouldBeValid { (code) ->
-            assertFalse(code.contains("task1"))
-            assertTrue(code.contains("task2"))
-        }
+        scriptGenerator.code().shouldBeInvalid()
     }
 
     @Test

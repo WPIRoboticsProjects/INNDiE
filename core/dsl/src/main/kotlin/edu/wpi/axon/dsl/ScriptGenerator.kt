@@ -5,11 +5,13 @@ package edu.wpi.axon.dsl
 import arrow.core.Either
 import arrow.data.Invalid
 import arrow.data.Nel
-import arrow.data.Validated
+import arrow.data.ValidatedNel
+import arrow.data.invalidNel
 import arrow.data.valid
 import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.task.EmptyBaseTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
@@ -59,12 +61,21 @@ class ScriptGenerator(
      * @param generateDebugComments Whether to insert debugging comments.
      * @return The entire generated script.
      */
-    fun code(generateDebugComments: Boolean = false): Validated<Nel<String>, String> {
+    fun code(generateDebugComments: Boolean = false): ValidatedNel<String, String> {
         if (!isConfiguredCorrectly()) {
-            return Invalid(Nel.just("$this is configured incorrectly."))
+            return "$this is configured incorrectly.".invalidNel()
         }
 
-        (variables.values + tasks.values + requiredVariables)
+        @Suppress("UNUSED_VARIABLE")
+        val finalCompositeTask by tasks.running(EmptyBaseTask::class) {
+            // Depend on what the user said was their last task so this runs after
+            dependencies += lastTask
+
+            // Add dependencies for any required variables
+            dependOnRequiredVariables(generateDebugComments)
+        }
+
+        (variables.values + tasks.values)
             .filter { !it.isConfiguredCorrectly() }
             .let {
                 if (it.isNotEmpty()) {
@@ -78,14 +89,12 @@ class ScriptGenerator(
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
 
         return when (graph) {
-            is Either.Left -> Invalid(Nel.just(graph.a))
+            is Either.Left -> graph.a.invalidNel()
 
             is Either.Right -> buildString {
                 appendImports(generateDebugComments, graph.b)
                 append('\n')
-                appendTaskCode(generateDebugComments, graph.b, handledNodes)
-                append('\n')
-                appendRequiredVariables(generateDebugComments, handledNodes)
+                appendTaskCode(generateDebugComments, graph.b, finalCompositeTask, handledNodes)
             }.trim().valid()
         }
     }
@@ -134,6 +143,7 @@ class ScriptGenerator(
     private fun StringBuilder.appendTaskCode(
         generateDebugComments: Boolean,
         graph: ImmutableGraph<AnyCode>,
+        startingTask: AnyCode,
         handledNodes: MutableSet<AnyCode>
     ) {
         fun appendNode(node: AnyCode) {
@@ -156,27 +166,25 @@ class ScriptGenerator(
             }
         }
 
-        appendNode(lastTask)
+        appendNode(startingTask)
     }
 
     /**
-     * Appends code for all the explicitly required variables.
+     * Adds dependencies on the tasks that output to any of the explicitly required variables.
      *
      * @param generateDebugComments Whether to insert debugging comments.
-     * @param handledNodes The nodes that code generation has already run for.
      */
-    private fun StringBuilder.appendRequiredVariables(
-        generateDebugComments: Boolean,
-        handledNodes: MutableSet<AnyCode>
+    private fun EmptyBaseTask.dependOnRequiredVariables(
+        generateDebugComments: Boolean
     ) {
         requiredVariables.forEach { variable ->
             tasks.forEach { _, task ->
-                if (task !in handledNodes && variable in task.outputs) {
+                if (variable in task.outputs) {
                     if (generateDebugComments) {
                         println("Generating $task because of required variable $variable")
                     }
 
-                    appendCode(task, generateDebugComments, handledNodes)
+                    dependencies += task
                 }
             }
         }

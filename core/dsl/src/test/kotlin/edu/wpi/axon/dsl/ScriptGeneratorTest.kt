@@ -1,6 +1,7 @@
 package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
+import edu.wpi.axon.dsl.task.EmptyBaseTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import io.kotlintest.assertions.arrow.nel.shouldHaveSize
@@ -46,17 +47,16 @@ internal class ScriptGeneratorTest {
 
     @Test
     fun `generate code with an incorrectly configured task`() {
-        val mockTask = mockk<MockTask> {
-            every { isConfiguredCorrectly() } returns false
-        }
-
         val mockVariableContainer = mockk<PolymorphicNamedDomainObjectContainer<Variable>> {
             every { values } returns emptyList()
         }
 
         val mockTaskContainer = mockk<PolymorphicNamedDomainObjectContainer<Task>> {
-            every { create("task1", MockTask::class, any()) } returns mockTask
-            every { values } returns listOf(mockTask)
+            every { create("task1", MockTask::class, any()) } returns configuredIncorrectly()
+            every {
+                create("finalCompositeTask", EmptyBaseTask::class, any())
+            } returns configuredCorrectly()
+            every { values } returns listOf(configuredIncorrectly())
         }
 
         val scriptGenerator = ScriptGenerator(mockVariableContainer, mockTaskContainer) {
@@ -67,9 +67,9 @@ internal class ScriptGeneratorTest {
             nel.shouldHaveSize(1)
         }
 
-        verify { mockTask.isConfiguredCorrectly() }
         verify { mockVariableContainer.values }
         verify { mockTaskContainer.create("task1", MockTask::class, any()) }
+        verify { mockTaskContainer.create("finalCompositeTask", EmptyBaseTask::class, any()) }
         verify { mockTaskContainer.values }
         confirmVerified(mockVariableContainer, mockTaskContainer)
     }
