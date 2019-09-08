@@ -71,7 +71,9 @@ class ScriptGenerator(
             // Depend on what the user said was their last task so this runs after
             dependencies += lastTask
 
-            // Add dependencies for any required variables
+            // Add dependencies for any required variables. Before this point, generating the
+            // CodeGraph could result in islands. This step resolves islands that would form if
+            // the user added tasks that are only connected by required variables.
             dependOnRequiredVariables(generateDebugComments)
         }
 

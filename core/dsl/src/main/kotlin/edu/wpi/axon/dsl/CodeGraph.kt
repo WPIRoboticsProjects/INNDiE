@@ -48,31 +48,8 @@ class CodeGraph(
 
             populateGraphUsingVariables(mutableGraph, container).bind()
 
-            checkIslands(mutableGraph).bind()
+            mutableGraph.checkIslands().bind()
             ImmutableGraph.copyOf(mutableGraph)
-        }
-    }
-
-    private fun checkIslands(mutableGraph: MutableGraph<AnyCode>): Kind2<ForEither, String, Unit> {
-        val allNodes = mutableGraph.nodes()
-        if (allNodes.isEmpty()) {
-            // Can't have islands with an empty graph.
-            return Right(Unit)
-        }
-
-        // BFS should find every node if there is only one island. Starting node does not matter.
-        // Supply a custom nextNode function because the direction BFS moves in is irrelevant,
-        // it just has to touch every node in an island.
-        val reachable = bfs(mutableGraph, allNodes.first()) { successors(it) + predecessors(it) }
-        return if (reachable == allNodes) {
-            Right(Unit)
-        } else {
-            Left(
-                """
-                |The following nodes are not reachable:
-                |${(allNodes - reachable).joinToString()}
-                """.trimMargin()
-            )
         }
     }
 
@@ -89,7 +66,7 @@ class CodeGraph(
         code.dependencies.forEach {
             // Don't recurse if the edge was already in the graph
             if (graph.putEdge(it, code)) {
-                if (hasCircuits(graph, code)) {
+                if (graph.hasCircuits(code)) {
                     return Left("Adding an edge from $it to $code caused a circuit.")
                 }
 
@@ -114,12 +91,10 @@ class CodeGraph(
         ListK.applicative()
             .tupled(codesK, codesK)
             .fix()
-            .filter { (taskA, taskB) ->
-                taskA.outputs anyIn taskB.inputs
-            }
+            .filter { (taskA, taskB) -> taskA.outputs anyIn taskB.inputs }
             .forEach { (codeWithOutputs, codeWithInputs) ->
                 graph.putEdge(codeWithOutputs, codeWithInputs)
-                if (hasCircuits(graph, codeWithInputs)) {
+                if (graph.hasCircuits(codeWithInputs)) {
                     return Left(
                         "Adding an edge between $codeWithOutputs and " +
                             "$codeWithInputs caused a circuit."
@@ -128,50 +103,5 @@ class CodeGraph(
             }
 
         return Right(Unit)
-    }
-
-    private fun hasCircuits(
-        graph: MutableGraph<AnyCode>,
-        root: AnyCode,
-        visited: Set<AnyCode> = emptySet()
-    ): Boolean {
-        graph.successors(root).forEach { node ->
-            val reachable = bfs(graph, node)
-
-            // Finding an already visited node in the new reachable set implies a circuit. The
-            // reachable set will strictly decrease for successor nodes in a DAG.
-            if (visited anyIn reachable || hasCircuits(graph, node, visited + node)) {
-                return true
-            }
-        }
-
-        return false
-    }
-
-    private fun bfs(
-        graph: MutableGraph<AnyCode>,
-        root: AnyCode,
-        nextNodes: MutableGraph<AnyCode>.(AnyCode) -> Set<AnyCode> =
-            MutableGraph<AnyCode>::successors
-    ): Set<AnyCode> {
-        val visited = mutableSetOf<AnyCode>()
-        val queue = mutableListOf<AnyCode>()
-
-        visited += root
-        queue += root
-
-        while (queue.isNotEmpty()) {
-            val node = queue.first()
-            queue.remove(node)
-
-            graph.nextNodes(node).forEach {
-                if (it !in visited) {
-                    visited += it
-                    queue += it
-                }
-            }
-        }
-
-        return visited
     }
 }
