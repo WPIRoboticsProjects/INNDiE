@@ -20,7 +20,6 @@ plugins {
     checkstyle
 }
 
-val coreProject = project(":core")
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
@@ -31,7 +30,6 @@ val testUtilProject = project(":test-util")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
-    coreProject,
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
@@ -45,7 +43,6 @@ val kotlinProjects = setOf(
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
-    coreProject,
     dslProject,
     dslInterfaceProject,
     patternMatchProject,
@@ -54,7 +51,6 @@ val publishedProjects = setOf(
 )
 
 val pitestProjects = setOf(
-    coreProject,
     dslProject,
     patternMatchProject,
     tasksYolov3Project,
