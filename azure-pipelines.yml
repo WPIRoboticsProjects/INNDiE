@@ -7,7 +7,7 @@ trigger:
       - '*'
 
 stages:
-- stage: Build_Core
+- stage: Build
   jobs:
     - job: Linux
 
@@ -18,8 +18,8 @@ stages:
         - task: Gradle@2
           displayName: 'Check'
           inputs:
-            workingDirectory: './core'
-            gradleWrapperFile: './core/gradlew'
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
             javaHomeOption: 'JDKVersion'
@@ -31,7 +31,7 @@ stages:
 
         - bash: bash <(curl -s https://codecov.io/bash) -f "*jacocoTestReport.xml" -f "*mergeReports.xml" || echo 'Codecov failed to upload'
           displayName: 'CodeCov'
-          workingDirectory: './core'
+          workingDirectory: ''
           env:
             CODECOV_TOKEN: $(CODECOV_TOKEN)
 
@@ -44,8 +44,8 @@ stages:
         - task: Gradle@2
           displayName: 'Check'
           inputs:
-            workingDirectory: './core'
-            gradleWrapperFile: './core/gradlew'
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
             javaHomeOption: 'JDKVersion'
@@ -63,8 +63,8 @@ stages:
         - task: Gradle@2
           displayName: 'Check'
           inputs:
-            workingDirectory: './core'
-            gradleWrapperFile: './core/gradlew'
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
             options: '--stacktrace -PlogTests -Pheadless'
             javaHomeOption: 'JDKVersion'
