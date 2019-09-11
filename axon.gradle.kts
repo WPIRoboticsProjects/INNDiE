@@ -331,26 +331,6 @@ configure(kotlinProjects) {
     }
 }
 
-val jacocoMerge by tasks.creating(JacocoMerge::class) {
-    subprojects.forEach { subproject ->
-        if (subproject !in listOf(utilProject, testUtilProject, dslTestUtilProject)) {
-            executionData(subproject.tasks.withType<Test>())
-        }
-    }
-}
-
-val mergeReports by tasks.creating(JacocoReport::class) {
-    executionData(jacocoMerge.destinationFile)
-    dependsOn(jacocoMerge)
-    sourceDirectories.from(sourceSets.main.get().allSource.sourceDirectories)
-    classDirectories.from(sourceSets.main.get().output)
-    reports {
-        html.isEnabled = true
-        xml.isEnabled = true
-        csv.isEnabled = false
-    }
-}
-
 configure(pitestProjects) {
     apply {
         plugin("info.solidsoft.pitest")
