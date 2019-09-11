@@ -12,4 +12,5 @@ fun defaultModule() = module {
     single<VariableNameValidator> { PythonVariableNameValidator() }
     single<PathValidator> { DefaultPathValidator() }
     single<ImportValidator> { DefaultImportValidator() }
+    single<UniqueVariableNameGenerator> { DefaultUniqueVariableNameGenerator() }
 }
