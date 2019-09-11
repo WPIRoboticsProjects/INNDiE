@@ -14,7 +14,7 @@ import org.koin.dsl.module
 internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
-    fun `no layers to add nor remove`() {
+    fun `keep all 1 layers`() {
         startKoin {
             modules(module {
                 defaultUniqueVariableNameGenerator()
@@ -23,19 +23,42 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            layersToAdd = listOf()
-            layersToRemove = listOf()
+            currentLayers = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
+            newLayers = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
-            |new_model = tf.keras.Sequential()
-            |var1 = []
-            |var2 = []
-            |
-            |for layer in base_model.layers:
-            |   if layer.name not in var2:
-            |       new_model.add(layer)
+            |new_model = tf.keras.Sequential([base_model.get_layer("dense_1")])
+        """.trimMargin()
+    }
+
+    @Test
+    fun `keep all 2 layers`() {
+        startKoin {
+            modules(module {
+                defaultUniqueVariableNameGenerator()
+            })
+        }
+
+        val task = ApplyLayerDeltaTask("task1").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = listOf(
+                Layer.Dense("dense_1", true, 10, Activation.ReLu),
+                Layer.UnknownLayer("unknown_1", true)
+            )
+            newLayers = listOf(
+                Layer.Dense("dense_1", true, 10, Activation.ReLu),
+                Layer.UnknownLayer("unknown_1", true)
+            )
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.code() shouldBe """
+            |new_model = tf.keras.Sequential([
+            |    base_model.get_layer("dense_1"),
+            |    base_model.get_layer("unknown_1")
+            |])
         """.trimMargin()
     }
 
@@ -49,19 +72,13 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            layersToAdd = listOf()
-            layersToRemove = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
+            currentLayers = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
+            newLayers = listOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
-            |new_model = tf.keras.Sequential()
-            |var1 = []
-            |var2 = ["dense_1"]
-            |
-            |for layer in base_model.layers:
-            |   if layer.name not in var2:
-            |       new_model.add(layer)
+            |new_model = tf.keras.Sequential([])
         """.trimMargin()
     }
 
@@ -75,22 +92,16 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            layersToAdd = listOf()
-            layersToRemove = listOf(
+            currentLayers = listOf(
                 Layer.Dense("dense_1", true, 10, Activation.ReLu),
                 Layer.UnknownLayer("unknown_1", true)
             )
+            newLayers = listOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
-            |new_model = tf.keras.Sequential()
-            |var1 = []
-            |var2 = ["dense_1", "unknown_1"]
-            |
-            |for layer in base_model.layers:
-            |   if layer.name not in var2:
-            |       new_model.add(layer)
+            |new_model = tf.keras.Sequential([])
         """.trimMargin()
     }
 
@@ -104,19 +115,13 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            layersToAdd = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
-            layersToRemove = listOf()
+            currentLayers = listOf()
+            newLayers = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
-            |new_model = tf.keras.Sequential()
-            |var1 = [tf.keras.layers.Dense(name="dense_1", trainable=True, units=10, activation=tf.keras.activations.relu)]
-            |var2 = []
-            |
-            |for layer in base_model.layers:
-            |   if layer.name not in var2:
-            |       new_model.add(layer)
+            |new_model = tf.keras.Sequential([tf.keras.layers.Dense(name="dense_1", trainable=True, units=10, activation=tf.keras.activations.relu)])
         """.trimMargin()
     }
 
@@ -130,23 +135,19 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            layersToAdd = listOf(
+            currentLayers = listOf()
+            newLayers = listOf(
                 Layer.Dense("dense_1", true, 128, Activation.ReLu),
                 Layer.Dense("dense_2", true, 10, Activation.SoftMax)
             )
-            layersToRemove = listOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
-            |new_model = tf.keras.Sequential()
-            |var1 = [tf.keras.layers.Dense(name="dense_1", trainable=True, units=128, activation=tf.keras.activations.relu),
-            |        tf.keras.layers.Dense(name="dense_2", trainable=True, units=10, activation=tf.keras.activations.softmax)]
-            |var2 = []
-            |
-            |for layer in base_model.layers:
-            |   if layer.name not in var2:
-            |       new_model.add(layer)
+            |new_model = tf.keras.Sequential([
+            |    tf.keras.layers.Dense(name="dense_1", trainable=True, units=128, activation=tf.keras.activations.relu),
+            |    tf.keras.layers.Dense(name="dense_2", trainable=True, units=10, activation=tf.keras.activations.softmax)
+            |])
         """.trimMargin()
     }
 
@@ -160,8 +161,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            layersToAdd = listOf(Layer.UnknownLayer("layer_1", true))
-            layersToRemove = listOf()
+            currentLayers = listOf()
+            newLayers = listOf(Layer.UnknownLayer("layer_1", true))
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -178,13 +179,86 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            layersToAdd = listOf(
+            currentLayers = listOf()
+            newLayers = listOf(
                 Layer.Dense("dense_1", true, 128, Activation.UnknownActivation("activation_1"))
             )
-            layersToRemove = listOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
         shouldThrow<IllegalArgumentException> { task.code() }
+    }
+
+    @Test
+    fun `remove the first layer and replace the second`() {
+        startKoin {
+            modules(module {
+                defaultUniqueVariableNameGenerator()
+            })
+        }
+
+        val task = ApplyLayerDeltaTask("task1").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = listOf(
+                Layer.UnknownLayer("unknown_3", true),
+                Layer.Dense("dense_2", true, 10, Activation.SoftMax)
+            )
+            newLayers = listOf(
+                Layer.UnknownLayer("unknown_3", true),
+                Layer.Dense("dense_2", true, 3, Activation.SoftMax)
+            )
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.code() shouldBe """
+            |new_model = tf.keras.Sequential([
+            |    base_model.get_layer("unknown_3"),
+            |    tf.keras.layers.Dense(name="dense_2", trainable=True, units=3, activation=tf.keras.activations.softmax)
+            |])
+        """.trimMargin()
+    }
+
+    @Test
+    fun `copy an unknown layer`() {
+        startKoin {
+            modules(module {
+                defaultUniqueVariableNameGenerator()
+            })
+        }
+
+        val task = ApplyLayerDeltaTask("task1").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = listOf(Layer.UnknownLayer("unknown_1", true))
+            newLayers = listOf(Layer.UnknownLayer("unknown_1", true))
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.code() shouldBe """
+            |new_model = tf.keras.Sequential([base_model.get_layer("unknown_1")])
+        """.trimMargin()
+    }
+
+    @Test
+    fun `copy a layer with an unknown activation function`() {
+        startKoin {
+            modules(module {
+                defaultUniqueVariableNameGenerator()
+            })
+        }
+
+        val task = ApplyLayerDeltaTask("task1").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = listOf(
+                Layer.Dense("dense_1", true, 10, Activation.UnknownActivation("activation_1"))
+            )
+            newLayers = listOf(
+                Layer.Dense("dense_1", true, 10, Activation.UnknownActivation("activation_1"))
+            )
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.code() shouldBe """
+            |new_model = tf.keras.Sequential([base_model.get_layer("dense_1")])
+        """.trimMargin()
     }
 }

@@ -8,6 +8,11 @@ import edu.wpi.axon.tflayers.Activation
 import edu.wpi.axon.tflayers.Layer
 import edu.wpi.axon.util.singleAssign
 
+private sealed class LayerOperation {
+    data class CopyLayer(val layer: Layer) : LayerOperation()
+    data class MakeNewLayer(val layer: Layer) : LayerOperation()
+}
+
 /**
  * Adds and removes layers on a new model using a starting model.
  */
@@ -19,14 +24,14 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     var modelInput: Variable by singleAssign()
 
     /**
-     * The layers to add.
+     * The current layers in the model.
      */
-    var layersToAdd: List<Layer> by singleAssign()
+    var currentLayers: List<Layer> by singleAssign()
 
     /**
-     * The layers to remove.
+     * The layers the new model should have.
      */
-    var layersToRemove: List<Layer> by singleAssign()
+    var newLayers: List<Layer> by singleAssign()
 
     /**
      * The variable to output the new model to.
@@ -46,34 +51,46 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     override val dependencies: Set<Code<*>> = setOf()
 
     override fun code(): String {
-        val layersToAddName = uniqueVariableNameGenerator.uniqueVariableName()
-        val layersToRemoveName = uniqueVariableNameGenerator.uniqueVariableName()
+        val layerOperations = newLayers.map {
+            if (it in currentLayers) {
+                LayerOperation.CopyLayer(it)
+            } else {
+                LayerOperation.MakeNewLayer(it)
+            }
+        }
+
         return """
-        |${newModelOutput.name} = tf.keras.Sequential()
-        |$layersToAddName = ${layerConstructors(layersToAdd, layersToAddName.length + 4)}
-        |$layersToRemoveName = ${layerNames(layersToRemove)}
-        |
-        |for layer in ${modelInput.name}.layers:
-        |   if layer.name not in $layersToRemoveName:
-        |       ${newModelOutput.name}.add(layer)
+        |${newModelOutput.name} = tf.keras.Sequential(${buildOperations(layerOperations, 4)})
         """.trimMargin()
     }
 
-    private fun layerNames(layers: List<Layer>) =
-        layers.joinToString(prefix = "[", separator = ", ", postfix = "]") { """"${it.name}"""" }
+    @Suppress("SameParameterValue")
+    private fun buildOperations(layerOperations: List<LayerOperation>, indent: Int): String {
+        val indentSpacing = " ".repeat(indent)
+        val prefix = if (layerOperations.size > 1) "[\n$indentSpacing" else "["
+        val postfix = if (layerOperations.size > 1) "\n]" else "]"
 
-    private fun layerConstructors(layers: List<Layer>, indent: Int) =
-        layers.joinToString(prefix = "[", separator = ",\n${" ".repeat(indent)}", postfix = "]") {
+        return layerOperations.joinToString(
+            prefix = prefix,
+            separator = ",\n$indentSpacing",
+            postfix = postfix
+        ) {
             when (it) {
-                is Layer.Dense -> """tf.keras.layers.Dense(name="${it.name}", """ +
-                    "trainable=${boolToPythonString(it.trainable)}, " +
-                    "units=${it.units}, " +
-                    "activation=${activationConstructor(it.activation)})"
-
-                is Layer.UnknownLayer ->
-                    throw IllegalArgumentException("Cannot construct an unknown layer: $it")
+                is LayerOperation.CopyLayer -> """${modelInput.name}.get_layer("${it.layer.name}")"""
+                is LayerOperation.MakeNewLayer -> layerConstructor(it.layer)
             }
         }
+    }
+
+    private fun layerConstructor(layer: Layer) = when (layer) {
+        is Layer.Dense -> """tf.keras.layers.Dense(name="${layer.name}", """ +
+            "trainable=${boolToPythonString(layer.trainable)}, " +
+            "units=${layer.units}, " +
+            "activation=${activationConstructor(layer.activation)})"
+
+        is Layer.UnknownLayer ->
+            throw IllegalArgumentException("Cannot construct an unknown layer: $layer")
+    }
 
     private fun activationConstructor(activation: Activation) = "tf.keras.activations." +
         when (activation) {
