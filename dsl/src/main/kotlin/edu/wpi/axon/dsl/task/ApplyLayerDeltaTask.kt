@@ -53,8 +53,11 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     override fun code(): String {
         val layerOperations = newLayers.map {
             if (it in currentLayers) {
+                // Copy layers that are already in the base model to preserve as much configuration
+                // information as possible
                 LayerOperation.CopyLayer(it)
             } else {
+                // We are forced to make new layers if they aren't in the base model
                 LayerOperation.MakeNewLayer(it)
             }
         }
