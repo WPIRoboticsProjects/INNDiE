@@ -1,5 +1,6 @@
 package edu.wpi.axon.dsl
 
+import edu.wpi.axon.dsl.task.ApplyLayerDeltaTask
 import edu.wpi.axon.dsl.task.InferenceTask
 import edu.wpi.axon.dsl.task.LoadClassLabels
 import edu.wpi.axon.dsl.task.LoadImageTask
@@ -114,6 +115,10 @@ internal class GeneralTaskConfigurationTest : KoinTestFixture() {
             Arguments.of(
                 { YoloV3PostprocessTask("") },
                 listOf(YoloV3PostprocessTask::input, YoloV3PostprocessTask::output)
+            ),
+            Arguments.of(
+                { ApplyLayerDeltaTask("") },
+                listOf(ApplyLayerDeltaTask::modelInput, ApplyLayerDeltaTask::newModelOutput)
             )
         )
     }

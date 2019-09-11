@@ -35,6 +35,7 @@ dependencies {
 
     api(koin("koin-core"))
     api(project(":dsl-interface"))
+    api(project(":tf-layers"))
 
     implementation(project(":util"))
 

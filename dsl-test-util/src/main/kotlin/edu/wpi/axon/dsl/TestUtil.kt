@@ -21,3 +21,11 @@ fun Module.alwaysInvalidPathValidator() =
     single<PathValidator> {
         mockk { every { isValidPathName(any()) } returns false }
     }
+
+fun Module.defaultUniqueVariableNameGenerator() =
+    single<UniqueVariableNameGenerator> {
+        object : UniqueVariableNameGenerator {
+            private var count = 1
+            override fun uniqueVariableName() = "var${count++}"
+        }
+    }
