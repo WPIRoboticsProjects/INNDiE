@@ -85,6 +85,7 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
         }
     }
 
+    // TODO: Split this (and activationConstructor) off into another project
     private fun layerConstructor(layer: Layer) = when (layer) {
         is Layer.Dense -> """tf.keras.layers.Dense(name="${layer.name}", """ +
             "trainable=${boolToPythonString(layer.trainable)}, " +
@@ -104,5 +105,6 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
             )
         }
 
+    // TODO: Split this off into a common file
     private fun boolToPythonString(bool: Boolean): String = if (bool) "True" else "False"
 }
