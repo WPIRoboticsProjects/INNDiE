@@ -38,6 +38,7 @@ dependencies {
     api(project(":tf-layers"))
 
     implementation(project(":util"))
+    implementation(project(":tf-layer-python"))
 
     testImplementation(project(":dsl-test-util"))
 }

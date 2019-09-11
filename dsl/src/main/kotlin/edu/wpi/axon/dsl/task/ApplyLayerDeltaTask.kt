@@ -4,7 +4,7 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tflayers.Activation
+import edu.wpi.axon.tflayer.python.makeNewLayerPython
 import edu.wpi.axon.tflayers.Layer
 import edu.wpi.axon.util.singleAssign
 
@@ -80,31 +80,8 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
         ) {
             when (it) {
                 is LayerOperation.CopyLayer -> """${modelInput.name}.get_layer("${it.layer.name}")"""
-                is LayerOperation.MakeNewLayer -> layerConstructor(it.layer)
+                is LayerOperation.MakeNewLayer -> makeNewLayerPython(it.layer)
             }
         }
     }
-
-    // TODO: Split this (and activationConstructor) off into another project
-    private fun layerConstructor(layer: Layer) = when (layer) {
-        is Layer.Dense -> """tf.keras.layers.Dense(name="${layer.name}", """ +
-            "trainable=${boolToPythonString(layer.trainable)}, " +
-            "units=${layer.units}, " +
-            "activation=${activationConstructor(layer.activation)})"
-
-        is Layer.UnknownLayer ->
-            throw IllegalArgumentException("Cannot construct an unknown layer: $layer")
-    }
-
-    private fun activationConstructor(activation: Activation) = "tf.keras.activations." +
-        when (activation) {
-            is Activation.ReLu -> "relu"
-            is Activation.SoftMax -> "softmax"
-            is Activation.UnknownActivation -> throw IllegalArgumentException(
-                "Cannot construct an unknown activation function: $activation"
-            )
-        }
-
-    // TODO: Split this off into a common file
-    private fun boolToPythonString(bool: Boolean): String = if (bool) "True" else "False"
 }
