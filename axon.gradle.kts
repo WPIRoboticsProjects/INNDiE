@@ -27,6 +27,8 @@ val patternMatchProject = project(":pattern-match")
 val taskPropertyTestingProject = project(":task-property-testing")
 val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
+val tfLayerLoaderProject = project(":tf-layer-loader")
+val tfLayersProject = project(":tf-layers")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
@@ -37,6 +39,8 @@ val kotlinProjects = setOf(
     taskPropertyTestingProject,
     tasksYolov3Project,
     testUtilProject,
+    tfLayerLoaderProject,
+    tfLayersProject,
     utilProject
 )
 
@@ -47,6 +51,8 @@ val publishedProjects = setOf(
     dslInterfaceProject,
     patternMatchProject,
     tasksYolov3Project,
+    tfLayerLoaderProject,
+    tfLayersProject,
     utilProject
 )
 
@@ -54,6 +60,8 @@ val pitestProjects = setOf(
     dslProject,
     patternMatchProject,
     tasksYolov3Project,
+    tfLayerLoaderProject,
+    tfLayersProject,
     utilProject
 )
 
@@ -89,6 +97,7 @@ allprojects {
         mavenCentral()
         maven("https://oss.sonatype.org/content/repositories/staging/")
         maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
+        maven("https://dl.bintray.com/jamesmudd/jhdf")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
@@ -319,26 +328,6 @@ configure(kotlinProjects) {
         input = files("src/main/kotlin", "src/test/kotlin")
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
-    }
-}
-
-val jacocoMerge by tasks.creating(JacocoMerge::class) {
-    subprojects.forEach { subproject ->
-        if (subproject !in listOf(utilProject, testUtilProject, dslTestUtilProject)) {
-            executionData(subproject.tasks.withType<Test>())
-        }
-    }
-}
-
-val mergeReports by tasks.creating(JacocoReport::class) {
-    executionData(jacocoMerge.destinationFile)
-    dependsOn(jacocoMerge)
-    sourceDirectories.from(sourceSets.main.get().allSource.sourceDirectories)
-    classDirectories.from(sourceSets.main.get().output)
-    reports {
-        html.isEnabled = true
-        xml.isEnabled = true
-        csv.isEnabled = false
     }
 }
 

@@ -29,6 +29,8 @@ include(":pattern-match")
 include(":task-property-testing")
 include(":tasks-yolov3")
 include(":test-util")
+include(":tf-layer-loader")
+include(":tf-layers")
 include(":util")
 
 /**
