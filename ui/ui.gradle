@@ -3,5 +3,11 @@ plugins {
     id 'com.devsoap.vaadin-flow' version '1.2'
 }
 
+// Set Vaadin version
+vaadin.version = '14.0.4'
+
+// Autoconfigure Vaadin dependencies
 vaadin.autoconfigure()
 
+// Uncomment to use production mode
+//vaadin.productionMode = true
