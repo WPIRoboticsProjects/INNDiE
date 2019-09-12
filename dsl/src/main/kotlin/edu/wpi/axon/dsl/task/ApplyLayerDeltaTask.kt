@@ -4,9 +4,10 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tflayer.python.makeNewLayerPython
+import edu.wpi.axon.tflayer.python.LayerToCode
 import edu.wpi.axon.tflayers.Layer
 import edu.wpi.axon.util.singleAssign
+import org.koin.core.inject
 
 private sealed class LayerOperation {
     data class CopyLayer(val layer: Layer) : LayerOperation()
@@ -37,6 +38,8 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
      * The variable to output the new model to.
      */
     var newModelOutput: Variable by singleAssign()
+
+    private val layerToCode: LayerToCode by inject()
 
     override val imports: Set<Import> = setOf(
         makeImport("import tensorflow as tf")
@@ -80,7 +83,7 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
         ) {
             when (it) {
                 is LayerOperation.CopyLayer -> """${modelInput.name}.get_layer("${it.layer.name}")"""
-                is LayerOperation.MakeNewLayer -> makeNewLayerPython(it.layer)
+                is LayerOperation.MakeNewLayer -> layerToCode.makeNewLayer(it.layer)
             }
         }
     }
