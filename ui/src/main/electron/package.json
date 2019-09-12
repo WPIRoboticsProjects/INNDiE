@@ -1,0 +1,27 @@
+{
+  "name": "axon",
+  "version": "0.0.1",
+  "description": "A Graphical Neural Network Editor",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/wpilibsuite/Axon",
+  "keywords": [
+    "Electron",
+    "Axon",
+    "Kotlin",
+    "WPILib",
+    "FRC",
+    "FIRST"
+  ],
+  "author": "WPI",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "electron": "^6.0.8"
+  },
+  "dependencies": {
+    "minimal-request-promise": "^1.5.0",
+    "tree-kill": "^1.2.1"
+  }
+}
