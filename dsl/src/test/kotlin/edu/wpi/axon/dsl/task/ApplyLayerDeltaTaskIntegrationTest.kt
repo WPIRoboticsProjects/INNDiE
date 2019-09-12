@@ -1,34 +1,27 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
-import edu.wpi.axon.dsl.defaultUniqueVariableNameGenerator
+import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tflayer.python.LayerToCode
 import edu.wpi.axon.tflayers.Activation
 import edu.wpi.axon.tflayers.Layer
 import io.kotlintest.shouldBe
-import io.mockk.every
-import io.mockk.mockk
+import io.kotlintest.shouldThrow
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
-import org.koin.dsl.module
 
-internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
+internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
 
     @Test
     fun `keep all 1 layers`() {
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
+            modules(defaultModule())
         }
-
-        val layer1 = Layer.Dense("dense_1", true, 10, Activation.ReLu)
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
+            newLayers = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -40,18 +33,19 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     @Test
     fun `keep all 2 layers`() {
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
+            modules(defaultModule())
         }
-
-        val layer1 = Layer.Dense("dense_1", true, 10, Activation.ReLu)
-        val layer2 = Layer.UnknownLayer("unknown_1", true)
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1, layer2)
-            newLayers = listOf(layer1, layer2)
+            currentLayers = listOf(
+                Layer.Dense("dense_1", true, 10, Activation.ReLu),
+                Layer.UnknownLayer("unknown_1", true)
+            )
+            newLayers = listOf(
+                Layer.Dense("dense_1", true, 10, Activation.ReLu),
+                Layer.UnknownLayer("unknown_1", true)
+            )
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -66,9 +60,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     @Test
     fun `remove one layer`() {
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
+            modules(defaultModule())
         }
 
         val task = ApplyLayerDeltaTask("task1").apply {
@@ -86,9 +78,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     @Test
     fun `remove two layers`() {
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
+            modules(defaultModule())
         }
 
         val task = ApplyLayerDeltaTask("task1").apply {
@@ -108,91 +98,103 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `add one layer`() {
-        val layer1 = Layer.Dense("dense_1", true, 10, Activation.ReLu)
-
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-                single<LayerToCode> {
-                    mockk {
-                        every { makeNewLayer(layer1) } returns "layer1"
-                    }
-                }
-            })
+            modules(defaultModule())
         }
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = listOf()
-            newLayers = listOf(layer1)
+            newLayers = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
-            |new_model = tf.keras.Sequential([layer1])
+            |new_model = tf.keras.Sequential([tf.keras.layers.Dense(name="dense_1", trainable=True, units=10, activation=tf.keras.activations.relu)])
         """.trimMargin()
     }
 
     @Test
     fun `add two layers`() {
-        val layer1 = Layer.Dense("dense_1", true, 128, Activation.ReLu)
-        val layer2 = Layer.Dense("dense_2", true, 10, Activation.SoftMax)
-
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-                single<LayerToCode> {
-                    mockk {
-                        every { makeNewLayer(layer1) } returns "layer1"
-                        every { makeNewLayer(layer2) } returns "layer2"
-                    }
-                }
-            })
+            modules(defaultModule())
         }
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = listOf()
-            newLayers = listOf(layer1, layer2)
+            newLayers = listOf(
+                Layer.Dense("dense_1", true, 128, Activation.ReLu),
+                Layer.Dense("dense_2", true, 10, Activation.SoftMax)
+            )
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([
-            |    layer1,
-            |    layer2
+            |    tf.keras.layers.Dense(name="dense_1", trainable=True, units=128, activation=tf.keras.activations.relu),
+            |    tf.keras.layers.Dense(name="dense_2", trainable=True, units=10, activation=tf.keras.activations.softmax)
             |])
         """.trimMargin()
     }
 
     @Test
-    fun `remove the first layer and replace the second and swap them`() {
-        val layer1 = Layer.UnknownLayer("unknown_3", true)
-        val layer2Old = Layer.Dense("dense_2", true, 10, Activation.SoftMax)
-        val layer2New = Layer.Dense("dense_2", true, 3, Activation.SoftMax)
-
+    fun `add an unknown layer`() {
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-                single<LayerToCode> {
-                    mockk {
-                        every { makeNewLayer(layer2New) } returns "layer2New"
-                    }
-                }
-            })
+            modules(defaultModule())
         }
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1, layer2Old)
-            newLayers = listOf(layer2New, layer1)
+            currentLayers = listOf()
+            newLayers = listOf(Layer.UnknownLayer("layer_1", true))
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        shouldThrow<IllegalArgumentException> { task.code() }
+    }
+
+    @Test
+    fun `add layer with an unknown activation function`() {
+        startKoin {
+            modules(defaultModule())
+        }
+
+        val task = ApplyLayerDeltaTask("task1").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = listOf()
+            newLayers = listOf(
+                Layer.Dense("dense_1", true, 128, Activation.UnknownActivation("activation_1"))
+            )
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        shouldThrow<IllegalArgumentException> { task.code() }
+    }
+
+    @Test
+    fun `remove the first layer and replace the second`() {
+        startKoin {
+            modules(defaultModule())
+        }
+
+        val task = ApplyLayerDeltaTask("task1").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = listOf(
+                Layer.UnknownLayer("unknown_3", true),
+                Layer.Dense("dense_2", true, 10, Activation.SoftMax)
+            )
+            newLayers = listOf(
+                Layer.UnknownLayer("unknown_3", true),
+                Layer.Dense("dense_2", true, 3, Activation.SoftMax)
+            )
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([
-            |    layer2New,
-            |    base_model.get_layer("unknown_3")
+            |    base_model.get_layer("unknown_3"),
+            |    tf.keras.layers.Dense(name="dense_2", trainable=True, units=3, activation=tf.keras.activations.softmax)
             |])
         """.trimMargin()
     }
@@ -200,17 +202,13 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     @Test
     fun `copy an unknown layer`() {
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
+            modules(defaultModule())
         }
-
-        val layer1 = Layer.UnknownLayer("unknown_1", true)
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = listOf(Layer.UnknownLayer("unknown_1", true))
+            newLayers = listOf(Layer.UnknownLayer("unknown_1", true))
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -221,18 +219,18 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `copy a layer with an unknown activation function`() {
-        val layer1 = Layer.Dense("dense_1", true, 10, Activation.UnknownActivation("activation_1"))
-
         startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
+            modules(defaultModule())
         }
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = listOf(
+                Layer.Dense("dense_1", true, 10, Activation.UnknownActivation("activation_1"))
+            )
+            newLayers = listOf(
+                Layer.Dense("dense_1", true, 10, Activation.UnknownActivation("activation_1"))
+            )
             newModelOutput = configuredCorrectly("new_model")
         }
 
