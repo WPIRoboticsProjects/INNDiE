@@ -1,0 +1,6 @@
+plugins {
+    id 'com.devsoap.vaadin-flow' version '1.2'
+}
+
+vaadin.autoconfigure()
+
