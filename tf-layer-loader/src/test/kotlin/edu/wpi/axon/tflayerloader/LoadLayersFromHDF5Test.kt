@@ -1,7 +1,7 @@
 package edu.wpi.axon.tflayerloader
 
 import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.Layer
+import edu.wpi.axon.tflayers.SealedLayer
 import io.kotlintest.matchers.equality.shouldBeEqualToUsingFields
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -121,14 +121,14 @@ internal class LoadLayersFromHDF5Test {
             File(LoadLayersFromHDF5Test::class.java.getResource("saved_tf_model.h5").toURI())
         ).shouldBeEqualToUsingFields(
             setOf(
-                Layer.UnknownLayer("conv2d_16", true),
-                Layer.UnknownLayer("conv2d_17", true),
-                Layer.UnknownLayer("max_pooling2d_8", true),
-                Layer.UnknownLayer("dropout_19", true),
-                Layer.UnknownLayer("flatten_8", true),
-                Layer.Dense("dense_22", true, 128, Activation.ReLu),
-                Layer.UnknownLayer("dropout_20", true),
-                Layer.Dense("dense_23", true, 10, Activation.SoftMax)
+                SealedLayer.UnknownLayer("conv2d_16"),
+                SealedLayer.UnknownLayer("conv2d_17"),
+                SealedLayer.UnknownLayer("max_pooling2d_8"),
+                SealedLayer.UnknownLayer("dropout_19"),
+                SealedLayer.UnknownLayer("flatten_8"),
+                SealedLayer.Dense("dense_22", 128, Activation.ReLu),
+                SealedLayer.UnknownLayer("dropout_20"),
+                SealedLayer.Dense("dense_23", 10, Activation.SoftMax)
             )
         )
     }

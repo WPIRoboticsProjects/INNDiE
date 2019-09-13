@@ -5,13 +5,14 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tflayer.python.LayerToCode
-import edu.wpi.axon.tflayers.Layer
+import edu.wpi.axon.tflayer.python.boolToPythonString
+import edu.wpi.axon.tflayers.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
-private sealed class LayerOperation {
-    data class CopyLayer(val layer: Layer) : LayerOperation()
-    data class MakeNewLayer(val layer: Layer) : LayerOperation()
+private sealed class LayerOperation(open val layer: SealedLayer.MetaLayer) {
+    data class CopyLayer(override val layer: SealedLayer.MetaLayer) : LayerOperation(layer)
+    data class MakeNewLayer(override val layer: SealedLayer.MetaLayer) : LayerOperation(layer)
 }
 
 /**
@@ -27,12 +28,12 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     /**
      * The current layers in the model.
      */
-    var currentLayers: List<Layer> by singleAssign()
+    var currentLayers: List<SealedLayer.MetaLayer> by singleAssign()
 
     /**
      * The layers the new model should have.
      */
-    var newLayers: List<Layer> by singleAssign()
+    var newLayers: List<SealedLayer.MetaLayer> by singleAssign()
 
     /**
      * The variable to output the new model to.
@@ -54,24 +55,36 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     override val dependencies: Set<Code<*>> = setOf()
 
     override fun code(): String {
+        // The base layers inside the Trainable or Untrainable layer wrappers
+        val innerCurrentLayers = currentLayers.map { it.layer }
+
         val layerOperations = newLayers.map {
-            if (it in currentLayers) {
-                // Copy layers that are already in the base model to preserve as much configuration
-                // information as possible
-                LayerOperation.CopyLayer(it)
-            } else {
-                // We are forced to make new layers if they aren't in the base model
-                LayerOperation.MakeNewLayer(it)
+            when (it) {
+                is SealedLayer.MetaLayer.TrainableLayer,
+                is SealedLayer.MetaLayer.UntrainableLayer -> {
+                    // Compare using the inner layer so the trainable status does not matter
+                    if (it.layer in innerCurrentLayers) {
+                        // Copy layers that are already in the base model to preserve as much
+                        // configuration information as possible
+                        LayerOperation.CopyLayer(it)
+                    } else {
+                        // We are forced to make new layers if they aren't in the base model
+                        LayerOperation.MakeNewLayer(it)
+                    }
+                }
+
+                else -> throw IllegalStateException("Must have a SealedLayer.MetaLayer, got: $it")
             }
         }
 
         return """
-        |${newModelOutput.name} = tf.keras.Sequential(${buildOperations(layerOperations, 4)})
+        |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})
+        |${buildTrainableFlags(layerOperations)}
         """.trimMargin()
     }
 
     @Suppress("SameParameterValue")
-    private fun buildOperations(layerOperations: List<LayerOperation>, indent: Int): String {
+    private fun buildSequentialArgs(layerOperations: List<LayerOperation>, indent: Int): String {
         val indentSpacing = " ".repeat(indent)
         val prefix = if (layerOperations.size > 1) "[\n$indentSpacing" else "["
         val postfix = if (layerOperations.size > 1) "\n]" else "]"
@@ -82,9 +95,23 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
             postfix = postfix
         ) {
             when (it) {
-                is LayerOperation.CopyLayer -> """${modelInput.name}.get_layer("${it.layer.name}")"""
+                is LayerOperation.CopyLayer -> getLayerInModel(modelInput.name, it.layer.name)
                 is LayerOperation.MakeNewLayer -> layerToCode.makeNewLayer(it.layer)
             }
         }
     }
+
+    private fun buildTrainableFlags(layerOperations: List<LayerOperation>): String =
+        layerOperations.joinToString(separator = "\n") {
+            val layerInModel = getLayerInModel(newModelOutput.name, it.layer.name)
+            when (it.layer) {
+                is SealedLayer.MetaLayer.TrainableLayer ->
+                    """$layerInModel.trainable = ${boolToPythonString(true)}"""
+                is SealedLayer.MetaLayer.UntrainableLayer ->
+                    """$layerInModel.trainable = ${boolToPythonString(false)}"""
+            }
+        }
+
+    private fun getLayerInModel(modelName: String, layerName: String) =
+        """$modelName.get_layer("$layerName")"""
 }

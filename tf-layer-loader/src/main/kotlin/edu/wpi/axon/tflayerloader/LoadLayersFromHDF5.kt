@@ -5,6 +5,7 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import edu.wpi.axon.tflayers.Activation
 import edu.wpi.axon.tflayers.Layer
+import edu.wpi.axon.tflayers.SealedLayer
 import io.jhdf.HdfFile
 import java.io.File
 
@@ -35,17 +36,28 @@ class LoadLayersFromHDF5 {
         }
     }
 
+    private fun parseMetaLayer(name: String, json: JsonObject): SealedLayer.MetaLayer =
+        when (json["trainable"] as Boolean) {
+            true -> SealedLayer.MetaLayer.TrainableLayer(
+                json["name"] as String,
+                parseLayer(name, json)
+            )
+
+            false -> SealedLayer.MetaLayer.UntrainableLayer(
+                json["name"] as String,
+                parseLayer(name, json)
+            )
+        }
+
     private fun parseLayer(name: String, json: JsonObject): Layer = when (name) {
-        "Dense" -> Layer.Dense(
+        "Dense" -> SealedLayer.Dense(
             json["name"] as String,
-            json["trainable"] as Boolean,
             json["units"] as Int,
             parseActivation(json)
         )
 
-        else -> Layer.UnknownLayer(
-            json["name"] as String,
-            json["trainable"] as Boolean
+        else -> SealedLayer.UnknownLayer(
+            json["name"] as String
         )
     }
 
