@@ -31,7 +31,7 @@ class LoadLayersFromHDF5 {
             return layers.map {
                 val className = it["class_name"] as String
                 val layerData = it["config"] as JsonObject
-                parseLayer(className, layerData)
+                parseMetaLayer(className, layerData)
             }
         }
     }
