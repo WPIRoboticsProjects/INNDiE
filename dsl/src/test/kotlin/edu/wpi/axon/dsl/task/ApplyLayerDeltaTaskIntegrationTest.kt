@@ -1,3 +1,4 @@
+@file:SuppressWarnings("TooManyFunctions", "StringLiteralDuplication", "LargeClass")
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
