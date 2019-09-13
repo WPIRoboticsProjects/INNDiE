@@ -55,10 +55,19 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     override val dependencies: Set<Code<*>> = setOf()
 
     override fun code(): String {
+        val layerOperations = createLayerOperations(currentLayers)
+
+        return """
+        |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})
+        |${buildTrainableFlags(layerOperations)}
+        """.trimMargin()
+    }
+
+    private fun createLayerOperations(currentLayers: List<SealedLayer.MetaLayer>): List<LayerOperation> {
         // The base layers inside the Trainable or Untrainable layer wrappers
         val innerCurrentLayers = currentLayers.map { it.layer }
 
-        val layerOperations = newLayers.map {
+        return newLayers.map {
             when (it) {
                 is SealedLayer.MetaLayer.TrainableLayer,
                 is SealedLayer.MetaLayer.UntrainableLayer -> {
@@ -76,11 +85,6 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
                 else -> throw IllegalStateException("Must have a SealedLayer.MetaLayer, got: $it")
             }
         }
-
-        return """
-        |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})
-        |${buildTrainableFlags(layerOperations)}
-        """.trimMargin()
     }
 
     @Suppress("SameParameterValue")
