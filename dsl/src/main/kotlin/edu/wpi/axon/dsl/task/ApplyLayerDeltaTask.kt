@@ -68,21 +68,14 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
         val innerCurrentLayers = currentLayers.map { it.layer }
 
         return newLayers.map {
-            when (it) {
-                is SealedLayer.MetaLayer.TrainableLayer,
-                is SealedLayer.MetaLayer.UntrainableLayer -> {
-                    // Compare using the inner layer so the trainable status does not matter
-                    if (it.layer in innerCurrentLayers) {
-                        // Copy layers that are already in the base model to preserve as much
-                        // configuration information as possible
-                        LayerOperation.CopyLayer(it)
-                    } else {
-                        // We are forced to make new layers if they aren't in the base model
-                        LayerOperation.MakeNewLayer(it)
-                    }
-                }
-
-                else -> throw IllegalStateException("Must have a SealedLayer.MetaLayer, got: $it")
+            // Compare using the inner layer so the trainable status does not matter
+            if (it.layer in innerCurrentLayers) {
+                // Copy layers that are already in the base model to preserve as much
+                // configuration information as possible
+                LayerOperation.CopyLayer(it)
+            } else {
+                // We are forced to make new layers if they aren't in the base model
+                LayerOperation.MakeNewLayer(it)
             }
         }
     }
