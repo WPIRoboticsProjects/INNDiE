@@ -1,3 +1,4 @@
+@file:SuppressWarnings("TooManyFunctions", "StringLiteralDuplication", "LargeClass")
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
@@ -5,7 +6,8 @@ import edu.wpi.axon.dsl.defaultUniqueVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tflayer.python.LayerToCode
 import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.Layer
+import edu.wpi.axon.tflayers.SealedLayer
+import edu.wpi.axon.tflayers.trainable
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -23,7 +25,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
             })
         }
 
-        val layer1 = Layer.Dense("dense_1", true, 10, Activation.ReLu)
+        val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
@@ -34,6 +36,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([base_model.get_layer("dense_1")])
+            |new_model.get_layer("dense_1").trainable = True
         """.trimMargin()
     }
 
@@ -45,8 +48,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
             })
         }
 
-        val layer1 = Layer.Dense("dense_1", true, 10, Activation.ReLu)
-        val layer2 = Layer.UnknownLayer("unknown_1", true)
+        val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
+        val layer2 = SealedLayer.UnknownLayer("unknown_1").trainable()
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
@@ -60,6 +63,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
             |    base_model.get_layer("dense_1"),
             |    base_model.get_layer("unknown_1")
             |])
+            |new_model.get_layer("dense_1").trainable = True
+            |new_model.get_layer("unknown_1").trainable = True
         """.trimMargin()
     }
 
@@ -73,13 +78,14 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(Layer.Dense("dense_1", true, 10, Activation.ReLu))
+            currentLayers = listOf(SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable())
             newLayers = listOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([])
+            |
         """.trimMargin()
     }
 
@@ -94,8 +100,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = listOf(
-                Layer.Dense("dense_1", true, 10, Activation.ReLu),
-                Layer.UnknownLayer("unknown_1", true)
+                SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable(),
+                SealedLayer.UnknownLayer("unknown_1").trainable()
             )
             newLayers = listOf()
             newModelOutput = configuredCorrectly("new_model")
@@ -103,12 +109,13 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([])
+            |
         """.trimMargin()
     }
 
     @Test
     fun `add one layer`() {
-        val layer1 = Layer.Dense("dense_1", true, 10, Activation.ReLu)
+        val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
 
         startKoin {
             modules(module {
@@ -130,13 +137,14 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([layer1])
+            |new_model.get_layer("dense_1").trainable = True
         """.trimMargin()
     }
 
     @Test
     fun `add two layers`() {
-        val layer1 = Layer.Dense("dense_1", true, 128, Activation.ReLu)
-        val layer2 = Layer.Dense("dense_2", true, 10, Activation.SoftMax)
+        val layer1 = SealedLayer.Dense("dense_1", 128, Activation.ReLu).trainable()
+        val layer2 = SealedLayer.Dense("dense_2", 10, Activation.SoftMax).trainable()
 
         startKoin {
             modules(module {
@@ -162,14 +170,16 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
             |    layer1,
             |    layer2
             |])
+            |new_model.get_layer("dense_1").trainable = True
+            |new_model.get_layer("dense_2").trainable = True
         """.trimMargin()
     }
 
     @Test
     fun `remove the first layer and replace the second and swap them`() {
-        val layer1 = Layer.UnknownLayer("unknown_3", true)
-        val layer2Old = Layer.Dense("dense_2", true, 10, Activation.SoftMax)
-        val layer2New = Layer.Dense("dense_2", true, 3, Activation.SoftMax)
+        val layer1 = SealedLayer.UnknownLayer("unknown_3").trainable()
+        val layer2Old = SealedLayer.Dense("dense_2", 10, Activation.SoftMax).trainable()
+        val layer2New = SealedLayer.Dense("dense_2", 3, Activation.SoftMax).trainable()
 
         startKoin {
             modules(module {
@@ -194,6 +204,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
             |    layer2New,
             |    base_model.get_layer("unknown_3")
             |])
+            |new_model.get_layer("dense_2").trainable = True
+            |new_model.get_layer("unknown_3").trainable = True
         """.trimMargin()
     }
 
@@ -205,7 +217,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
             })
         }
 
-        val layer1 = Layer.UnknownLayer("unknown_1", true)
+        val layer1 = SealedLayer.UnknownLayer("unknown_1").trainable()
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
@@ -216,12 +228,14 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([base_model.get_layer("unknown_1")])
+            |new_model.get_layer("unknown_1").trainable = True
         """.trimMargin()
     }
 
     @Test
     fun `copy a layer with an unknown activation function`() {
-        val layer1 = Layer.Dense("dense_1", true, 10, Activation.UnknownActivation("activation_1"))
+        val layer1 = SealedLayer.Dense("dense_1", 10, Activation.UnknownActivation("activation_1"))
+            .trainable()
 
         startKoin {
             modules(module {
@@ -238,6 +252,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([base_model.get_layer("dense_1")])
+            |new_model.get_layer("dense_1").trainable = True
         """.trimMargin()
     }
 }
