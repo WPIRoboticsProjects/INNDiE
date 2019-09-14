@@ -1,6 +1,5 @@
 package edu.wpi.axon.tfdata.code.layer
 
-import edu.wpi.axon.tfdata.code.layer.DefaultLayerToCode
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.SealedLayer

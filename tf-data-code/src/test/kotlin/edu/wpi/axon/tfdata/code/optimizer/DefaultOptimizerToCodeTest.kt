@@ -1,6 +1,5 @@
 package edu.wpi.axon.tfdata.code.optimizer
 
-import edu.wpi.axon.tfdata.code.optimizer.DefaultOptimizerToCode
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
