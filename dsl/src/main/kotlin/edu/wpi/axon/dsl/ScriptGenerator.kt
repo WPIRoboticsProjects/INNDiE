@@ -68,6 +68,13 @@ class ScriptGenerator(
             return "$this is configured incorrectly.".invalidNel()
         }
 
+        logger.info {
+            """
+            |Required variables:
+            |${requiredVariables.joinToString()}
+            """.trimMargin()
+        }
+
         @Suppress("UNUSED_VARIABLE")
         val finalCompositeTask by tasks.running(EmptyBaseTask::class) {
             // Depend on what the user said was their last task so this runs after
@@ -86,6 +93,16 @@ class ScriptGenerator(
                     return Invalid(Nel.fromListUnsafe(it).map { "$it is configured incorrectly." })
                 }
             }
+
+        logger.info {
+            """
+            |Variables:
+            |${variables.values.joinWithIndent("\t")}
+            |
+            |Tasks:
+            |${tasks.values.joinToString("\n") { it.unsafeToString() }}
+            """.trimMargin()
+        }
 
         val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
 
@@ -206,19 +223,19 @@ class ScriptGenerator(
     }
 
     private fun logGraph(graph: Either<String, ImmutableGraph<AnyCode>>) {
-        when (graph) {
-            is Either.Left -> logger.debug {
-                """
-                |Graph was invalid:
-                |${graph.a}
-                """.trimMargin()
-            }
+        logger.info {
+            when (graph) {
+                is Either.Left ->
+                    """
+                    |Graph was invalid:
+                    |${graph.a}
+                    """.trimMargin()
 
-            is Either.Right -> logger.debug {
-                """
-                |Graph adjacency list:
-                |${graph.b.adjacencyList()}
-                """.trimMargin()
+                is Either.Right ->
+                    """
+                    |Graph adjacency list:
+                    |${graph.b.adjacencyList()}
+                    """.trimMargin()
             }
         }
     }

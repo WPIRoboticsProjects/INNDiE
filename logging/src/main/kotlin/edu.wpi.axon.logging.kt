@@ -4,5 +4,5 @@
  * @param indent The indent for each line, typically a tab character.
  * @return The string.
  */
-fun <T> Iterable<T>.joinWithIndent(indent: String) =
-    joinToString(separator = "\n$indent", prefix = indent)
+fun <T> Iterable<T>.joinWithIndent(indent: String, transform: ((T) -> CharSequence)? = null) =
+    joinToString(separator = "\n$indent", prefix = indent, transform = transform)

@@ -15,4 +15,17 @@ interface Task : Configurable, AnyCode {
      * assure task uniqueness.
      */
     val name: String
+
+    /**
+     * A toString that requires the task [isConfiguredCorrectly].
+     */
+    fun unsafeToString() = """
+        |Task(
+        |    name=$name,
+        |    class=${this::class.simpleName},
+        |    inputs=${inputs.joinToString()},
+        |    outputs=${outputs.joinToString()},
+        |    dependencies=${dependencies.joinToString()}
+        |)
+    """.trimMargin()
 }
