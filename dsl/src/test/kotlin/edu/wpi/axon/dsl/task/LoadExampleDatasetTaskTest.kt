@@ -30,10 +30,10 @@ internal class LoadExampleDatasetTaskTest : KoinTestFixture() {
 
         val task = LoadExampleDatasetTask("task").apply {
             dataset = mockDataset
-            xTrain = configuredCorrectly("xTrain")
-            yTrain = configuredCorrectly("yTrain")
-            xTest = configuredCorrectly("xTest")
-            yTest = configuredCorrectly("yTest")
+            xTrainOutput = configuredCorrectly("xTrain")
+            yTrainOutput = configuredCorrectly("yTrain")
+            xTestOutput = configuredCorrectly("xTest")
+            yTestOutput = configuredCorrectly("yTest")
         }
 
         task.code() shouldBe """

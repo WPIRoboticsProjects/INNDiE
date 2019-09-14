@@ -19,10 +19,25 @@ class LoadExampleDatasetTask(name: String) : BaseTask(name) {
      */
     var dataset: Dataset by singleAssign()
 
-    var xTrain: Variable by singleAssign()
-    var yTrain: Variable by singleAssign()
-    var xTest: Variable by singleAssign()
-    var yTest: Variable by singleAssign()
+    /**
+     * The input data for training.
+     */
+    var xTrainOutput: Variable by singleAssign()
+
+    /**
+     * The target data for training.
+     */
+    var yTrainOutput: Variable by singleAssign()
+
+    /**
+     * The input data for validation.
+     */
+    var xTestOutput: Variable by singleAssign()
+
+    /**
+     * The target data for validation.
+     */
+    var yTestOutput: Variable by singleAssign()
 
     private val datasetToCode: DatasetToCode by inject()
 
@@ -33,13 +48,14 @@ class LoadExampleDatasetTask(name: String) : BaseTask(name) {
     override val inputs: Set<Variable> = setOf()
 
     override val outputs: Set<Variable>
-        get() = setOf(xTrain, yTrain, xTest, yTest)
+        get() = setOf(xTrainOutput, yTrainOutput, xTestOutput, yTestOutput)
 
     override val dependencies: Set<Code<*>>
         get() = setOf()
 
     override fun code(): String {
-        val output = """(${xTrain.name}, ${yTrain.name}), (${xTest.name}, ${yTest.name})"""
+        val output = "(${xTrainOutput.name}, ${yTrainOutput.name}), " +
+            "(${xTestOutput.name}, ${yTestOutput.name})"
         return """
             |$output = ${datasetToCode.datasetToCode(dataset)}.load_data()
         """.trimMargin()

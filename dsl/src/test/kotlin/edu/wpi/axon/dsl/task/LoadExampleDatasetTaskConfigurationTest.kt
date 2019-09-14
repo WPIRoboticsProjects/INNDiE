@@ -6,9 +6,9 @@ internal class LoadExampleDatasetTaskConfigurationTest :
     TaskConfigurationTestFixture<LoadExampleDatasetTask>(
         LoadExampleDatasetTask::class,
         listOf(
-            LoadExampleDatasetTask::xTrain,
-            LoadExampleDatasetTask::yTrain,
-            LoadExampleDatasetTask::xTest,
-            LoadExampleDatasetTask::yTest
+            LoadExampleDatasetTask::xTrainOutput,
+            LoadExampleDatasetTask::yTrainOutput,
+            LoadExampleDatasetTask::xTestOutput,
+            LoadExampleDatasetTask::yTestOutput
         )
     )
