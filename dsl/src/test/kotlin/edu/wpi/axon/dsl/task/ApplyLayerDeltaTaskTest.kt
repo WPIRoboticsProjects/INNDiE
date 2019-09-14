@@ -4,7 +4,7 @@ package edu.wpi.axon.dsl.task
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultUniqueVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tflayer.python.LayerToCode
+import edu.wpi.axon.tfdata.code.LayerToCode
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable

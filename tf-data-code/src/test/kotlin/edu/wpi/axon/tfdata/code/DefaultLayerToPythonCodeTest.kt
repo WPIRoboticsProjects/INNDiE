@@ -1,4 +1,4 @@
-package edu.wpi.axon.tflayer.python
+package edu.wpi.axon.tfdata.code
 
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer

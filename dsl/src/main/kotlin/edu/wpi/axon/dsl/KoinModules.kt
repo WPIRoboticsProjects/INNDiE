@@ -6,8 +6,8 @@ import edu.wpi.axon.dsl.validator.path.DefaultPathValidator
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
 import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
-import edu.wpi.axon.tflayer.python.DefaultLayerToPythonCode
-import edu.wpi.axon.tflayer.python.LayerToCode
+import edu.wpi.axon.tfdata.code.DefaultLayerToPythonCode
+import edu.wpi.axon.tfdata.code.LayerToCode
 import org.koin.dsl.module
 
 fun defaultModule() = module {
