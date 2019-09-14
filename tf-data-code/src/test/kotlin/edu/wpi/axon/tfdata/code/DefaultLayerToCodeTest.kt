@@ -9,9 +9,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-internal class DefaultLayerToPythonCodeTest {
+internal class DefaultLayerToCodeTest {
 
-    private val layerToCode = DefaultLayerToPythonCode()
+    private val layerToCode = DefaultLayerToCode()
 
     @ParameterizedTest
     @MethodSource("layerSource")

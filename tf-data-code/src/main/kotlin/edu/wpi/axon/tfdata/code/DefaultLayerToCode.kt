@@ -4,10 +4,7 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.SealedLayer
 
-/**
- * An implementation of [LayerToCode] for Python.
- */
-class DefaultLayerToPythonCode : LayerToCode {
+class DefaultLayerToCode : LayerToCode {
 
     override fun makeNewLayer(layer: Layer): String = when (layer) {
         is SealedLayer.MetaLayer -> makeNewLayer(layer.layer)
