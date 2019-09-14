@@ -5,9 +5,9 @@ import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultUniqueVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tflayer.python.LayerToCode
-import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.SealedLayer
-import edu.wpi.axon.tflayers.trainable
+import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk

@@ -1,4 +1,4 @@
-package edu.wpi.axon.tflayers
+package edu.wpi.axon.tfdata.layer
 
 /**
  * A TensorFlow layer.

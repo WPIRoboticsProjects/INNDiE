@@ -4,10 +4,10 @@ package edu.wpi.axon.dsl.task
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.SealedLayer
-import edu.wpi.axon.tflayers.trainable
-import edu.wpi.axon.tflayers.untrainable
+import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.untrainable
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import org.junit.jupiter.api.Test

@@ -1,4 +1,4 @@
-package edu.wpi.axon.tflayers
+package edu.wpi.axon.tfdata.layer
 
 /**
  * A sealed [Layer] implementation.
@@ -59,4 +59,5 @@ fun Layer.trainable() = SealedLayer.MetaLayer.TrainableLayer(name, this)
  *
  * @receiver The [Layer] to wrap.
  */
-fun Layer.untrainable() = SealedLayer.MetaLayer.UntrainableLayer(name, this)
+fun Layer.untrainable() =
+    SealedLayer.MetaLayer.UntrainableLayer(name, this)

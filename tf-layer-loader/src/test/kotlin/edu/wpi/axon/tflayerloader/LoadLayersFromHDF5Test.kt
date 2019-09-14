@@ -1,7 +1,7 @@
 package edu.wpi.axon.tflayerloader
 
-import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.SealedLayer
+import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.SealedLayer
 import io.kotlintest.matchers.equality.shouldBeEqualToUsingFields
 import org.junit.jupiter.api.Test
 import java.io.File

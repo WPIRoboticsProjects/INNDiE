@@ -1,4 +1,4 @@
-package edu.wpi.axon.tflayers
+package edu.wpi.axon.tfdata.layer
 
 sealed class Activation {
 

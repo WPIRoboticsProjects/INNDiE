@@ -1,9 +1,9 @@
 package edu.wpi.axon.tflayer.python
 
-import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.Layer
-import edu.wpi.axon.tflayers.SealedLayer
-import edu.wpi.axon.tflayers.trainable
+import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
