@@ -4,9 +4,9 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tflayer.python.LayerToCode
-import edu.wpi.axon.tflayer.python.boolToPythonString
-import edu.wpi.axon.tflayers.SealedLayer
+import edu.wpi.axon.tfdata.code.layer.LayerToCode
+import edu.wpi.axon.tfdata.code.boolToPythonString
+import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 

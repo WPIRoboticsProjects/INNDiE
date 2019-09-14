@@ -1,13 +1,14 @@
 @file:SuppressWarnings("TooManyFunctions", "StringLiteralDuplication", "LargeClass")
+
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultUniqueVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tflayer.python.LayerToCode
-import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.SealedLayer
-import edu.wpi.axon.tflayers.trainable
+import edu.wpi.axon.tfdata.code.layer.LayerToCode
+import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -19,11 +20,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `keep all 1 layers`() {
-        startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
-        }
+        startKoin {}
 
         val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
 
@@ -42,11 +39,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `keep all 2 layers`() {
-        startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
-        }
+        startKoin {}
 
         val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
         val layer2 = SealedLayer.UnknownLayer("unknown_1").trainable()
@@ -70,11 +63,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `remove one layer`() {
-        startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
-        }
+        startKoin {}
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
@@ -91,11 +80,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `remove two layers`() {
-        startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
-        }
+        startKoin {}
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
@@ -211,11 +196,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `copy an unknown layer`() {
-        startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
-        }
+        startKoin {}
 
         val layer1 = SealedLayer.UnknownLayer("unknown_1").trainable()
 
@@ -236,12 +217,7 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     fun `copy a layer with an unknown activation function`() {
         val layer1 = SealedLayer.Dense("dense_1", 10, Activation.UnknownActivation("activation_1"))
             .trainable()
-
-        startKoin {
-            modules(module {
-                defaultUniqueVariableNameGenerator()
-            })
-        }
+        startKoin {}
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")

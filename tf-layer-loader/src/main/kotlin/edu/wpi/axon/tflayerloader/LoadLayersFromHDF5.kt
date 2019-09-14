@@ -3,9 +3,9 @@ package edu.wpi.axon.tflayerloader
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
-import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.Layer
-import edu.wpi.axon.tflayers.SealedLayer
+import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.axon.tfdata.layer.SealedLayer
 import io.jhdf.HdfFile
 import java.io.File
 
