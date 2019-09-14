@@ -19,4 +19,6 @@ open class Variable(val name: String) : Configurable, KoinComponent {
     private val variableNameValidator: VariableNameValidator by inject()
 
     override fun isConfiguredCorrectly() = variableNameValidator.isValidVariableName(name)
+
+    override fun toString() = "Variable(name=$name)"
 }

@@ -15,6 +15,7 @@ import edu.wpi.axon.dsl.task.EmptyBaseTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
+import mu.KotlinLogging
 
 /**
  * Generates a script from a DSL description of the script.
@@ -74,7 +75,7 @@ class ScriptGenerator(
             // Add dependencies for any required variables. Before this point, generating the
             // CodeGraph could result in islands. This step resolves islands that would form if
             // the user added tasks that are only connected by required variables.
-            dependOnRequiredVariables(generateDebugComments)
+            dependOnRequiredVariables()
         }
 
         (variables.values + tasks.values)
@@ -160,10 +161,7 @@ class ScriptGenerator(
                         appendNode(it)
                     }
 
-                if (generateDebugComments) {
-                    println("Generating $node")
-                }
-
+                logger.debug { "Generating $node" }
                 appendCode(node, generateDebugComments, handledNodes)
             }
         }
@@ -173,17 +171,13 @@ class ScriptGenerator(
 
     /**
      * Adds dependencies on the tasks that output to any of the explicitly required variables.
-     *
-     * @param generateDebugComments Whether to insert debugging comments.
      */
-    private fun EmptyBaseTask.dependOnRequiredVariables(
-        generateDebugComments: Boolean
-    ) {
+    private fun EmptyBaseTask.dependOnRequiredVariables() {
         requiredVariables.forEach { variable ->
             tasks.forEach { _, task ->
                 if (variable in task.outputs) {
-                    if (generateDebugComments) {
-                        println("Generating $task because of required variable $variable")
+                    logger.debug {
+                        "Adding dependency on $task because of required variable $variable"
                     }
 
                     dependencies += task
@@ -207,5 +201,9 @@ class ScriptGenerator(
         append('\n')
 
         handledNodes += node
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
     }
 }
