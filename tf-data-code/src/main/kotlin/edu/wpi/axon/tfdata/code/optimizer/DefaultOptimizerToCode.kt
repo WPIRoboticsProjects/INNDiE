@@ -1,5 +1,6 @@
-package edu.wpi.axon.tfdata.code
+package edu.wpi.axon.tfdata.code.optimizer
 
+import edu.wpi.axon.tfdata.code.boolToPythonString
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 
 class DefaultOptimizerToCode : OptimizerToCode {

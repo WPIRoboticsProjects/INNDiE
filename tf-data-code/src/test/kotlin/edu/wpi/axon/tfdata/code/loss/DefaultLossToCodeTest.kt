@@ -1,5 +1,6 @@
-package edu.wpi.axon.tfdata.code
+package edu.wpi.axon.tfdata.code.loss
 
+import edu.wpi.axon.tfdata.code.loss.DefaultLossToCode
 import edu.wpi.axon.tfdata.loss.Loss
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest

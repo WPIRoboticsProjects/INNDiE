@@ -1,4 +1,4 @@
-package edu.wpi.axon.tfdata.code
+package edu.wpi.axon.tfdata.code.loss
 
 import edu.wpi.axon.tfdata.loss.Loss
 
