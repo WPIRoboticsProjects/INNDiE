@@ -39,6 +39,13 @@ dependencies {
 
     implementation(project(":util"))
     implementation(project(":tf-data-code"))
+    implementation(project(":logging"))
+
+    implementation(
+        group = "com.mitchtalmadge",
+        name = "ascii-data",
+        version = property("ascii-data.version") as String
+    )
 
     testImplementation(project(":dsl-test-util"))
 }

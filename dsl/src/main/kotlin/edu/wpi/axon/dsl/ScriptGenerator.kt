@@ -15,6 +15,8 @@ import edu.wpi.axon.dsl.task.EmptyBaseTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
+import joinWithIndent
+import mu.KotlinLogging
 
 /**
  * Generates a script from a DSL description of the script.
@@ -41,7 +43,7 @@ class ScriptGenerator(
     private val requiredVariables = mutableSetOf<Variable>()
 
     init {
-        configure()
+        this.configure()
         // Don't check isConfiguredCorrectly here because some tests need an unconfigured script
     }
 
@@ -66,6 +68,13 @@ class ScriptGenerator(
             return "$this is configured incorrectly.".invalidNel()
         }
 
+        logger.info {
+            """
+            |Required variables:
+            |${requiredVariables.joinToString()}
+            """.trimMargin()
+        }
+
         @Suppress("UNUSED_VARIABLE")
         val finalCompositeTask by tasks.running(EmptyBaseTask::class) {
             // Depend on what the user said was their last task so this runs after
@@ -74,7 +83,7 @@ class ScriptGenerator(
             // Add dependencies for any required variables. Before this point, generating the
             // CodeGraph could result in islands. This step resolves islands that would form if
             // the user added tasks that are only connected by required variables.
-            dependOnRequiredVariables(generateDebugComments)
+            dependOnRequiredVariables()
         }
 
         (variables.values + tasks.values)
@@ -85,10 +94,21 @@ class ScriptGenerator(
                 }
             }
 
+        logger.info {
+            """
+            |Variables:
+            |${variables.values.joinWithIndent("\t")}
+            |
+            |Tasks:
+            |${tasks.values.joinToString("\n") { it.unsafeToString() }}
+            """.trimMargin()
+        }
+
         val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
 
         @Suppress("UNCHECKED_CAST")
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
+        logGraph(graph)
 
         return when (graph) {
             is Either.Left -> graph.a.invalidNel()
@@ -160,10 +180,7 @@ class ScriptGenerator(
                         appendNode(it)
                     }
 
-                if (generateDebugComments) {
-                    println("Generating $node")
-                }
-
+                logger.debug { "Generating $node" }
                 appendCode(node, generateDebugComments, handledNodes)
             }
         }
@@ -173,17 +190,13 @@ class ScriptGenerator(
 
     /**
      * Adds dependencies on the tasks that output to any of the explicitly required variables.
-     *
-     * @param generateDebugComments Whether to insert debugging comments.
      */
-    private fun EmptyBaseTask.dependOnRequiredVariables(
-        generateDebugComments: Boolean
-    ) {
+    private fun EmptyBaseTask.dependOnRequiredVariables() {
         requiredVariables.forEach { variable ->
             tasks.forEach { _, task ->
                 if (variable in task.outputs) {
-                    if (generateDebugComments) {
-                        println("Generating $task because of required variable $variable")
+                    logger.debug {
+                        "Adding dependency on $task because of required variable $variable"
                     }
 
                     dependencies += task
@@ -208,4 +221,30 @@ class ScriptGenerator(
 
         handledNodes += node
     }
+
+    private fun logGraph(graph: Either<String, ImmutableGraph<AnyCode>>) {
+        logger.info {
+            when (graph) {
+                is Either.Left ->
+                    """
+                    |Graph was invalid:
+                    |${graph.a}
+                    """.trimMargin()
+
+                is Either.Right ->
+                    """
+                    |Graph adjacency list:
+                    |${graph.b.adjacencyList()}
+                    """.trimMargin()
+            }
+        }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
+    }
 }
+
+private fun ImmutableGraph<AnyCode>.adjacencyList(): String = nodes().map {
+    """$it -> ${successors(it).joinToString { it.toString() }}"""
+}.joinWithIndent("\t")
