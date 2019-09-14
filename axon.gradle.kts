@@ -28,7 +28,7 @@ val taskPropertyTestingProject = project(":task-property-testing")
 val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
 val tfLayerLoaderProject = project(":tf-layer-loader")
-val tfLayerPythonProject = project(":tf-layer-python")
+val tfLayerPythonProject = project(":tf-data-code")
 val tfLayersProject = project(":tf-data")
 val utilProject = project(":util")
 

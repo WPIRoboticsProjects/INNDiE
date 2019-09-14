@@ -38,7 +38,7 @@ dependencies {
     api(project(":tf-data"))
 
     implementation(project(":util"))
-    implementation(project(":tf-layer-python"))
+    implementation(project(":tf-data-code"))
 
     testImplementation(project(":dsl-test-util"))
 }
