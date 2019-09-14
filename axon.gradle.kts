@@ -24,7 +24,6 @@ val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
 val patternMatchProject = project(":pattern-match")
-val taskPropertyTestingProject = project(":task-property-testing")
 val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
 val tfLayerLoaderProject = project(":tf-layer-loader")
@@ -37,7 +36,6 @@ val kotlinProjects = setOf(
     dslInterfaceProject,
     dslTestUtilProject,
     patternMatchProject,
-    taskPropertyTestingProject,
     tasksYolov3Project,
     testUtilProject,
     tfLayerLoaderProject,

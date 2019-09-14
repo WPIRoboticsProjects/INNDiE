@@ -12,7 +12,7 @@ import edu.wpi.axon.util.singleAssign
 class YoloV3PostprocessTask(name: String) : BaseTask(name) {
 
     /**
-     * The input data, typically the output of [InferenceTask].
+     * The input data.
      */
     var input: Variable by singleAssign()
 

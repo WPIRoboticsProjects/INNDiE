@@ -76,11 +76,9 @@ class TrainTask(name: String) : BaseTask(name) {
             validationOutputData
         ) + callbacks
 
-    override val outputs: Set<Variable>
-        get() = setOf()
+    override val outputs: Set<Variable> = setOf()
 
-    override val dependencies: Set<Code<*>>
-        get() = setOf()
+    override val dependencies: Set<Code<*>> = setOf()
 
     override fun code() = """
         |${modelInput.name}.fit(
