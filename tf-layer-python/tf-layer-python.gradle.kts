@@ -1,5 +1,5 @@
 description = "Python implementations for TF layers."
 
 dependencies {
-    api(project(":tf-layers"))
+    api(project(":tf-data"))
 }

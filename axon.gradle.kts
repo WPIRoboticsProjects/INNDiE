@@ -29,7 +29,7 @@ val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
 val tfLayerLoaderProject = project(":tf-layer-loader")
 val tfLayerPythonProject = project(":tf-layer-python")
-val tfLayersProject = project(":tf-layers")
+val tfLayersProject = project(":tf-data")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
