@@ -7,6 +7,7 @@ import edu.wpi.axon.dsl.task.LoadClassLabels
 import edu.wpi.axon.dsl.task.LoadImageTask
 import edu.wpi.axon.dsl.task.MakeNewInferenceSession
 import edu.wpi.axon.dsl.task.Task
+import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tasks.yolov3.ConstructYoloV3ImageInput
 import edu.wpi.axon.tasks.yolov3.LoadYoloV3ImageData
@@ -124,6 +125,16 @@ internal class GeneralTaskConfigurationTest : KoinTestFixture() {
             Arguments.of(
                 { CompileModelTask("") },
                 listOf(CompileModelTask::modelInput)
+            ),
+            Arguments.of(
+                { TrainTask("") },
+                listOf(
+                    TrainTask::modelInput,
+                    TrainTask::trainInputData,
+                    TrainTask::trainOutputData,
+                    TrainTask::validationInputData,
+                    TrainTask::validationOutputData
+                )
             )
         )
     }
