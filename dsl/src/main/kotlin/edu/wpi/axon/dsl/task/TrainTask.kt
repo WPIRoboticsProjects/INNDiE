@@ -82,18 +82,16 @@ class TrainTask(name: String) : BaseTask(name) {
     override val dependencies: Set<Code<*>>
         get() = setOf()
 
-    override fun code(): String {
-        return """
-            |${modelInput.name}.fit(
-            |    ${trainInputData.name},
-            |    ${trainOutputData.name},
-            |    batch_size=${numberToPythonString(batchSize)},
-            |    epochs=$epochs,
-            |    verbose=$verbose,
-            |    callbacks=${callbacks.joinToString(prefix = "[", postfix = "]") { it.name }},
-            |    validation_data=(${validationInputData.name}, ${validationOutputData.name}),
-            |    shuffle=${boolToPythonString(shuffle)}
-            |)
-        """.trimMargin()
-    }
+    override fun code() = """
+        |${modelInput.name}.fit(
+        |    ${trainInputData.name},
+        |    ${trainOutputData.name},
+        |    batch_size=${numberToPythonString(batchSize)},
+        |    epochs=$epochs,
+        |    verbose=$verbose,
+        |    callbacks=${callbacks.joinToString(prefix = "[", postfix = "]") { it.name }},
+        |    validation_data=(${validationInputData.name}, ${validationOutputData.name}),
+        |    shuffle=${boolToPythonString(shuffle)}
+        |)
+    """.trimMargin()
 }
