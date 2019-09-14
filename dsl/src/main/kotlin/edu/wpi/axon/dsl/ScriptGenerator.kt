@@ -42,7 +42,7 @@ class ScriptGenerator(
     private val requiredVariables = mutableSetOf<Variable>()
 
     init {
-        configure()
+        this.configure()
         // Don't check isConfiguredCorrectly here because some tests need an unconfigured script
     }
 
