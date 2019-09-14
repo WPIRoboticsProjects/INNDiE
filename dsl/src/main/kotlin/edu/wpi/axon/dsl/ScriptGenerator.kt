@@ -15,6 +15,7 @@ import edu.wpi.axon.dsl.task.EmptyBaseTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.util.singleAssign
+import joinWithIndent
 import mu.KotlinLogging
 
 /**
@@ -90,6 +91,7 @@ class ScriptGenerator(
 
         @Suppress("UNCHECKED_CAST")
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph
+        logGraph(graph)
 
         return when (graph) {
             is Either.Left -> graph.a.invalidNel()
@@ -203,7 +205,29 @@ class ScriptGenerator(
         handledNodes += node
     }
 
+    private fun logGraph(graph: Either<String, ImmutableGraph<AnyCode>>) {
+        when (graph) {
+            is Either.Left -> logger.debug {
+                """
+                |Graph was invalid:
+                |${graph.a}
+                """.trimMargin()
+            }
+
+            is Either.Right -> logger.debug {
+                """
+                |Graph adjacency list:
+                |${graph.b.adjacencyList()}
+                """.trimMargin()
+            }
+        }
+    }
+
     companion object {
         private val logger = KotlinLogging.logger { }
     }
 }
+
+private fun ImmutableGraph<AnyCode>.adjacencyList(): String = nodes().map {
+    """$it -> ${successors(it).joinToString { it.toString() }}"""
+}.joinWithIndent("\t")

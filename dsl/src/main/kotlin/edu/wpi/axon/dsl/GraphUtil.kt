@@ -7,6 +7,7 @@ import arrow.core.ForEither
 import arrow.core.Left
 import arrow.core.Right
 import com.google.common.graph.Graph
+import joinWithIndent
 
 /**
  * Checks if there are islands in this graph.
@@ -30,7 +31,7 @@ fun <T : Any> Graph<T>.checkIslands(): Kind2<ForEither, String, Unit> {
         Left(
             """
             |The following nodes are not reachable:
-            |${(allNodes - reachable).joinToString()}
+            |${(allNodes - reachable).joinWithIndent("\t")}
             """.trimMargin()
         )
     }
