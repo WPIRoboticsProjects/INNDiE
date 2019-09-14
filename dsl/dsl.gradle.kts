@@ -39,6 +39,7 @@ dependencies {
 
     implementation(project(":util"))
     implementation(project(":tf-data-code"))
+    implementation(project(":logging"))
 
     testImplementation(project(":dsl-test-util"))
 }

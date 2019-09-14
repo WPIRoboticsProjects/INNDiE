@@ -23,6 +23,7 @@ plugins {
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
+val loggingProject = project(":logging")
 val patternMatchProject = project(":pattern-match")
 val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
@@ -35,6 +36,7 @@ val kotlinProjects = setOf(
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
+    loggingProject,
     patternMatchProject,
     tasksYolov3Project,
     testUtilProject,
@@ -49,6 +51,7 @@ val javaProjects = setOf<Project>() + kotlinProjects
 val publishedProjects = setOf(
     dslProject,
     dslInterfaceProject,
+    loggingProject,
     patternMatchProject,
     tasksYolov3Project,
     tfLayerLoaderProject,

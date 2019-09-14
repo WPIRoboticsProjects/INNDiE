@@ -25,6 +25,7 @@ rootProject.name = "axon"
 include(":dsl")
 include(":dsl-interface")
 include(":dsl-test-util")
+include(":logging")
 include(":pattern-match")
 include(":tasks-yolov3")
 include(":test-util")
