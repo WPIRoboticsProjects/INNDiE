@@ -1,5 +1,6 @@
 package edu.wpi.axon.tflayerloader
 
+import arrow.core.Tuple2
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
@@ -20,7 +21,7 @@ class LoadLayersFromHDF5 {
      * @param file The file to load from.
      * @return The layers in the file.
      */
-    fun load(file: File): List<Layer> {
+    fun load(file: File): List<SealedLayer.MetaLayer> {
         HdfFile(file).use {
             val config = it.getAttribute("model_config").data as String
             val data = Parser.default().parse(config.byteInputStream()) as JsonObject
@@ -49,10 +50,18 @@ class LoadLayersFromHDF5 {
             )
         }
 
+    @Suppress("UNCHECKED_CAST")
     private fun parseLayer(name: String, json: JsonObject): Layer = when (name) {
         "Dense" -> SealedLayer.Dense(
             json["name"] as String,
             json["units"] as Int,
+            parseActivation(json)
+        )
+
+        "Conv2D" -> SealedLayer.Conv2D(
+            json["name"] as String,
+            json["filters"] as Int,
+            (json["kernel_size"] as JsonArray<Int>).let { Tuple2(it[0], it[1]) },
             parseActivation(json)
         )
 

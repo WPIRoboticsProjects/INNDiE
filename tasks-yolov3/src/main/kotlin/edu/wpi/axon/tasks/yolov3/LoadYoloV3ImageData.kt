@@ -39,7 +39,7 @@ class LoadYoloV3ImageData(name: String) : BaseTask(name) {
     override val outputs: Set<Variable>
         get() = setOf(imageDataOutput, imageSizeOutput)
 
-    override val dependencies: Set<Code<*>> = emptySet()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
         |${imageDataOutput.name} = preprocessYoloV3(${imageInput.name})

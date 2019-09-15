@@ -35,7 +35,7 @@ class LoadImageTask(name: String) : BaseTask(name), KoinComponent {
     override val outputs: Set<Variable>
         get() = setOf(imageOutput)
 
-    override val dependencies: Set<Code<*>> = emptySet()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun isConfiguredCorrectly() = pathValidator.isValidPathName(imagePath) &&
         super.isConfiguredCorrectly()

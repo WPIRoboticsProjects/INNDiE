@@ -52,7 +52,7 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     override val outputs: Set<Variable>
         get() = setOf(newModelOutput)
 
-    override val dependencies: Set<Code<*>> = setOf()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code(): String {
         val layerOperations = createLayerOperations(currentLayers)

@@ -37,7 +37,7 @@ class LoadClassLabels(name: String) : BaseTask(name), KoinComponent {
     override val outputs: Set<Variable>
         get() = setOf(classOutput)
 
-    override val dependencies: Set<Code<*>> = setOf()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun isConfiguredCorrectly() = pathValidator.isValidPathName(classLabelsPath) &&
         super.isConfiguredCorrectly()

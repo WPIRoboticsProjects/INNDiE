@@ -50,8 +50,7 @@ class LoadExampleDatasetTask(name: String) : BaseTask(name) {
     override val outputs: Set<Variable>
         get() = setOf(xTrainOutput, yTrainOutput, xTestOutput, yTestOutput)
 
-    override val dependencies: Set<Code<*>>
-        get() = setOf()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code(): String {
         val output = "(${xTrainOutput.name}, ${yTrainOutput.name}), " +
