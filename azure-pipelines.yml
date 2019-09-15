@@ -66,7 +66,21 @@ stages:
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
             publishJUnitResults: false
-            tasks: 'check jacocoRootReport'
+            tasks: 'check'
+
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/TEST-*.xml'
+            tasks: 'jacocoRootReport'
 
     - job: Windows
 
@@ -85,4 +99,18 @@ stages:
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
             publishJUnitResults: false
-            tasks: 'check jacocoRootReport'
+            tasks: 'check'
+
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/TEST-*.xml'
+            tasks: 'jacocoRootReport'
