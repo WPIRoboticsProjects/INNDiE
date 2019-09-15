@@ -6,7 +6,7 @@ import com.google.common.graph.EndpointPair
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.collections.shouldBeEmpty
-import io.kotlintest.matchers.equality.shouldBeEqualToUsingFields
+import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
@@ -37,7 +37,7 @@ internal class CodeGraphTest {
         val graph = CodeGraph(container).graph
 
         graph.shouldBeRight {
-            it.nodes().shouldBeEqualToUsingFields(codes.values)
+            it.nodes().shouldContainExactlyInAnyOrder(codes.values)
         }
     }
 
@@ -52,8 +52,8 @@ internal class CodeGraphTest {
         val graph = CodeGraph(container).graph
 
         graph.shouldBeRight {
-            it.nodes().shouldBeEqualToUsingFields(codes.values)
-            it.edges().shouldBeEqualToUsingFields(
+            it.nodes().shouldContainExactlyInAnyOrder(codes.values)
+            it.edges().shouldContainExactlyInAnyOrder(
                 setOf(EndpointPair.ordered(task2, task1))
             )
         }
@@ -76,8 +76,8 @@ internal class CodeGraphTest {
         val graph = CodeGraph(container).graph
 
         graph.shouldBeRight {
-            it.nodes().shouldBeEqualToUsingFields(codes.values + task3 + task4)
-            it.edges().shouldBeEqualToUsingFields(
+            it.nodes().shouldContainExactlyInAnyOrder(codes.values + task3 + task4)
+            it.edges().shouldContainExactlyInAnyOrder(
                 setOf(
                     EndpointPair.ordered(task2, task1),
                     EndpointPair.ordered(task3, task1),
@@ -123,8 +123,8 @@ internal class CodeGraphTest {
         val graph = CodeGraph(container).graph
 
         graph.shouldBeRight {
-            it.nodes().shouldBeEqualToUsingFields(codes.values)
-            it.edges().shouldBeEqualToUsingFields(
+            it.nodes().shouldContainExactlyInAnyOrder(codes.values)
+            it.edges().shouldContainExactlyInAnyOrder(
                 setOf(EndpointPair.ordered(task1, task2))
             )
         }

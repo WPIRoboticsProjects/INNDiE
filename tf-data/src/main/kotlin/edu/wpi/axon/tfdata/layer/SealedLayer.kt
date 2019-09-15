@@ -1,5 +1,7 @@
 package edu.wpi.axon.tfdata.layer
 
+import arrow.core.Tuple2
+
 /**
  * A sealed [Layer] implementation.
  */
@@ -43,6 +45,20 @@ sealed class SealedLayer : Layer {
     data class Dense(
         override val name: String,
         val units: Int,
+        val activation: Activation
+    ) : SealedLayer()
+
+    /**
+     * A 2D convolutional layer.
+     *
+     * @param filters The output dimension.
+     * @param kernel The (x,y) size of the kernel.
+     * @param activation The [Activation] function.
+     */
+    data class Conv2D(
+        override val name: String,
+        val filters: Int,
+        val kernel: Tuple2<Int, Int>,
         val activation: Activation
     ) : SealedLayer()
 }

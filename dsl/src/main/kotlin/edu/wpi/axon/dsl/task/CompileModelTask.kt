@@ -48,7 +48,7 @@ class CompileModelTask(name: String) : BaseTask(name) {
 
     override val outputs: Set<Variable> = setOf()
 
-    override val dependencies: Set<Code<*>> = setOf()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
         |${modelInput.name}.compile(

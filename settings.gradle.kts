@@ -29,9 +29,10 @@ include(":logging")
 include(":pattern-match")
 include(":tasks-yolov3")
 include(":test-util")
-include(":tf-layer-loader")
-include(":tf-data-code")
 include(":tf-data")
+include(":tf-data-code")
+include(":tf-layer-loader")
+include(":training")
 include(":util")
 
 /**

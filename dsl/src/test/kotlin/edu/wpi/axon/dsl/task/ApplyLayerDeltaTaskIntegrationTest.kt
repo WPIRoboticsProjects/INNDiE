@@ -1,4 +1,5 @@
 @file:SuppressWarnings("TooManyFunctions", "StringLiteralDuplication", "LargeClass")
+
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
@@ -24,8 +25,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
         val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = setOf(layer1)
+            newLayers = setOf(layer1)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -45,8 +46,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
         val layer2 = SealedLayer.UnknownLayer("unknown_1").trainable()
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1, layer2)
-            newLayers = listOf(layer1, layer2)
+            currentLayers = setOf(layer1, layer2)
+            newLayers = setOf(layer1, layer2)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -68,8 +69,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable())
-            newLayers = listOf()
+            currentLayers = setOf(SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable())
+            newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -87,11 +88,11 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(
+            currentLayers = setOf(
                 SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable(),
                 SealedLayer.UnknownLayer("unknown_1").trainable()
             )
-            newLayers = listOf()
+            newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -109,8 +110,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf()
-            newLayers = listOf(SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable())
+            currentLayers = setOf()
+            newLayers = setOf(SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -128,8 +129,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf()
-            newLayers = listOf(
+            currentLayers = setOf()
+            newLayers = setOf(
                 SealedLayer.Dense("dense_1", 128, Activation.ReLu).trainable(),
                 SealedLayer.Dense("dense_2", 10, Activation.SoftMax).trainable()
             )
@@ -154,8 +155,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf()
-            newLayers = listOf(SealedLayer.UnknownLayer("layer_1").trainable())
+            currentLayers = setOf()
+            newLayers = setOf(SealedLayer.UnknownLayer("layer_1").trainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -170,8 +171,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf()
-            newLayers = listOf(
+            currentLayers = setOf()
+            newLayers = setOf(
                 SealedLayer.Dense(
                     "dense_1",
                     128,
@@ -193,11 +194,11 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
         val layer1 = SealedLayer.UnknownLayer("unknown_3").trainable()
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(
+            currentLayers = setOf(
                 layer1,
                 SealedLayer.Dense("dense_2", 10, Activation.SoftMax).trainable()
             )
-            newLayers = listOf(
+            newLayers = setOf(
                 layer1,
                 SealedLayer.Dense("dense_2", 3, Activation.SoftMax).trainable()
             )
@@ -223,8 +224,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
         val layer1 = SealedLayer.UnknownLayer("unknown_1").trainable()
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = setOf(layer1)
+            newLayers = setOf(layer1)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -248,8 +249,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = setOf(layer1)
+            newLayers = setOf(layer1)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -268,8 +269,8 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
         val baseLayer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu)
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(baseLayer1.trainable())
-            newLayers = listOf(baseLayer1.untrainable())
+            currentLayers = setOf(baseLayer1.trainable())
+            newLayers = setOf(baseLayer1.untrainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 

@@ -27,9 +27,10 @@ val loggingProject = project(":logging")
 val patternMatchProject = project(":pattern-match")
 val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
+val tfDataProject = project(":tf-data")
+val tfDataCode = project(":tf-data-code")
 val tfLayerLoaderProject = project(":tf-layer-loader")
-val tfLayerPythonProject = project(":tf-data-code")
-val tfLayersProject = project(":tf-data")
+val trainingProject = project(":training")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
@@ -40,9 +41,10 @@ val kotlinProjects = setOf(
     patternMatchProject,
     tasksYolov3Project,
     testUtilProject,
+    tfDataProject,
+    tfDataCode,
     tfLayerLoaderProject,
-    tfLayerPythonProject,
-    tfLayersProject,
+    trainingProject,
     utilProject
 )
 
@@ -54,9 +56,10 @@ val publishedProjects = setOf(
     loggingProject,
     patternMatchProject,
     tasksYolov3Project,
+    tfDataProject,
+    tfDataCode,
     tfLayerLoaderProject,
-    tfLayerPythonProject,
-    tfLayersProject,
+    trainingProject,
     utilProject
 )
 
@@ -64,9 +67,10 @@ val pitestProjects = setOf(
     dslProject,
     patternMatchProject,
     tasksYolov3Project,
+    tfDataProject,
+    tfDataCode,
     tfLayerLoaderProject,
-    tfLayerPythonProject,
-    tfLayersProject,
+    trainingProject,
     utilProject
 )
 

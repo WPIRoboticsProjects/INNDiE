@@ -30,8 +30,7 @@ class YoloV3PostprocessTask(name: String) : BaseTask(name) {
     override val outputs: Set<Variable>
         get() = setOf(output)
 
-    override val dependencies: Set<Code<*>>
-        get() = emptySet()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
         |${output.name} = postprocessYoloV3(${input.name})

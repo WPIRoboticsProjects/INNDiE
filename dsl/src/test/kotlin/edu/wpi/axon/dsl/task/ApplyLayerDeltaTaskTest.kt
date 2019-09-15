@@ -26,8 +26,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = setOf(layer1)
+            newLayers = setOf(layer1)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -46,8 +46,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1, layer2)
-            newLayers = listOf(layer1, layer2)
+            currentLayers = setOf(layer1, layer2)
+            newLayers = setOf(layer1, layer2)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -67,8 +67,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable())
-            newLayers = listOf()
+            currentLayers = setOf(SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable())
+            newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -84,11 +84,11 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(
+            currentLayers = setOf(
                 SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable(),
                 SealedLayer.UnknownLayer("unknown_1").trainable()
             )
-            newLayers = listOf()
+            newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -115,8 +115,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf()
-            newLayers = listOf(layer1)
+            currentLayers = setOf()
+            newLayers = setOf(layer1)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -145,8 +145,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf()
-            newLayers = listOf(layer1, layer2)
+            currentLayers = setOf()
+            newLayers = setOf(layer1, layer2)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -179,8 +179,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1, layer2Old)
-            newLayers = listOf(layer2New, layer1)
+            currentLayers = setOf(layer1, layer2Old)
+            newLayers = setOf(layer2New, layer1)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -202,8 +202,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = setOf(layer1)
+            newLayers = setOf(layer1)
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -221,8 +221,8 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = listOf(layer1)
-            newLayers = listOf(layer1)
+            currentLayers = setOf(layer1)
+            newLayers = setOf(layer1)
             newModelOutput = configuredCorrectly("new_model")
         }
 
