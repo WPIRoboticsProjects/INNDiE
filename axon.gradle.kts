@@ -340,6 +340,25 @@ configure(kotlinProjects) {
     }
 }
 
+val jacocoRootReport by tasks.creating(JacocoReport::class) {
+    group = "verification"
+    dependsOn(subprojects.flatMap { it.tasks.withType(JacocoReport::class) } - this)
+
+    val allSrcDirs = subprojects.map { it.sourceSets.main.get().allSource.srcDirs }
+    additionalSourceDirs.setFrom(allSrcDirs)
+    sourceDirectories.setFrom(allSrcDirs)
+    classDirectories.setFrom(subprojects.map { it.sourceSets.main.get().output })
+    executionData.setFrom(subprojects.filter {
+        File("${it.buildDir}/jacoco/test.exec").exists()
+    }.flatMap { it.tasks.withType(JacocoReport::class).map { it.executionData } })
+
+    reports {
+        html.isEnabled = true
+        xml.isEnabled = true
+        csv.isEnabled = false
+    }
+}
+
 configure(pitestProjects) {
     apply {
         plugin("info.solidsoft.pitest")

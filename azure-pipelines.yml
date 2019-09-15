@@ -27,9 +27,23 @@ stages:
             jdkArchitectureOption: 'x64'
             publishJUnitResults: true
             testResultsFiles: '**/TEST-*.xml'
-            tasks: 'check jacocoTestReport'
+            tasks: 'check'
 
-        - bash: bash <(curl -s https://codecov.io/bash) -f "*jacocoTestReport.xml" -f "*mergeReports.xml" || echo 'Codecov failed to upload'
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/TEST-*.xml'
+            tasks: 'jacocoRootReport'
+
+        - bash: bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
           displayName: 'CodeCov'
           workingDirectory: ''
           env:
@@ -52,7 +66,21 @@ stages:
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
             publishJUnitResults: false
-            tasks: 'check jacocoTestReport'
+            tasks: 'check'
+
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/TEST-*.xml'
+            tasks: 'jacocoRootReport'
 
     - job: Windows
 
@@ -71,4 +99,18 @@ stages:
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
             publishJUnitResults: false
-            tasks: 'check jacocoTestReport'
+            tasks: 'check'
+
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/TEST-*.xml'
+            tasks: 'jacocoRootReport'
