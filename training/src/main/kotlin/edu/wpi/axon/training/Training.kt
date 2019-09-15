@@ -85,6 +85,8 @@ class Training(
 
             val model by variables.creating(Variable::class)
             val loadModelTask by tasks.running(LoadModelTask::class) {
+                println("userModelPath=$userModelPath")
+                println("File.separator=${File.separator}")
                 modelPath = userModelPath.substringAfterLast(File.separator)
                 modelOutput = model
             }
