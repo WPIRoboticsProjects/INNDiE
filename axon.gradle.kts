@@ -342,7 +342,7 @@ configure(kotlinProjects) {
 
 val jacocoRootReport by tasks.creating(JacocoReport::class) {
     group = "verification"
-    dependsOn(tasks.withType(JacocoReport::class) - this)
+    dependsOn(subprojects.flatMap { it.tasks.withType(JacocoReport::class) } - this)
 
     val allSrcDirs = subprojects.map { it.sourceSets.main.get().allSource.srcDirs }
     additionalSourceDirs.setFrom(allSrcDirs)
