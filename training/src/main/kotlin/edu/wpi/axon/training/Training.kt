@@ -13,9 +13,11 @@ import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import java.io.File
 
 /**
@@ -27,7 +29,6 @@ import java.io.File
  * @param userLoss The [Loss] function to use.
  * @param userMetrics Any metrics.
  * @param userEpochs The number of epochs.
- * @param userCurrentLayers The current layers in the model.
  * @param userNewLayers The new layers (in the case of transfer learning).
  * @param generateDebugComments Whether to put debug comments in the output.
  */
@@ -38,12 +39,17 @@ class Training(
     private val userLoss: Loss,
     private val userMetrics: Set<String>,
     private val userEpochs: Int,
-    private val userCurrentLayers: Set<SealedLayer.MetaLayer>,
     private val userNewLayers: Set<SealedLayer.MetaLayer>,
     private val generateDebugComments: Boolean = false
 ) {
 
     fun generateScript(): ValidatedNel<String, String> {
+        val currentModel = LoadLayersFromHDF5().load(File(userModelPath))
+        require(currentModel is Model.Sequential)
+
+        require(currentModel.batchInputShape.count { it == null } <= 1)
+        val reshapeArgsFromBatchShape = currentModel.batchInputShape.map { it ?: -1 }
+
         val script = ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
@@ -65,7 +71,7 @@ class Training(
             val reshapeAndScaleXTrainTask by tasks.running(ReshapeAndScaleTask::class) {
                 input = xTrain
                 output = scaledXTrain
-                reshapeArgs = listOf(-1, 28, 28, 1)
+                reshapeArgs = reshapeArgsFromBatchShape
                 scale = 255
             }
 
@@ -73,7 +79,7 @@ class Training(
             val reshapeAndScaleXTestTask by tasks.running(ReshapeAndScaleTask::class) {
                 input = xTest
                 output = scaledXTest
-                reshapeArgs = listOf(-1, 28, 28, 1)
+                reshapeArgs = reshapeArgsFromBatchShape
                 scale = 255
             }
 
@@ -86,7 +92,7 @@ class Training(
             val newModel by variables.creating(Variable::class)
             val applyLayerDeltaTask by tasks.running(ApplyLayerDeltaTask::class) {
                 modelInput = model
-                currentLayers = userCurrentLayers
+                currentLayers = currentModel.layers
                 newLayers = userNewLayers
                 newModelOutput = newModel
             }

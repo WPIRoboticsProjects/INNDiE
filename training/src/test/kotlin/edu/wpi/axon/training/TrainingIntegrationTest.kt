@@ -31,13 +31,12 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
 
         layers.shouldBeInstanceOf<Model.Sequential> {
             Training(
-                userModelPath = modelName,
+                userModelPath = localModelPath,
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
                 userMetrics = setOf("accuracy"),
                 userEpochs = 50,
-                userCurrentLayers = it.layers,
                 userNewLayers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
                     // Only train the last 3 layers
                     if (it.layers.size - index <= 3) layer.layer.trainable()
@@ -48,7 +47,7 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
                 it.a shouldBe """
             |import tensorflow as tf
             |
-            |model = tf.keras.models.load_model("custom_fashion_mnist.h5")
+            |model = tf.keras.models.load_model("$modelName")
             |
             |newModel = tf.keras.Sequential([
             |    model.get_layer("conv2d_6"),
