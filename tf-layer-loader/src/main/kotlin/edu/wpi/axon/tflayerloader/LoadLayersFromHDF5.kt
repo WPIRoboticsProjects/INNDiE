@@ -4,9 +4,11 @@ import arrow.core.Tuple2
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
+import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.util.singleAssign
 import io.jhdf.HdfFile
 import java.io.File
 
@@ -21,21 +23,43 @@ class LoadLayersFromHDF5 {
      * @param file The file to load from.
      * @return The layers in the file.
      */
-    fun load(file: File): List<SealedLayer.MetaLayer> {
+    fun load(file: File): Model {
         HdfFile(file).use {
             val config = it.getAttribute("model_config").data as String
             val data = Parser.default().parse(config.byteInputStream()) as JsonObject
-
-            @Suppress("UNCHECKED_CAST")
-            val layers = (data["config"] as JsonObject)["layers"] as JsonArray<JsonObject>
-
-            return layers.map {
-                val className = it["class_name"] as String
-                val layerData = it["config"] as JsonObject
-                parseMetaLayer(className, layerData)
-            }
+            return parseModel(data)
         }
     }
+
+    private fun parseModel(json: JsonObject): Model =
+        when (val modelName = json["class_name"] as String) {
+            "Sequential" -> {
+                val config = json["config"] as JsonObject
+
+                var batchInputShape: List<Int?> by singleAssign()
+
+                @Suppress("UNCHECKED_CAST")
+                val layers = (config["layers"] as JsonArray<JsonObject>).map {
+                    val className = it["class_name"] as String
+                    val layerData = it["config"] as JsonObject
+
+                    (layerData["batch_input_shape"] as JsonArray<Int?>?)?.let {
+                        batchInputShape = it
+                    }
+
+                    parseMetaLayer(className, layerData)
+                }
+
+                Model.Sequential(
+                    config["name"] as String,
+                    batchInputShape,
+                    layers.toSet()
+                )
+            }
+
+            else ->
+                throw IllegalStateException("Only Sequential models are supported, got $modelName")
+        }
 
     private fun parseMetaLayer(name: String, json: JsonObject): SealedLayer.MetaLayer =
         when (json["trainable"] as Boolean) {
