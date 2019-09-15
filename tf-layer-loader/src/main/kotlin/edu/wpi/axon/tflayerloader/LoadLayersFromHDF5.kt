@@ -31,35 +31,38 @@ class LoadLayersFromHDF5 {
         }
     }
 
-    private fun parseModel(json: JsonObject): Model =
-        when (val modelName = json["class_name"] as String) {
-            "Sequential" -> {
-                val config = json["config"] as JsonObject
+    private fun parseModel(json: JsonObject): Model {
+        val config = json["config"] as JsonObject
+        val name = config["name"] as String
 
-                var batchInputShape: List<Int?> by singleAssign()
+        var batchInputShape: List<Int?> by singleAssign()
 
-                @Suppress("UNCHECKED_CAST")
-                val layers = (config["layers"] as JsonArray<JsonObject>).map {
-                    val className = it["class_name"] as String
-                    val layerData = it["config"] as JsonObject
+        @Suppress("UNCHECKED_CAST")
+        val layers = (config["layers"] as JsonArray<JsonObject>).map {
+            val className = it["class_name"] as String
+            val layerData = it["config"] as JsonObject
 
-                    (layerData["batch_input_shape"] as JsonArray<Int?>?)?.let {
-                        batchInputShape = it
-                    }
-
-                    parseMetaLayer(className, layerData)
-                }
-
-                Model.Sequential(
-                    config["name"] as String,
-                    batchInputShape,
-                    layers.toSet()
-                )
+            (layerData["batch_input_shape"] as JsonArray<Int?>?)?.let {
+                batchInputShape = it
             }
 
-            else ->
-                throw IllegalStateException("Only Sequential models are supported, got $modelName")
+            parseMetaLayer(className, layerData)
         }
+
+        return when (json["class_name"] as String) {
+            "Sequential" -> Model.Sequential(
+                name,
+                batchInputShape,
+                layers.toSet()
+            )
+
+            else -> Model.Sequential(
+                name,
+                batchInputShape,
+                layers.toSet()
+            )
+        }
+    }
 
     private fun parseMetaLayer(name: String, json: JsonObject): SealedLayer.MetaLayer =
         when (json["trainable"] as Boolean) {

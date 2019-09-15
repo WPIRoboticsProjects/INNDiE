@@ -2,28 +2,36 @@ package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
-import org.junit.jupiter.api.Assertions.assertEquals
+import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 internal class ImportTest {
 
-    @Test
-    fun `module only`() {
-        assertEquals(Import.ModuleOnly("foo"), makeImport("import foo"))
+    @ParameterizedTest
+    @MethodSource("importSource")
+    fun `test imports`(importString: String, expected: Import) {
+        makeImport(importString) shouldBe expected
+        makeImport(importString).code() shouldBe expected.code()
     }
 
     @Test
-    fun `module and name`() {
-        assertEquals(Import.ModuleAndName("foo", "f"), makeImport("import foo as f"))
+    fun `invalid import`() {
+        shouldThrow<IllegalArgumentException> { makeImport("") }
     }
 
-    @Test
-    fun `module and identifier`() {
-        assertEquals(Import.ModuleAndIdentifier("foo", "f"), makeImport("from foo import f"))
-    }
+    companion object {
 
-    @Test
-    fun `full import`() {
-        assertEquals(Import.FullImport("foo", "f", "g"), makeImport("from foo import f as g"))
+        @JvmStatic
+        @Suppress("unused")
+        fun importSource() = listOf(
+            Arguments.of("import foo", Import.ModuleOnly("foo")),
+            Arguments.of("import foo as f", Import.ModuleAndName("foo", "f")),
+            Arguments.of("from foo import f", Import.ModuleAndIdentifier("foo", "f")),
+            Arguments.of("from foo import f as g", Import.FullImport("foo", "f", "g"))
+        )
     }
 }
