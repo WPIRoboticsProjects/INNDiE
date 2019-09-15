@@ -1,6 +1,6 @@
 package edu.wpi.axon.tfdata
 
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.axon.tfdata.layer.SealedLayer
 
 sealed class Model {
 
@@ -10,6 +10,6 @@ sealed class Model {
     data class Sequential(
         val name: String,
         val batchInputShape: List<Int?>,
-        val layers: Set<Layer>
+        val layers: Set<SealedLayer.MetaLayer>
     ) : Model()
 }

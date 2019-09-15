@@ -38,8 +38,8 @@ class Training(
     private val userLoss: Loss,
     private val userMetrics: Set<String>,
     private val userEpochs: Int,
-    private val userCurrentLayers: List<SealedLayer.MetaLayer>,
-    private val userNewLayers: List<SealedLayer.MetaLayer>,
+    private val userCurrentLayers: Set<SealedLayer.MetaLayer>,
+    private val userNewLayers: Set<SealedLayer.MetaLayer>,
     private val generateDebugComments: Boolean = false
 ) {
 

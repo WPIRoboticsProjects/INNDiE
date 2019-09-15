@@ -4,8 +4,8 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.code.boolToPythonString
+import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
@@ -28,12 +28,12 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     /**
      * The current layers in the model.
      */
-    var currentLayers: List<SealedLayer.MetaLayer> by singleAssign()
+    var currentLayers: Set<SealedLayer.MetaLayer> by singleAssign()
 
     /**
      * The layers the new model should have.
      */
-    var newLayers: List<SealedLayer.MetaLayer> by singleAssign()
+    var newLayers: Set<SealedLayer.MetaLayer> by singleAssign()
 
     /**
      * The variable to output the new model to.
@@ -63,7 +63,7 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
         """.trimMargin()
     }
 
-    private fun createLayerOperations(currentLayers: List<SealedLayer.MetaLayer>): List<LayerOperation> {
+    private fun createLayerOperations(currentLayers: Set<SealedLayer.MetaLayer>): List<LayerOperation> {
         // The base layers inside the Trainable or Untrainable layer wrappers
         val innerCurrentLayers = currentLayers.map { it.layer }
 

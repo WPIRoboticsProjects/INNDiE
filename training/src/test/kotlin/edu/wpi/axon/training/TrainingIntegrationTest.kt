@@ -3,12 +3,14 @@ package edu.wpi.axon.training
 import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.trainable
 import edu.wpi.axon.tfdata.layer.untrainable
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
+import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
@@ -27,22 +29,23 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
             .getResource(modelName).toURI().path
         val layers = LoadLayersFromHDF5().load(File(localModelPath))
 
-        Training(
-            userModelPath = modelName,
-            userDataset = Dataset.Mnist,
-            userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-            userLoss = Loss.SparseCategoricalCrossentropy,
-            userMetrics = setOf("accuracy"),
-            userEpochs = 50,
-            userCurrentLayers = layers,
-            userNewLayers = layers.mapIndexed { index, layer ->
-                // Only train the last 3 layers
-                if (layers.size - index <= 3) layer.layer.trainable()
-                else layer.layer.untrainable()
-            }
-        ).generateScript().shouldBeValid {
-            println(it.a)
-            it.a shouldBe """
+        layers.shouldBeInstanceOf<Model.Sequential> {
+            Training(
+                userModelPath = modelName,
+                userDataset = Dataset.Mnist,
+                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 50,
+                userCurrentLayers = it.layers,
+                userNewLayers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
+                    // Only train the last 3 layers
+                    if (it.layers.size - index <= 3) layer.layer.trainable()
+                    else layer.layer.untrainable()
+                }
+            ).generateScript().shouldBeValid {
+                println(it.a)
+                it.a shouldBe """
             |import tensorflow as tf
             |
             |model = tf.keras.models.load_model("custom_fashion_mnist.h5")
@@ -89,6 +92,7 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
             |    shuffle=True
             |)
             """.trimMargin()
+            }
         }
     }
 }
