@@ -1,9 +1,8 @@
 package edu.wpi.axon.dsl.imports
 
-import arrow.data.Valid
-import com.natpryce.hamkrest.assertion.assertThat
-import edu.wpi.axon.testutil.isInvalid
-import org.junit.jupiter.api.Assertions.assertEquals
+import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
+import io.kotlintest.assertions.arrow.validation.shouldBeValid
+import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
 
 internal class DefaultImportValidatorTest {
@@ -18,12 +17,14 @@ internal class DefaultImportValidatorTest {
             Import.ModuleAndIdentifier("import1", "id1")
         )
 
-        assertEquals(validator.validateImports(imports), Valid(imports))
+        validator.validateImports(imports).shouldBeValid {
+            it.a shouldBe imports
+        }
     }
 
     @Test
     fun `spaces are not allowed in import names`() {
         val imports = setOf(Import.ModuleOnly("import 1"))
-        assertThat(validator.validateImports(imports), isInvalid())
+        validator.validateImports(imports).shouldBeInvalid()
     }
 }

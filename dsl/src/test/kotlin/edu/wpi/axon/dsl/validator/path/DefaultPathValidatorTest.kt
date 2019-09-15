@@ -1,8 +1,7 @@
 package edu.wpi.axon.dsl.validator.path
 
-import com.natpryce.hamkrest.assertion.assertThat
-import edu.wpi.axon.testutil.isFalse
-import edu.wpi.axon.testutil.isTrue
+import io.kotlintest.matchers.boolean.shouldBeFalse
+import io.kotlintest.matchers.boolean.shouldBeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -14,26 +13,17 @@ internal class DefaultPathValidatorTest {
 
     @Test
     fun `path name must not be empty`() {
-        assertThat(
-            validator.isValidPathName(""),
-            isFalse()
-        )
+        validator.isValidPathName("").shouldBeFalse()
     }
 
     @Test
     fun `path name must be valid`() {
-        assertThat(
-            validator.isValidPathName("//"),
-            isFalse()
-        )
+        validator.isValidPathName("//").shouldBeFalse()
     }
 
     @Test
     fun `path name must be a valid file`(@TempDir tempDir: File) {
-        assertThat(
-            validator.isValidPathName(tempDir.absolutePath),
-            isFalse()
-        )
+        validator.isValidPathName(tempDir.absolutePath).shouldBeFalse()
     }
 
     @Test
@@ -42,17 +32,11 @@ internal class DefaultPathValidatorTest {
             createNewFile()
         }
 
-        assertThat(
-            validator.isValidPathName(mockModelFile.absolutePath),
-            isTrue()
-        )
+        validator.isValidPathName(mockModelFile.absolutePath).shouldBeTrue()
     }
 
     @Test
     fun `relative path is valid`() {
-        assertThat(
-            validator.isValidPathName("mockModel.onnx"),
-            isTrue()
-        )
+        validator.isValidPathName("mockModel.onnx").shouldBeTrue()
     }
 }

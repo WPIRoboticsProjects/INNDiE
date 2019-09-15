@@ -2,7 +2,6 @@ package edu.wpi.axon.dsl.task
 
 import arrow.data.Invalid
 import arrow.data.Nel
-import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredIncorrectly
@@ -10,7 +9,7 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.ImportValidator
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.testutil.isFalse
+import io.kotlintest.matchers.boolean.shouldBeFalse
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
@@ -28,7 +27,7 @@ internal class BaseTaskTest : KoinTestFixture() {
         }
 
         val task = stubTask(inputs = setOf(configuredIncorrectly()))
-        assertThat(task.isConfiguredCorrectly(), isFalse())
+        task.isConfiguredCorrectly().shouldBeFalse()
     }
 
     @Test
@@ -40,7 +39,7 @@ internal class BaseTaskTest : KoinTestFixture() {
         }
 
         val task = stubTask(outputs = setOf(configuredIncorrectly()))
-        assertThat(task.isConfiguredCorrectly(), isFalse())
+        task.isConfiguredCorrectly().shouldBeFalse()
     }
 
     @Test
@@ -59,7 +58,7 @@ internal class BaseTaskTest : KoinTestFixture() {
         }
 
         val task = stubTask(imports = imports)
-        assertThat(task.isConfiguredCorrectly(), isFalse())
+        task.isConfiguredCorrectly().shouldBeFalse()
     }
 
     @SuppressWarnings("LongParameterList")
