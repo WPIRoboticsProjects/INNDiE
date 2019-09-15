@@ -348,12 +348,9 @@ val jacocoRootReport by tasks.creating(JacocoReport::class) {
     additionalSourceDirs.setFrom(allSrcDirs)
     sourceDirectories.setFrom(allSrcDirs)
     classDirectories.setFrom(subprojects.map { it.sourceSets.main.get().output })
-    executionData.setFrom((subprojects - listOf(
-        dslTestUtilProject,
-        loggingProject,
-        testUtilProject,
-        utilProject
-    )).flatMap { it.tasks.withType(JacocoReport::class).map { it.executionData } })
+    executionData.setFrom(subprojects.filter {
+        File("${it.buildDir}/jacoco/test.exec").exists()
+    }.flatMap { it.tasks.withType(JacocoReport::class).map { it.executionData } })
 
     reports {
         html.isEnabled = true
