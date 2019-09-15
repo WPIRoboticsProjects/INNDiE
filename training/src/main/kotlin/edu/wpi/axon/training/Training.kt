@@ -18,6 +18,19 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import java.io.File
 
+/**
+ * Trains a model.
+ *
+ * @param userModelPath The path to the model file.
+ * @param userDataset The dataset to train on.
+ * @param userOptimizer The [Optimizer] to use.
+ * @param userLoss The [Loss] function to use.
+ * @param userMetrics Any metrics.
+ * @param userEpochs The number of epochs.
+ * @param userCurrentLayers The current layers in the model.
+ * @param userNewLayers The new layers (in the case of transfer learning).
+ * @param generateDebugComments Whether to put debug comments in the output.
+ */
 class Training(
     private val userModelPath: String,
     private val userDataset: Dataset,

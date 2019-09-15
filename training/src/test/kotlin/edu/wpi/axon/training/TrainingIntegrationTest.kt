@@ -3,6 +3,8 @@ package edu.wpi.axon.training
 import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.untrainable
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
@@ -33,17 +35,15 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
             userMetrics = setOf("accuracy"),
             userEpochs = 50,
             userCurrentLayers = layers,
-            userNewLayers = layers.map {
-                it
+            userNewLayers = layers.mapIndexed { index, layer ->
+                // Only train the last 3 layers
+                if (layers.size - index <= 3) layer.layer.trainable()
+                else layer.layer.untrainable()
             }
         ).generateScript().shouldBeValid {
             println(it.a)
             it.a shouldBe """
             |import tensorflow as tf
-            |
-            |(xTrain, yTrain), (xTest, yTest) = tf.keras.datasets.mnist.load_data()
-            |
-            |scaledXTrain = xTrain.reshape(-1, 28, 28, 1) / 255
             |
             |model = tf.keras.models.load_model("custom_fashion_mnist.h5")
             |
@@ -66,13 +66,17 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
             |newModel.get_layer("dropout_7").trainable = True
             |newModel.get_layer("dense_7").trainable = True
             |
-            |scaledXTest = xTest.reshape(-1, 28, 28, 1) / 255
-            |
             |newModel.compile(
             |    optimizer=tf.keras.optimizers.Adam(0.001, 0.9, 0.999, 1.0E-7, False),
             |    loss=tf.keras.losses.sparse_categorical_crossentropy,
             |    metrics=["accuracy"]
             |)
+            |
+            |(xTrain, yTrain), (xTest, yTest) = tf.keras.datasets.mnist.load_data()
+            |
+            |scaledXTest = xTest.reshape(-1, 28, 28, 1) / 255
+            |
+            |scaledXTrain = xTrain.reshape(-1, 28, 28, 1) / 255
             |
             |newModel.fit(
             |    scaledXTrain,

@@ -176,6 +176,13 @@ class ScriptGenerator(
                         // Need to make the ordering consistent. Process more complex nodes first.
                         graph.predecessors(it).size
                     }
+                    .sortedBy {
+                        // Lexicographical ordering after complexity.
+                        when (it) {
+                            is Task -> it.name
+                            else -> it.toString()
+                        }
+                    }
                     .forEach {
                         appendNode(it)
                     }
