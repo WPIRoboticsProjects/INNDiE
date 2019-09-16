@@ -23,28 +23,30 @@ plugins {
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
+val loggingProject = project(":logging")
 val patternMatchProject = project(":pattern-match")
-val taskPropertyTestingProject = project(":task-property-testing")
 val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
+val tfDataProject = project(":tf-data")
+val tfDataCode = project(":tf-data-code")
 val tfLayerLoaderProject = project(":tf-layer-loader")
-val tfLayerPythonProject = project(":tf-layer-python")
-val tfLayersProject = project(":tf-layers")
 val uiProject = project(":ui")
+val trainingProject = project(":training")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
+    loggingProject,
     patternMatchProject,
-    taskPropertyTestingProject,
     tasksYolov3Project,
     testUtilProject,
+    tfDataProject,
+    tfDataCode,
     tfLayerLoaderProject,
-    tfLayerPythonProject,
-    tfLayersProject,
     uiProject,
+    trainingProject,
     utilProject
 )
 
@@ -53,12 +55,14 @@ val javaProjects = setOf<Project>() + kotlinProjects
 val publishedProjects = setOf(
     dslProject,
     dslInterfaceProject,
+    loggingProject,
     patternMatchProject,
     tasksYolov3Project,
+    tfDataProject,
+    tfDataCode,
     tfLayerLoaderProject,
-    tfLayerPythonProject,
-    tfLayersProject,
     uiProject,
+    trainingProject,
     utilProject
 )
 
@@ -66,10 +70,11 @@ val pitestProjects = setOf(
     dslProject,
     patternMatchProject,
     tasksYolov3Project,
+    tfDataProject,
+    tfDataCode,
     tfLayerLoaderProject,
-    tfLayerPythonProject,
-    tfLayersProject,
     uiProject,
+    trainingProject,
     utilProject
 )
 
@@ -336,6 +341,25 @@ configure(kotlinProjects) {
         input = files("src/main/kotlin", "src/test/kotlin")
         parallel = true
         config = files("${rootProject.rootDir}/config/detekt/config.yml")
+    }
+}
+
+val jacocoRootReport by tasks.creating(JacocoReport::class) {
+    group = "verification"
+    dependsOn(subprojects.flatMap { it.tasks.withType(JacocoReport::class) } - this)
+
+    val allSrcDirs = subprojects.map { it.sourceSets.main.get().allSource.srcDirs }
+    additionalSourceDirs.setFrom(allSrcDirs)
+    sourceDirectories.setFrom(allSrcDirs)
+    classDirectories.setFrom(subprojects.map { it.sourceSets.main.get().output })
+    executionData.setFrom(subprojects.filter {
+        File("${it.buildDir}/jacoco/test.exec").exists()
+    }.flatMap { it.tasks.withType(JacocoReport::class).map { it.executionData } })
+
+    reports {
+        html.isEnabled = true
+        xml.isEnabled = true
+        csv.isEnabled = false
     }
 }
 

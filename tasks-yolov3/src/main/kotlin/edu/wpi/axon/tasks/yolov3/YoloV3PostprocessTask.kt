@@ -12,7 +12,7 @@ import edu.wpi.axon.util.singleAssign
 class YoloV3PostprocessTask(name: String) : BaseTask(name) {
 
     /**
-     * The input data, typically the output of [InferenceTask].
+     * The input data.
      */
     var input: Variable by singleAssign()
 
@@ -30,8 +30,7 @@ class YoloV3PostprocessTask(name: String) : BaseTask(name) {
     override val outputs: Set<Variable>
         get() = setOf(output)
 
-    override val dependencies: Set<Code<*>>
-        get() = emptySet()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
         |${output.name} = postprocessYoloV3(${input.name})

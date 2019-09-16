@@ -14,5 +14,7 @@ dependencies {
 
     api(project(":pattern-match"))
 
+    implementation(project(":logging"))
+
     testImplementation(project(":dsl-test-util"))
 }

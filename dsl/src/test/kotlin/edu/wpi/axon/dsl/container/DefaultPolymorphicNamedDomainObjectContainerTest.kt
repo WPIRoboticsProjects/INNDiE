@@ -1,12 +1,11 @@
 package edu.wpi.axon.dsl.container
 
-import com.natpryce.hamkrest.assertion.assertThat
 import edu.wpi.axon.dsl.MockVariable
 import edu.wpi.axon.dsl.mockVariableNameValidator
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.testutil.isTrue
-import edu.wpi.axon.testutil.mapHasElementWhere
+import io.kotlintest.matchers.boolean.shouldBeTrue
+import io.kotlintest.matchers.maps.shouldContainKey
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.context.startKoin
@@ -26,7 +25,7 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
 
         val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
         container.create(varName, MockVariable::class)
-        assertThat(container, mapHasElementWhere { key == varName })
+        container.shouldContainKey(varName)
     }
 
     @Test
@@ -44,8 +43,8 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
 
         container.create(varName, MockVariable::class, mockConfigure)
 
-        assertThat(container, mapHasElementWhere { key == varName })
-        assertThat(called, isTrue())
+        container.shouldContainKey(varName)
+        called.shouldBeTrue()
     }
 
     @Test

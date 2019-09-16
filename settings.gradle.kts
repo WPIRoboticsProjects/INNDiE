@@ -25,14 +25,15 @@ rootProject.name = "axon"
 include(":dsl")
 include(":dsl-interface")
 include(":dsl-test-util")
+include(":logging")
 include(":pattern-match")
-include(":task-property-testing")
 include(":tasks-yolov3")
 include(":test-util")
+include(":tf-data")
+include(":tf-data-code")
 include(":tf-layer-loader")
-include(":tf-layer-python")
-include(":tf-layers")
 include(":ui")
+include(":training")
 include(":util")
 
 /**

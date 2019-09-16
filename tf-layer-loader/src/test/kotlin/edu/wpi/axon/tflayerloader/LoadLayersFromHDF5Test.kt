@@ -1,8 +1,13 @@
 package edu.wpi.axon.tflayerloader
 
-import edu.wpi.axon.tflayers.Activation
-import edu.wpi.axon.tflayers.Layer
-import io.kotlintest.matchers.equality.shouldBeEqualToUsingFields
+import arrow.core.Tuple2
+import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.trainable
+import io.kotlintest.matchers.collections.shouldContainExactly
+import io.kotlintest.matchers.types.shouldBeInstanceOf
+import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -119,17 +124,21 @@ internal class LoadLayersFromHDF5Test {
     fun `load from test file 1`() {
         LoadLayersFromHDF5().load(
             File(LoadLayersFromHDF5Test::class.java.getResource("saved_tf_model.h5").toURI())
-        ).shouldBeEqualToUsingFields(
-            setOf(
-                Layer.UnknownLayer("conv2d_16", true),
-                Layer.UnknownLayer("conv2d_17", true),
-                Layer.UnknownLayer("max_pooling2d_8", true),
-                Layer.UnknownLayer("dropout_19", true),
-                Layer.UnknownLayer("flatten_8", true),
-                Layer.Dense("dense_22", true, 128, Activation.ReLu),
-                Layer.UnknownLayer("dropout_20", true),
-                Layer.Dense("dense_23", true, 10, Activation.SoftMax)
+        ).shouldBeInstanceOf<Model.Sequential> {
+            it.name shouldBe "sequential_11"
+            it.batchInputShape.shouldContainExactly(null, 28, 28, 1)
+            it.layers.shouldContainExactly(
+                setOf(
+                    SealedLayer.Conv2D("conv2d_16", 32, Tuple2(3, 3), Activation.ReLu).trainable(),
+                    SealedLayer.Conv2D("conv2d_17", 64, Tuple2(3, 3), Activation.ReLu).trainable(),
+                    SealedLayer.UnknownLayer("max_pooling2d_8").trainable(),
+                    SealedLayer.UnknownLayer("dropout_19").trainable(),
+                    SealedLayer.UnknownLayer("flatten_8").trainable(),
+                    SealedLayer.Dense("dense_22", 128, Activation.ReLu).trainable(),
+                    SealedLayer.UnknownLayer("dropout_20").trainable(),
+                    SealedLayer.Dense("dense_23", 10, Activation.SoftMax).trainable()
+                )
             )
-        )
+        }
     }
 }

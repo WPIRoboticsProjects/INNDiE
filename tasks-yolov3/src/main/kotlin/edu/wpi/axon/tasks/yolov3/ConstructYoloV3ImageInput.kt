@@ -25,8 +25,7 @@ class ConstructYoloV3ImageInput(name: String) : BaseTask(name) {
     override val outputs: Set<Variable>
         get() = setOf(output)
 
-    override val dependencies: Set<Code<*>>
-        get() = setOf()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
         |${output.name} = {${sessionInput.name}.get_inputs()[0].name: ${imageDataInput.name}, ${sessionInput.name}.get_inputs()[1].name: ${imageSizeInput.name}}

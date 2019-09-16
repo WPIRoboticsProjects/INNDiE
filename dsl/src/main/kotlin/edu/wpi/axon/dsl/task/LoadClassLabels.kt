@@ -30,17 +30,14 @@ class LoadClassLabels(name: String) : BaseTask(name), KoinComponent {
      */
     private val pathValidator: PathValidator by inject()
 
-    override val imports: Set<Import>
-        get() = setOf()
+    override val imports: Set<Import> = setOf()
 
-    override val inputs: Set<Variable>
-        get() = setOf()
+    override val inputs: Set<Variable> = setOf()
 
     override val outputs: Set<Variable>
         get() = setOf(classOutput)
 
-    override val dependencies: Set<Code<*>>
-        get() = setOf()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun isConfiguredCorrectly() = pathValidator.isValidPathName(classLabelsPath) &&
         super.isConfiguredCorrectly()

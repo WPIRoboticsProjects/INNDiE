@@ -20,5 +20,5 @@ data class MockTask(override val name: String) : Task {
     // TODO: Calling countDown in here is bad because this method should be stateless
     override fun code() = code.also { latch?.countDown() }
 
-    override fun toString() = "MockTask(name='$name')"
+    override fun toString() = "MockTask(name=$name)"
 }
