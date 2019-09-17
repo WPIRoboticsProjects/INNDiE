@@ -317,7 +317,7 @@ configure(kotlinProjects) {
 
     tasks.withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = "1.8"
             freeCompilerArgs = listOf("-Xjvm-default=enable", "-progressive")
         }
     }

@@ -4,9 +4,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":tf-data"))
-    implementation(project(":training"))
-
     implementation(group = "no.tornado", name = "tornadofx", version = "1.7.19")
 }
 
