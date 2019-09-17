@@ -1,7 +1,12 @@
 package edu.wpi.axon.ui.view
 
+import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.loss.Loss
+import edu.wpi.axon.tfdata.optimizer.Optimizer
+import javafx.collections.FXCollections
 import javafx.stage.FileChooser
 import tornadofx.*
+import kotlin.reflect.KClass
 
 class TrainingView: View("Train Model") {
     override val root = form {
@@ -15,13 +20,28 @@ class TrainingView: View("Train Model") {
                 }
             }
             field("userDataset") {
-                textfield()
+                combobox<KClass<out Dataset>> {
+                    items = FXCollections.observableArrayList(Dataset::class.sealedSubclasses)
+                    cellFormat {
+                        text = item.simpleName
+                    }
+                }
             }
             field("userOptimizer") {
-                textfield()
+                combobox<KClass<out Optimizer>> {
+                    items = FXCollections.observableArrayList(Optimizer::class.sealedSubclasses)
+                    cellFormat {
+                        text = item.simpleName
+                    }
+                }
             }
             field("userLoss") {
-                textfield()
+                combobox<KClass<out Loss>> {
+                    items = FXCollections.observableArrayList(Loss::class.sealedSubclasses)
+                    cellFormat {
+                        text = item.simpleName
+                    }
+                }
             }
             field("userEpochs") {
                 spinner(min = 1, initialValue = 5)
