@@ -1,70 +1,33 @@
 package edu.wpi.axon.ui
 
-import com.helger.commons.lang.ClassPathHelper
 import com.vaadin.flow.server.VaadinServlet
 import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.util.resource.Resource
-import org.eclipse.jetty.util.resource.ResourceCollection
-import org.eclipse.jetty.webapp.Configuration
-import org.eclipse.jetty.webapp.WebAppContext
-import java.io.File
-import java.util.*
+import org.eclipse.jetty.servlet.ServletHolder
+import org.eclipse.jetty.server.session.SessionHandler
+import org.eclipse.jetty.servlet.ServletContextHandler
 
 
-object ManualJetty {
-    @Throws(Exception::class)
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val server = Server(8080)
+fun main() {
+    println("Server starting...")
 
-        // Specifies the order in which the configurations are scanned.
-        val classlist = Configuration.ClassList.setServerDefault(server)
-        classlist.addAfter("org.eclipse.jetty.webapp.FragmentConfiguration", "org.eclipse.jetty.plus.webapp.EnvConfiguration", "org.eclipse.jetty.plus.webapp.PlusConfiguration")
-        classlist.addBefore("org.eclipse.jetty.webapp.JettyWebXmlConfiguration", "org.eclipse.jetty.annotations.AnnotationConfiguration")
+    val embeddedServer = Server(8080)
 
-        // Creation of a temporal directory.
-        val tempDir = File(System.getProperty("java.io.tmpdir"), "JettyTest")
-        if (tempDir.exists()) {
-            if (!tempDir.isDirectory) {
-                throw RuntimeException("Not a directory: $tempDir")
-            }
-        } else if (!tempDir.mkdirs()) {
-            throw RuntimeException("Could not make: $tempDir")
-        }
+    val contextHandler = ServletContextHandler(null, "/", true, false)
+    embeddedServer.handler = contextHandler
 
-        val context = WebAppContext()
-        context.setInitParameter("productionMode", "false")
-        // Context path of the application.
-        context.contextPath = ""
-        // Exploded war or not.
-        context.isExtractWAR = false
-        context.tempDirectory = tempDir
+    val sessions = SessionHandler()
+    contextHandler.sessionHandler = sessions
 
-        // It pulls the respective config from the VaadinServlet.
-        context.addServlet(VaadinServlet::class.java, "/*")
+    val servletHolder = ServletHolder(VaadinServlet::class.java)
+    contextHandler.addServlet(servletHolder, "/*")
 
-        context.setAttribute("org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern", ".*")
-
-        context.isParentLoaderPriority = true
-        server.setHandler(context)
-
-        // This add jars to the jetty classpath in a certain syntax and the pattern makes sure to load all of them.
-        val resourceList = ArrayList<Resource>()
-        for (entry in ClassPathHelper.getAllClassPathEntries()) {
-            val file = File(entry)
-            if (entry.endsWith(".jar")) {
-                resourceList.add(Resource.newResource("jar:" + file.toURI().toURL() + "!/"))
-            } else {
-                resourceList.add(Resource.newResource(entry))
-            }
-        }
-
-        // It adds the web application resources. Styles, client-side components, ...
-        resourceList.add(Resource.newResource("./src/main/webapp"))
-        // The base resource is where jetty serves its static content from.
-        context.baseResource = ResourceCollection()
-
-        server.start()
-        server.join()
+    try {
+        embeddedServer.start()
+        embeddedServer.join()
+    } catch (e: Exception) {
+        println("Server error:")
+        println(e.stackTrace)
     }
+
+    println("Server stopped")
 }
