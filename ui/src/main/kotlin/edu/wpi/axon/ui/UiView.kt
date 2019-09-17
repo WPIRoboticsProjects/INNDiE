@@ -13,9 +13,9 @@ import com.vaadin.flow.router.Route
 @Route("")
 @BodySize(height = "100vh", width = "100vw")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-class AxonView : VerticalLayout() {
+class UiView : VerticalLayout() {
     init {
-        className = "axon-view"
+        className = "app-view"
 
         val hello = Label("Hello Kotlin app!")
         add(hello)

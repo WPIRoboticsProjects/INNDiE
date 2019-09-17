@@ -7,4 +7,4 @@ import com.vaadin.flow.theme.Theme
 
 @HtmlImport("frontend://styles/ui-theme.html")
 @Theme(Lumo::class)
-class AxonUI : UI()
+class UiUI : UI()
