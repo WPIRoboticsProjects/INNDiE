@@ -8,7 +8,6 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
-import edu.wpi.axon.tfdata.layer.untrainable
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import org.junit.jupiter.api.Test
@@ -270,7 +269,7 @@ internal class ApplyLayerDeltaTaskIntegrationTest : KoinTestFixture() {
         val task = ApplyLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(baseLayer1.trainable())
-            newLayers = setOf(baseLayer1.untrainable())
+            newLayers = setOf(baseLayer1.trainable(false))
             newModelOutput = configuredCorrectly("new_model")
         }
 

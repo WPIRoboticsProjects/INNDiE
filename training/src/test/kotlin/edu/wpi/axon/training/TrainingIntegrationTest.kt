@@ -5,7 +5,6 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.trainable
-import edu.wpi.axon.tfdata.layer.untrainable
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
@@ -40,7 +39,7 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
                 userNewLayers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
                     // Only train the last 3 layers
                     if (it.layers.size - index <= 3) layer.layer.trainable()
-                    else layer.layer.untrainable()
+                    else layer.layer.trainable(false)
                 }
             ).generateScript().shouldBeValid {
                 println(it.a)

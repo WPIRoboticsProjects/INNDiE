@@ -14,14 +14,18 @@ sealed class SealedLayer : Layer {
 
         /**
          * A [Layer] which is trainable.
+         *
+         * @param trainable Whether this layer should be trained.
          */
         data class TrainableLayer(
             override val name: String,
-            override val layer: Layer
+            override val layer: Layer,
+            val trainable: Boolean
         ) : MetaLayer(layer), Layer by layer
 
         /**
-         * A [Layer] which is untrainable.
+         * A [Layer] which is untrainable. This should not be confused with a [TrainableLayer]
+         * where [TrainableLayer.trainable] is `true`. An [UntrainableLayer] is IMPOSSIBLE to train.
          */
         data class UntrainableLayer(
             override val name: String,
@@ -67,8 +71,10 @@ sealed class SealedLayer : Layer {
  * Creates a new [SealedLayer.MetaLayer.TrainableLayer].
  *
  * @receiver The [Layer] to wrap.
+ * @param trainable Whether this layer should be trained.
  */
-fun Layer.trainable() = SealedLayer.MetaLayer.TrainableLayer(name, this)
+fun Layer.trainable(trainable: Boolean = true) =
+    SealedLayer.MetaLayer.TrainableLayer(name, this, trainable)
 
 /**
  * Creates a new [SealedLayer.MetaLayer.UntrainableLayer].
