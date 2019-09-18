@@ -8,8 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource
 
 internal class PythonVariableNameValidatorTest {
 
-    private val validator =
-        PythonVariableNameValidator()
+    private val validator = PythonVariableNameValidator()
 
     @ParameterizedTest
     @MethodSource("pythonNameSource")
@@ -35,7 +34,8 @@ internal class PythonVariableNameValidatorTest {
             Arguments.of("", false),
             Arguments.of("*", false),
             Arguments.of("<", false),
-            Arguments.of("!", false)
+            Arguments.of("!", false),
+            Arguments.of("", false)
         )
     }
 }
