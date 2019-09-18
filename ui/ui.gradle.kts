@@ -1,6 +1,5 @@
 plugins {
-    application
-    //id("org.gretty") version "2.3.1"
+    id("org.gretty") version "2.3.1"
     id("com.devsoap.vaadin-flow") version "1.2"
 }
 
@@ -12,9 +11,12 @@ dependencies {
     implementation(jetty(group = "org.eclipse.jetty.websocket", name = "websocket-server"))
 }
 
-application {
-    applicationName = "Axon"
-    mainClassName = "edu.wpi.axon.ui.LauncherKt"
+gretty {
+    // https://akhikhl.github.io/gretty-doc/Gretty-configuration.html
+    host = "localhost"
+    httpPort = 8080
+
+    contextPath = "axon"
 }
 
 node {
