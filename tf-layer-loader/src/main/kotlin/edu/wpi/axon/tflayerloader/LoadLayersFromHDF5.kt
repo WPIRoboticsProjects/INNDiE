@@ -65,15 +65,16 @@ class LoadLayersFromHDF5 {
     }
 
     private fun parseMetaLayer(name: String, json: JsonObject): SealedLayer.MetaLayer =
-        when (json["trainable"] as Boolean) {
-            true -> SealedLayer.MetaLayer.TrainableLayer(
+        when (val trainable = json["trainable"] as Boolean?) {
+            null -> SealedLayer.MetaLayer.UntrainableLayer(
                 json["name"] as String,
                 parseLayer(name, json)
             )
 
-            false -> SealedLayer.MetaLayer.UntrainableLayer(
+            else -> SealedLayer.MetaLayer.TrainableLayer(
                 json["name"] as String,
-                parseLayer(name, json)
+                parseLayer(name, json),
+                trainable
             )
         }
 
