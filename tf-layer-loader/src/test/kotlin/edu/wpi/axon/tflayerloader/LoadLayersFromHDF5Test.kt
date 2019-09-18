@@ -8,6 +8,7 @@ import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.kotlintest.shouldBe
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -143,8 +144,9 @@ internal class LoadLayersFromHDF5Test {
     }
 
     @Test
+    @Disabled("https://github.com/jamesmudd/jhdf/issues/101")
     fun `load from test file 2`() {
-        // https://github.com/jamesmudd/jhdf/issues/101
+        // TODO: Fix after https://github.com/jamesmudd/jhdf/issues/101
         LoadLayersFromHDF5().load(
             File(LoadLayersFromHDF5Test::class.java.getResource("model2.h5").toURI())
         ).also { println(it) }.shouldBeInstanceOf<Model.Sequential> {
