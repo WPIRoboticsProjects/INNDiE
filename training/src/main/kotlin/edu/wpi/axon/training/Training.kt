@@ -6,6 +6,7 @@ import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyLayerDeltaTask
+import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
@@ -43,6 +44,7 @@ class Training(
     private val generateDebugComments: Boolean = false
 ) {
 
+    @Suppress("UNUSED_VARIABLE")
     fun generateScript(): ValidatedNel<String, String> {
         val currentModel = LoadLayersFromHDF5().load(File(userModelPath))
         require(currentModel is Model.Sequential)
@@ -105,12 +107,21 @@ class Training(
                 dependencies += applyLayerDeltaTask
             }
 
+            val checkpointCallback by variables.creating(Variable::class)
+            val checkpointCallbackTask by tasks.running(CheckpointCallbackTask::class) {
+                filePath = "${currentModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+                saveWeightsOnly = true
+                verbose = 1
+                output = checkpointCallback
+            }
+
             val trainModelTask by tasks.running(TrainTask::class) {
                 modelInput = newModel
                 trainInputData = scaledXTrain
                 trainOutputData = yTrain
                 validationInputData = scaledXTest
                 validationOutputData = yTest
+                callbacks = setOf(checkpointCallback)
                 epochs = userEpochs
                 dependencies += compileModelTask
             }

@@ -68,6 +68,17 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
             |newModel.get_layer("dropout_7").trainable = True
             |newModel.get_layer("dense_7").trainable = True
             |
+            |checkpointCallback = tf.keras.callbacks.ModelCheckpoint(
+            |    "sequential_3-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
+            |    monitor="val_loss",
+            |    verbose=1,
+            |    save_best_only=False,
+            |    save_weights_only=True,
+            |    mode="auto",
+            |    save_freq="epoch",
+            |    load_weights_on_restart=False
+            |)
+            |
             |newModel.compile(
             |    optimizer=tf.keras.optimizers.Adam(0.001, 0.9, 0.999, 1.0E-7, False),
             |    loss=tf.keras.losses.sparse_categorical_crossentropy,
@@ -86,7 +97,7 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
             |    batch_size=None,
             |    epochs=50,
             |    verbose=2,
-            |    callbacks=[],
+            |    callbacks=[checkpointCallback],
             |    validation_data=(scaledXTest, yTest),
             |    shuffle=True
             |)
