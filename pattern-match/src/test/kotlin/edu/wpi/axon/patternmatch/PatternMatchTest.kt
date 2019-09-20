@@ -9,6 +9,12 @@ internal class PatternMatchTest : StringSpec({
         match<List<String>, String, String>(listOf("a", "b")) {}.shouldBeNone()
     }
 
+    "no matching patterns returns None" {
+        match<List<String>, String, String>(listOf("a")) {
+            pattern("b") returns { firstMatch() }
+        }.shouldBeNone()
+    }
+
     "one matching pattern with a variable returns the value of that variable" {
         match<List<String>, String, String>(listOf("a", "b")) {
             pattern("a", Variable) returns { firstMatch() }

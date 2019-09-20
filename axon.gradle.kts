@@ -386,7 +386,7 @@ configure(pitestProjects) {
             )
         )
         timeoutConstInMillis.set(10000)
-        mutators.set(setOf("ALL"))
+        mutators.set(setOf("NEW_DEFAULTS"))
     }
 }
 
