@@ -55,7 +55,7 @@ internal class LoadLayersFromHDF5Test {
         LoadLayersFromHDF5().load(
             File(LoadLayersFromHDF5Test::class.java.getResource("model2.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
-            model.shouldBeInstanceOf<Model.Sequential> {
+            model.shouldBeInstanceOf<Model.Unknown> {
                 it.name shouldBe "mobilenetv2_1.00_224"
                 it.batchInputShape.shouldContainExactly(null, 224, 224, 3)
                 it.layers.shouldHaveSize(157)
@@ -68,5 +68,24 @@ internal class LoadLayersFromHDF5Test {
         LoadLayersFromHDF5().load(
             File(LoadLayersFromHDF5Test::class.java.getResource("badModel1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeLeft()
+    }
+
+    @Test
+    fun `load non-sequential model 1`() {
+        LoadLayersFromHDF5().load(
+            File(LoadLayersFromHDF5Test::class.java.getResource("nonSequentialModel1.h5").toURI())
+        ).attempt().unsafeRunSync().shouldBeRight { model ->
+            model.shouldBeInstanceOf<Model.Unknown> {
+                it.name shouldBe "model_1"
+                it.batchInputShape.shouldContainExactly(null, 3)
+                it.layers.shouldContainExactly(
+                    setOf(
+                        SealedLayer.InputLayer("input_2", listOf(null, 3)),
+                        SealedLayer.Dense("dense_2", 4, Activation.ReLu).trainable(),
+                        SealedLayer.Dense("dense_3", 5, Activation.SoftMax).trainable()
+                    )
+                )
+            }
+        }
     }
 }
