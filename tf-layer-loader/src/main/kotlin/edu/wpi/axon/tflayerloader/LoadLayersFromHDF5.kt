@@ -7,7 +7,6 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import io.jhdf.HdfFile
@@ -47,7 +46,8 @@ class LoadLayersFromHDF5 {
                 batchInputShape = it
             }
 
-            parseMetaLayer(className, layerData)
+            val layer = parseLayer(className, layerData)
+            parseMetaLayer(layer, layerData)
         }
 
         return when (json["class_name"] as String) {
@@ -57,7 +57,7 @@ class LoadLayersFromHDF5 {
                 layers.toSet()
             )
 
-            else -> Model.Sequential(
+            else -> Model.Unknown(
                 name,
                 batchInputShape,
                 layers.toSet()
@@ -65,22 +65,23 @@ class LoadLayersFromHDF5 {
         }
     }
 
-    private fun parseMetaLayer(name: String, json: JsonObject): SealedLayer.MetaLayer =
-        when (val trainable = json["trainable"] as Boolean?) {
-            null -> SealedLayer.MetaLayer.UntrainableLayer(
-                json["name"] as String,
-                parseLayer(name, json)
-            )
+    private fun parseMetaLayer(layer: SealedLayer, json: JsonObject): SealedLayer.MetaLayer {
+        return when (layer) {
+            // Don't wrap a MetaLayer more than once
+            is SealedLayer.MetaLayer -> layer
 
-            else -> SealedLayer.MetaLayer.TrainableLayer(
-                json["name"] as String,
-                parseLayer(name, json),
-                trainable
-            )
+            else -> {
+                val name = json["name"] as String
+                when (val trainable = json["trainable"] as Boolean?) {
+                    null -> SealedLayer.MetaLayer.UntrainableLayer(name, layer)
+                    else -> SealedLayer.MetaLayer.TrainableLayer(name, layer, trainable)
+                }
+            }
         }
+    }
 
     @Suppress("UNCHECKED_CAST")
-    private fun parseLayer(name: String, json: JsonObject): Layer = when (name) {
+    private fun parseLayer(className: String, json: JsonObject): SealedLayer = when (className) {
         "Dense" -> SealedLayer.Dense(
             json["name"] as String,
             json["units"] as Int,
@@ -92,6 +93,11 @@ class LoadLayersFromHDF5 {
             json["filters"] as Int,
             (json["kernel_size"] as JsonArray<Int>).let { Tuple2(it[0], it[1]) },
             parseActivation(json)
+        )
+
+        "InputLayer" -> SealedLayer.InputLayer(
+            json["name"] as String,
+            (json["batch_input_shape"] as JsonArray<Int?>).toList()
         )
 
         else -> SealedLayer.UnknownLayer(

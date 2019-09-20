@@ -21,7 +21,11 @@ sealed class SealedLayer : Layer {
             override val name: String,
             override val layer: Layer,
             val trainable: Boolean
-        ) : MetaLayer(layer), Layer by layer
+        ) : MetaLayer(layer), Layer by layer {
+            init {
+                require(layer !is MetaLayer)
+            }
+        }
 
         /**
          * A [Layer] which is untrainable. This should not be confused with a [TrainableLayer]
@@ -30,7 +34,11 @@ sealed class SealedLayer : Layer {
         data class UntrainableLayer(
             override val name: String,
             override val layer: Layer
-        ) : MetaLayer(layer), Layer by layer
+        ) : MetaLayer(layer), Layer by layer {
+            init {
+                require(layer !is MetaLayer)
+            }
+        }
     }
 
     /**
@@ -39,6 +47,20 @@ sealed class SealedLayer : Layer {
     data class UnknownLayer(
         override val name: String
     ) : SealedLayer()
+
+    /**
+     * A layer that accepts input data and has no parameters.
+     */
+    data class InputLayer
+    private constructor(
+        override val name: String,
+        val batchInputShape: List<Int?>
+    ) : SealedLayer() {
+        companion object {
+            operator fun invoke(name: String, shape: List<Int?>) =
+                InputLayer(name, shape).untrainable()
+        }
+    }
 
     /**
      * A Dense layer.
