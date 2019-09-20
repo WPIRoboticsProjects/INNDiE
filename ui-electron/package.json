@@ -4,7 +4,8 @@
   "description": "A Graphical Neural Network Editor",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "bundle": "electron-packager . --out=build/bundle/ --ignore=.gradle/ --ignore=ui-electron.gradle.kts --ignore=.gitignore"
   },
   "repository": "https://github.com/wpilibsuite/Axon",
   "keywords": [
