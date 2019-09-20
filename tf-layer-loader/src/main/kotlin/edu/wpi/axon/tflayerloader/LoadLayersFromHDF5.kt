@@ -1,6 +1,7 @@
 package edu.wpi.axon.tflayerloader
 
 import arrow.core.Tuple2
+import arrow.effects.IO
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
@@ -23,11 +24,11 @@ class LoadLayersFromHDF5 {
      * @param file The file to load from.
      * @return The layers in the file.
      */
-    fun load(file: File): Model {
+    fun load(file: File): IO<Model> = IO {
         HdfFile(file).use {
             val config = it.getAttribute("model_config").data as String
             val data = Parser.default().parse(config.byteInputStream()) as JsonObject
-            return parseModel(data)
+            parseModel(data)
         }
     }
 
