@@ -365,23 +365,28 @@ configure(pitestProjects) {
     }
 
     pitest {
-        testPlugin = "junit5"
-        threads = 4
-        avoidCallsTo = setOf("kotlin.jvm.internal", "kotlinx.coroutines")
-        excludedMethods = setOf(
-            "hashCode",
-            "equals",
-            "checkIndexOverflow",
-            "throwIndexOverflow",
-            "collectionSizeOrDefault"
+        testPlugin.set("junit5")
+        pitestVersion.set("1.4.10")
+        threads.set(4)
+        avoidCallsTo.set(setOf("kotlin.jvm.internal", "kotlinx.coroutines"))
+        excludedMethods.set(
+            setOf(
+                "hashCode",
+                "equals",
+                "checkIndexOverflow",
+                "throwIndexOverflow",
+                "collectionSizeOrDefault"
+            )
         )
-        excludedClasses = setOf(
-            "NoSuchElementException",
-            "NoWhenBranchMatchedException",
-            "IllegalStateException"
+        excludedClasses.set(
+            setOf(
+                "NoSuchElementException",
+                "NoWhenBranchMatchedException",
+                "IllegalStateException"
+            )
         )
-        timeoutConstInMillis = 10000
-        mutators = setOf("ALL")
+        timeoutConstInMillis.set(10000)
+        mutators.set(setOf("NEW_DEFAULTS"))
     }
 }
 
