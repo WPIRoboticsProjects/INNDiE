@@ -107,6 +107,16 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
                     |    metrics=["accuracy"]
                     |)
                     |
+                    |earlyStoppingCallback = tf.keras.callbacks.EarlyStopping(
+                    |    monitor="val_loss",
+                    |    min_delta=0,
+                    |    patience=10,
+                    |    verbose=1,
+                    |    mode="auto",
+                    |    baseline=None,
+                    |    restore_best_weights=False
+                    |)
+                    |
                     |(xTrain, yTrain), (xTest, yTest) = tf.keras.datasets.mnist.load_data()
                     |
                     |scaledXTest = xTest.reshape(-1, 28, 28, 1) / 255
@@ -119,7 +129,7 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
                     |    batch_size=None,
                     |    epochs=50,
                     |    verbose=2,
-                    |    callbacks=[checkpointCallback],
+                    |    callbacks=[checkpointCallback, earlyStoppingCallback],
                     |    validation_data=(scaledXTest, yTest),
                     |    shuffle=True
                     |)

@@ -55,7 +55,7 @@ class EarlyStoppingTask(name: String) : BaseTask(name) {
      */
     var output: Variable by singleAssign()
 
-    override val imports: Set<Import> = setOf(makeImport("import tensorflow as ft"))
+    override val imports: Set<Import> = setOf(makeImport("import tensorflow as tf"))
 
     override val inputs: Set<Variable> = setOf()
 

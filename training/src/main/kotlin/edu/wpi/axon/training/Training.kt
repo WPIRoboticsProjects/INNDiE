@@ -10,6 +10,7 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyLayerDeltaTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
+import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
@@ -117,13 +118,20 @@ class Training(
                     output = checkpointCallback
                 }
 
+                val earlyStoppingCallback by variables.creating(Variable::class)
+                val earlyStoppingCallbackTask by tasks.running(EarlyStoppingTask::class) {
+                    patience = 10
+                    verbose = 1
+                    output = earlyStoppingCallback
+                }
+
                 val trainModelTask by tasks.running(TrainTask::class) {
                     modelInput = newModel
                     trainInputData = scaledXTrain
                     trainOutputData = yTrain
                     validationInputData = scaledXTest
                     validationOutputData = yTest
-                    callbacks = setOf(checkpointCallback)
+                    callbacks = setOf(checkpointCallback, earlyStoppingCallback)
                     epochs = userEpochs
                     dependencies += compileModelTask
                 }
