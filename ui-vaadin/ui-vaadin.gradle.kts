@@ -21,7 +21,6 @@ gretty {
 
 node {
     download = true
-    nodeModulesDir = file("src/main/electron")
 }
 
 vaadin {

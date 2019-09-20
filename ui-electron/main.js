@@ -5,17 +5,18 @@ let mainWindow;
 let serverProcess;
 
 function createWindow() {
+    console.log("Austin: " + app.getAppPath());
     let platform = process.platform;
 
     if (platform === 'win32') {
         serverProcess = require('child_process')
-            .spawn('cmd.exe', ['/c', 'demo.bat'],
+            .spawn('cmd.exe', ['/c', 'run.bat'],
                 {
-                    cwd: app.getAppPath() + '/demo/bin'
+                    cwd: app.getAppPath() + '/vaadin'
                 });
     } else {
         serverProcess = require('child_process')
-            .spawn(app.getAppPath() + '/demo/bin/demo');
+            .spawn(app.getAppPath() + '/vaadin/run.sh');
     }
 
     if (!serverProcess) {
@@ -30,7 +31,7 @@ function createWindow() {
 
     console.log("Server PID: " + serverProcess.pid);
 
-    let appUrl = 'http://localhost:8080';
+    let appUrl = 'http://localhost:8080/axon';
 
     const openWindow = function () {
         mainWindow = new BrowserWindow({
@@ -89,7 +90,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-    if (win === null) {
+    if (mainWindow === null) {
         createWindow()
     }
 });
