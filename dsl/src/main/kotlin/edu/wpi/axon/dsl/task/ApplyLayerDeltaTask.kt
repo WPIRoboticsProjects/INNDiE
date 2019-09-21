@@ -101,11 +101,10 @@ class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
     private fun buildTrainableFlags(layerOperations: List<LayerOperation>): String =
         layerOperations.joinToString(separator = "\n") {
             val layerInModel = getLayerInModel(newModelOutput.name, it.layer.name)
-            when (it.layer) {
+            when (val layer = it.layer) {
                 is SealedLayer.MetaLayer.TrainableLayer ->
-                    """$layerInModel.trainable = ${boolToPythonString(true)}"""
-                is SealedLayer.MetaLayer.UntrainableLayer ->
-                    """$layerInModel.trainable = ${boolToPythonString(false)}"""
+                    """$layerInModel.trainable = ${boolToPythonString(layer.trainable)}"""
+                is SealedLayer.MetaLayer.UntrainableLayer -> ""
             }
         }
 

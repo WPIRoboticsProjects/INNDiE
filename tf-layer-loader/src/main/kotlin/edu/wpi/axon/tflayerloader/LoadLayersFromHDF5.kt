@@ -1,12 +1,12 @@
 package edu.wpi.axon.tflayerloader
 
 import arrow.core.Tuple2
+import arrow.effects.IO
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import io.jhdf.HdfFile
@@ -23,59 +23,65 @@ class LoadLayersFromHDF5 {
      * @param file The file to load from.
      * @return The layers in the file.
      */
-    fun load(file: File): Model {
+    fun load(file: File): IO<Model> = IO {
         HdfFile(file).use {
             val config = it.getAttribute("model_config").data as String
             val data = Parser.default().parse(config.byteInputStream()) as JsonObject
-            return parseModel(data)
+            parseModel(data)
         }
     }
 
-    private fun parseModel(json: JsonObject): Model =
-        when (val modelName = json["class_name"] as String) {
-            "Sequential" -> {
-                val config = json["config"] as JsonObject
+    private fun parseModel(json: JsonObject): Model {
+        val config = json["config"] as JsonObject
+        val name = config["name"] as String
 
-                var batchInputShape: List<Int?> by singleAssign()
+        var batchInputShape: List<Int?> by singleAssign()
 
-                @Suppress("UNCHECKED_CAST")
-                val layers = (config["layers"] as JsonArray<JsonObject>).map {
-                    val className = it["class_name"] as String
-                    val layerData = it["config"] as JsonObject
+        @Suppress("UNCHECKED_CAST")
+        val layers = (config["layers"] as JsonArray<JsonObject>).map {
+            val className = it["class_name"] as String
+            val layerData = it["config"] as JsonObject
 
-                    (layerData["batch_input_shape"] as JsonArray<Int?>?)?.let {
-                        batchInputShape = it
-                    }
-
-                    parseMetaLayer(className, layerData)
-                }
-
-                Model.Sequential(
-                    config["name"] as String,
-                    batchInputShape,
-                    layers.toSet()
-                )
+            (layerData["batch_input_shape"] as JsonArray<Int?>?)?.let {
+                batchInputShape = it
             }
 
-            else ->
-                throw IllegalStateException("Only Sequential models are supported, got $modelName")
+            val layer = parseLayer(className, layerData)
+            parseMetaLayer(layer, layerData)
         }
 
-    private fun parseMetaLayer(name: String, json: JsonObject): SealedLayer.MetaLayer =
-        when (json["trainable"] as Boolean) {
-            true -> SealedLayer.MetaLayer.TrainableLayer(
-                json["name"] as String,
-                parseLayer(name, json)
+        return when (json["class_name"] as String) {
+            "Sequential" -> Model.Sequential(
+                name,
+                batchInputShape,
+                layers.toSet()
             )
 
-            false -> SealedLayer.MetaLayer.UntrainableLayer(
-                json["name"] as String,
-                parseLayer(name, json)
+            else -> Model.Unknown(
+                name,
+                batchInputShape,
+                layers.toSet()
             )
         }
+    }
+
+    private fun parseMetaLayer(layer: SealedLayer, json: JsonObject): SealedLayer.MetaLayer {
+        return when (layer) {
+            // Don't wrap a MetaLayer more than once
+            is SealedLayer.MetaLayer -> layer
+
+            else -> {
+                val name = json["name"] as String
+                when (val trainable = json["trainable"] as Boolean?) {
+                    null -> SealedLayer.MetaLayer.UntrainableLayer(name, layer)
+                    else -> SealedLayer.MetaLayer.TrainableLayer(name, layer, trainable)
+                }
+            }
+        }
+    }
 
     @Suppress("UNCHECKED_CAST")
-    private fun parseLayer(name: String, json: JsonObject): Layer = when (name) {
+    private fun parseLayer(className: String, json: JsonObject): SealedLayer = when (className) {
         "Dense" -> SealedLayer.Dense(
             json["name"] as String,
             json["units"] as Int,
@@ -87,6 +93,11 @@ class LoadLayersFromHDF5 {
             json["filters"] as Int,
             (json["kernel_size"] as JsonArray<Int>).let { Tuple2(it[0], it[1]) },
             parseActivation(json)
+        )
+
+        "InputLayer" -> SealedLayer.InputLayer(
+            json["name"] as String,
+            (json["batch_input_shape"] as JsonArray<Int?>).toList()
         )
 
         else -> SealedLayer.UnknownLayer(
