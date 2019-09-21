@@ -9,14 +9,10 @@ function createWindow() {
     let platform = process.platform;
 
     if (platform === 'win32') {
-        serverProcess = require('child_process')
-            .spawn('cmd.exe', ['/c', 'run.bat'],
-                {
-                    cwd: app.getAppPath() + '/vaadin'
-                });
+        serverProcess = require('child_process').spawn('cmd.exe', ['/c', 'run.bat'],
+            {cwd: app.getAppPath() + '/vaadin'});
     } else {
-        serverProcess = require('child_process')
-            .spawn(app.getAppPath() + '/vaadin/run.sh');
+        serverProcess = require('child_process').spawn(app.getAppPath() + '/vaadin/run.sh');
     }
 
     if (!serverProcess) {
@@ -63,7 +59,7 @@ function createWindow() {
         });
     };
 
-    const startUp = function () {
+    const startUp = function (attempts) {
         const requestPromise = require('minimal-request-promise');
 
         requestPromise.get(appUrl).then(function (response) {
@@ -72,13 +68,15 @@ function createWindow() {
         }, function (response) {
             console.log('Waiting for the server start...');
 
-            setTimeout(function () {
-                startUp();
-            }, 200);
+            if (attempts < 600) {
+                setTimeout(function () {
+                    startUp(attempts + 1);
+                }, 200);
+            }
         });
     };
 
-    startUp();
+    startUp(0);
 }
 
 app.on('ready', createWindow);
