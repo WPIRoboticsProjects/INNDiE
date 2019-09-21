@@ -39,14 +39,10 @@ class LoadLayersFromHDF5(
     }
 
     private fun parseModel(json: JsonObject): Model =
-        when (json["class_name"] as String) {
+        when (val className = json["class_name"] as String) {
             "Sequential" -> parseSequentialModel(json)
             "Model" -> parseGeneralModel(json)
-            else -> {
-                val config = json["config"] as JsonObject
-                // TODO: Get more data in here
-                Model.Unknown(config["name"] as String)
-            }
+            else -> throw IllegalStateException("Unknown model class $className")
         }
 
     private fun parseSequentialModel(json: JsonObject): Model.Sequential {

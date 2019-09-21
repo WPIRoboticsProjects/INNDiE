@@ -27,11 +27,4 @@ sealed class Model(
         data class InputData(val id: String, val type: List<Int?>)
         data class OutputData(val id: String)
     }
-
-    /**
-     * An unknown model type.
-     */
-    data class Unknown(
-        override val name: String
-    ) : Model(name)
 }

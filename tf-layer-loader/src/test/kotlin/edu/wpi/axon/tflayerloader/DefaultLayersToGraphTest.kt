@@ -2,6 +2,7 @@
 
 package edu.wpi.axon.tflayerloader
 
+import arrow.core.None
 import arrow.core.Some
 import com.google.common.graph.EndpointPair
 import edu.wpi.axon.tfdata.layer.SealedLayer
@@ -39,6 +40,14 @@ internal class DefaultLayersToGraphTest {
     fun `islands are not allowed`() {
         val layer1 = SealedLayer.UnknownLayer("layer1", Some(emptySet())).trainable()
         val layer2 = SealedLayer.UnknownLayer("layer2", Some(emptySet())).trainable()
+        val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
+        graph.shouldBeLeft()
+    }
+
+    @Test
+    fun `two Sequential layers`() {
+        val layer1 = SealedLayer.UnknownLayer("layer1", None).trainable()
+        val layer2 = SealedLayer.UnknownLayer("layer2", None).trainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
         graph.shouldBeLeft()
     }
