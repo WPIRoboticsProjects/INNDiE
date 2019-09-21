@@ -7,6 +7,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.trainable
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
@@ -48,7 +49,7 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
         val modelName = "custom_fashion_mnist.h5"
         val localModelPath = TrainSequentialIntegrationTest::class.java
             .getResource(modelName).toURI().path
-        val layers = LoadLayersFromHDF5().load(File(localModelPath))
+        val layers = LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(localModelPath))
 
         layers.attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.Sequential> {

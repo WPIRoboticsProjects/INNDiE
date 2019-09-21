@@ -93,7 +93,10 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
         ) {
             when (it) {
                 is LayerOperation.CopyLayer -> getLayerInModel(modelInput.name, it.layer.name)
-                is LayerOperation.MakeNewLayer -> layerToCode.makeNewLayer(it.layer)
+                is LayerOperation.MakeNewLayer -> layerToCode.makeNewLayer(it.layer).fold(
+                    { throw IllegalStateException("Tried to make a new layer but got $it") },
+                    { it }
+                )
             }
         }
     }

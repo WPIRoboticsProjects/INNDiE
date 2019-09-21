@@ -1,5 +1,7 @@
 package edu.wpi.axon.tfdata.layer
 
+import arrow.core.None
+import arrow.core.Option
 import arrow.core.Tuple2
 
 /**
@@ -8,18 +10,18 @@ import arrow.core.Tuple2
 sealed class SealedLayer : Layer {
 
     /**
-     * A sealed [Layer] which delegates to another [layer].
+     * Adds some information and delegates to another [SealedLayer].
      */
-    sealed class MetaLayer(open val layer: Layer) : SealedLayer() {
+    sealed class MetaLayer(open val layer: SealedLayer) : SealedLayer() {
 
         /**
-         * A [Layer] which is trainable.
+         * A layer which is trainable.
          *
          * @param trainable Whether this layer should be trained.
          */
         data class TrainableLayer(
             override val name: String,
-            override val layer: Layer,
+            override val layer: SealedLayer,
             val trainable: Boolean
         ) : MetaLayer(layer), Layer by layer {
             init {
@@ -28,12 +30,12 @@ sealed class SealedLayer : Layer {
         }
 
         /**
-         * A [Layer] which is untrainable. This should not be confused with a [TrainableLayer]
+         * A layer which is untrainable. This should not be confused with a [TrainableLayer]
          * where [TrainableLayer.trainable] is `true`. An [UntrainableLayer] is IMPOSSIBLE to train.
          */
         data class UntrainableLayer(
             override val name: String,
-            override val layer: Layer
+            override val layer: SealedLayer
         ) : MetaLayer(layer), Layer by layer {
             init {
                 require(layer !is MetaLayer)
@@ -45,7 +47,8 @@ sealed class SealedLayer : Layer {
      * A placeholder layer for a layer that Axon does not understand.
      */
     data class UnknownLayer(
-        override val name: String
+        override val name: String,
+        override val inputs: Option<Set<String>>
     ) : SealedLayer()
 
     /**
@@ -56,6 +59,9 @@ sealed class SealedLayer : Layer {
         override val name: String,
         val batchInputShape: List<Int?>
     ) : SealedLayer() {
+
+        override val inputs: Option<Set<String>> = None
+
         companion object {
             operator fun invoke(name: String, shape: List<Int?>) =
                 InputLayer(name, shape).untrainable()
@@ -70,6 +76,7 @@ sealed class SealedLayer : Layer {
      */
     data class Dense(
         override val name: String,
+        override val inputs: Option<Set<String>>,
         val units: Int,
         val activation: Activation
     ) : SealedLayer()
@@ -83,6 +90,7 @@ sealed class SealedLayer : Layer {
      */
     data class Conv2D(
         override val name: String,
+        override val inputs: Option<Set<String>>,
         val filters: Int,
         val kernel: Tuple2<Int, Int>,
         val activation: Activation
@@ -95,7 +103,7 @@ sealed class SealedLayer : Layer {
  * @receiver The [Layer] to wrap.
  * @param trainable Whether this layer should be trained.
  */
-fun Layer.trainable(trainable: Boolean = true) =
+fun SealedLayer.trainable(trainable: Boolean = true) =
     SealedLayer.MetaLayer.TrainableLayer(name, this, trainable)
 
 /**
@@ -103,5 +111,5 @@ fun Layer.trainable(trainable: Boolean = true) =
  *
  * @receiver The [Layer] to wrap.
  */
-fun Layer.untrainable() =
+fun SealedLayer.untrainable() =
     SealedLayer.MetaLayer.UntrainableLayer(name, this)

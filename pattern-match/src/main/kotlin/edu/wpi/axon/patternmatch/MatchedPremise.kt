@@ -10,7 +10,7 @@ import arrow.core.Some
  */
 class MatchedPremise<T : List<E>, E : Any>(
     private val pattern: Pattern<T, E>,
-    private val value: T
+    val value: T
 ) {
 
     private val variables by lazy {
