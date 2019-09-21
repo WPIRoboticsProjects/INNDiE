@@ -7,6 +7,9 @@ val detektPluginVersion: String by settings
 val dokkaPluginVersion: String by settings
 val testloggerPluginVersion: String by settings
 val pitestPluginVersion: String by settings
+val vaadinFlowPluginVersion: String by settings
+val grettyPluginVersion: String by settings
+val nodePluginVersion: String by settings
 
 pluginManagement {
     plugins {
@@ -17,6 +20,9 @@ pluginManagement {
         id("org.jetbrains.dokka") version dokkaPluginVersion
         id("com.adarshr.test-logger") version testloggerPluginVersion
         id("info.solidsoft.pitest") version pitestPluginVersion
+        id("com.devsoap.vaadin-flow") version vaadinFlowPluginVersion
+        id("org.gretty") version grettyPluginVersion
+        id("com.moowork.node") version nodePluginVersion
     }
 }
 
@@ -49,14 +55,14 @@ fun configureGradleBuild(project: ProjectDescriptor) {
     val kotlinBuild = File(project.projectDir, "$projectBuildFileBaseName.gradle.kts")
     assert(!(gradleBuild.exists() && kotlinBuild.exists())) {
         "Project ${project.name} can not have both a ${gradleBuild.name} and a ${kotlinBuild.name} file. " +
-                "Rename one so that the other can serve as the base for the project's build"
+            "Rename one so that the other can serve as the base for the project's build"
     }
     project.buildFileName = when {
         gradleBuild.exists() -> gradleBuild.name
         kotlinBuild.exists() -> kotlinBuild.name
         else -> throw AssertionError(
             "Project `${project.name}` must have a either a file " +
-                    "containing ${gradleBuild.name} or ${kotlinBuild.name}"
+                "containing ${gradleBuild.name} or ${kotlinBuild.name}"
         )
     }
 

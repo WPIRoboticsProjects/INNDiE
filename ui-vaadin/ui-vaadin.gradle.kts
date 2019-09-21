@@ -1,27 +1,30 @@
 plugins {
-    id("org.gretty") version "2.3.1"
-    id("com.devsoap.vaadin-flow") version "1.2"
+    id("org.gretty")
+    id("com.devsoap.vaadin-flow")
 }
 
 dependencies {
     fun jetty(
         group: String = "org.eclipse.jetty",
         name: String,
-        version: String = "9.4.20.v20190813"
+        version: String = property("jetty.version") as String
     ) = create(group = group, name = name, version = version)
 
     implementation(jetty(name = "jetty-server"))
     implementation(jetty(name = "jetty-webapp"))
     implementation(jetty(group = "org.eclipse.jetty.websocket", name = "websocket-server"))
 
-    testImplementation("com.github.mvysny.kaributesting:karibu-testing-v10:1.1.11")
+    testImplementation(
+        group = "com.github.mvysny.kaributesting",
+        name = "karibu-testing-v10",
+        version = property("karibu-testing-v10.version") as String
+    )
 }
 
 gretty {
     // https://akhikhl.github.io/gretty-doc/Gretty-configuration.html
     host = "localhost"
     httpPort = 8080
-
     contextPath = "axon"
 }
 
@@ -30,9 +33,8 @@ node {
 }
 
 vaadin {
-    version = "14.0.5"
+    version = property("vaadin.version") as String
     isProductionMode = false
     isSubmitStatistics = false
-
     autoconfigure()
 }
