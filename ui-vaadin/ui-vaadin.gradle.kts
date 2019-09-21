@@ -4,8 +4,12 @@ plugins {
 }
 
 dependencies {
-    fun jetty(group: String = "org.eclipse.jetty", name: String, version: String = "9.4.20.v20190813") =
-            create(group = group, name = name, version = version)
+    fun jetty(
+        group: String = "org.eclipse.jetty",
+        name: String,
+        version: String = "9.4.20.v20190813"
+    ) = create(group = group, name = name, version = version)
+
     implementation(jetty(name = "jetty-server"))
     implementation(jetty(name = "jetty-webapp"))
     implementation(jetty(group = "org.eclipse.jetty.websocket", name = "websocket-server"))

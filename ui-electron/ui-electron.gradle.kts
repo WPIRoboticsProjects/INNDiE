@@ -23,7 +23,7 @@ tasks {
         from(projectDir.resolve("../ui-vaadin/build/output/ui-vaadin"))
         into(vaadinDir)
     }
-    val run by registering(NpmTask::class) {
+    val runbuildProduct by registering(NpmTask::class) {
         group = "electron"
         dependsOn("npmInstall", syncVaadinResources)
 
