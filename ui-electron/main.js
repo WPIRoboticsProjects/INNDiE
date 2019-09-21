@@ -72,6 +72,11 @@ function createWindow() {
                 setTimeout(function () {
                     startUp(attempts + 1);
                 }, 200);
+            } else {
+                if (serverProcess) {
+                    serverProcess.kill('SIGINT')
+                }
+                app.quit()
             }
         });
     };
