@@ -1,5 +1,4 @@
 /*
  * This file contains the Application theme
  */
-label { color: green; }
-label.clicked { color: red; }
+h3 { color: green; }

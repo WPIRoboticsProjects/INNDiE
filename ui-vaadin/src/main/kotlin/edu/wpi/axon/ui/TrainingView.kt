@@ -1,15 +1,16 @@
 package edu.wpi.axon.ui
 
-import com.github.mvysny.karibudsl.v10.*
-import com.vaadin.flow.component.HasComponents
+import com.github.mvysny.karibudsl.v10.KComposite
+import com.github.mvysny.karibudsl.v10.comboBox
+import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.router.Route
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import kotlin.reflect.KClass
 
-@Route("training")
-class TrainingView: KComposite() {
+@Route(layout = AxonLayout::class)
+class TrainingView : KComposite() {
     private val root = ui {
         verticalLayout {
             comboBox<KClass <out Dataset>>("Dataset") {
@@ -33,6 +34,3 @@ class TrainingView: KComposite() {
         }
     }
 }
-
-@VaadinDsl
-fun (@VaadinDsl HasComponents).trainingView(block: (@VaadinDsl TrainingView).()->Unit = {}) = init(TrainingView(), block)

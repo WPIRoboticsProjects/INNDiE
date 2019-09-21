@@ -6,11 +6,13 @@ import com.github.mvysny.kaributesting.v10.LocatorJ._get
 import com.github.mvysny.kaributesting.v10.MockVaadin
 import com.github.mvysny.kaributesting.v10.Routes
 import com.github.mvysny.kaributesting.v10.expectNotifications
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.html.H1
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 
-class UiViewTest {
+class AboutViewTest {
 
     companion object {
         private lateinit var routes: Routes
@@ -24,15 +26,13 @@ class UiViewTest {
 
     @BeforeEach
     fun setupVaadin() {
-        MockVaadin.setup(routes!!)
+        MockVaadin.setup(routes)
+
+        UI.getCurrent().navigate("about")
     }
 
     @Test
-    fun testGreeting() {
-        // simulate a button click as if clicked by the user
-        _click(_get(Button::class.java) { spec -> spec.withCaption("Click me") })
-
-        // look up the Example Template and assert on its value
-        expectNotifications("Clicked!")
+    fun testAboutText() {
+        _get(H1::class.java) { spec -> spec.withText("Created by: Austin & Ryan") }
     }
 }
