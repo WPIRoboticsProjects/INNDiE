@@ -2,6 +2,7 @@ package edu.wpi.axon.ui
 
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.html.Label
+import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.page.BodySize
 import com.vaadin.flow.component.page.Viewport
@@ -15,14 +16,11 @@ import com.vaadin.flow.router.Route
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 class UiView : VerticalLayout() {
     init {
-        className = "app-view"
-
         val hello = Label("Hello Kotlin app!")
         add(hello)
 
         val button = Button("Click me") {
-            hello.text = "Clicked!"
-            hello.className = "clicked"
+            Notification.show("Clicked!")
         }
         add(button)
     }

@@ -13,6 +13,8 @@ dependencies {
     implementation(jetty(name = "jetty-server"))
     implementation(jetty(name = "jetty-webapp"))
     implementation(jetty(group = "org.eclipse.jetty.websocket", name = "websocket-server"))
+
+    testImplementation("com.github.mvysny.kaributesting:karibu-testing-v10:1.1.11")
 }
 
 gretty {
