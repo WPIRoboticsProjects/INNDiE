@@ -30,7 +30,7 @@ node {
 }
 
 vaadin {
-    version = "14.0.4"
+    version = "14.0.5"
     isProductionMode = false
     isSubmitStatistics = false
 
