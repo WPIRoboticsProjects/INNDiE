@@ -3,6 +3,7 @@
 package edu.wpi.axon.dsl.task
 
 import arrow.core.None
+import arrow.core.Some
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.testutil.KoinTestFixture
@@ -281,5 +282,28 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             |new_model = tf.keras.Sequential([base_model.get_layer("dense_1")])
             |new_model.get_layer("dense_1").trainable = False
         """.trimMargin()
+    }
+
+    @Test
+    fun `add a non-Sequential layer`() {
+        startKoin {
+            modules(defaultModule())
+        }
+
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = setOf()
+            newLayers = setOf(
+                SealedLayer.Dense(
+                    "dense_1",
+                    Some(setOf("input_name")),
+                    10,
+                    Activation.ReLu
+                ).trainable()
+            )
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        shouldThrow<IllegalStateException> { task.code() }
     }
 }
