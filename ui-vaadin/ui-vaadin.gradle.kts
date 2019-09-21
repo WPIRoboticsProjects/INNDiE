@@ -4,6 +4,11 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":tf-data"))
+    implementation(project(":training"))
+
+    implementation("com.github.mvysny.karibudsl:karibu-dsl-v10:0.7.0")
+
     fun jetty(
         group: String = "org.eclipse.jetty",
         name: String,
