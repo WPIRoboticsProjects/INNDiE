@@ -5,4 +5,9 @@ fun DependencyHandler.arrow(name: String) =
 
 dependencies {
     api(arrow("arrow-core-data"))
+    api(
+        group = "org.octogonapus",
+        name = "kt-guava-core",
+        version = property("kt-guava.version") as String
+    )
 }

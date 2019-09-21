@@ -28,6 +28,7 @@ dependencies {
     kapt(arrow("arrow-meta"))
 
     api(project(":tf-data"))
+    api(project(":pattern-match"))
 
     implementation(group = "io.jhdf", name = "jhdf", version = property("jhdf.version") as String)
     implementation(

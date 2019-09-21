@@ -21,6 +21,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import java.io.File
 
@@ -49,7 +50,7 @@ class TrainSequential(
 
     @Suppress("UNUSED_VARIABLE")
     fun generateScript(): ValidatedNel<String, String> {
-        return LoadLayersFromHDF5().load(File(userModelPath)).map { currentModel ->
+        return LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(userModelPath)).map { currentModel ->
             require(currentModel is Model.Sequential)
 
             require(currentModel.batchInputShape.count { it == null } <= 1)

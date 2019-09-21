@@ -27,12 +27,6 @@ dependencies {
     api(arrow("arrow-recursion-extensions"))
     kapt(arrow("arrow-meta"))
 
-    api(
-        group = "org.octogonapus",
-        name = "kt-guava-core",
-        version = property("kt-guava-core.version") as String
-    )
-
     api(koin("koin-core"))
     api(project(":dsl-interface"))
     api(project(":tf-data"))

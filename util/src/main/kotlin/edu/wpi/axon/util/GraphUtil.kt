@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-package edu.wpi.axon.dsl
+package edu.wpi.axon.util
 
 import arrow.Kind2
 import arrow.core.ForEither
