@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 import java.io.File
 
-internal class TrainingIntegrationTest : KoinTestFixture() {
+internal class TrainSequentialIntegrationTest : KoinTestFixture() {
 
     @Test
     fun `test with bad model`() {
@@ -25,10 +25,10 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val localModelPath = TrainingIntegrationTest::class.java
+        val localModelPath = TrainSequentialIntegrationTest::class.java
             .getResource("badModel1.h5").toURI().path
 
-        Training(
+        TrainSequential(
             userModelPath = localModelPath,
             userDataset = Dataset.Mnist,
             userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
@@ -46,13 +46,13 @@ internal class TrainingIntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "custom_fashion_mnist.h5"
-        val localModelPath = TrainingIntegrationTest::class.java
+        val localModelPath = TrainSequentialIntegrationTest::class.java
             .getResource(modelName).toURI().path
         val layers = LoadLayersFromHDF5().load(File(localModelPath))
 
         layers.attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.Sequential> {
-                Training(
+                TrainSequential(
                     userModelPath = localModelPath,
                     userDataset = Dataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
