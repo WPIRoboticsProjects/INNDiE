@@ -32,6 +32,8 @@ include(":test-util")
 include(":tf-data")
 include(":tf-data-code")
 include(":tf-layer-loader")
+include(":ui-electron")
+include(":ui-vaadin")
 include(":training")
 include(":util")
 
