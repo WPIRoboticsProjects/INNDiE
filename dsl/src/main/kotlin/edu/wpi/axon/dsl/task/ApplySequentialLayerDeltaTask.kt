@@ -16,9 +16,9 @@ private sealed class LayerOperation(open val layer: SealedLayer.MetaLayer) {
 }
 
 /**
- * Adds and removes layers on a new model using a starting model.
+ * Adds and removes layers on a new model using a starting Sequential model.
  */
-class ApplyLayerDeltaTask(name: String) : BaseTask(name) {
+class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
 
     /**
      * The model to take the starting layers from.
