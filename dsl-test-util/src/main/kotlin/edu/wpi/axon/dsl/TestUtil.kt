@@ -22,10 +22,12 @@ fun Module.alwaysInvalidPathValidator() =
         mockk { every { isValidPathName(any()) } returns false }
     }
 
-fun Module.defaultUniqueVariableNameGenerator() =
-    single<UniqueVariableNameGenerator> {
-        object : UniqueVariableNameGenerator {
-            private var count = 1
-            override fun uniqueVariableName() = "var${count++}"
+fun mockUniqueVariableNameGenerator(): UniqueVariableNameGenerator =
+    object : UniqueVariableNameGenerator {
+        private var count = 1
+        override fun uniqueVariableName() = synchronized(this) {
+            "var${count++}"
         }
     }
+
+fun Module.defaultUniqueVariableNameGenerator() = single { mockUniqueVariableNameGenerator() }
