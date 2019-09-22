@@ -141,4 +141,32 @@ internal class LoadLayersFromHDF5IntegrationTest {
             }
         }
     }
+
+    @Test
+    fun `load rnn 1`() {
+        LoadLayersFromHDF5(DefaultLayersToGraph()).load(
+            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("rnn1.h5").toURI())
+        ).attempt().unsafeRunSync().shouldBeRight { model ->
+            model.shouldBeInstanceOf<Model.General> {
+                it.name shouldBe "model_5"
+                it.input.shouldContainExactly(
+                    Model.General.InputData(
+                        "input_15",
+                        listOf(null, null, 5)
+                    )
+                )
+                it.output.shouldContainExactly(Model.General.OutputData("dense_1"))
+                it.layers.nodes().shouldContainExactly(
+                    // TODO: Add an RNN layer class
+                    SealedLayer.UnknownLayer("rnn_12", Some(setOf("input_15"))).trainable(),
+                    SealedLayer.Dense(
+                        "dense_1",
+                        Some(setOf("rnn_12")),
+                        10,
+                        Activation.SoftMax
+                    ).trainable()
+                )
+            }
+        }
+    }
 }
