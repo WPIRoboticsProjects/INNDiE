@@ -30,6 +30,8 @@ dependencies {
 
     implementation("com.github.mvysny.karibudsl:karibu-dsl-v10:0.7.0")
 
+    implementation(group = "org.hibernate", name = "hibernate-validator", version = "5.4.1.Final")
+
     testImplementation(
         group = "com.github.mvysny.kaributesting",
         name = "karibu-testing-v10",
