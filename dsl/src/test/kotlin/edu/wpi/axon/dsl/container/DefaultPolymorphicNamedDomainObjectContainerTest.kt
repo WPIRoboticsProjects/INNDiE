@@ -78,7 +78,7 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
         val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
 
         assertThrows<IllegalArgumentException> {
-            container.create(varName, TestVariable::class)
+            container.create(varName, TestVariable.Companion::class)
         }
     }
 

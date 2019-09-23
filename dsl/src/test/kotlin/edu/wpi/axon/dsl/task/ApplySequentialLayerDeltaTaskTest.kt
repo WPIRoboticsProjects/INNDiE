@@ -2,6 +2,8 @@
 
 package edu.wpi.axon.dsl.task
 
+import arrow.core.None
+import arrow.core.right
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultUniqueVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
@@ -16,15 +18,15 @@ import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
-internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
+internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `keep all 1 layers`() {
         startKoin {}
 
-        val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
+        val layer1 = SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(layer1)
             newLayers = setOf(layer1)
@@ -41,10 +43,10 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     fun `keep all 2 layers`() {
         startKoin {}
 
-        val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
-        val layer2 = SealedLayer.UnknownLayer("unknown_1").trainable()
+        val layer1 = SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
+        val layer2 = SealedLayer.UnknownLayer("unknown_1", None).trainable()
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(layer1, layer2)
             newLayers = setOf(layer1, layer2)
@@ -65,9 +67,10 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     fun `remove one layer`() {
         startKoin {}
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
-            currentLayers = setOf(SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable())
+            currentLayers =
+                setOf(SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable())
             newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
         }
@@ -82,11 +85,11 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     fun `remove two layers`() {
         startKoin {}
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(
-                SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable(),
-                SealedLayer.UnknownLayer("unknown_1").trainable()
+                SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable(),
+                SealedLayer.UnknownLayer("unknown_1", None).trainable()
             )
             newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
@@ -100,20 +103,20 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `add one layer`() {
-        val layer1 = SealedLayer.Dense("dense_1", 10, Activation.ReLu).trainable()
+        val layer1 = SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
 
         startKoin {
             modules(module {
                 defaultUniqueVariableNameGenerator()
                 single<LayerToCode> {
                     mockk {
-                        every { makeNewLayer(layer1) } returns "layer1"
+                        every { makeNewLayer(layer1) } returns "layer1".right()
                     }
                 }
             })
         }
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf()
             newLayers = setOf(layer1)
@@ -128,22 +131,22 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `add two layers`() {
-        val layer1 = SealedLayer.Dense("dense_1", 128, Activation.ReLu).trainable()
-        val layer2 = SealedLayer.Dense("dense_2", 10, Activation.SoftMax).trainable()
+        val layer1 = SealedLayer.Dense("dense_1", None, 128, Activation.ReLu).trainable()
+        val layer2 = SealedLayer.Dense("dense_2", None, 10, Activation.SoftMax).trainable()
 
         startKoin {
             modules(module {
                 defaultUniqueVariableNameGenerator()
                 single<LayerToCode> {
                     mockk {
-                        every { makeNewLayer(layer1) } returns "layer1"
-                        every { makeNewLayer(layer2) } returns "layer2"
+                        every { makeNewLayer(layer1) } returns "layer1".right()
+                        every { makeNewLayer(layer2) } returns "layer2".right()
                     }
                 }
             })
         }
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf()
             newLayers = setOf(layer1, layer2)
@@ -162,22 +165,22 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `remove the first layer and replace the second and swap them`() {
-        val layer1 = SealedLayer.UnknownLayer("unknown_3").trainable()
-        val layer2Old = SealedLayer.Dense("dense_2", 10, Activation.SoftMax).trainable()
-        val layer2New = SealedLayer.Dense("dense_2", 3, Activation.SoftMax).trainable()
+        val layer1 = SealedLayer.UnknownLayer("unknown_3", None).trainable()
+        val layer2Old = SealedLayer.Dense("dense_2", None, 10, Activation.SoftMax).trainable()
+        val layer2New = SealedLayer.Dense("dense_2", None, 3, Activation.SoftMax).trainable()
 
         startKoin {
             modules(module {
                 defaultUniqueVariableNameGenerator()
                 single<LayerToCode> {
                     mockk {
-                        every { makeNewLayer(layer2New) } returns "layer2New"
+                        every { makeNewLayer(layer2New) } returns "layer2New".right()
                     }
                 }
             })
         }
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(layer1, layer2Old)
             newLayers = setOf(layer2New, layer1)
@@ -198,9 +201,9 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
     fun `copy an unknown layer`() {
         startKoin {}
 
-        val layer1 = SealedLayer.UnknownLayer("unknown_1").trainable()
+        val layer1 = SealedLayer.UnknownLayer("unknown_1", None).trainable()
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(layer1)
             newLayers = setOf(layer1)
@@ -215,11 +218,12 @@ internal class ApplyLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `copy a layer with an unknown activation function`() {
-        val layer1 = SealedLayer.Dense("dense_1", 10, Activation.UnknownActivation("activation_1"))
-            .trainable()
+        val layer1 =
+            SealedLayer.Dense("dense_1", None, 10, Activation.UnknownActivation("activation_1"))
+                .trainable()
         startKoin {}
 
-        val task = ApplyLayerDeltaTask("task1").apply {
+        val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(layer1)
             newLayers = setOf(layer1)

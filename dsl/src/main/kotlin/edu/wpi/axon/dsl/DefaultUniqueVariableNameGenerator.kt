@@ -5,7 +5,7 @@ package edu.wpi.axon.dsl
  */
 class DefaultUniqueVariableNameGenerator : UniqueVariableNameGenerator {
 
-    private var count = 0
+    private var count = 1
 
     override fun uniqueVariableName() = synchronized(this) { "var${count++}" }
 }

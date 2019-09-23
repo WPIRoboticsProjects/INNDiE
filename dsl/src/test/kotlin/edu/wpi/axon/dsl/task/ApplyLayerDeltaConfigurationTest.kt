@@ -2,9 +2,9 @@ package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.TaskConfigurationTestFixture
 
-internal class ApplyLayerDeltaConfigurationTest : TaskConfigurationTestFixture<ApplyLayerDeltaTask>(
-    ApplyLayerDeltaTask::class,
+internal class ApplyLayerDeltaConfigurationTest : TaskConfigurationTestFixture<ApplySequentialLayerDeltaTask>(
+    ApplySequentialLayerDeltaTask::class,
     listOf(
-        ApplyLayerDeltaTask::modelInput, ApplyLayerDeltaTask::newModelOutput
+        ApplySequentialLayerDeltaTask::modelInput, ApplySequentialLayerDeltaTask::newModelOutput
     )
 )

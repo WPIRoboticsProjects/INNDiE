@@ -1,5 +1,6 @@
 package edu.wpi.axon.tfdata.code.layer
 
+import arrow.core.Either
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 
@@ -11,7 +12,7 @@ interface LayerToCode {
      * @param layer The [Layer].
      * @return The code to make a new instance of the [layer].
      */
-    fun makeNewLayer(layer: Layer): String
+    fun makeNewLayer(layer: Layer): Either<String, String>
 
     /**
      * Get the code to make an [activation] function.

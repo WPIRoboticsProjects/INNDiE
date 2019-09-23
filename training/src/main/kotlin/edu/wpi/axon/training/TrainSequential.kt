@@ -7,7 +7,7 @@ import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.running
-import edu.wpi.axon.dsl.task.ApplyLayerDeltaTask
+import edu.wpi.axon.dsl.task.ApplySequentialLayerDeltaTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
@@ -21,11 +21,12 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import java.io.File
 
 /**
- * Trains a model.
+ * Trains a Sequential model.
  *
  * @param userModelPath The path to the model file.
  * @param userDataset The dataset to train on.
@@ -36,7 +37,7 @@ import java.io.File
  * @param userNewLayers The new layers (in the case of transfer learning).
  * @param generateDebugComments Whether to put debug comments in the output.
  */
-class Training(
+class TrainSequential(
     private val userModelPath: String,
     private val userDataset: Dataset,
     private val userOptimizer: Optimizer,
@@ -49,7 +50,7 @@ class Training(
 
     @Suppress("UNUSED_VARIABLE")
     fun generateScript(): ValidatedNel<String, String> {
-        return LoadLayersFromHDF5().load(File(userModelPath)).map { currentModel ->
+        return LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(userModelPath)).map { currentModel ->
             require(currentModel is Model.Sequential)
 
             require(currentModel.batchInputShape.count { it == null } <= 1)
@@ -95,7 +96,7 @@ class Training(
                 }
 
                 val newModel by variables.creating(Variable::class)
-                val applyLayerDeltaTask by tasks.running(ApplyLayerDeltaTask::class) {
+                val applyLayerDeltaTask by tasks.running(ApplySequentialLayerDeltaTask::class) {
                     modelInput = model
                     currentLayers = currentModel.layers
                     newLayers = userNewLayers

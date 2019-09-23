@@ -1,6 +1,11 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package edu.wpi.axon.tflayerloader
 
+import arrow.core.None
+import arrow.core.Option
 import arrow.core.Tuple2
+import arrow.core.some
 import arrow.effects.IO
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
@@ -15,7 +20,9 @@ import java.io.File
 /**
  * Loads TensorFlow layers from an HDF5 file.
  */
-class LoadLayersFromHDF5 {
+class LoadLayersFromHDF5(
+    private val layersToGraph: LayersToGraph
+) {
 
     /**
      * Load layers from the [file].
@@ -31,38 +38,70 @@ class LoadLayersFromHDF5 {
         }
     }
 
-    private fun parseModel(json: JsonObject): Model {
+    private fun parseModel(json: JsonObject): Model =
+        when (val className = json["class_name"] as String) {
+            "Sequential" -> parseSequentialModel(json)
+            "Model" -> parseGeneralModel(json)
+            else -> throw IllegalStateException("Unknown model class $className")
+        }
+
+    private fun parseSequentialModel(json: JsonObject): Model.Sequential {
         val config = json["config"] as JsonObject
-        val name = config["name"] as String
 
         var batchInputShape: List<Int?> by singleAssign()
 
-        @Suppress("UNCHECKED_CAST")
-        val layers = (config["layers"] as JsonArray<JsonObject>).map {
-            val className = it["class_name"] as String
-            val layerData = it["config"] as JsonObject
+        val layers = (config["layers"] as JsonArray<JsonObject>).mapTo(mutableSetOf()) {
+            val layer = parseLayer(it["class_name"] as String, it)
 
-            (layerData["batch_input_shape"] as JsonArray<Int?>?)?.let {
-                batchInputShape = it
+            ((it["config"] as JsonObject)["batch_input_shape"] as JsonArray<Int?>?)?.let {
+                batchInputShape = it.toList()
             }
 
-            val layer = parseLayer(className, layerData)
-            parseMetaLayer(layer, layerData)
+            parseMetaLayer(layer, it["config"] as JsonObject)
         }
 
-        return when (json["class_name"] as String) {
-            "Sequential" -> Model.Sequential(
-                name,
-                batchInputShape,
-                layers.toSet()
-            )
+        return Model.Sequential(
+            config["name"] as String,
+            batchInputShape,
+            layers.toSet()
+        )
+    }
 
-            else -> Model.Unknown(
-                name,
-                batchInputShape,
-                layers.toSet()
-            )
+    private fun parseGeneralModel(json: JsonObject): Model.General {
+        val config = json["config"] as JsonObject
+
+        val inputLayerIds = (config["input_layers"] as JsonArray<JsonArray<Any>>)
+            .mapTo(mutableSetOf()) {
+                it.first() as String
+            }
+
+        val outputLayerIds = (config["output_layers"] as JsonArray<JsonArray<Any>>)
+            .mapTo(mutableSetOf()) {
+                it.first() as String
+            }
+
+        val layers = (config["layers"] as JsonArray<JsonObject>).mapTo(mutableSetOf()) {
+            val layer = parseLayer(it["class_name"] as String, it)
+            parseMetaLayer(layer, it["config"] as JsonObject)
         }
+
+        return Model.General(
+            name = config["name"] as String,
+            input = inputLayerIds.mapTo(mutableSetOf()) { inputId ->
+                Model.General.InputData(
+                    inputId,
+                    (layers.first {
+                        it.name == inputId &&
+                            it is SealedLayer.MetaLayer.UntrainableLayer &&
+                            it.layer is SealedLayer.InputLayer
+                    }.layer as SealedLayer.InputLayer).batchInputShape
+                )
+            },
+            layers = layersToGraph.convertToGraph(layers.filterTo(mutableSetOf()) {
+                it.layer !is SealedLayer.InputLayer
+            }).fold({ TODO() }, { it }),
+            output = outputLayerIds.mapTo(mutableSetOf()) { Model.General.OutputData(it) }
+        )
     }
 
     private fun parseMetaLayer(layer: SealedLayer, json: JsonObject): SealedLayer.MetaLayer {
@@ -81,28 +120,34 @@ class LoadLayersFromHDF5 {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun parseLayer(className: String, json: JsonObject): SealedLayer = when (className) {
-        "Dense" -> SealedLayer.Dense(
-            json["name"] as String,
-            json["units"] as Int,
-            parseActivation(json)
-        )
+    private fun parseLayer(className: String, data: JsonObject): SealedLayer {
+        val json = data["config"] as JsonObject
+        return when (className) {
+            "Dense" -> SealedLayer.Dense(
+                json["name"] as String,
+                data.inboundNodes(),
+                json["units"] as Int,
+                parseActivation(json)
+            )
 
-        "Conv2D" -> SealedLayer.Conv2D(
-            json["name"] as String,
-            json["filters"] as Int,
-            (json["kernel_size"] as JsonArray<Int>).let { Tuple2(it[0], it[1]) },
-            parseActivation(json)
-        )
+            "Conv2D" -> SealedLayer.Conv2D(
+                json["name"] as String,
+                data.inboundNodes(),
+                json["filters"] as Int,
+                (json["kernel_size"] as JsonArray<Int>).let { Tuple2(it[0], it[1]) },
+                parseActivation(json)
+            )
 
-        "InputLayer" -> SealedLayer.InputLayer(
-            json["name"] as String,
-            (json["batch_input_shape"] as JsonArray<Int?>).toList()
-        )
+            "InputLayer" -> SealedLayer.InputLayer(
+                json["name"] as String,
+                (json["batch_input_shape"] as JsonArray<Int?>).toList()
+            )
 
-        else -> SealedLayer.UnknownLayer(
-            json["name"] as String
-        )
+            else -> SealedLayer.UnknownLayer(
+                json["name"] as String,
+                data.inboundNodes()
+            )
+        }
     }
 
     private fun parseActivation(json: JsonObject): Activation =
@@ -111,4 +156,14 @@ class LoadLayersFromHDF5 {
             "softmax" -> Activation.SoftMax
             else -> Activation.UnknownActivation(name)
         }
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun JsonObject.inboundNodes(): Option<Set<String>> {
+    val inboundNodes = this["inbound_nodes"] ?: return None
+    inboundNodes as JsonArray<JsonArray<JsonArray<Any>>>
+    require(inboundNodes.size == 1)
+    return inboundNodes[0].mapTo(mutableSetOf()) {
+        it[0] as String
+    }.some()
 }
