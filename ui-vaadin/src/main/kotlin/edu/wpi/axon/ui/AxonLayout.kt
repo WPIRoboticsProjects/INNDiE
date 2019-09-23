@@ -11,6 +11,8 @@ import com.vaadin.flow.component.applayout.AppLayout
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.page.BodySize
 import com.vaadin.flow.component.page.Viewport
+import edu.wpi.axon.ui.view.AboutView
+import edu.wpi.axon.ui.view.TrainingView
 
 /**
  * The main layout of the application
