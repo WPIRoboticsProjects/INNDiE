@@ -69,7 +69,6 @@ class TrainingView : KComposite() {
 
                         bind(binder)
                                 .asRequired()
-                                .withNullRepresentation(-1.0)
                                 .toInt()
                                 .bind(TrainingModel::userEpochs)
                     }
@@ -85,7 +84,7 @@ class TrainingView : KComposite() {
                             infoLabel.text = "Saved bean values: $e"
                         } else {
                             val validate = binder.validate()
-                            infoLabel.text = "There are errors: ${validate.validationErrors}";
+                            infoLabel.text = "There are errors: ${validate.validationErrors}"
                         }
                     }
                 }
