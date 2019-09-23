@@ -10,6 +10,7 @@ import com.github.mvysny.karibudsl.v10.formLayout
 import com.github.mvysny.karibudsl.v10.label
 import com.github.mvysny.karibudsl.v10.numberField
 import com.github.mvysny.karibudsl.v10.onLeftClick
+import com.github.mvysny.karibudsl.v10.toInt
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.data.binder.BeanValidationBinder
 import com.vaadin.flow.router.Route
@@ -37,7 +38,7 @@ class TrainingView : KComposite() {
                         setItemLabelGenerator {
                             it.simpleName
                         }
-                        isRequired = true
+
                         bind(binder).bind(TrainingModel::userDataset)
                     }
                 }
@@ -47,7 +48,8 @@ class TrainingView : KComposite() {
                         setItemLabelGenerator {
                             it.simpleName
                         }
-                        isRequired = true
+
+                        bind(binder).bind(TrainingModel::userOptimizer)
                     }
                 }
                 formItem {
@@ -56,14 +58,20 @@ class TrainingView : KComposite() {
                         setItemLabelGenerator {
                             it.simpleName
                         }
-                        isRequired = true
+
+                        bind(binder).bind(TrainingModel::userLoss)
                     }
                 }
                 formItem {
                     numberField("Epochs") {
+                        setHasControls(true)
                         isPreventInvalidInput = true
 
-                        bind(binder).bind(TrainingModel::userEpochs)
+                        bind(binder)
+                                .asRequired()
+                                .withNullRepresentation(-1.0)
+                                .toInt()
+                                .bind(TrainingModel::userEpochs)
                     }
                 }
                 formItem {

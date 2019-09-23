@@ -8,15 +8,24 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import kotlin.reflect.KClass
 
-data class TrainingModel (
-        var userModelPath: String? = "",
+open class TrainingModel {
+        var userModelPath: String? = ""
+
         @NotNull
-        var userDataset: KClass<out Dataset>? = null,
-        var userOptimizer: KClass<out Optimizer>? = null,
-        var userLoss: KClass<out Loss>? = null,
-        var userMetrics: Set<String> = setOf(),
+        var userDataset: KClass<out Dataset>? = null
+
+        @NotNull
+        var userOptimizer: KClass<out Optimizer>? = null
+
+        @NotNull
+        var userLoss: KClass<out Loss>? = null
+
+        var userMetrics: Set<String> = setOf()
+
         @Min(5)
-        var userEpochs: Double = 0.0,
-        var userNewLayers: Set<SealedLayer.MetaLayer> = setOf(),
+        var userEpochs: Int = 0
+
+        var userNewLayers: Set<SealedLayer.MetaLayer> = setOf()
+
         var generateDebugComments: Boolean = false
-)
+}
