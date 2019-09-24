@@ -56,29 +56,15 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
     }
 
     override fun code(): String {
-        val layerOperations = createLayerOperations(currentLayers)
+        val layerOperations = createLayerOperations(
+            currentLayers,
+            newLayers
+        )
 
         return """
         |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})
         |${buildTrainableFlags(layerOperations)}
         """.trimMargin()
-    }
-
-    private fun createLayerOperations(currentLayers: Set<SealedLayer.MetaLayer>): List<LayerOperation> {
-        // The base layers inside the Trainable or Untrainable layer wrappers
-        val innerCurrentLayers = currentLayers.map { it.layer }
-
-        return newLayers.map {
-            // Compare using the inner layer so the trainable status does not matter
-            if (it.layer in innerCurrentLayers) {
-                // Copy layers that are already in the base model to preserve as much
-                // configuration information as possible
-                LayerOperation.CopyLayer(it)
-            } else {
-                // We are forced to make new layers if they aren't in the base model
-                LayerOperation.MakeNewLayer(it)
-            }
-        }
     }
 
     @Suppress("SameParameterValue")
@@ -114,4 +100,24 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
 
     private fun getLayerInModel(modelName: String, layerName: String) =
         """$modelName.get_layer("$layerName")"""
+}
+
+internal fun createLayerOperations(
+    currentLayers: Set<SealedLayer.MetaLayer>,
+    newLayers: Set<SealedLayer.MetaLayer>
+): List<LayerOperation> {
+    // The base layers inside the Trainable or Untrainable layer wrappers
+    val innerCurrentLayers = currentLayers.map { it.layer }
+
+    return newLayers.map {
+        // Compare using the inner layer so the trainable status does not matter
+        if (it.layer in innerCurrentLayers) {
+            // Copy layers that are already in the base model to preserve as much
+            // configuration information as possible
+            LayerOperation.CopyLayer(it)
+        } else {
+            // We are forced to make new layers if they aren't in the base model
+            LayerOperation.MakeNewLayer(it)
+        }
+    }
 }

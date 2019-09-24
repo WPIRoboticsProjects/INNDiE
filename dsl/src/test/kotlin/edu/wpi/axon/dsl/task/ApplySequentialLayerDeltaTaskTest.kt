@@ -7,7 +7,7 @@ import arrow.core.Some
 import arrow.core.right
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
-import edu.wpi.axon.dsl.defaultUniqueVariableNameGenerator
+import edu.wpi.axon.dsl.mockVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.Activation
@@ -111,7 +111,7 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
         startKoin {
             modules(module {
-                defaultUniqueVariableNameGenerator()
+                mockVariableNameGenerator()
                 single<LayerToCode> {
                     mockk {
                         every { makeNewLayer(layer1) } returns "layer1".right()
@@ -140,7 +140,7 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
         startKoin {
             modules(module {
-                defaultUniqueVariableNameGenerator()
+                mockVariableNameGenerator()
                 single<LayerToCode> {
                     mockk {
                         every { makeNewLayer(layer1) } returns "layer1".right()
@@ -175,7 +175,7 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
         startKoin {
             modules(module {
-                defaultUniqueVariableNameGenerator()
+                mockVariableNameGenerator()
                 single<LayerToCode> {
                     mockk {
                         every { makeNewLayer(layer2New) } returns "layer2New".right()

@@ -1,7 +1,6 @@
 package edu.wpi.axon.dsl.task
 
 import arrow.data.Valid
-import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.ImportValidator
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -12,8 +11,6 @@ import org.koin.core.inject
 abstract class BaseTask(override val name: String) : Task, KoinComponent {
 
     private val importValidator: ImportValidator by inject()
-
-    protected val uniqueVariableNameGenerator: UniqueVariableNameGenerator by inject()
 
     override fun isConfiguredCorrectly() = importValidator.validateImports(imports) is Valid &&
         inputs.all { it.isConfiguredCorrectly() } && outputs.all { it.isConfiguredCorrectly() }
