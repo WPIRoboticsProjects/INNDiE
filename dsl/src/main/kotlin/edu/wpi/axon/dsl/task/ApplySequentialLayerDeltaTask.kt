@@ -11,11 +11,6 @@ import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
-private sealed class LayerOperation(open val layer: SealedLayer.MetaLayer) {
-    data class CopyLayer(override val layer: SealedLayer.MetaLayer) : LayerOperation(layer)
-    data class MakeNewLayer(override val layer: SealedLayer.MetaLayer) : LayerOperation(layer)
-}
-
 /**
  * Adds and removes layers on a new model using a starting Sequential model.
  */
