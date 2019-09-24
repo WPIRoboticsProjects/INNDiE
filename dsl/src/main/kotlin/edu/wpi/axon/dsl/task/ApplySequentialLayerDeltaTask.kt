@@ -5,7 +5,6 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.boolToPythonString
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
@@ -88,40 +87,3 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
         }
     }
 }
-
-internal fun createLayerOperations(
-    currentLayers: Set<SealedLayer.MetaLayer>,
-    newLayers: Set<SealedLayer.MetaLayer>
-): List<LayerOperation> {
-    // The base layers inside the Trainable or Untrainable layer wrappers
-    val innerCurrentLayers = currentLayers.map { it.layer }
-
-    return newLayers.map {
-        // Compare using the inner layer so the trainable status does not matter
-        if (it.layer in innerCurrentLayers) {
-            // Copy layers that are already in the base model to preserve as much
-            // configuration information as possible
-            LayerOperation.CopyLayer(it)
-        } else {
-            // We are forced to make new layers if they aren't in the base model
-            LayerOperation.MakeNewLayer(it)
-        }
-    }
-}
-
-internal fun buildTrainableFlags(
-    layerOperations: List<LayerOperation>,
-    model: Variable
-) = layerOperations.mapNotNull {
-    when (val layer = it.layer) {
-        is SealedLayer.MetaLayer.TrainableLayer -> {
-            val layerInModel = getLayerInModel(model, it.layer.name)
-            """$layerInModel.trainable = ${boolToPythonString(layer.trainable)}"""
-        }
-
-        is SealedLayer.MetaLayer.UntrainableLayer -> null
-    }
-}.joinToString("\n")
-
-internal fun getLayerInModel(model: Variable, layerName: String) =
-    """${model.name}.get_layer("$layerName")"""
