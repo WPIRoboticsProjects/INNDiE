@@ -3,7 +3,9 @@
 package edu.wpi.axon.dsl.task
 
 import arrow.core.None
+import arrow.core.Some
 import arrow.core.right
+import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultUniqueVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
@@ -11,6 +13,8 @@ import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
+import io.kotlintest.matchers.boolean.shouldBeFalse
+import io.kotlintest.matchers.boolean.shouldBeTrue
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -234,5 +238,59 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
             |new_model = tf.keras.Sequential([base_model.get_layer("dense_1")])
             |new_model.get_layer("dense_1").trainable = True
         """.trimMargin()
+    }
+
+    @Test
+    fun `a current layer with inputs fails`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
+        val task = ApplySequentialLayerDeltaTask("").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = setOf(SealedLayer.UnknownLayer("", Some(setOf())).trainable())
+            newLayers = setOf(SealedLayer.UnknownLayer("", None).trainable())
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.isConfiguredCorrectly().shouldBeFalse()
+    }
+
+    @Test
+    fun `a new layer with inputs fails`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
+        val task = ApplySequentialLayerDeltaTask("").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = setOf(SealedLayer.UnknownLayer("", None).trainable())
+            newLayers = setOf(SealedLayer.UnknownLayer("", Some(setOf())).trainable())
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.isConfiguredCorrectly().shouldBeFalse()
+    }
+
+    @Test
+    fun `current and new layers without any inputs are fine`() {
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+            })
+        }
+
+        val task = ApplySequentialLayerDeltaTask("").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = setOf(SealedLayer.UnknownLayer("", None).trainable())
+            newLayers = setOf(SealedLayer.UnknownLayer("", None).trainable())
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.isConfiguredCorrectly().shouldBeTrue()
     }
 }
