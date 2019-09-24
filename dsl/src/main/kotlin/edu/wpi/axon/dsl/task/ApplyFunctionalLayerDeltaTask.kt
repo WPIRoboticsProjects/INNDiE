@@ -145,15 +145,19 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         val variableNames = layerInputs.map { inputName ->
             // Corresponding layer
             entries.filter { it.key.layer.name == inputName }
-                .map { it.value }
-                .also { require(it.size == 1) }
+                .also {
+                    require(it.size == 1) {
+                        "Expected one matching variable name, got ${it.joinToString()}"
+                    }
+                }
                 .first()
+                .value
         }
 
         return if (variableNames.size > 1) {
             variableNames.joinToString(prefix = "[", postfix = "]")
         } else {
-            variableNames.firstOrNull() ?: ""
+            variableNames.first()
         }
     }
 

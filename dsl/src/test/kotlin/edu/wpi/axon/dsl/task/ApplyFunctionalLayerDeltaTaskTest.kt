@@ -2,6 +2,7 @@ package edu.wpi.axon.dsl.task
 
 import arrow.core.None
 import arrow.core.Some
+import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
@@ -14,6 +15,7 @@ import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.matchers.boolean.shouldBeFalse
 import io.kotlintest.matchers.boolean.shouldBeTrue
 import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
@@ -211,5 +213,72 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         verifyAll { mockLayerToCode.makeNewLayer(layer3) }
         confirmVerified(mockLayerToCode)
+    }
+
+    @Test
+    fun `add an invalid layer`() {
+        val layer1 = SealedLayer.InputLayer("l1", listOf())
+        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name)))
+
+        val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(layer2) } returns "".left()
+        }
+
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+                mockVariableNameGenerator()
+                single { mockLayerToCode }
+            })
+        }
+
+        val task = ApplyFunctionalLayerDeltaTask("").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = setOf(layer1)
+            newLayers = setOf(layer1, layer2.trainable())
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.isConfiguredCorrectly().shouldBeTrue()
+        shouldThrow<IllegalStateException> { task.code() }
+
+        verifyAll { mockLayerToCode.makeNewLayer(layer2) }
+        confirmVerified(mockLayerToCode)
+    }
+
+    @Test
+    fun `copy a layer with two inputs`() {
+        val layer1 = SealedLayer.InputLayer("l1", listOf())
+        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name)))
+        val layer3 = SealedLayer.Dense(
+            "l3",
+            Some(setOf(layer1.name, layer2.name)),
+            10,
+            Activation.SoftMax
+        )
+
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+                mockVariableNameGenerator()
+            })
+        }
+
+        val task = ApplyFunctionalLayerDeltaTask("").apply {
+            modelInput = configuredCorrectly("base_model")
+            currentLayers = setOf(layer1, layer2.trainable(), layer3.trainable())
+            newLayers = setOf(layer1, layer2.trainable(), layer3.trainable())
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.isConfiguredCorrectly().shouldBeTrue()
+        task.code() shouldBe """
+            |var1 = base_model.input
+            |var2 = base_model.get_layer("l2")(var1)
+            |var3 = base_model.get_layer("l3")([var1, var2])
+            |new_model = tf.keras.Model(inputs=var1, outputs=var3)
+            |new_model.get_layer("l2").trainable = True
+            |new_model.get_layer("l3").trainable = True
+        """.trimMargin()
     }
 }
