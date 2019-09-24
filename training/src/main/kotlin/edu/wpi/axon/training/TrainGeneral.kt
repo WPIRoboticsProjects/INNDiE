@@ -8,13 +8,12 @@ import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.running
-import edu.wpi.axon.dsl.task.ApplySequentialLayerDeltaTask
+import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
-import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
@@ -38,7 +37,7 @@ import java.io.File
  * @param userNewLayers The new layers (in the case of transfer learning).
  * @param generateDebugComments Whether to put debug comments in the output.
  */
-class TrainSequential(
+class TrainGeneral(
     private val userModelPath: String,
     private val userDataset: Dataset,
     private val userOptimizer: Optimizer,
@@ -54,10 +53,7 @@ class TrainSequential(
     @Suppress("UNUSED_VARIABLE")
     fun generateScript(): Validated<NonEmptyList<String>, String> =
         loadLayersFromHDF5.load(File(userModelPath)).map { currentModel ->
-            require(currentModel is Model.Sequential)
-
-            require(currentModel.batchInputShape.count { it == null } <= 1)
-            val reshapeArgsFromBatchShape = currentModel.batchInputShape.map { it ?: -1 }
+            require(currentModel is Model.General)
 
             val script = ScriptGenerator(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
@@ -75,22 +71,7 @@ class TrainSequential(
                     yTestOutput = yTest
                 }
 
-                // TODO: How does the user configure this preprocessing?
-                val scaledXTrain by variables.creating(Variable::class)
-                val reshapeAndScaleXTrainTask by tasks.running(ReshapeAndScaleTask::class) {
-                    input = xTrain
-                    output = scaledXTrain
-                    reshapeArgs = reshapeArgsFromBatchShape
-                    scale = 255
-                }
-
-                val scaledXTest by variables.creating(Variable::class)
-                val reshapeAndScaleXTestTask by tasks.running(ReshapeAndScaleTask::class) {
-                    input = xTest
-                    output = scaledXTest
-                    reshapeArgs = reshapeArgsFromBatchShape
-                    scale = 255
-                }
+                // TODO: How does the user configure data preprocessing?
 
                 val model by variables.creating(Variable::class)
                 val loadModelTask by tasks.running(LoadModelTask::class) {
@@ -99,9 +80,9 @@ class TrainSequential(
                 }
 
                 val newModel by variables.creating(Variable::class)
-                val applyLayerDeltaTask by tasks.running(ApplySequentialLayerDeltaTask::class) {
+                val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
                     modelInput = model
-                    currentLayers = currentModel.layers
+                    currentLayers = currentModel.layers.nodes() // TODO: Accept the graph directly
                     newLayers = userNewLayers
                     newModelOutput = newModel
                 }
@@ -131,9 +112,9 @@ class TrainSequential(
 
                 val trainModelTask by tasks.running(TrainTask::class) {
                     modelInput = newModel
-                    trainInputData = scaledXTrain
+                    trainInputData = xTrain
                     trainOutputData = yTrain
-                    validationInputData = scaledXTest
+                    validationInputData = xTest
                     validationOutputData = yTest
                     callbacks = setOf(checkpointCallback, earlyStoppingCallback)
                     epochs = userEpochs

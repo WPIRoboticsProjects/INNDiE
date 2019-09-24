@@ -97,9 +97,7 @@ class LoadLayersFromHDF5(
                     }.layer as SealedLayer.InputLayer).batchInputShape
                 )
             },
-            layers = layersToGraph.convertToGraph(layers.filterTo(mutableSetOf()) {
-                it.layer !is SealedLayer.InputLayer
-            }).fold({ TODO() }, { it }),
+            layers = layersToGraph.convertToGraph(layers).fold({ TODO() }, { it }),
             output = outputLayerIds.mapTo(mutableSetOf()) { Model.General.OutputData(it) }
         )
     }
