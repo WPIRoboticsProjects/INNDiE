@@ -143,6 +143,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
             |var1 = base_model.input
             |var2 = base_model.get_layer("l2")(var1)
             |new_model = tf.keras.Model(inputs=var1, outputs=var2)
+            |new_model.get_layer("l2").trainable = True
         """.trimMargin()
     }
 
@@ -171,6 +172,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
             |var1 = base_model.input
             |var2 = base_model.get_layer("l2")(var1)
             |new_model = tf.keras.Model(inputs=var1, outputs=var2)
+            |new_model.get_layer("l2").trainable = True
         """.trimMargin()
     }
 
@@ -204,6 +206,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
             |var1 = base_model.input
             |var2 = layer3(var1)
             |new_model = tf.keras.Model(inputs=var1, outputs=var2)
+            |new_model.get_layer("l3").trainable = True
         """.trimMargin()
 
         verifyAll { mockLayerToCode.makeNewLayer(layer3) }

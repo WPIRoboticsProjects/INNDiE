@@ -63,7 +63,7 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
 
         return """
         |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})
-        |${buildTrainableFlags(layerOperations)}
+        |${buildTrainableFlags(layerOperations, newModelOutput)}
         """.trimMargin()
     }
 
@@ -79,7 +79,7 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
             postfix = postfix
         ) {
             when (it) {
-                is LayerOperation.CopyLayer -> getLayerInModel(modelInput.name, it.layer.name)
+                is LayerOperation.CopyLayer -> getLayerInModel(modelInput, it.layer.name)
                 is LayerOperation.MakeNewLayer -> layerToCode.makeNewLayer(it.layer).fold(
                     { throw IllegalStateException("Tried to make a new layer but got $it") },
                     { it }
@@ -87,19 +87,6 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
             }
         }
     }
-
-    private fun buildTrainableFlags(layerOperations: List<LayerOperation>): String =
-        layerOperations.joinToString(separator = "\n") {
-            val layerInModel = getLayerInModel(newModelOutput.name, it.layer.name)
-            when (val layer = it.layer) {
-                is SealedLayer.MetaLayer.TrainableLayer ->
-                    """$layerInModel.trainable = ${boolToPythonString(layer.trainable)}"""
-                is SealedLayer.MetaLayer.UntrainableLayer -> ""
-            }
-        }
-
-    private fun getLayerInModel(modelName: String, layerName: String) =
-        """$modelName.get_layer("$layerName")"""
 }
 
 internal fun createLayerOperations(
@@ -121,3 +108,20 @@ internal fun createLayerOperations(
         }
     }
 }
+
+internal fun buildTrainableFlags(
+    layerOperations: List<LayerOperation>,
+    model: Variable
+) = layerOperations.mapNotNull {
+    when (val layer = it.layer) {
+        is SealedLayer.MetaLayer.TrainableLayer -> {
+            val layerInModel = getLayerInModel(model, it.layer.name)
+            """$layerInModel.trainable = ${boolToPythonString(layer.trainable)}"""
+        }
+
+        is SealedLayer.MetaLayer.UntrainableLayer -> null
+    }
+}.joinToString("\n")
+
+internal fun getLayerInModel(model: Variable, layerName: String) =
+    """${model.name}.get_layer("$layerName")"""

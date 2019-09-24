@@ -107,7 +107,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
 
                 else -> {
                     val newLayerCode = when (layerOp) {
-                        is LayerOperation.CopyLayer -> getLayerInModel(modelInput.name, layer.name)
+                        is LayerOperation.CopyLayer -> getLayerInModel(modelInput, layer.name)
                         is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
                     }
 
@@ -122,7 +122,9 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         val modelCode = "${newModelOutput.name} = tf.keras.Model(inputs=" +
             "${layerVariableNames.values.first()}, outputs=${layerVariableNames.values.last()})"
 
-        return "$layerCode\n$modelCode"
+        val trainableFlagsCode = buildTrainableFlags(layerOperations, newModelOutput)
+
+        return layerCode + "\n" + modelCode + "\n" + trainableFlagsCode
     }
 
     /**
@@ -166,7 +168,4 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
             { throw IllegalStateException("Tried to make a new layer but got $it") },
             { it }
         )
-
-    private fun getLayerInModel(modelName: String, layerName: String) =
-        """$modelName.get_layer("$layerName")"""
 }
