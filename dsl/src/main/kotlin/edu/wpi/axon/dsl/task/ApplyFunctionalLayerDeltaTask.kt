@@ -104,31 +104,8 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
             it to variableNameGenerator.uniqueVariableName()
         }.toMap()
 
-        val layerCode = layerVariableNames.map { (layerOp, name) ->
-            "$name = " + when (val layer = layerOp.layer.layer) {
-                is SealedLayer.InputLayer -> when (layerOp) {
-                    // Copying an input layer needs this special syntax (because we need the Tensor
-                    // and not the layer itself).
-                    is LayerOperation.CopyLayer -> "${modelInput.name}.inputs[${findInputIndex(
-                        newLayers,
-                        layer
-                    )}]"
-
-                    is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
-                }
-
-                else -> {
-                    val newLayerCode = when (layerOp) {
-                        is LayerOperation.CopyLayer -> getLayerInModel(modelInput, layer.name)
-                        is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
-                    }
-
-                    val layerInputs = (layer.inputs as Some).t
-                    val layerInputCode = makeLayerInputCode(layerInputs, layerVariableNames)
-
-                    "$newLayerCode($layerInputCode)"
-                }
-            }
+        val layerCode = layerVariableNames.map { (layerOp, variableName) ->
+            "$variableName = " + makeLayerCode(layerOp, layerVariableNames)
         }.joinToString("\n")
 
         val modelCode = "${newModelOutput.name} = tf.keras.Model(inputs=" +
@@ -139,13 +116,43 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         return layerCode + "\n" + modelCode + "\n" + trainableFlagsCode
     }
 
+    /**
+     * Generates the code to either copy or make a new layer and compute the forward pass.
+     *
+     * @param layerOp The layer operation to perform.
+     * @param layerVariableNames The variable names for all the layer operations.
+     * @return Code for this [layerOp].
+     */
+    private fun makeLayerCode(
+        layerOp: LayerOperation,
+        layerVariableNames: Map<LayerOperation, String>
+    ) = when (val layer = layerOp.layer.layer) {
+        is SealedLayer.InputLayer -> when (layerOp) {
+            // Copying an input layer needs this special syntax (because we need the Tensor
+            // and not the layer itself).
+            is LayerOperation.CopyLayer ->
+                "${modelInput.name}.inputs[${findInputIndex(newLayers, layer)}]"
+
+            is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
+        }
+
+        else -> {
+            val newLayerCode = when (layerOp) {
+                is LayerOperation.CopyLayer -> getLayerInModel(modelInput, layer.name)
+                is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
+            }
+
+            val layerInputs = (layer.inputs as Some).t
+            val layerInputCode = makeLayerInputCode(layerInputs, layerVariableNames)
+
+            "$newLayerCode($layerInputCode)"
+        }
+    }
+
     private fun findInputIndex(
         newLayers: Set<SealedLayer.MetaLayer>,
         layer: SealedLayer.InputLayer
-    ): Int {
-        val layers = newLayers.map { it.layer }
-        return layers.indexOf(layer)
-    }
+    ) = newLayers.map { it.layer }.indexOf(layer)
 
     /**
      * Generates the code for the inputs to a layer (the code that the layer is "called" with

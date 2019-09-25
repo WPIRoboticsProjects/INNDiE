@@ -12,6 +12,8 @@ class DefaultLayerToCode : LayerToCode {
     override fun makeNewLayer(layer: Layer): Either<String, String> = when (layer) {
         is SealedLayer.MetaLayer -> makeNewLayer(layer.layer)
 
+        // TODO: Implement for InputLayer using tf.keras.Input
+
         is SealedLayer.Dense -> ("""tf.keras.layers.Dense(name="${layer.name}", """ +
             "units=${layer.units}, " +
             "activation=${makeNewActivation(layer.activation)})").right()
