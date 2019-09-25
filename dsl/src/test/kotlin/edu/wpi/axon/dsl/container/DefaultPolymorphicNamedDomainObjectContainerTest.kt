@@ -4,7 +4,7 @@ import edu.wpi.axon.dsl.MockVariable
 import edu.wpi.axon.dsl.mockVariableNameValidator
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
-import io.kotlintest.matchers.boolean.shouldBeTrue
+import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.matchers.maps.shouldContainKey
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

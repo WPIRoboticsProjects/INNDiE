@@ -5,7 +5,7 @@ package edu.wpi.axon.tflayerloader
 import arrow.core.Either
 import arrow.core.None
 import arrow.core.Some
-import arrow.core.extensions.either.monad.binding
+import arrow.core.extensions.fx
 import com.google.common.graph.GraphBuilder
 import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.tfdata.layer.SealedLayer
@@ -21,7 +21,7 @@ class DefaultLayersToGraph : LayersToGraph {
             .expectedNodeCount(layers.size)
             .build<SealedLayer.MetaLayer>()
 
-        return binding {
+        return Either.fx {
             layers.forEach { layer ->
                 graph.addNode(layer)
             }

@@ -1,8 +1,8 @@
 package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.variable.Variable
-import io.kotlintest.matchers.boolean.shouldBeFalse
-import io.kotlintest.matchers.boolean.shouldBeTrue
+import io.kotlintest.matchers.booleans.shouldBeFalse
+import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.MockKException

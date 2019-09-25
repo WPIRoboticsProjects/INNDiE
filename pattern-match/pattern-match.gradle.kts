@@ -5,7 +5,6 @@ fun DependencyHandler.arrow(name: String) =
 
 dependencies {
     api(arrow("arrow-core-data"))
-    api(arrow("arrow-extras-data"))
 
     testImplementation(project(":test-util"))
 }

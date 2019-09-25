@@ -4,12 +4,12 @@ import arrow.Kind2
 import arrow.core.Either
 import arrow.core.ForEither
 import arrow.core.Left
+import arrow.core.ListK
 import arrow.core.Right
-import arrow.core.extensions.either.monad.binding
-import arrow.data.ListK
-import arrow.data.extensions.listk.applicative.applicative
-import arrow.data.fix
-import arrow.data.k
+import arrow.core.extensions.fx
+import arrow.core.extensions.listk.applicative.applicative
+import arrow.core.fix
+import arrow.core.k
 import com.google.common.graph.GraphBuilder
 import com.google.common.graph.ImmutableGraph
 import com.google.common.graph.MutableGraph
@@ -44,7 +44,7 @@ class CodeGraph(
             .expectedNodeCount(container.size)
             .build<AnyCode>()
 
-        binding<String, ImmutableGraph<AnyCode>> {
+        Either.fx<String, ImmutableGraph<AnyCode>> {
             container.forEach { (_, code) ->
                 populateGraphUsingDependencies(mutableGraph, code).bind()
             }
