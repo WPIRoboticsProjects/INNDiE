@@ -56,6 +56,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
 
     override fun isConfiguredCorrectly(): Boolean {
         return super.isConfiguredCorrectly() &&
+            layerNamesAreUnique(currentLayers) && layerNamesAreUnique(newLayers) &&
             // All layers must have inputs
             currentLayers.all { hasInputs(it) } && newLayers.all { hasInputs(it) } &&
             // The first layer in each set must be an InputLayer
@@ -70,6 +71,13 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                 acc && elem.inputs.fold({ emptySet<String>() }, { it }) allIn prevNames
             }
     }
+
+    /**
+     * @param layers The layers to check.
+     * @return Whether all the layers' names are unique.
+     */
+    private fun layerNamesAreUnique(layers: Set<SealedLayer.MetaLayer>) =
+        layers.mapTo(mutableSetOf()) { it.name }.size == layers.size
 
     /**
      * A layer must have inputs (unless it's a [SealedLayer.InputLayer], which can't have inputs).
@@ -101,7 +109,11 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                 is SealedLayer.InputLayer -> when (layerOp) {
                     // Copying an input layer needs this special syntax (because we need the Tensor
                     // and not the layer itself).
-                    is LayerOperation.CopyLayer -> "${modelInput.name}.input"
+                    is LayerOperation.CopyLayer -> "${modelInput.name}.inputs[${findInputIndex(
+                        newLayers,
+                        layer
+                    )}]"
+
                     is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
                 }
 
@@ -127,6 +139,14 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         return layerCode + "\n" + modelCode + "\n" + trainableFlagsCode
     }
 
+    private fun findInputIndex(
+        newLayers: Set<SealedLayer.MetaLayer>,
+        layer: SealedLayer.InputLayer
+    ): Int {
+        val layers = newLayers.map { it.layer }
+        return layers.indexOf(layer)
+    }
+
     /**
      * Generates the code for the inputs to a layer (the code that the layer is "called" with
      * to make connections between layers).
@@ -143,11 +163,11 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
 
         // Find the variable names corresponding to the layer names
         val variableNames = layerInputs.map { inputName ->
-            // Corresponding layer
             entries.filter { it.key.layer.name == inputName }
                 .also {
                     require(it.size == 1) {
-                        "Expected one matching variable name, got ${it.joinToString()}"
+                        "Expected one matching variable name, got `${it.joinToString()}`. " +
+                            "Check that the layer names are all unique."
                     }
                 }
                 .first()
@@ -157,6 +177,10 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         return if (variableNames.size > 1) {
             variableNames.joinToString(prefix = "[", postfix = "]")
         } else {
+            require(variableNames.isNotEmpty()) {
+                "No variable names were found."
+            }
+
             variableNames.first()
         }
     }

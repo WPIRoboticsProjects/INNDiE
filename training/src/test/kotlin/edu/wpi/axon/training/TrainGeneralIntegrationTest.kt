@@ -16,6 +16,7 @@ import org.koin.core.context.startKoin
 import java.io.File
 
 internal class TrainGeneralIntegrationTest {
+
     @Test
     fun `test with custom model with an add`() {
         startKoin {
