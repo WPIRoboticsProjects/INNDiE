@@ -59,8 +59,8 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
             layerNamesAreUnique(currentLayers) && layerNamesAreUnique(newLayers) &&
             // All layers must have inputs
             currentLayers.all { hasInputs(it) } && newLayers.all { hasInputs(it) } &&
-            // The first layer in each set must be an InputLayer
-            firstLayerIsInputLayer(currentLayers) && firstLayerIsInputLayer(newLayers) &&
+            // The first layers in each set must be a InputLayers
+            allInputLayersAreFirst(currentLayers.toList()) && allInputLayersAreFirst(newLayers.toList()) &&
             newLayers.fold(true) { acc, elem ->
                 // Get the part of the list until the current element
                 val prevList = newLayers.takeWhile { it != elem }
@@ -90,10 +90,21 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
 
     /**
      * @param layers The set of layers.
-     * @return Whether the first layer in the set is a [SealedLayer.InputLayer].
+     * @return Whether the first layers in the set are [SealedLayer.InputLayer].
      */
-    private fun firstLayerIsInputLayer(layers: Set<SealedLayer.MetaLayer>) =
-        layers.firstOrNull()?.let { it.layer is SealedLayer.InputLayer } ?: true
+    private fun allInputLayersAreFirst(layers: List<SealedLayer.MetaLayer>): Boolean {
+        layers.forEachIndexed { index, layer ->
+            if (index == 0 && layer.layer !is SealedLayer.InputLayer) {
+                return false
+            }
+
+            if (index != 0 && layer.layer is SealedLayer.InputLayer && layers[index - 1].layer !is SealedLayer.InputLayer) {
+                return false
+            }
+        }
+
+        return true
+    }
 
     override fun code(): String {
         val layerOperations = createLayerOperations(currentLayers, newLayers)
@@ -108,8 +119,12 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
             "$variableName = " + makeLayerCode(layerOp, layerVariableNames)
         }.joinToString("\n")
 
-        val modelCode = "${newModelOutput.name} = tf.keras.Model(inputs=" +
-            "${layerVariableNames.values.first()}, outputs=${layerVariableNames.values.last()})"
+        val inputLayers = layerOperations.filter { it.layer.layer is SealedLayer.InputLayer }
+        val newInputLayers = inputLayers.map { layerVariableNames[it] }
+            .joinToString(prefix = "[", postfix = "]")
+
+        val modelCode = "${newModelOutput.name} = tf.keras.Model(inputs=$newInputLayers, " +
+            "outputs=${layerVariableNames.values.last()})"
 
         val trainableFlagsCode = buildTrainableFlags(layerOperations, newModelOutput)
 
