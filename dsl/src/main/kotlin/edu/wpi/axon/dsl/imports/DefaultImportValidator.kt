@@ -1,11 +1,11 @@
 package edu.wpi.axon.dsl.imports
 
+import arrow.core.Invalid
+import arrow.core.Nel
 import arrow.core.None
 import arrow.core.Some
-import arrow.data.Invalid
-import arrow.data.Nel
-import arrow.data.Valid
-import arrow.data.Validated
+import arrow.core.Valid
+import arrow.core.Validated
 
 class DefaultImportValidator : ImportValidator {
 

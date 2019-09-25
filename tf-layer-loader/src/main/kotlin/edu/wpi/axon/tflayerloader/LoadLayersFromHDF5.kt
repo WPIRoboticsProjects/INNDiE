@@ -6,7 +6,7 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Tuple2
 import arrow.core.some
-import arrow.effects.IO
+import arrow.fx.IO
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser

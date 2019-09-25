@@ -8,7 +8,6 @@ fun DependencyHandler.koin(name: String) =
 
 dependencies {
     api(arrow("arrow-core-data"))
-    api(arrow("arrow-extras-data"))
 
     api(koin("koin-test"))
 
@@ -24,6 +23,11 @@ dependencies {
         version = property("mockk.version") as String
     )
 
+    api(
+        group = "io.kotlintest",
+        name = "kotlintest-assertions",
+        version = property("kotlintest.version") as String
+    )
     api(
         group = "io.kotlintest",
         name = "kotlintest-assertions-arrow",
