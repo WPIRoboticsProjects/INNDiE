@@ -1,6 +1,6 @@
 package edu.wpi.axon.dsl
 
-import arrow.data.Valid
+import arrow.core.Valid
 import edu.wpi.axon.dsl.imports.ImportValidator
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import io.mockk.every

@@ -1,7 +1,7 @@
 package edu.wpi.axon.dsl.task
 
-import arrow.data.Invalid
-import arrow.data.Nel
+import arrow.core.Invalid
+import arrow.core.Nel
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredIncorrectly
@@ -9,7 +9,7 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.ImportValidator
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
-import io.kotlintest.matchers.boolean.shouldBeFalse
+import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test

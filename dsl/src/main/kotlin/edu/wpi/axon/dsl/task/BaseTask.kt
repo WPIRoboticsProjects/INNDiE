@@ -1,6 +1,6 @@
 package edu.wpi.axon.dsl.task
 
-import arrow.data.Valid
+import arrow.core.Valid
 import edu.wpi.axon.dsl.imports.ImportValidator
 import org.koin.core.KoinComponent
 import org.koin.core.inject
