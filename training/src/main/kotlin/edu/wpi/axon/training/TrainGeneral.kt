@@ -1,8 +1,8 @@
 package edu.wpi.axon.training
 
-import arrow.data.NonEmptyList
-import arrow.data.Validated
-import arrow.data.invalidNel
+import arrow.core.NonEmptyList
+import arrow.core.Validated
+import arrow.core.invalidNel
 import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer

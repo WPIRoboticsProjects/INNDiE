@@ -13,8 +13,8 @@ import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
-import io.kotlintest.matchers.boolean.shouldBeFalse
-import io.kotlintest.matchers.boolean.shouldBeTrue
+import io.kotlintest.matchers.booleans.shouldBeFalse
+import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
