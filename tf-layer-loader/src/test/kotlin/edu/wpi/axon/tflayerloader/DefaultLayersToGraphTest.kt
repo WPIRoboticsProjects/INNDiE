@@ -1,3 +1,4 @@
+@file:SuppressWarnings("LongMethod", "LargeClass", "StringLiteralDuplication")
 @file:Suppress("UnstableApiUsage")
 
 package edu.wpi.axon.tflayerloader

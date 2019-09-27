@@ -1,4 +1,10 @@
-@file:SuppressWarnings("TooManyFunctions", "StringLiteralDuplication", "LargeClass")
+@file:SuppressWarnings(
+    "TooManyFunctions",
+    "StringLiteralDuplication",
+    "LargeClass",
+    "LongMethod",
+    "SpreadOperator"
+)
 
 package edu.wpi.axon.dsl.task
 
@@ -108,6 +114,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     }
 
     @Test
+    @SuppressWarnings("MaxLineLength")
     fun `add one layer`() {
         startKoin {
             modules(defaultModule())

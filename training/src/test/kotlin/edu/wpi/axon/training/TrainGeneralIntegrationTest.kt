@@ -1,3 +1,4 @@
+@file:SuppressWarnings("LongMethod", "LargeClass")
 package edu.wpi.axon.training
 
 import edu.wpi.axon.dsl.defaultModule
