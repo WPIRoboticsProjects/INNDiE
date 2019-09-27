@@ -28,4 +28,8 @@ open class TrainingModel {
         var userNewLayers: Set<SealedLayer.MetaLayer> = setOf()
 
         var generateDebugComments: Boolean = false
+
+        override fun toString(): String {
+                return "TrainingModel(userModelPath=$userModelPath, userDataset=$userDataset, userOptimizer=$userOptimizer, userLoss=$userLoss, userMetrics=$userMetrics, userEpochs=$userEpochs, userNewLayers=$userNewLayers, generateDebugComments=$generateDebugComments)"
+        }
 }

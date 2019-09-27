@@ -1,17 +1,22 @@
 package edu.wpi.axon.ui
 
-import com.github.mvysny.karibudsl.v10.div
-import com.github.mvysny.karibudsl.v10.drawer
-import com.github.mvysny.karibudsl.v10.drawerToggle
+import com.github.mvysny.karibudsl.v10.button
 import com.github.mvysny.karibudsl.v10.h3
 import com.github.mvysny.karibudsl.v10.navbar
+import com.github.mvysny.karibudsl.v10.onLeftClick
 import com.github.mvysny.karibudsl.v10.routerLink
-import com.vaadin.flow.component.HasElement
+import com.github.mvysny.karibudsl.v10.tab
+import com.github.mvysny.karibudsl.v10.tabs
 import com.vaadin.flow.component.applayout.AppLayout
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.page.BodySize
 import com.vaadin.flow.component.page.Viewport
+import com.vaadin.flow.component.tabs.Tabs
+import com.vaadin.flow.server.VaadinSession
+import edu.wpi.axon.ui.model.TrainingModel
 import edu.wpi.axon.ui.view.AboutView
+import edu.wpi.axon.ui.view.DatasetView
 import edu.wpi.axon.ui.view.TrainingView
 
 /**
@@ -21,24 +26,34 @@ import edu.wpi.axon.ui.view.TrainingView
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 class AxonLayout : AppLayout() {
     init {
+        if (VaadinSession.getCurrent().getAttribute(TrainingModel::class.java) == null) {
+            VaadinSession.getCurrent().setAttribute(TrainingModel::class.java, TrainingModel())
+        }
+
         isDrawerOpened = false
         navbar {
-            drawerToggle()
             h3("Axon")
-        }
-        drawer {
-            div {
-                routerLink(VaadinIcon.ACADEMY_CAP, "Training", TrainingView::class)
+            addToNavbar()
+            tabs {
+                orientation = Tabs.Orientation.HORIZONTAL
+                tab {
+                    add(routerLink(VaadinIcon.CAMERA, "Dataset", DatasetView::class))
+                }
+                tab {
+                    add(routerLink(VaadinIcon.GLOBE_WIRE, "Model", DatasetView::class))
+                }
+                tab {
+                    add(routerLink(VaadinIcon.AUTOMATION, "Training", TrainingView::class))
+                }
+                tab {
+                    add(routerLink(VaadinIcon.INFO, "About", AboutView::class))
+                }
             }
-            div {
-                routerLink(VaadinIcon.INFO, "About", AboutView::class)
+            button("Debug") {
+                onLeftClick {
+                    Notification.show(VaadinSession.getCurrent().getAttribute(TrainingModel::class.java).toString())
+                }
             }
         }
-    }
-
-    override fun showRouterLayoutContent(content: HasElement) {
-        super.showRouterLayoutContent(content)
-        content.element.classList.add("main-layout")
-        isDrawerOpened = false
     }
 }

@@ -13,17 +13,18 @@ import com.github.mvysny.karibudsl.v10.onLeftClick
 import com.github.mvysny.karibudsl.v10.toInt
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.data.binder.BeanValidationBinder
+import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.router.Route
-import edu.wpi.axon.tfdata.Dataset
+import com.vaadin.flow.server.VaadinSession
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.ui.AxonLayout
+import edu.wpi.axon.ui.isWholeNumber
 import edu.wpi.axon.ui.model.TrainingModel
 import kotlin.reflect.KClass
 
 @Route(layout = AxonLayout::class)
 class TrainingView : KComposite() {
-
     private val binder = BeanValidationBinder<TrainingModel>(TrainingModel::class.java)
 
     private val root = ui {
@@ -32,16 +33,6 @@ class TrainingView : KComposite() {
                 text = "Info"
             }
             formLayout {
-                formItem {
-                    comboBox<KClass<out Dataset>>("Dataset") {
-                        setItems(Dataset::class.sealedSubclasses)
-                        setItemLabelGenerator {
-                            it.simpleName
-                        }
-
-                        bind(binder).bind(TrainingModel::userDataset)
-                    }
-                }
                 formItem {
                     comboBox<KClass<out Optimizer>>("Optimizer") {
                         setItems(Optimizer::class.sealedSubclasses)
@@ -69,26 +60,37 @@ class TrainingView : KComposite() {
 
                         bind(binder)
                                 .asRequired()
+                                .withValidator { value, _ ->
+                                    if (value.isWholeNumber()) {
+                                        ValidationResult.ok()
+                                    } else {
+                                        ValidationResult.error("Must be an integer!")
+                                    }
+                                }
                                 .toInt()
                                 .bind(TrainingModel::userEpochs)
                     }
                 }
                 formItem {
-                    checkBox("Generate Debug Output")
+                    checkBox("Generate Debug Output") {
+                        bind(binder).bind(TrainingModel::generateDebugComments)
+                    }
                 }
                 button("Generate") {
                     onLeftClick {
-                        binder.validate()
-                        val e = TrainingModel()
-                        if (binder.writeBeanIfValid(e)) {
-                            infoLabel.text = "Saved bean values: $e"
+                        val validate = binder.validate()
+                        if (validate.isOk) {
+                            infoLabel.text = "Saved bean values: ${binder.bean}"
                         } else {
-                            val validate = binder.validate()
                             infoLabel.text = "There are errors: ${validate.validationErrors}"
                         }
                     }
                 }
             }
         }
+    }
+
+    init {
+        binder.bean = VaadinSession.getCurrent().getAttribute(TrainingModel::class.java)
     }
 }
