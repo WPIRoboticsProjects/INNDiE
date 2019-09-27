@@ -1,6 +1,7 @@
 package edu.wpi.axon.training
 
 import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 import java.io.File
 
-internal class TrainGeneralIntegrationTest {
+internal class TrainGeneralIntegrationTest : KoinTestFixture() {
 
     @Test
     fun `test with custom model with an add`() {
