@@ -26,7 +26,15 @@ sealed class Model(
         val layers: LayerGraph,
         val output: Set<OutputData>
     ) : Model(name) {
-        data class InputData(val id: String, val type: List<Int?>)
+
+        data class InputData(
+            val id: String,
+            val type: List<Int?>,
+            val batchSize: Int? = null,
+            val dtype: Number? = null,
+            val sparse: Boolean? = null
+        )
+
         data class OutputData(val id: String)
     }
 }

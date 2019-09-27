@@ -59,7 +59,7 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
 
         return """
         |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})
-        |${buildTrainableFlags(layerOperations, newModelOutput)}
+        |${buildTrainableFlags(layerOperations.map { it.layer }, newModelOutput)}
         """.trimMargin()
     }
 

@@ -38,17 +38,19 @@ internal fun createLayerOperations(
  * @param model The model the layer operations were applied to.
  * @return The code to set the `trainable` flags.
  */
-internal fun buildTrainableFlags(layerOperations: Iterable<LayerOperation>, model: Variable) =
-    layerOperations.mapNotNull {
-        when (val layer = it.layer) {
-            is SealedLayer.MetaLayer.TrainableLayer -> {
-                val layerInModel = getLayerInModel(model, it.layer.name)
-                """$layerInModel.trainable = ${boolToPythonString(layer.trainable)}"""
-            }
-
-            is SealedLayer.MetaLayer.UntrainableLayer -> null
+internal fun buildTrainableFlags(
+    layerOperations: Iterable<SealedLayer.MetaLayer>,
+    model: Variable
+) = layerOperations.mapNotNull {
+    when (it) {
+        is SealedLayer.MetaLayer.TrainableLayer -> {
+            val layerInModel = getLayerInModel(model, it.layer.name)
+            """$layerInModel.trainable = ${boolToPythonString(it.trainable)}"""
         }
-    }.joinToString("\n")
+
+        is SealedLayer.MetaLayer.UntrainableLayer -> null
+    }
+}.joinToString("\n")
 
 /**
  * @param model The model.

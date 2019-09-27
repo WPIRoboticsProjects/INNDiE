@@ -94,56 +94,69 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `keep all 2 layers`() {
+        val input1 = SealedLayer.InputLayer("l1", listOf())
+        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+
+        val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
+        }
+
         startKoin {
             modules(module {
                 alwaysValidImportValidator()
                 mockVariableNameGenerator()
+                single { mockLayerToCode }
             })
         }
 
-        val layer1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name))).trainable()
-
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(layer1 to layer2, input = setOf(layer1), output = layer2)
-            newModel = makeModel(layer1 to layer2, input = setOf(layer1), output = layer2)
+            currentModel = makeModel(input1 to layer2, input = setOf(input1), output = layer2)
+            newModel = makeModel(input1 to layer2, input = setOf(input1), output = layer2)
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
-            |var1 = base_model.inputs[0]
+            |var1 = input1
             |var2 = base_model.get_layer("l2")(var1)
             |new_model = tf.keras.Model(inputs=[var1], outputs=var2)
             |new_model.get_layer("l2").trainable = True
         """.trimMargin()
+
+        verifyAll { mockLayerToCode.makeNewLayer(input1.layer) }
+        confirmVerified(mockLayerToCode)
     }
 
     @Test
     fun `remove the last layer`() {
+        val input1 = SealedLayer.InputLayer("l1", listOf())
+        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+        val layer3 = SealedLayer.UnknownLayer("l3", Some(setOf(layer2.name))).trainable()
+
+        val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
+        }
+
         startKoin {
             modules(module {
                 alwaysValidImportValidator()
                 mockVariableNameGenerator()
+                single { mockLayerToCode }
             })
         }
-
-        val layer1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name))).trainable()
-        val layer3 = SealedLayer.UnknownLayer("l3", Some(setOf(layer2.name))).trainable()
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
             currentModel = makeModel(
-                layer1 to layer2,
+                input1 to layer2,
                 layer2 to layer3,
-                input = setOf(layer1),
+                input = setOf(input1),
                 output = layer3
             )
             newModel = makeModel(
-                layer1 to layer2,
-                input = setOf(layer1),
+                input1 to layer2,
+                input = setOf(input1),
                 output = layer2
             )
             newModelOutput = configuredCorrectly("new_model")
@@ -151,21 +164,25 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
-            |var1 = base_model.inputs[0]
+            |var1 = input1
             |var2 = base_model.get_layer("l2")(var1)
             |new_model = tf.keras.Model(inputs=[var1], outputs=var2)
             |new_model.get_layer("l2").trainable = True
         """.trimMargin()
+
+        verifyAll { mockLayerToCode.makeNewLayer(input1.layer) }
+        confirmVerified(mockLayerToCode)
     }
 
     @Test
     fun `replace one layer`() {
-        val layer1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name))).trainable()
+        val input1 = SealedLayer.InputLayer("l1", listOf())
+        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
         val layer3 =
-            SealedLayer.Dense("l3", Some(setOf(layer1.name)), 10, Activation.SoftMax).trainable()
+            SealedLayer.Dense("l3", Some(setOf(input1.name)), 10, Activation.SoftMax).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
             every { makeNewLayer(layer3.layer) } returns "layer3".right()
         }
 
@@ -180,13 +197,13 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
             currentModel = makeModel(
-                layer1 to layer2,
-                input = setOf(layer1),
+                input1 to layer2,
+                input = setOf(input1),
                 output = layer2
             )
             newModel = makeModel(
-                layer1 to layer3,
-                input = setOf(layer1),
+                input1 to layer3,
+                input = setOf(input1),
                 output = layer3
             )
             newModelOutput = configuredCorrectly("new_model")
@@ -194,23 +211,27 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
-            |var1 = base_model.inputs[0]
+            |var1 = input1
             |var2 = layer3(var1)
             |new_model = tf.keras.Model(inputs=[var1], outputs=var2)
             |new_model.get_layer("l3").trainable = True
         """.trimMargin()
 
-        verifyAll { mockLayerToCode.makeNewLayer(layer3.layer) }
+        verifyAll {
+            mockLayerToCode.makeNewLayer(input1.layer)
+            mockLayerToCode.makeNewLayer(layer3.layer)
+        }
         confirmVerified(mockLayerToCode)
     }
 
     @Test
     fun `replace a layer with an invalid layer`() {
-        val layer1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name))).trainable()
-        val layer3 = SealedLayer.UnknownLayer("l3", Some(setOf(layer1.name))).trainable()
+        val input1 = SealedLayer.InputLayer("l1", listOf())
+        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+        val layer3 = SealedLayer.UnknownLayer("l3", Some(setOf(input1.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
             every { makeNewLayer(layer3.layer) } returns "".left()
         }
 
@@ -224,50 +245,58 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(layer1 to layer2, input = setOf(layer1), output = layer2)
-            newModel = makeModel(layer1 to layer3, input = setOf(layer1), output = layer3)
+            currentModel = makeModel(input1 to layer2, input = setOf(input1), output = layer2)
+            newModel = makeModel(input1 to layer3, input = setOf(input1), output = layer3)
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.isConfiguredCorrectly().shouldBeTrue()
         shouldThrow<IllegalStateException> { task.code() }
 
-        verifyAll { mockLayerToCode.makeNewLayer(layer3.layer) }
+        verifyAll {
+            mockLayerToCode.makeNewLayer(input1.layer)
+            mockLayerToCode.makeNewLayer(layer3.layer)
+        }
         confirmVerified(mockLayerToCode)
     }
 
     @Test
     fun `copy a layer with two inputs`() {
-        val layer1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name))).trainable()
+        val input1 = SealedLayer.InputLayer("l1", listOf())
+        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
         val layer3 = SealedLayer.Dense(
             "l3",
-            Some(setOf(layer1.name, layer2.name)),
+            Some(setOf(input1.name, layer2.name)),
             10,
             Activation.SoftMax
         ).trainable()
+
+        val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
+        }
 
         startKoin {
             modules(module {
                 alwaysValidImportValidator()
                 mockVariableNameGenerator()
+                single { mockLayerToCode }
             })
         }
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
             currentModel = makeModel(
-                layer1 to layer2,
-                layer1 to layer3,
+                input1 to layer2,
+                input1 to layer3,
                 layer2 to layer3,
-                input = setOf(layer1),
+                input = setOf(input1),
                 output = layer3
             )
             newModel = makeModel(
-                layer1 to layer2,
-                layer1 to layer3,
+                input1 to layer2,
+                input1 to layer3,
                 layer2 to layer3,
-                input = setOf(layer1),
+                input = setOf(input1),
                 output = layer3
             )
             newModelOutput = configuredCorrectly("new_model")
@@ -275,13 +304,16 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
-            |var1 = base_model.inputs[0]
+            |var1 = input1
             |var2 = base_model.get_layer("l2")(var1)
             |var3 = base_model.get_layer("l3")([var1, var2])
             |new_model = tf.keras.Model(inputs=[var1], outputs=var3)
             |new_model.get_layer("l2").trainable = True
             |new_model.get_layer("l3").trainable = True
         """.trimMargin()
+
+        verifyAll { mockLayerToCode.makeNewLayer(input1.layer) }
+        confirmVerified(mockLayerToCode)
     }
 
     @Test
@@ -291,10 +323,16 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
         val layer1 =
             SealedLayer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
 
+        val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
+            every { makeNewLayer(input2.layer) } returns "input2".right()
+        }
+
         startKoin {
             modules(module {
                 alwaysValidImportValidator()
                 mockVariableNameGenerator()
+                single { mockLayerToCode }
             })
         }
 
@@ -317,12 +355,18 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
-            |var1 = base_model.inputs[0]
-            |var2 = base_model.inputs[1]
+            |var1 = input1
+            |var2 = input2
             |var3 = base_model.get_layer("l1")([var1, var2])
             |new_model = tf.keras.Model(inputs=[var1, var2], outputs=var3)
             |new_model.get_layer("l1").trainable = True
         """.trimMargin()
+
+        verifyAll {
+            mockLayerToCode.makeNewLayer(input1.layer)
+            mockLayerToCode.makeNewLayer(input2.layer)
+        }
+        confirmVerified(mockLayerToCode)
     }
 
     @Test
@@ -332,10 +376,16 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
         val layer1 =
             SealedLayer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
 
+        val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
+            every { makeNewLayer(input2.layer) } returns "input2".right()
+        }
+
         startKoin {
             modules(module {
                 alwaysValidImportValidator()
                 mockVariableNameGenerator()
+                single { mockLayerToCode }
             })
         }
 
@@ -358,12 +408,18 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
-            |var1 = base_model.inputs[1]
-            |var2 = base_model.inputs[0]
-            |var3 = base_model.get_layer("l1")([var2, var1])
-            |new_model = tf.keras.Model(inputs=[var1, var2], outputs=var3)
+            |var1 = input1
+            |var2 = input2
+            |var3 = base_model.get_layer("l1")([var1, var2])
+            |new_model = tf.keras.Model(inputs=[var2, var1], outputs=var3)
             |new_model.get_layer("l1").trainable = True
         """.trimMargin()
+
+        verifyAll {
+            mockLayerToCode.makeNewLayer(input1.layer)
+            mockLayerToCode.makeNewLayer(input2.layer)
+        }
+        confirmVerified(mockLayerToCode)
     }
 
     @Test
@@ -374,10 +430,17 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
         val layer1 =
             SealedLayer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
 
+        val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
+            every { makeNewLayer(input2.layer) } returns "input2".right()
+            every { makeNewLayer(input3.layer) } returns "input3".right()
+        }
+
         startKoin {
             modules(module {
                 alwaysValidImportValidator()
                 mockVariableNameGenerator()
+                single { mockLayerToCode }
             })
         }
 
@@ -402,12 +465,21 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
-            |var1 = base_model.inputs[1]
-            |var2 = base_model.inputs[2]
-            |var3 = base_model.inputs[0]
-            |var4 = base_model.get_layer("l1")([var3, var1])
-            |new_model = tf.keras.Model(inputs=[var1, var2, var3], outputs=var4)
+            |var1 = input1
+            |var2 = input2
+            |var3 = input3
+            |var4 = base_model.get_layer("l1")([var1, var2])
+            |new_model = tf.keras.Model(inputs=[var2, var3, var1], outputs=var4)
             |new_model.get_layer("l1").trainable = True
         """.trimMargin()
+
+        verifyAll {
+            mockLayerToCode.makeNewLayer(input1.layer)
+            mockLayerToCode.makeNewLayer(input2.layer)
+            mockLayerToCode.makeNewLayer(input3.layer)
+        }
+        confirmVerified(mockLayerToCode)
     }
+
+    // TODO: Test multiple outputs
 }

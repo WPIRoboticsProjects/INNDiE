@@ -71,22 +71,45 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
     }
 
     override fun code(): String {
-        val layerOperations = createLayerOperations(
-            currentModel.layers.nodes(),
-            newModel.layers.nodes()
-        )
+        val handledLayers = mutableSetOf<SealedLayer.MetaLayer>()
+        val layerVariableNames = mutableMapOf<SealedLayer.MetaLayer, String>()
 
-        // Make a variable name for each layer. All of these need to be known before generating
-        // the code.
-        val layerVariableNames = layerOperations.map {
-            it to variableNameGenerator.uniqueVariableName()
-        }.toMap()
+        fun StringBuilder.appendLayerCode(layer: SealedLayer.MetaLayer) {
+            if (layer !in handledLayers) {
+                newModel.layers
+                    .predecessors(layer)
+                    .sortedBy { it.name }
+                    .forEach {
+                        appendLayerCode(it)
+                    }
 
-        val layerCode = layerVariableNames.map { (layerOp, variableName) ->
-            "$variableName = " + makeLayerCode(layerOp, layerVariableNames)
-        }.joinToString("\n")
+                val layerOp = when (layer.layer) {
+                    // Always make a new input layer
+                    is SealedLayer.InputLayer -> LayerOperation.MakeNewLayer(layer)
 
-        // We have to specify the
+                    else -> if (layer in currentModel.layers.nodes()) {
+                        LayerOperation.CopyLayer(layer)
+                    } else {
+                        LayerOperation.MakeNewLayer(layer)
+                    }
+                }
+
+                val varName = variableNameGenerator.uniqueVariableName()
+                append("$varName = ${makeLayerCode(layerOp, layerVariableNames)}")
+                append('\n')
+                layerVariableNames[layer] = varName
+                handledLayers += layer
+            }
+        }
+
+        val layerCode = buildString {
+            newModel.output.forEach { output ->
+                appendLayerCode(newModel.layers.nodes().first { it.name == output.id })
+            }
+        }.trim()
+
+        // We have to specify the inputs on the new model because the layers in the new model assume
+        // the input format in the new model
         val modelInputCode = newModel.input.joinToString(prefix = "[", postfix = "]") { input ->
             val correspondingLayer = newModel.layers.nodes().filter {
                 it.layer is SealedLayer.InputLayer && it.name == input.id
@@ -98,13 +121,13 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                 it.first()
             }
 
-            layerVariableNames.entries.first { it.key.layer == correspondingLayer }.value
+            layerVariableNames.entries.first { it.key == correspondingLayer }.value
         }
 
         val modelCode = "${newModelOutput.name} = tf.keras.Model(inputs=$modelInputCode, " +
             "outputs=${layerVariableNames.values.last()})"
 
-        val trainableFlagsCode = buildTrainableFlags(layerOperations, newModelOutput)
+        val trainableFlagsCode = buildTrainableFlags(newModel.layers.nodes(), newModelOutput)
 
         return layerCode + "\n" + modelCode + "\n" + trainableFlagsCode
     }
@@ -118,17 +141,9 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
      */
     private fun makeLayerCode(
         layerOp: LayerOperation,
-        layerVariableNames: Map<LayerOperation, String>
+        layerVariableNames: Map<SealedLayer.MetaLayer, String>
     ) = when (val layer = layerOp.layer.layer) {
-        is SealedLayer.InputLayer -> when (layerOp) {
-            // Copying an input layer needs this special syntax (because we need the Tensor
-            // and not the layer itself). Also, get the index from the currentModel rather than the
-            // new model because it corresponds with the model input.
-            is LayerOperation.CopyLayer ->
-                "${modelInput.name}.inputs[${findInputIndex(currentModel.layers.nodes(), layer)}]"
-
-            is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
-        }
+        is SealedLayer.InputLayer -> makeNewLayer(layer)
 
         else -> {
             val newLayerCode = when (layerOp) {
@@ -144,9 +159,9 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
     }
 
     private fun findInputIndex(
-        newLayers: Set<SealedLayer.MetaLayer>,
+        newLayers: Set<Model.General.InputData>,
         layer: SealedLayer.InputLayer
-    ) = newLayers.map { it.layer }.indexOf(layer)
+    ) = newLayers.map { it.id }.indexOf(layer.name)
 
     /**
      * Generates the code for the inputs to a layer (the code that the layer is "called" with
@@ -158,13 +173,13 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
      */
     private fun makeLayerInputCode(
         layerInputs: Set<String>,
-        layerVariableNames: Map<LayerOperation, String>
+        layerVariableNames: Map<SealedLayer.MetaLayer, String>
     ): String {
         val entries = layerVariableNames.entries
 
         // Find the variable names corresponding to the layer names
         val variableNames = layerInputs.map { inputName ->
-            entries.filter { it.key.layer.name == inputName }
+            entries.filter { it.key.name == inputName }
                 .also {
                     require(it.size == 1) {
                         "Expected one matching variable name, got `${it.joinToString()}`. " +

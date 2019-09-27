@@ -54,16 +54,22 @@ sealed class SealedLayer : Layer {
 
     /**
      * A layer that accepts input data and has no parameters.
+     *
+     * // TODO: tensor parameter
      */
     data class InputLayer
     private constructor(
         override val name: String,
-        val batchInputShape: List<Int?>
+        val batchInputShape: List<Int?>,
+        val batchSize: Int? = null,
+        val dtype: Number? = null,
+        val sparse: Boolean? = null
     ) : SealedLayer() {
 
         override val inputs: Option<Set<String>> = None
 
-        fun toInputData(): Model.General.InputData = Model.General.InputData(name, batchInputShape)
+        fun toInputData(): Model.General.InputData =
+            Model.General.InputData(name, batchInputShape, batchSize, dtype, sparse)
 
         companion object {
             operator fun invoke(name: String, shape: List<Int?>) =
