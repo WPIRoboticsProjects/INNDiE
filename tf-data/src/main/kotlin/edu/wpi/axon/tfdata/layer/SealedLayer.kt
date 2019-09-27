@@ -3,6 +3,7 @@ package edu.wpi.axon.tfdata.layer
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Tuple2
+import edu.wpi.axon.tfdata.Model
 
 /**
  * A sealed [Layer] implementation.
@@ -61,6 +62,8 @@ sealed class SealedLayer : Layer {
     ) : SealedLayer() {
 
         override val inputs: Option<Set<String>> = None
+
+        fun toInputData(): Model.General.InputData = Model.General.InputData(name, batchInputShape)
 
         companion object {
             operator fun invoke(name: String, shape: List<Int?>) =

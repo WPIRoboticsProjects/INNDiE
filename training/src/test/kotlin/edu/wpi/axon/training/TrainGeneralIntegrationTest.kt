@@ -37,7 +37,7 @@ internal class TrainGeneralIntegrationTest {
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),
                     userEpochs = 50,
-                    userNewLayers = it.layers.nodes()
+                    userNewModel = it
                 ).generateScript().shouldBeValid {
                     println(it.a)
                     it.a shouldBe """
@@ -45,18 +45,20 @@ internal class TrainGeneralIntegrationTest {
                     |
                     |model = tf.keras.models.load_model("$modelName")
                     |
-                    |input1 = tf.keras.layers.Input(
-                    |newModel.get_layer("conv2d_6").trainable = False
-                    |newModel.get_layer("conv2d_7").trainable = False
-                    |newModel.get_layer("max_pooling2d_3").trainable = False
-                    |newModel.get_layer("dropout_6").trainable = False
-                    |newModel.get_layer("flatten_3").trainable = False
-                    |newModel.get_layer("dense_6").trainable = True
-                    |newModel.get_layer("dropout_7").trainable = True
-                    |newModel.get_layer("dense_7").trainable = True
+                    |var1 = model.inputs[0]
+                    |var2 = model.inputs[1]
+                    |var3 = model.get_layer("dense_18")(var1)
+                    |var4 = model.get_layer("dense_19")(var2)
+                    |var5 = model.get_layer("add_4")([var3, var4])
+                    |var6 = model.get_layer("dense_20")(var5)
+                    |newModelVar = tf.keras.Model(inputs=[var1, var2], outputs=var6)
+                    |newModelVar.get_layer("dense_18").trainable = True
+                    |newModelVar.get_layer("dense_19").trainable = True
+                    |newModelVar.get_layer("add_4").trainable = True
+                    |newModelVar.get_layer("dense_20").trainable = True
                     |
                     |checkpointCallback = tf.keras.callbacks.ModelCheckpoint(
-                    |    "sequential_3-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
+                    |    "model_6-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
                     |    monitor="val_loss",
                     |    verbose=1,
                     |    save_best_only=False,
@@ -66,7 +68,7 @@ internal class TrainGeneralIntegrationTest {
                     |    load_weights_on_restart=False
                     |)
                     |
-                    |newModel.compile(
+                    |newModelVar.compile(
                     |    optimizer=tf.keras.optimizers.Adam(0.001, 0.9, 0.999, 1.0E-7, False),
                     |    loss=tf.keras.losses.sparse_categorical_crossentropy,
                     |    metrics=["accuracy"]
@@ -84,18 +86,14 @@ internal class TrainGeneralIntegrationTest {
                     |
                     |(xTrain, yTrain), (xTest, yTest) = tf.keras.datasets.mnist.load_data()
                     |
-                    |scaledXTest = xTest.reshape(-1, 28, 28, 1) / 255
-                    |
-                    |scaledXTrain = xTrain.reshape(-1, 28, 28, 1) / 255
-                    |
-                    |newModel.fit(
-                    |    scaledXTrain,
+                    |newModelVar.fit(
+                    |    xTrain,
                     |    yTrain,
                     |    batch_size=None,
                     |    epochs=50,
                     |    verbose=2,
                     |    callbacks=[checkpointCallback, earlyStoppingCallback],
-                    |    validation_data=(scaledXTest, yTest),
+                    |    validation_data=(xTest, yTest),
                     |    shuffle=True
                     |)
                     """.trimMargin()

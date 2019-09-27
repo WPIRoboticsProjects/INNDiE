@@ -18,7 +18,6 @@ import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
@@ -34,7 +33,7 @@ import java.io.File
  * @param userLoss The [Loss] function to use.
  * @param userMetrics Any metrics.
  * @param userEpochs The number of epochs.
- * @param userNewLayers The new layers (in the case of transfer learning).
+ * @param userNewModel The new model.
  * @param generateDebugComments Whether to put debug comments in the output.
  */
 class TrainGeneral(
@@ -44,7 +43,7 @@ class TrainGeneral(
     private val userLoss: Loss,
     private val userMetrics: Set<String>,
     private val userEpochs: Int,
-    private val userNewLayers: Set<SealedLayer.MetaLayer>,
+    private val userNewModel: Model.General,
     private val generateDebugComments: Boolean = false
 ) {
 
@@ -52,8 +51,8 @@ class TrainGeneral(
 
     @Suppress("UNUSED_VARIABLE")
     fun generateScript(): Validated<NonEmptyList<String>, String> =
-        loadLayersFromHDF5.load(File(userModelPath)).map { currentModel ->
-            require(currentModel is Model.General)
+        loadLayersFromHDF5.load(File(userModelPath)).map { userCurrentModel ->
+            require(userCurrentModel is Model.General)
 
             val script = ScriptGenerator(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
@@ -79,16 +78,16 @@ class TrainGeneral(
                     modelOutput = model
                 }
 
-                val newModel by variables.creating(Variable::class)
+                val newModelVar by variables.creating(Variable::class)
                 val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
                     modelInput = model
-                    currentLayers = currentModel.layers.nodes() // TODO: Accept the graph directly
-                    newLayers = userNewLayers
-                    newModelOutput = newModel
+                    currentModel = userCurrentModel
+                    newModel = userNewModel
+                    newModelOutput = newModelVar
                 }
 
                 val compileModelTask by tasks.running(CompileModelTask::class) {
-                    modelInput = newModel
+                    modelInput = newModelVar
                     optimizer = userOptimizer
                     loss = userLoss
                     metrics = userMetrics
@@ -97,7 +96,7 @@ class TrainGeneral(
 
                 val checkpointCallback by variables.creating(Variable::class)
                 val checkpointCallbackTask by tasks.running(CheckpointCallbackTask::class) {
-                    filePath = "${currentModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+                    filePath = "${userCurrentModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
                     saveWeightsOnly = true
                     verbose = 1
                     output = checkpointCallback
@@ -111,7 +110,7 @@ class TrainGeneral(
                 }
 
                 val trainModelTask by tasks.running(TrainTask::class) {
-                    modelInput = newModel
+                    modelInput = newModelVar
                     trainInputData = xTrain
                     trainOutputData = yTrain
                     validationInputData = xTest

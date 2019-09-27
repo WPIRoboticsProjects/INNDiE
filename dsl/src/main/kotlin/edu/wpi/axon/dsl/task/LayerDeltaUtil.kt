@@ -12,8 +12,8 @@ import edu.wpi.axon.tfdata.layer.SealedLayer
  * @return The necessary layer operations.
  */
 internal fun createLayerOperations(
-    currentLayers: Set<SealedLayer.MetaLayer>,
-    newLayers: Set<SealedLayer.MetaLayer>
+    currentLayers: Iterable<SealedLayer.MetaLayer>,
+    newLayers: Iterable<SealedLayer.MetaLayer>
 ): List<LayerOperation> {
     // The base layers inside the Trainable or Untrainable layer wrappers
     val innerCurrentLayers = currentLayers.map { it.layer }
@@ -38,7 +38,7 @@ internal fun createLayerOperations(
  * @param model The model the layer operations were applied to.
  * @return The code to set the `trainable` flags.
  */
-internal fun buildTrainableFlags(layerOperations: List<LayerOperation>, model: Variable) =
+internal fun buildTrainableFlags(layerOperations: Iterable<LayerOperation>, model: Variable) =
     layerOperations.mapNotNull {
         when (val layer = it.layer) {
             is SealedLayer.MetaLayer.TrainableLayer -> {

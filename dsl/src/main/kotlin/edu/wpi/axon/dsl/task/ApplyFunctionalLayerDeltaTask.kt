@@ -1,14 +1,18 @@
 package edu.wpi.axon.dsl.task
 
+import arrow.core.Either
 import arrow.core.Some
+import arrow.core.extensions.either.monadError.monadError
+import arrow.core.extensions.fx
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.SealedLayer
-import edu.wpi.axon.util.allIn
+import edu.wpi.axon.tflayerloader.layerGraphIsValid
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
@@ -16,6 +20,7 @@ import org.koin.core.inject
  * Adds and removes layers on a new model using a starting general model (i.e. not a Sequential
  * model).
  */
+@Suppress("UnstableApiUsage")
 class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
 
     /**
@@ -24,14 +29,14 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
     var modelInput: Variable by singleAssign()
 
     /**
-     * The current layers in the model.
+     * The current model.
      */
-    var currentLayers: Set<SealedLayer.MetaLayer> by singleAssign()
+    var currentModel: Model.General by singleAssign()
 
     /**
-     * The layers the new model should have.
+     * The new model.
      */
-    var newLayers: Set<SealedLayer.MetaLayer> by singleAssign()
+    var newModel: Model.General by singleAssign()
 
     /**
      * The variable to output the new model to.
@@ -55,59 +60,21 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun isConfiguredCorrectly(): Boolean {
-        return super.isConfiguredCorrectly() &&
-            layerNamesAreUnique(currentLayers) && layerNamesAreUnique(newLayers) &&
-            // All layers must have inputs
-            currentLayers.all { hasInputs(it) } && newLayers.all { hasInputs(it) } &&
-            // The first layers in each set must be a InputLayers
-            allInputLayersAreFirst(currentLayers.toList()) && allInputLayersAreFirst(newLayers.toList()) &&
-            newLayers.fold(true) { acc, elem ->
-                // Get the part of the list until the current element
-                val prevList = newLayers.takeWhile { it != elem }
-                val prevNames = prevList.map { it.name }
-
-                // All of the inputs must be declared already, so they need to appear higher in the
-                // list of layers
-                acc && elem.inputs.fold({ emptySet<String>() }, { it }) allIn prevNames
+        return super.isConfiguredCorrectly() && Either.fx<String, Unit> {
+            !Either.monadError<String>().run {
+                tupled(
+                    layerGraphIsValid(currentModel.layers),
+                    layerGraphIsValid(newModel.layers)
+                )
             }
-    }
-
-    /**
-     * @param layers The layers to check.
-     * @return Whether all the layers' names are unique.
-     */
-    private fun layerNamesAreUnique(layers: Set<SealedLayer.MetaLayer>) =
-        layers.mapTo(mutableSetOf()) { it.name }.size == layers.size
-
-    /**
-     * A layer must have inputs (unless it's a [SealedLayer.InputLayer], which can't have inputs).
-     *
-     * @param layer The layer.
-     * @return Whether the layer has inputs.
-     */
-    private fun hasInputs(layer: SealedLayer.MetaLayer) =
-        layer.inputs is Some || layer.layer is SealedLayer.InputLayer
-
-    /**
-     * @param layers The set of layers.
-     * @return Whether the first layers in the set are [SealedLayer.InputLayer].
-     */
-    private fun allInputLayersAreFirst(layers: List<SealedLayer.MetaLayer>): Boolean {
-        layers.forEachIndexed { index, layer ->
-            if (index == 0 && layer.layer !is SealedLayer.InputLayer) {
-                return false
-            }
-
-            if (index != 0 && layer.layer is SealedLayer.InputLayer && layers[index - 1].layer !is SealedLayer.InputLayer) {
-                return false
-            }
-        }
-
-        return true
+        }.fold({ false }, { true })
     }
 
     override fun code(): String {
-        val layerOperations = createLayerOperations(currentLayers, newLayers)
+        val layerOperations = createLayerOperations(
+            currentModel.layers.nodes(),
+            newModel.layers.nodes()
+        )
 
         // Make a variable name for each layer. All of these need to be known before generating
         // the code.
@@ -119,11 +86,22 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
             "$variableName = " + makeLayerCode(layerOp, layerVariableNames)
         }.joinToString("\n")
 
-        val inputLayers = layerOperations.filter { it.layer.layer is SealedLayer.InputLayer }
-        val newInputLayers = inputLayers.map { layerVariableNames[it] }
-            .joinToString(prefix = "[", postfix = "]")
+        // We have to specify the
+        val modelInputCode = newModel.input.joinToString(prefix = "[", postfix = "]") { input ->
+            val correspondingLayer = newModel.layers.nodes().filter {
+                it.layer is SealedLayer.InputLayer && it.name == input.id
+            }.let {
+                require(it.size == 1) {
+                    "Found more than one matching InputLayer with id ${input.id}: " +
+                        it.joinToString("\n")
+                }
+                it.first()
+            }
 
-        val modelCode = "${newModelOutput.name} = tf.keras.Model(inputs=$newInputLayers, " +
+            layerVariableNames.entries.first { it.key.layer == correspondingLayer }.value
+        }
+
+        val modelCode = "${newModelOutput.name} = tf.keras.Model(inputs=$modelInputCode, " +
             "outputs=${layerVariableNames.values.last()})"
 
         val trainableFlagsCode = buildTrainableFlags(layerOperations, newModelOutput)
@@ -144,9 +122,10 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
     ) = when (val layer = layerOp.layer.layer) {
         is SealedLayer.InputLayer -> when (layerOp) {
             // Copying an input layer needs this special syntax (because we need the Tensor
-            // and not the layer itself).
+            // and not the layer itself). Also, get the index from the currentModel rather than the
+            // new model because it corresponds with the model input.
             is LayerOperation.CopyLayer ->
-                "${modelInput.name}.inputs[${findInputIndex(newLayers, layer)}]"
+                "${modelInput.name}.inputs[${findInputIndex(currentModel.layers.nodes(), layer)}]"
 
             is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
         }

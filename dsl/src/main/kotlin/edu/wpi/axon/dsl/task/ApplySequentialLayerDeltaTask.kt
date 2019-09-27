@@ -55,10 +55,7 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
     }
 
     override fun code(): String {
-        val layerOperations = createLayerOperations(
-            currentLayers,
-            newLayers
-        )
+        val layerOperations = createLayerOperations(currentLayers, newLayers)
 
         return """
         |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})
