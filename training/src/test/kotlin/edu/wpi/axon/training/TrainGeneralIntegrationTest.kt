@@ -25,8 +25,7 @@ internal class TrainGeneralIntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "network_with_add.h5"
-        val localModelPath = TrainGeneralIntegrationTest::class.java
-            .getResource(modelName).toURI().path
+        val localModelPath = this::class.java.getResource(modelName).toURI().path
         val layers = LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(localModelPath))
 
         layers.attempt().unsafeRunSync().shouldBeRight { model ->
@@ -40,7 +39,6 @@ internal class TrainGeneralIntegrationTest : KoinTestFixture() {
                     userEpochs = 50,
                     userNewModel = it
                 ).generateScript().shouldBeValid {
-                    println(it.a)
                     it.a shouldBe """
                     |import tensorflow as tf
                     |

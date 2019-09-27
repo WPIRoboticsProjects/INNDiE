@@ -25,7 +25,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load from test file 1`() {
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("model1.h5").toURI())
+            File(this::class.java.getResource("model1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.Sequential> {
                 it.name shouldBe "sequential_11"
@@ -83,7 +83,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load from test file 2`() {
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("model2.h5").toURI())
+            File(this::class.java.getResource("mobilenetv2_1.00_224.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.General> {
                 it.name shouldBe "mobilenetv2_1.00_224"
@@ -108,7 +108,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load from bad file`() {
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("badModel1.h5").toURI())
+            File(this::class.java.getResource("badModel1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeLeft()
     }
 
@@ -130,7 +130,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
         )
 
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("nonSequentialModel1.h5").toURI())
+            File(this::class.java.getResource("nonSequentialModel1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.General> {
                 it.name shouldBe "model_1"
@@ -144,7 +144,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load rnn 1`() {
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("rnn1.h5").toURI())
+            File(this::class.java.getResource("rnn1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.General> {
                 it.name shouldBe "model_5"

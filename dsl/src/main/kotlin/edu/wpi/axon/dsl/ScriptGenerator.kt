@@ -118,7 +118,7 @@ class ScriptGenerator(
                 append('\n')
                 appendTaskCode(generateDebugComments, graph.b, finalCompositeTask, handledNodes)
             }.trim().valid()
-        }
+        }.also { logger.info { "Generated script:\n$it" } }
     }
 
     /**

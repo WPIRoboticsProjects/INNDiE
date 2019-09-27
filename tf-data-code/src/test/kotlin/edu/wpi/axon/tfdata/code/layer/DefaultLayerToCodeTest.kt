@@ -45,6 +45,14 @@ internal class DefaultLayerToCodeTest {
             Arguments.of(
                 SealedLayer.Dense("name", None, 3, Activation.ReLu).trainable(),
                 """tf.keras.layers.Dense(name="name", units=3, activation=tf.keras.activations.relu)""".right()
+            ),
+            Arguments.of(
+                SealedLayer.InputLayer("name", listOf(3), 4, null, true),
+                """tf.keras.Input(shape=(3,), batch_size=4, dtype=None, sparse=True)""".right()
+            ),
+            Arguments.of(
+                SealedLayer.InputLayer("name", listOf(224, 224, 3), null, null, false),
+                """tf.keras.Input(shape=(224,224,3), batch_size=None, dtype=None, sparse=False)""".right()
             )
         )
 

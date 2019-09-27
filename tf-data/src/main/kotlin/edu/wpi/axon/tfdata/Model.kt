@@ -7,9 +7,12 @@ import edu.wpi.axon.tfdata.layer.SealedLayer
 
 typealias LayerGraph = ImmutableGraph<SealedLayer.MetaLayer>
 
-sealed class Model(
-    open val name: String
-) {
+sealed class Model {
+
+    /**
+     * The name of the model.
+     */
+    abstract val name: String
 
     /**
      * A linear stack of layers.
@@ -18,14 +21,14 @@ sealed class Model(
         override val name: String,
         val batchInputShape: List<Int?>,
         val layers: Set<SealedLayer.MetaLayer>
-    ) : Model(name)
+    ) : Model()
 
     data class General(
         override val name: String,
         val input: Set<InputData>,
         val layers: LayerGraph,
         val output: Set<OutputData>
-    ) : Model(name) {
+    ) : Model() {
 
         data class InputData(
             val id: String,

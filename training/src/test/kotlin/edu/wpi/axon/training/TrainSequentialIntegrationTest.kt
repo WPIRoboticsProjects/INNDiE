@@ -66,7 +66,6 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
                         else layer.layer.trainable(false)
                     }
                 ).generateScript().shouldBeValid {
-                    println(it.a)
                     it.a shouldBe """
                     |import tensorflow as tf
                     |
