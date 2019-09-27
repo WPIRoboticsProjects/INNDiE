@@ -45,13 +45,13 @@ internal class TrainGeneralIntegrationTest {
                     |
                     |model = tf.keras.models.load_model("$modelName")
                     |
-                    |var1 = model.inputs[0]
-                    |var2 = model.inputs[1]
-                    |var3 = model.get_layer("dense_18")(var1)
-                    |var4 = model.get_layer("dense_19")(var2)
-                    |var5 = model.get_layer("add_4")([var3, var4])
+                    |var1 = tf.keras.Input(shape=(16,), batch_size=None, dtype=None, sparse=False)
+                    |var2 = model.get_layer("dense_18")(var1)
+                    |var3 = tf.keras.Input(shape=(32,), batch_size=None, dtype=None, sparse=False)
+                    |var4 = model.get_layer("dense_19")(var3)
+                    |var5 = model.get_layer("add_4")([var2, var4])
                     |var6 = model.get_layer("dense_20")(var5)
-                    |newModelVar = tf.keras.Model(inputs=[var1, var2], outputs=var6)
+                    |newModelVar = tf.keras.Model(inputs=[var1, var3], outputs=[var6])
                     |newModelVar.get_layer("dense_18").trainable = True
                     |newModelVar.get_layer("dense_19").trainable = True
                     |newModelVar.get_layer("add_4").trainable = True

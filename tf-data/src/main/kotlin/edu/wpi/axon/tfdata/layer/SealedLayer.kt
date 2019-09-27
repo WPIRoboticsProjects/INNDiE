@@ -63,7 +63,7 @@ sealed class SealedLayer : Layer {
         val batchInputShape: List<Int?>,
         val batchSize: Int? = null,
         val dtype: Number? = null,
-        val sparse: Boolean? = null
+        val sparse: Boolean = false
     ) : SealedLayer() {
 
         override val inputs: Option<Set<String>> = None

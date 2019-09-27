@@ -138,7 +138,13 @@ class LoadLayersFromHDF5(
 
             "InputLayer" -> SealedLayer.InputLayer(
                 json["name"] as String,
-                (json["batch_input_shape"] as JsonArray<Int?>).toList()
+                (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
+                    require(it.first() == null) {
+                        "First element of InputLayer batch_input_shape was not null: " +
+                            it.joinToString()
+                    }
+                    it.drop(1)
+                }
             )
 
             else -> SealedLayer.UnknownLayer(
