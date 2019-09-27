@@ -81,4 +81,3 @@ private fun <F> MonadError<F, String>.inputsAreDeclared(
         }
     }
 }
-

@@ -32,7 +32,7 @@ sealed class Model(
             val type: List<Int?>,
             val batchSize: Int? = null,
             val dtype: Number? = null,
-            val sparse: Boolean? = null
+            val sparse: Boolean = false
         )
 
         data class OutputData(val id: String)

@@ -72,8 +72,13 @@ sealed class SealedLayer : Layer {
             Model.General.InputData(name, batchInputShape, batchSize, dtype, sparse)
 
         companion object {
-            operator fun invoke(name: String, shape: List<Int?>) =
-                InputLayer(name, shape).untrainable()
+            operator fun invoke(
+                name: String,
+                shape: List<Int?>,
+                batchSize: Int? = null,
+                dtype: Number? = null,
+                sparse: Boolean = false
+            ) = InputLayer(name, shape, batchSize, dtype, sparse).untrainable()
         }
     }
 
