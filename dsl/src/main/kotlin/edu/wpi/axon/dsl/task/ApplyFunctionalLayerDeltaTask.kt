@@ -77,7 +77,9 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         fun StringBuilder.appendLayerCode(layer: SealedLayer.MetaLayer) {
             if (layer !in handledLayers) {
                 newModel.layers
+                    // Append the predecessors first because they are the dependencies of this node
                     .predecessors(layer)
+                    // Make the ordering consistent
                     .sortedBy { it.name }
                     .forEach {
                         appendLayerCode(it)
@@ -111,14 +113,9 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         // We have to specify the inputs on the new model because the layers in the new model assume
         // the input format in the new model
         val modelInputCode = newModel.input.joinToString(prefix = "[", postfix = "]") { input ->
-            val correspondingLayer = newModel.layers.nodes().filter {
+            // There will only be one matching layer because all the layer names are unique
+            val correspondingLayer = newModel.layers.nodes().first {
                 it.layer is SealedLayer.InputLayer && it.name == input.id
-            }.let {
-                require(it.size == 1) {
-                    "Found more than one matching InputLayer with id ${input.id}: " +
-                        it.joinToString("\n")
-                }
-                it.first()
             }
 
             layerVariableNames.entries.first { it.key == correspondingLayer }.value
@@ -162,11 +159,6 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         }
     }
 
-    private fun findInputIndex(
-        newLayers: Set<Model.General.InputData>,
-        layer: SealedLayer.InputLayer
-    ) = newLayers.map { it.id }.indexOf(layer.name)
-
     /**
      * Generates the code for the inputs to a layer (the code that the layer is "called" with
      * to make connections between layers).
@@ -183,24 +175,15 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
 
         // Find the variable names corresponding to the layer names
         val variableNames = layerInputs.map { inputName ->
-            entries.filter { it.key.name == inputName }
-                .also {
-                    require(it.size == 1) {
-                        "Expected one matching variable name, got `${it.joinToString()}`. " +
-                            "Check that the layer names are all unique."
-                    }
-                }
-                .first()
-                .value
+            // There will only be one matching layer because all the layer names are unique
+            entries.first { it.key.name == inputName }.value
         }
 
         return if (variableNames.size > 1) {
             variableNames.joinToString(prefix = "[", postfix = "]")
         } else {
-            require(variableNames.isNotEmpty()) {
-                "No variable names were found."
-            }
-
+            // There will be at least one because all layer's inputs must be declared previously
+            // in the graph
             variableNames.first()
         }
     }
