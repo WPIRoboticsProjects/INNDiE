@@ -124,8 +124,12 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
             layerVariableNames.entries.first { it.key == correspondingLayer }.value
         }
 
-        val modelCode = "${newModelOutput.name} = tf.keras.Model(inputs=$modelInputCode, " +
-            "outputs=${layerVariableNames.values.last()})"
+        val modelOutputCode = newModel.output.joinToString(prefix = "[", postfix = "]") { output ->
+            layerVariableNames[newModel.layers.nodes().first { it.name == output.id }]!!
+        }
+
+        val modelCode =
+            "${newModelOutput.name} = tf.keras.Model(inputs=$modelInputCode, outputs=$modelOutputCode)"
 
         val trainableFlagsCode = buildTrainableFlags(newModel.layers.nodes(), newModelOutput)
 
