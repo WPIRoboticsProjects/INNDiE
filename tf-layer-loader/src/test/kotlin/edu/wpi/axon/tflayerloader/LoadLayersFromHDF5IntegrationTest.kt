@@ -1,3 +1,4 @@
+@file:SuppressWarnings("LongMethod", "LargeClass")
 @file:Suppress("UnstableApiUsage")
 
 package edu.wpi.axon.tflayerloader
@@ -25,7 +26,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load from test file 1`() {
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("model1.h5").toURI())
+            File(this::class.java.getResource("model1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.Sequential> {
                 it.name shouldBe "sequential_11"
@@ -83,15 +84,15 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load from test file 2`() {
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("model2.h5").toURI())
+            File(this::class.java.getResource("mobilenetv2_1.00_224.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.General> {
                 it.name shouldBe "mobilenetv2_1.00_224"
                 it.input.shouldContainExactly(
-                    Model.General.InputData("input_1", listOf(null, 224, 224, 3))
+                    Model.General.InputData("input_1", listOf(224, 224, 3))
                 )
                 it.output.shouldContainExactly(Model.General.OutputData("Logits"))
-                it.layers.nodes() shouldHaveSize 156
+                it.layers.nodes() shouldHaveSize 157
 
                 val nodesWithMultipleInputs = it.layers.nodes().filter {
                     it.inputs is Some && (it.inputs as Some).t.size > 1
@@ -108,34 +109,33 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load from bad file`() {
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("badModel1.h5").toURI())
+            File(this::class.java.getResource("badModel1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeLeft()
     }
 
     @Test
     fun `load non-sequential model 1`() {
-        val layer1 = SealedLayer.Dense(
-            "dense_2",
-            Some(setOf("input_2")),
-            4,
-            Activation.ReLu
-        ).trainable()
-
-        val layer2 = SealedLayer.Dense(
-            "dense_3",
-            Some(setOf("dense_2")),
-            5,
-            Activation.SoftMax
-        ).trainable()
-
-        val layers = setOf(layer1, layer2)
+        val layers = setOf(
+            SealedLayer.InputLayer("input_2", listOf(3)),
+            SealedLayer.Dense(
+                "dense_2",
+                Some(setOf("input_2")),
+                4,
+                Activation.ReLu
+            ).trainable(), SealedLayer.Dense(
+                "dense_3",
+                Some(setOf("dense_2")),
+                5,
+                Activation.SoftMax
+            ).trainable()
+        )
 
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("nonSequentialModel1.h5").toURI())
+            File(this::class.java.getResource("nonSequentialModel1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.General> {
                 it.name shouldBe "model_1"
-                it.input.shouldContainExactly(Model.General.InputData("input_2", listOf(null, 3)))
+                it.input.shouldContainExactly(Model.General.InputData("input_2", listOf(3)))
                 it.output.shouldContainExactly(Model.General.OutputData("dense_3"))
                 it.layers.nodes() shouldContainExactlyInAnyOrder layers
             }
@@ -145,19 +145,20 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load rnn 1`() {
         LoadLayersFromHDF5(DefaultLayersToGraph()).load(
-            File(LoadLayersFromHDF5IntegrationTest::class.java.getResource("rnn1.h5").toURI())
+            File(this::class.java.getResource("rnn1.h5").toURI())
         ).attempt().unsafeRunSync().shouldBeRight { model ->
             model.shouldBeInstanceOf<Model.General> {
                 it.name shouldBe "model_5"
                 it.input.shouldContainExactly(
                     Model.General.InputData(
                         "input_15",
-                        listOf(null, null, 5)
+                        listOf(null, 5)
                     )
                 )
                 it.output.shouldContainExactly(Model.General.OutputData("dense_1"))
                 it.layers.nodes().shouldContainExactly(
                     // TODO: Add an RNN layer class
+                    SealedLayer.InputLayer("input_15", listOf(null, 5)),
                     SealedLayer.UnknownLayer("rnn_12", Some(setOf("input_15"))).trainable(),
                     SealedLayer.Dense(
                         "dense_1",

@@ -1,4 +1,10 @@
-@file:SuppressWarnings("TooManyFunctions", "StringLiteralDuplication", "LargeClass")
+@file:SuppressWarnings(
+    "TooManyFunctions",
+    "StringLiteralDuplication",
+    "LargeClass",
+    "LongMethod",
+    "SpreadOperator"
+)
 
 package edu.wpi.axon.dsl.task
 
@@ -10,6 +16,8 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
+import io.kotlintest.matchers.booleans.shouldBeFalse
+import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import org.junit.jupiter.api.Test
@@ -31,6 +39,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             newModelOutput = configuredCorrectly("new_model")
         }
 
+        task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([base_model.get_layer("dense_1")])
             |new_model.get_layer("dense_1").trainable = True
@@ -105,6 +114,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     }
 
     @Test
+    @SuppressWarnings("MaxLineLength")
     fun `add one layer`() {
         startKoin {
             modules(defaultModule())
@@ -304,6 +314,6 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             newModelOutput = configuredCorrectly("new_model")
         }
 
-        shouldThrow<IllegalStateException> { task.code() }
+        task.isConfiguredCorrectly().shouldBeFalse()
     }
 }

@@ -1,6 +1,7 @@
 package edu.wpi.axon.training
 
-import arrow.core.ValidatedNel
+import arrow.core.NonEmptyList
+import arrow.core.Validated
 import arrow.core.invalidNel
 import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
@@ -48,9 +49,11 @@ class TrainSequential(
     private val generateDebugComments: Boolean = false
 ) {
 
+    private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
+
     @Suppress("UNUSED_VARIABLE")
-    fun generateScript(): ValidatedNel<String, String> {
-        return LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(userModelPath)).map { currentModel ->
+    fun generateScript(): Validated<NonEmptyList<String>, String> =
+        loadLayersFromHDF5.load(File(userModelPath)).map { currentModel ->
             require(currentModel is Model.Sequential)
 
             require(currentModel.batchInputShape.count { it == null } <= 1)
@@ -145,5 +148,4 @@ class TrainSequential(
             { Throwables.getStackTraceAsString(it).invalidNel() },
             { it }
         )
-    }
 }

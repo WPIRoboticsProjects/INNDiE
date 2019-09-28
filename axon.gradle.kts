@@ -218,13 +218,16 @@ configure(javaProjects) {
             excludeTags("needsSpecialSoftware")
         }
 
+        jvmArgs = listOf("-Xss512m")
         if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
-            jvmArgs = listOf(
-                "-Djava.awt.headless=true",
-                "-Dtestfx.robot=glass",
-                "-Dtestfx.headless=true",
-                "-Dprism.order=sw",
-                "-Dprism.text=t2k"
+            jvmArgs?.addAll(
+                listOf(
+                    "-Djava.awt.headless=true",
+                    "-Dtestfx.robot=glass",
+                    "-Dtestfx.headless=true",
+                    "-Dprism.order=sw",
+                    "-Dprism.text=t2k"
+                )
             )
         }
 

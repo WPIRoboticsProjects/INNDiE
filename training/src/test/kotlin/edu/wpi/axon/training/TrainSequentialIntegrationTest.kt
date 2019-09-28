@@ -1,3 +1,4 @@
+@file:SuppressWarnings("LongMethod", "LargeClass")
 package edu.wpi.axon.training
 
 import edu.wpi.axon.dsl.defaultModule
@@ -66,7 +67,6 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
                         else layer.layer.trainable(false)
                     }
                 ).generateScript().shouldBeValid {
-                    println(it.a)
                     it.a shouldBe """
                     |import tensorflow as tf
                     |

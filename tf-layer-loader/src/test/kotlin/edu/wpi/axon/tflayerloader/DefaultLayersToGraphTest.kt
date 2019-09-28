@@ -1,3 +1,4 @@
+@file:SuppressWarnings("LongMethod", "LargeClass", "StringLiteralDuplication")
 @file:Suppress("UnstableApiUsage")
 
 package edu.wpi.axon.tflayerloader
@@ -76,5 +77,37 @@ internal class DefaultLayersToGraphTest {
                 EndpointPair.ordered(layer2, layer3)
             )
         }
+    }
+
+    @Test
+    fun `duplicate layer names fails`() {
+        val layer1 = SealedLayer.UnknownLayer("layer1", Some(emptySet())).trainable()
+        val layer2 = SealedLayer.UnknownLayer("layer1", Some(setOf("layer2"))).trainable()
+        val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
+        graph.shouldBeLeft()
+    }
+
+    @Test
+    fun `layers missing inputs fails`() {
+        val layer1 = SealedLayer.UnknownLayer("layer1", Some(emptySet())).trainable()
+        val layer2 = SealedLayer.UnknownLayer("layer2", None).trainable()
+        val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
+        graph.shouldBeLeft()
+    }
+
+    @Test
+    fun `self loop fails`() {
+        val layer1 = SealedLayer.UnknownLayer("layer1", Some(setOf("layer1"))).trainable()
+        val graph = layersToGraph.convertToGraph(setOf(layer1))
+        graph.shouldBeLeft()
+    }
+
+    @Test
+    fun `inputs not in previous layers fails`() {
+        val layer1 = SealedLayer.InputLayer("l1", listOf())
+        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name))).trainable()
+        val layer3 = SealedLayer.UnknownLayer("l3", Some(setOf(layer2.name))).trainable()
+        val graph = layersToGraph.convertToGraph(setOf(layer1, layer3))
+        graph.shouldBeLeft()
     }
 }

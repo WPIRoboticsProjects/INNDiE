@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":util"))
     implementation(project(":tf-data-code"))
     implementation(project(":logging"))
+    implementation(project(":tf-layer-loader"))
 
     implementation(
         group = "com.mitchtalmadge",

@@ -3,6 +3,7 @@ package edu.wpi.axon.tfdata.layer
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Tuple2
+import edu.wpi.axon.tfdata.Model
 
 /**
  * A sealed [Layer] implementation.
@@ -53,18 +54,31 @@ sealed class SealedLayer : Layer {
 
     /**
      * A layer that accepts input data and has no parameters.
+     *
+     * // TODO: tensor parameter
      */
     data class InputLayer
     private constructor(
         override val name: String,
-        val batchInputShape: List<Int?>
+        val batchInputShape: List<Int?>,
+        val batchSize: Int? = null,
+        val dtype: Number? = null,
+        val sparse: Boolean = false
     ) : SealedLayer() {
 
         override val inputs: Option<Set<String>> = None
 
+        fun toInputData(): Model.General.InputData =
+            Model.General.InputData(name, batchInputShape, batchSize, dtype, sparse)
+
         companion object {
-            operator fun invoke(name: String, shape: List<Int?>) =
-                InputLayer(name, shape).untrainable()
+            operator fun invoke(
+                name: String,
+                shape: List<Int?>,
+                batchSize: Int? = null,
+                dtype: Number? = null,
+                sparse: Boolean = false
+            ) = InputLayer(name, shape, batchSize, dtype, sparse).untrainable()
         }
     }
 
