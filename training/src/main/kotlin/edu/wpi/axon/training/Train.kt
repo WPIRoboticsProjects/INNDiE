@@ -42,14 +42,14 @@ class Train(
                 is Model.Sequential -> {
                     if (userNewModel is Model.Sequential) {
                         TrainSequential(
-                            userModelPath,
-                            userDataset,
-                            userOptimizer,
-                            userLoss,
-                            userMetrics,
-                            userEpochs,
-                            userCurrentModel.layers,
-                            generateDebugComments
+                            userModelPath = userModelPath,
+                            userDataset = userDataset,
+                            userOptimizer = userOptimizer,
+                            userLoss = userLoss,
+                            userMetrics = userMetrics,
+                            userEpochs = userEpochs,
+                            userNewLayers = userCurrentModel.layers,
+                            generateDebugComments = generateDebugComments
                         ).generateScript()
                     } else {
                         ("userNewModel must be Sequential because userCurrentModel " +
@@ -60,13 +60,13 @@ class Train(
                 is Model.General -> {
                     if (userNewModel is Model.General) {
                         TrainGeneral(
-                            userModelPath,
-                            userDataset,
-                            userOptimizer,
-                            userLoss,
-                            userMetrics,
-                            userEpochs,
-                            userNewModel
+                            userModelPath = userModelPath,
+                            userDataset = userDataset,
+                            userOptimizer = userOptimizer,
+                            userLoss = userLoss,
+                            userMetrics = userMetrics,
+                            userEpochs = userEpochs,
+                            userNewModel = userNewModel
                         ).generateScript()
                     } else {
                         ("userNewModel must be General because userCurrentModel is " +
