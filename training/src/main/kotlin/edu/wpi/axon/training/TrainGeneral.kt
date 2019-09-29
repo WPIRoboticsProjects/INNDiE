@@ -25,7 +25,7 @@ import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import java.io.File
 
 /**
- * Trains a Sequential model.
+ * Trains a [Model.General].
  *
  * @param userModelPath The path to the model file.
  * @param userDataset The dataset to train on.
