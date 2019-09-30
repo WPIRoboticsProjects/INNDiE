@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
-class TrainingViewTest {
+class DatasetViewTest {
 
     companion object {
         private lateinit var routes: Routes
@@ -29,7 +29,7 @@ class TrainingViewTest {
     fun setupVaadin() {
         MockVaadin.setup(routes)
 
-        UI.getCurrent().navigate("training")
+        UI.getCurrent().navigate("dataset")
     }
 
     @ParameterizedTest

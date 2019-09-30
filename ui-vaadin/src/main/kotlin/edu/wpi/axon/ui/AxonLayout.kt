@@ -17,6 +17,7 @@ import com.vaadin.flow.server.VaadinSession
 import edu.wpi.axon.ui.model.TrainingModel
 import edu.wpi.axon.ui.view.AboutView
 import edu.wpi.axon.ui.view.DatasetView
+import edu.wpi.axon.ui.view.ModelView
 import edu.wpi.axon.ui.view.TrainingView
 
 /**
@@ -40,7 +41,7 @@ class AxonLayout : AppLayout() {
                     add(routerLink(VaadinIcon.CAMERA, "Dataset", DatasetView::class))
                 }
                 tab {
-                    add(routerLink(VaadinIcon.GLOBE_WIRE, "Model", DatasetView::class))
+                    add(routerLink(VaadinIcon.GLOBE_WIRE, "Model", ModelView::class))
                 }
                 tab {
                     add(routerLink(VaadinIcon.AUTOMATION, "Training", TrainingView::class))
