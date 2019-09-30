@@ -5,7 +5,7 @@ plugins {
 
 gretty {
     // https://akhikhl.github.io/gretty-doc/Gretty-configuration.html
-    host = "localhost"
+    host = "0.0.0.0"
     httpPort = 8080
     contextPath = "axon"
 }
