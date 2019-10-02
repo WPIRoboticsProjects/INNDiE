@@ -175,11 +175,17 @@ configure(javaProjects) {
             version = property("junit-jupiter.version") as String
         )
 
-        testImplementation(
-            group = "io.kotlintest",
-            name = "kotlintest-runner-junit5",
-            version = property("kotlintest.version") as String
-        )
+        // testImplementation(
+        //     group = "io.kotlintest",
+        //     name = "kotlintest-runner-junit5",
+        //     version = property("kotlintest.version") as String
+        // )
+
+        // TODO: Go back to the old dependencies once 4.x.x is out
+        // https://github.com/wpilibsuite/Axon/issues/84
+        testImplementation(fileTree("$rootDir/libraries") {
+            include("*.jar")
+        })
 
         testRuntime(
             group = "org.junit.platform",
