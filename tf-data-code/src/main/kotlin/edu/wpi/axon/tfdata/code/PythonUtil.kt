@@ -1,5 +1,7 @@
 package edu.wpi.axon.tfdata.code
 
+import arrow.core.Tuple2
+
 fun boolToPythonString(bool: Boolean?): String = when (bool) {
     null -> "None"
     true -> "True"
@@ -25,3 +27,5 @@ fun <T> listToPythonTuple(list: List<T>?, mapElement: ((T) -> String)? = null): 
             )
         }
     }
+
+fun tupleToPythonTuple(tuple: Tuple2<*, *>) = "(${tuple.a}, ${tuple.b})"

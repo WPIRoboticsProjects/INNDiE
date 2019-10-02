@@ -6,6 +6,7 @@ import arrow.core.right
 import edu.wpi.axon.tfdata.code.boolToPythonString
 import edu.wpi.axon.tfdata.code.listToPythonTuple
 import edu.wpi.axon.tfdata.code.numberToPythonString
+import edu.wpi.axon.tfdata.code.tupleToPythonTuple
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.SealedLayer
@@ -29,6 +30,28 @@ class DefaultLayerToCode : LayerToCode {
             "noise_shape=${listToPythonTuple(layer.noiseShape)}, " +
             "seed=${numberToPythonString(layer.seed)}, " +
             """name="${layer.name}")""").right()
+
+        is SealedLayer.MaxPooling2D -> {
+            val poolSizeString = when (val poolSize = layer.poolSize) {
+                is Either.Left -> poolSize.a.toString()
+                is Either.Right -> tupleToPythonTuple(poolSize.b)
+            }
+
+            val stridesString = when (val strides = layer.strides) {
+                is Either.Left -> strides.a.toString()
+                is Either.Right -> tupleToPythonTuple(strides.b)
+                null -> "None"
+            }
+
+            val dataFormatString = when (val format = layer.dataFormat) {
+                null -> "None"
+                else -> """"${format.value}""""
+            }
+
+            ("tf.keras.layers.MaxPooling2D(pool_size=$poolSizeString, strides=$stridesString, " +
+                """padding="${layer.padding.value}", data_format=$dataFormatString, """ +
+                """name="${layer.name}")""").right()
+        }
 
         else -> "Cannot construct an unknown layer: $layer".left()
     }

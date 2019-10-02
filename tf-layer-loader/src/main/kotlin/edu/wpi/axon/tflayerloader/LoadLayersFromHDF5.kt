@@ -2,8 +2,11 @@
 
 package edu.wpi.axon.tflayerloader
 
+import arrow.core.Either
+import arrow.core.Left
 import arrow.core.None
 import arrow.core.Option
+import arrow.core.Right
 import arrow.core.Tuple2
 import arrow.core.some
 import arrow.fx.IO
@@ -12,6 +15,8 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.PoolingDataFormat
+import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import io.jhdf.HdfFile
@@ -159,6 +164,15 @@ class LoadLayersFromHDF5(
                 json["seed"] as Int?
             )
 
+            "MaxPool2D", "MaxPooling2D" -> SealedLayer.MaxPooling2D(
+                json["name"] as String,
+                data.inboundNodes(),
+                json["pool_size"].tuple2OrInt(),
+                json["strides"].tuple2OrIntOrNull(),
+                json["padding"].poolingPadding(),
+                json["data_format"].poolingDataFormatOrNull()
+            )
+
             else -> SealedLayer.UnknownLayer(
                 json["name"] as String,
                 data.inboundNodes()
@@ -172,6 +186,45 @@ class LoadLayersFromHDF5(
             "softmax" -> Activation.SoftMax
             else -> Activation.UnknownActivation(name)
         }
+}
+
+private fun Any?.poolingPadding(): PoolingPadding = when (this as? String) {
+    "valid" -> PoolingPadding.Valid
+    "same" -> PoolingPadding.Same
+    else -> throw IllegalArgumentException("Not convertible: $this")
+}
+
+private fun Any?.poolingDataFormatOrNull(): PoolingDataFormat? = when (this as? String) {
+    "channels_first" -> PoolingDataFormat.ChannelsFirst
+    "channels_last" -> PoolingDataFormat.ChannelsLast
+    null -> null
+    else -> throw IllegalArgumentException("Not convertible: $this")
+}
+
+private fun Any?.tuple2OrInt(): Either<Int, Tuple2<Int, Int>> = when {
+    this is Int -> Left(this)
+
+    this as? JsonArray<Int> != null -> {
+        require(this.size == 2)
+        Right(Tuple2(this[0], this[1]))
+    }
+
+    else -> throw IllegalArgumentException("Not convertible: $this")
+}
+
+private fun Any?.tuple2OrIntOrNull(): Either<Int, Tuple2<Int, Int>>? = when {
+    this is Int -> Left(this)
+
+    this as? JsonArray<Int> != null -> {
+        require(this.size == 2)
+        Right(Tuple2(this[0], this[1]))
+    }
+
+    else -> if (this == null) {
+        null
+    } else {
+        throw IllegalArgumentException("Not convertible: $this")
+    }
 }
 
 @Suppress("UNCHECKED_CAST")

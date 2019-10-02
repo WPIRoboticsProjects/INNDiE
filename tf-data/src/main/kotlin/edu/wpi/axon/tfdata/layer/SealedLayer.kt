@@ -1,7 +1,9 @@
 package edu.wpi.axon.tfdata.layer
 
+import arrow.core.Either
 import arrow.core.None
 import arrow.core.Option
+import arrow.core.Right
 import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
 
@@ -133,6 +135,18 @@ sealed class SealedLayer : Layer {
             }
         }
     }
+
+    /**
+     * A MaxPooling2D layer.
+     */
+    data class MaxPooling2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val poolSize: Either<Int, Tuple2<Int, Int>> = Right(Tuple2(2, 2)),
+        val strides: Either<Int, Tuple2<Int, Int>>? = null,
+        val padding: PoolingPadding = PoolingPadding.Valid,
+        val dataFormat: PoolingDataFormat? = null
+    ) : SealedLayer()
 }
 
 /**
