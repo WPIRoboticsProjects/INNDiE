@@ -125,16 +125,17 @@ class LoadLayersFromHDF5(
     @Suppress("UNCHECKED_CAST")
     private fun parseLayer(className: String, data: JsonObject): SealedLayer {
         val json = data["config"] as JsonObject
+        val name = json["name"] as String
         return when (className) {
             "Dense" -> SealedLayer.Dense(
-                json["name"] as String,
+                name,
                 data.inboundNodes(),
                 json["units"] as Int,
                 parseActivation(json)
             )
 
             "Conv2D" -> SealedLayer.Conv2D(
-                json["name"] as String,
+                name,
                 data.inboundNodes(),
                 json["filters"] as Int,
                 (json["kernel_size"] as JsonArray<Int>).let { Tuple2(it[0], it[1]) },
@@ -142,7 +143,7 @@ class LoadLayersFromHDF5(
             )
 
             "InputLayer" -> SealedLayer.InputLayer(
-                json["name"] as String,
+                name,
                 (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
                     require(it.first() == null) {
                         "First element of InputLayer batch_input_shape was not null: " +
@@ -153,7 +154,7 @@ class LoadLayersFromHDF5(
             )
 
             "Dropout" -> SealedLayer.Dropout(
-                json["name"] as String,
+                name,
                 data.inboundNodes(),
                 json["rate"] as Double,
                 (json["noise_shape"] as JsonArray<Int>?)?.toList()?.let {
@@ -165,7 +166,7 @@ class LoadLayersFromHDF5(
             )
 
             "MaxPool2D", "MaxPooling2D" -> SealedLayer.MaxPooling2D(
-                json["name"] as String,
+                name,
                 data.inboundNodes(),
                 json["pool_size"].tuple2OrInt(),
                 json["strides"].tuple2OrIntOrNull(),
@@ -174,7 +175,7 @@ class LoadLayersFromHDF5(
             )
 
             else -> SealedLayer.UnknownLayer(
-                json["name"] as String,
+                name,
                 data.inboundNodes()
             )
         }
