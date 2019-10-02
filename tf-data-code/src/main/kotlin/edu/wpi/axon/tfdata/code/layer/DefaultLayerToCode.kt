@@ -25,6 +25,11 @@ class DefaultLayerToCode : LayerToCode {
             "units=${layer.units}, " +
             "activation=${makeNewActivation(layer.activation)})").right()
 
+        is SealedLayer.Dropout -> ("tf.keras.layers.Dropout(${layer.rate}, " +
+            "noise_shape=${listToPythonTuple(layer.noiseShape)}, " +
+            "seed=${numberToPythonString(layer.seed)}, " +
+            """name="${layer.name}")""").right()
+
         else -> "Cannot construct an unknown layer: $layer".left()
     }
 

@@ -3,6 +3,7 @@ package edu.wpi.axon.tfdata.code.layer
 import arrow.core.Either
 import arrow.core.None
 import arrow.core.Some
+import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
@@ -53,6 +54,18 @@ internal class DefaultLayerToCodeTest {
             Arguments.of(
                 SealedLayer.InputLayer("name", listOf(224, 224, 3), null, null, false),
                 """tf.keras.Input(shape=(224,224,3), batch_size=None, dtype=None, sparse=False)""".right()
+            ),
+            Arguments.of(
+                SealedLayer.Dropout("name", Some(setOf("in1")), 0.2),
+                """tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None, name="name")""".right()
+            ),
+            Arguments.of(
+                SealedLayer.Dropout("name", Some(setOf("in1")), 0.2, listOf(1, 2, 3), 2),
+                """tf.keras.layers.Dropout(0.2, noise_shape=(1,2,3), seed=2, name="name")""".right()
+            ),
+            Arguments.of(
+                SealedLayer.UnknownLayer("", None),
+                """Cannot construct an unknown layer: UnknownLayer(name=, inputs=None)""".left()
             )
         )
 

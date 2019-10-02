@@ -109,6 +109,30 @@ sealed class SealedLayer : Layer {
         val kernel: Tuple2<Int, Int>,
         val activation: Activation
     ) : SealedLayer()
+
+    /**
+     * A Dropout layer. Applies dropout to the input, randomly setting a fraction of input units to
+     * `0` at each update during training time to counteract overfitting.
+     *
+     * @param rate The fraction of the input units to drop. Between `0` and `1`.
+     * @param noiseShape A 1D integer tensor representing the shape of the binary dropout mask that
+     * will be multiplied with the input.
+     * @param seed The random seed.
+     */
+    data class Dropout(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val rate: Double,
+        val noiseShape: List<Int>? = null,
+        val seed: Int? = null
+    ) : SealedLayer() {
+
+        init {
+            require(rate in 0.0..1.0) {
+                "rate ($rate) was outside the allowed range of [0, 1]."
+            }
+        }
+    }
 }
 
 /**

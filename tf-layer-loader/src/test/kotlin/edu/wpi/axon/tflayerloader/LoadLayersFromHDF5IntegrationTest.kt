@@ -51,9 +51,10 @@ internal class LoadLayersFromHDF5IntegrationTest {
                             "max_pooling2d_8",
                             None
                         ).trainable(),
-                        SealedLayer.UnknownLayer(
+                        SealedLayer.Dropout(
                             "dropout_19",
-                            None
+                            None,
+                            0.25
                         ).trainable(),
                         SealedLayer.UnknownLayer(
                             "flatten_8",
@@ -65,9 +66,10 @@ internal class LoadLayersFromHDF5IntegrationTest {
                             128,
                             Activation.ReLu
                         ).trainable(),
-                        SealedLayer.UnknownLayer(
+                        SealedLayer.Dropout(
                             "dropout_20",
-                            None
+                            None,
+                            0.5
                         ).trainable(),
                         SealedLayer.Dense(
                             "dense_23",

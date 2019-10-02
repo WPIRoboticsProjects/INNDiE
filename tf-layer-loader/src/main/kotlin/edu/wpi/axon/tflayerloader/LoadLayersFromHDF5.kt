@@ -147,6 +147,18 @@ class LoadLayersFromHDF5(
                 }
             )
 
+            "Dropout" -> SealedLayer.Dropout(
+                json["name"] as String,
+                data.inboundNodes(),
+                json["rate"] as Double,
+                (json["noise_shape"] as JsonArray<Int>?)?.toList()?.let {
+                    throw IllegalStateException(
+                        "noise_shape was not null (this isn't bad): ${it.joinToString()}"
+                    )
+                },
+                json["seed"] as Int?
+            )
+
             else -> SealedLayer.UnknownLayer(
                 json["name"] as String,
                 data.inboundNodes()
@@ -164,6 +176,7 @@ class LoadLayersFromHDF5(
 
 @Suppress("UNCHECKED_CAST")
 private fun JsonObject.inboundNodes(): Option<Set<String>> {
+    // None is valid for Sequential models
     val inboundNodes = this["inbound_nodes"] ?: return None
     inboundNodes as JsonArray<JsonArray<JsonArray<Any>>>
     require(inboundNodes.size == 1)
