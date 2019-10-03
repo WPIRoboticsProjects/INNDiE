@@ -1,11 +1,17 @@
 package edu.wpi.axon.tfdata.code.layer
 
 import arrow.core.Either
+import arrow.core.Left
 import arrow.core.None
+import arrow.core.Right
 import arrow.core.Some
+import arrow.core.Tuple2
+import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.axon.tfdata.layer.PoolingDataFormat
+import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.shouldBe
@@ -53,6 +59,51 @@ internal class DefaultLayerToCodeTest {
             Arguments.of(
                 SealedLayer.InputLayer("name", listOf(224, 224, 3), null, null, false),
                 """tf.keras.Input(shape=(224,224,3), batch_size=None, dtype=None, sparse=False)""".right()
+            ),
+            Arguments.of(
+                SealedLayer.Dropout("name", Some(setOf("in1")), 0.2),
+                """tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None, name="name")""".right()
+            ),
+            Arguments.of(
+                SealedLayer.Dropout("name", Some(setOf("in1")), 0.2, listOf(1, 2, 3), 2),
+                """tf.keras.layers.Dropout(0.2, noise_shape=(1,2,3), seed=2, name="name")""".right()
+            ),
+            Arguments.of(
+                SealedLayer.UnknownLayer("", None),
+                """Cannot construct an unknown layer: UnknownLayer(name=, inputs=None)""".left()
+            ),
+            Arguments.of(
+                SealedLayer.MaxPooling2D(
+                    "name",
+                    None,
+                    Left(1),
+                    Left(2),
+                    PoolingPadding.Valid,
+                    null
+                ),
+                """tf.keras.layers.MaxPooling2D(pool_size=1, strides=2, padding="valid", data_format=None, name="name")""".right()
+            ),
+            Arguments.of(
+                SealedLayer.MaxPooling2D(
+                    "name",
+                    None,
+                    Left(1),
+                    null,
+                    PoolingPadding.Same,
+                    PoolingDataFormat.ChannelsLast
+                ),
+                """tf.keras.layers.MaxPooling2D(pool_size=1, strides=None, padding="same", data_format="channels_last", name="name")""".right()
+            ),
+            Arguments.of(
+                SealedLayer.MaxPooling2D(
+                    "name",
+                    None,
+                    Right(Tuple2(1, 2)),
+                    Right(Tuple2(3, 4)),
+                    PoolingPadding.Valid,
+                    PoolingDataFormat.ChannelsFirst
+                ),
+                """tf.keras.layers.MaxPooling2D(pool_size=(1, 2), strides=(3, 4), padding="valid", data_format="channels_first", name="name")""".right()
             )
         )
 

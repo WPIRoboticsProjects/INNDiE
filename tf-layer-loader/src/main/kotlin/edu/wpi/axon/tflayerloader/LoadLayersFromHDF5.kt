@@ -2,8 +2,11 @@
 
 package edu.wpi.axon.tflayerloader
 
+import arrow.core.Either
+import arrow.core.Left
 import arrow.core.None
 import arrow.core.Option
+import arrow.core.Right
 import arrow.core.Tuple2
 import arrow.core.some
 import arrow.fx.IO
@@ -12,6 +15,8 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.PoolingDataFormat
+import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import io.jhdf.HdfFile
@@ -120,16 +125,17 @@ class LoadLayersFromHDF5(
     @Suppress("UNCHECKED_CAST")
     private fun parseLayer(className: String, data: JsonObject): SealedLayer {
         val json = data["config"] as JsonObject
+        val name = json["name"] as String
         return when (className) {
             "Dense" -> SealedLayer.Dense(
-                json["name"] as String,
+                name,
                 data.inboundNodes(),
                 json["units"] as Int,
                 parseActivation(json)
             )
 
             "Conv2D" -> SealedLayer.Conv2D(
-                json["name"] as String,
+                name,
                 data.inboundNodes(),
                 json["filters"] as Int,
                 (json["kernel_size"] as JsonArray<Int>).let { Tuple2(it[0], it[1]) },
@@ -137,7 +143,7 @@ class LoadLayersFromHDF5(
             )
 
             "InputLayer" -> SealedLayer.InputLayer(
-                json["name"] as String,
+                name,
                 (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
                     require(it.first() == null) {
                         "First element of InputLayer batch_input_shape was not null: " +
@@ -147,8 +153,29 @@ class LoadLayersFromHDF5(
                 }
             )
 
+            "Dropout" -> SealedLayer.Dropout(
+                name,
+                data.inboundNodes(),
+                json["rate"] as Double,
+                (json["noise_shape"] as JsonArray<Int>?)?.toList()?.let {
+                    throw IllegalStateException(
+                        "noise_shape was not null (this isn't bad): ${it.joinToString()}"
+                    )
+                },
+                json["seed"] as Int?
+            )
+
+            "MaxPool2D", "MaxPooling2D" -> SealedLayer.MaxPooling2D(
+                name,
+                data.inboundNodes(),
+                json["pool_size"].tuple2OrInt(),
+                json["strides"].tuple2OrIntOrNull(),
+                json["padding"].poolingPadding(),
+                json["data_format"].poolingDataFormatOrNull()
+            )
+
             else -> SealedLayer.UnknownLayer(
-                json["name"] as String,
+                name,
                 data.inboundNodes()
             )
         }
@@ -162,8 +189,48 @@ class LoadLayersFromHDF5(
         }
 }
 
+private fun Any?.poolingPadding(): PoolingPadding = when (this as? String) {
+    "valid" -> PoolingPadding.Valid
+    "same" -> PoolingPadding.Same
+    else -> throw IllegalArgumentException("Not convertible: $this")
+}
+
+private fun Any?.poolingDataFormatOrNull(): PoolingDataFormat? = when (this as? String) {
+    "channels_first" -> PoolingDataFormat.ChannelsFirst
+    "channels_last" -> PoolingDataFormat.ChannelsLast
+    null -> null
+    else -> throw IllegalArgumentException("Not convertible: $this")
+}
+
+private fun Any?.tuple2OrInt(): Either<Int, Tuple2<Int, Int>> = when {
+    this is Int -> Left(this)
+
+    this as? JsonArray<Int> != null -> {
+        require(this.size == 2)
+        Right(Tuple2(this[0], this[1]))
+    }
+
+    else -> throw IllegalArgumentException("Not convertible: $this")
+}
+
+private fun Any?.tuple2OrIntOrNull(): Either<Int, Tuple2<Int, Int>>? = when {
+    this is Int -> Left(this)
+
+    this as? JsonArray<Int> != null -> {
+        require(this.size == 2)
+        Right(Tuple2(this[0], this[1]))
+    }
+
+    else -> if (this == null) {
+        null
+    } else {
+        throw IllegalArgumentException("Not convertible: $this")
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
 private fun JsonObject.inboundNodes(): Option<Set<String>> {
+    // None is valid for Sequential models
     val inboundNodes = this["inbound_nodes"] ?: return None
     inboundNodes as JsonArray<JsonArray<JsonArray<Any>>>
     require(inboundNodes.size == 1)

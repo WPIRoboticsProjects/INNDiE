@@ -1,7 +1,9 @@
 package edu.wpi.axon.tfdata.layer
 
+import arrow.core.Either
 import arrow.core.None
 import arrow.core.Option
+import arrow.core.Right
 import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
 
@@ -108,6 +110,42 @@ sealed class SealedLayer : Layer {
         val filters: Int,
         val kernel: Tuple2<Int, Int>,
         val activation: Activation
+    ) : SealedLayer()
+
+    /**
+     * A Dropout layer. Applies dropout to the input, randomly setting a fraction of input units to
+     * `0` at each update during training time to counteract overfitting.
+     *
+     * @param rate The fraction of the input units to drop. Between `0` and `1`.
+     * @param noiseShape A 1D integer tensor representing the shape of the binary dropout mask that
+     * will be multiplied with the input.
+     * @param seed The random seed.
+     */
+    data class Dropout(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val rate: Double,
+        val noiseShape: List<Int>? = null,
+        val seed: Int? = null
+    ) : SealedLayer() {
+
+        init {
+            require(rate in 0.0..1.0) {
+                "rate ($rate) was outside the allowed range of [0, 1]."
+            }
+        }
+    }
+
+    /**
+     * A MaxPooling2D layer.
+     */
+    data class MaxPooling2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val poolSize: Either<Int, Tuple2<Int, Int>> = Right(Tuple2(2, 2)),
+        val strides: Either<Int, Tuple2<Int, Int>>? = null,
+        val padding: PoolingPadding = PoolingPadding.Valid,
+        val dataFormat: PoolingDataFormat? = null
     ) : SealedLayer()
 }
 

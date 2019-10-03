@@ -1,5 +1,7 @@
 package edu.wpi.axon.tfdata.code
 
+import arrow.core.Tuple2
+
 fun boolToPythonString(bool: Boolean?): String = when (bool) {
     null -> "None"
     true -> "True"
@@ -11,9 +13,19 @@ fun numberToPythonString(number: Number?): String = when (number) {
     else -> number.toString()
 }
 
-fun <T> listToPythonTuple(list: List<T>, mapElement: (T) -> String): String =
-    if (list.size == 1) {
-        "(${mapElement(list.first())},)"
-    } else {
-        list.joinToString(separator = ",", prefix = "(", postfix = ")", transform = mapElement)
+fun <T> listToPythonTuple(list: List<T>?, mapElement: ((T) -> String)? = null): String =
+    when (list) {
+        null -> "None"
+        else -> if (list.size == 1) {
+            "(${list.first()},)"
+        } else {
+            list.joinToString(
+                separator = ",",
+                prefix = "(",
+                postfix = ")",
+                transform = mapElement
+            )
+        }
     }
+
+fun tupleToPythonTuple(tuple: Tuple2<*, *>) = "(${tuple.a}, ${tuple.b})"

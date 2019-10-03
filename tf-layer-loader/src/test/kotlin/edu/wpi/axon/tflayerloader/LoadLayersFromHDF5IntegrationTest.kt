@@ -4,10 +4,13 @@
 package edu.wpi.axon.tflayerloader
 
 import arrow.core.None
+import arrow.core.Right
 import arrow.core.Some
 import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.PoolingDataFormat
+import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
@@ -47,13 +50,18 @@ internal class LoadLayersFromHDF5IntegrationTest {
                             Tuple2(3, 3),
                             Activation.ReLu
                         ).trainable(),
-                        SealedLayer.UnknownLayer(
+                        SealedLayer.MaxPooling2D(
                             "max_pooling2d_8",
-                            None
+                            None,
+                            Right(Tuple2(2, 2)),
+                            Right(Tuple2(2, 2)),
+                            PoolingPadding.Valid,
+                            PoolingDataFormat.ChannelsLast
                         ).trainable(),
-                        SealedLayer.UnknownLayer(
+                        SealedLayer.Dropout(
                             "dropout_19",
-                            None
+                            None,
+                            0.25
                         ).trainable(),
                         SealedLayer.UnknownLayer(
                             "flatten_8",
@@ -65,9 +73,10 @@ internal class LoadLayersFromHDF5IntegrationTest {
                             128,
                             Activation.ReLu
                         ).trainable(),
-                        SealedLayer.UnknownLayer(
+                        SealedLayer.Dropout(
                             "dropout_20",
-                            None
+                            None,
+                            0.5
                         ).trainable(),
                         SealedLayer.Dense(
                             "dense_23",

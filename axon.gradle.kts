@@ -175,10 +175,26 @@ configure(javaProjects) {
             version = property("junit-jupiter.version") as String
         )
 
+        // testImplementation(
+        //     group = "io.kotlintest",
+        //     name = "kotlintest-runner-junit5",
+        //     version = property("kotlintest.version") as String
+        // )
+
+        // TODO: Go back to the old dependencies once 4.x.x is out
+        // https://github.com/wpilibsuite/Axon/issues/84
         testImplementation(
-            group = "io.kotlintest",
-            name = "kotlintest-runner-junit5",
-            version = property("kotlintest.version") as String
+            files(
+                "$rootDir/libraries/kotlintest-runner-junit5-jvm-4.0.2631-SNAPSHOT.jar",
+                "$rootDir/libraries/kotlintest-runner-console-jvm-4.0.2631-SNAPSHOT.jar",
+                "$rootDir/libraries/kotlintest-runner-jvm-jvm-4.0.2631-SNAPSHOT.jar",
+                "$rootDir/libraries/kotlintest-core-jvm-4.0.2631-SNAPSHOT.jar"
+            )
+        )
+        testImplementation(
+            group = "org.slf4j",
+            name = "slf4j-api",
+            version = "1.7.25"
         )
 
         testRuntime(
