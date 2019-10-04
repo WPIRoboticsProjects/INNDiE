@@ -128,7 +128,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         }
 
         task.code() shouldBe """
-            |new_model = tf.keras.Sequential([tf.keras.layers.Dense(name="dense_1", units=10, activation=tf.keras.activations.relu)])
+            |new_model = tf.keras.Sequential([tf.keras.layers.Dense(units=10, activation=tf.keras.activations.relu, name="dense_1")])
             |new_model.get_layer("dense_1").trainable = True
         """.trimMargin()
     }
@@ -151,8 +151,8 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([
-            |    tf.keras.layers.Dense(name="dense_1", units=128, activation=tf.keras.activations.relu),
-            |    tf.keras.layers.Dense(name="dense_2", units=10, activation=tf.keras.activations.softmax)
+            |    tf.keras.layers.Dense(units=128, activation=tf.keras.activations.relu, name="dense_1"),
+            |    tf.keras.layers.Dense(units=10, activation=tf.keras.activations.softmax, name="dense_2")
             |])
             |new_model.get_layer("dense_1").trainable = True
             |new_model.get_layer("dense_2").trainable = True
@@ -221,7 +221,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([
             |    base_model.get_layer("unknown_3"),
-            |    tf.keras.layers.Dense(name="dense_2", units=3, activation=tf.keras.activations.softmax)
+            |    tf.keras.layers.Dense(units=3, activation=tf.keras.activations.softmax, name="dense_2")
             |])
             |new_model.get_layer("unknown_3").trainable = True
             |new_model.get_layer("dense_2").trainable = True

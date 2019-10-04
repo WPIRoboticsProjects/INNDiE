@@ -29,3 +29,10 @@ fun <T> listToPythonTuple(list: List<T>?, mapElement: ((T) -> String)? = null): 
     }
 
 fun tupleToPythonTuple(tuple: Tuple2<*, *>) = "(${tuple.a}, ${tuple.b})"
+
+fun quoted(string: String) = """"$string""""
+
+fun mapToPythonString(renormClipping: Map<String, Double>?): String =
+    renormClipping?.entries?.joinToString(separator = ", ", prefix = "{", postfix = "}") {
+        "${it.key}: ${it.value}"
+    } ?: "None"
