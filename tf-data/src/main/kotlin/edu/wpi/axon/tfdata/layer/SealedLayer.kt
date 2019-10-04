@@ -85,19 +85,6 @@ sealed class SealedLayer : Layer {
     }
 
     /**
-     * A Dense layer.
-     *
-     * @param units The number of neurons.
-     * @param activation The [Activation] function.
-     */
-    data class Dense(
-        override val name: String,
-        override val inputs: Option<Set<String>>,
-        val units: Int,
-        val activation: Activation
-    ) : SealedLayer()
-
-    /**
      * A 2D convolutional layer.
      *
      * @param filters The output dimension.
@@ -109,6 +96,19 @@ sealed class SealedLayer : Layer {
         override val inputs: Option<Set<String>>,
         val filters: Int,
         val kernel: Tuple2<Int, Int>,
+        val activation: Activation
+    ) : SealedLayer()
+
+    /**
+     * A Dense layer.
+     *
+     * @param units The number of neurons.
+     * @param activation The [Activation] function.
+     */
+    data class Dense(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val units: Int,
         val activation: Activation
     ) : SealedLayer()
 
