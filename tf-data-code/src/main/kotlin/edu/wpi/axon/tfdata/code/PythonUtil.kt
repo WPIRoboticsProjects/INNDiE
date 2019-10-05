@@ -30,7 +30,7 @@ fun <T> listToPythonTuple(list: List<T>?, mapElement: ((T) -> String)? = null): 
 
 fun tupleToPythonTuple(tuple: Tuple2<*, *>) = "(${tuple.a}, ${tuple.b})"
 
-fun quoted(string: String) = """"$string""""
+fun quoted(string: String?) = if (string == null) "None" else """"$string""""
 
 fun mapToPythonString(renormClipping: Map<String, Double>?): String =
     renormClipping?.entries?.joinToString(separator = ", ", prefix = "{", postfix = "}") {

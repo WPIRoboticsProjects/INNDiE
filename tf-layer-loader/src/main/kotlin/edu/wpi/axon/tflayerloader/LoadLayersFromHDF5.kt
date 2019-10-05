@@ -16,8 +16,8 @@ import com.beust.klaxon.Parser
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
+import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
-import edu.wpi.axon.tfdata.layer.PoolingDataFormat
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
 import edu.wpi.axon.tfdata.layer.SealedLayer
@@ -194,13 +194,19 @@ class LoadLayersFromHDF5(
                 json["seed"] as Int?
             )
 
+            "Flatten" -> SealedLayer.Flatten(
+                name,
+                data.inboundNodes(),
+                json["data_format"].dataFormatOrNull()
+            )
+
             "MaxPool2D", "MaxPooling2D" -> SealedLayer.MaxPooling2D(
                 name,
                 data.inboundNodes(),
                 json["pool_size"].tuple2OrInt(),
                 json["strides"].tuple2OrIntOrNull(),
                 json["padding"].poolingPadding(),
-                json["data_format"].poolingDataFormatOrNull()
+                json["data_format"].dataFormatOrNull()
             )
 
             else -> SealedLayer.UnknownLayer(
@@ -250,9 +256,9 @@ private fun Any?.poolingPadding(): PoolingPadding = when (this as? String) {
     else -> throw IllegalArgumentException("Not convertible: $this")
 }
 
-private fun Any?.poolingDataFormatOrNull(): PoolingDataFormat? = when (this as? String) {
-    "channels_first" -> PoolingDataFormat.ChannelsFirst
-    "channels_last" -> PoolingDataFormat.ChannelsLast
+private fun Any?.dataFormatOrNull(): DataFormat? = when (this as? String) {
+    "channels_first" -> DataFormat.ChannelsFirst
+    "channels_last" -> DataFormat.ChannelsLast
     null -> null
     else -> throw IllegalArgumentException("Not convertible: $this")
 }

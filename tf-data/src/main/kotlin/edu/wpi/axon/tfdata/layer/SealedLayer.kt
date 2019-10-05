@@ -152,6 +152,15 @@ sealed class SealedLayer : Layer {
     }
 
     /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/Flatten
+     */
+    data class Flatten(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val dataFormat: DataFormat? = null
+    ) : SealedLayer()
+
+    /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/MaxPool2D
      */
     data class MaxPooling2D(
@@ -160,7 +169,7 @@ sealed class SealedLayer : Layer {
         val poolSize: Either<Int, Tuple2<Int, Int>> = Right(Tuple2(2, 2)),
         val strides: Either<Int, Tuple2<Int, Int>>? = null,
         val padding: PoolingPadding = PoolingPadding.Valid,
-        val dataFormat: PoolingDataFormat? = null
+        val dataFormat: DataFormat? = null
     ) : SealedLayer()
 }
 

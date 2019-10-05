@@ -5,7 +5,6 @@ import edu.wpi.axon.tfdata.layer.Constraint
 
 interface ConstraintToCode {
 
-
     /**
      * Get the code to make a new instance of an [constraint].
      *

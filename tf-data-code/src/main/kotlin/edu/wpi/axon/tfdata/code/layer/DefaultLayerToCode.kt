@@ -85,6 +85,15 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
+        is SealedLayer.Flatten -> makeLayerCode(
+            "tf.keras.layers.Flatten",
+            listOf(),
+            listOf(
+                "data_format" to quoted(layer.dataFormat?.value),
+                "name" to quoted(layer.name)
+            )
+        ).right()
+
         is SealedLayer.MaxPooling2D -> {
             val poolSizeString = when (val poolSize = layer.poolSize) {
                 is Either.Left -> poolSize.a.toString()
@@ -97,11 +106,6 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
                 null -> "None"
             }
 
-            val dataFormatString = when (val format = layer.dataFormat) {
-                null -> "None"
-                else -> """"${format.value}""""
-            }
-
             makeLayerCode(
                 "tf.keras.layers.MaxPooling2D",
                 listOf(),
@@ -109,7 +113,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
                     "pool_size" to poolSizeString,
                     "strides" to stridesString,
                     "padding" to quoted(layer.padding.value),
-                    "data_format" to dataFormatString,
+                    "data_format" to quoted(layer.dataFormat?.value),
                     "name" to quoted(layer.name)
                 )
             ).right()
@@ -137,13 +141,13 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
      */
     private fun makeLayerCode(
         className: String,
-        args: List<String>,
-        namedArgs: List<Pair<String, String>>
+        args: List<String?>,
+        namedArgs: List<Pair<String, String?>>
     ): String {
-        val argsString = args.joinToString(separator = ", ")
+        val argsString = args.joinToString(separator = ", ") { it ?: "None" }
         val optionalSeparator = if (args.isNotEmpty()) ", " else ""
         val namedArgsString = namedArgs.joinToString(separator = ", ") {
-            """${it.first}=${it.second}"""
+            if (it.second != null) """${it.first}=${it.second}""" else "None"
         }
         return "$className($argsString$optionalSeparator$namedArgsString)"
     }

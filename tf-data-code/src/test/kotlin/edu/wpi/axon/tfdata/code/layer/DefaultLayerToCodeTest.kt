@@ -10,9 +10,9 @@ import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tfdata.layer.PoolingDataFormat
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
@@ -109,7 +109,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     Left(1),
                     null,
                     PoolingPadding.Same,
-                    PoolingDataFormat.ChannelsLast
+                    DataFormat.ChannelsLast
                 ),
                 """tf.keras.layers.MaxPooling2D(pool_size=1, strides=None, padding="same", data_format="channels_last", name="name")""".right(),
                 null
@@ -121,7 +121,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     Right(Tuple2(1, 2)),
                     Right(Tuple2(3, 4)),
                     PoolingPadding.Valid,
-                    PoolingDataFormat.ChannelsFirst
+                    DataFormat.ChannelsFirst
                 ),
                 """tf.keras.layers.MaxPooling2D(pool_size=(1, 2), strides=(3, 4), padding="valid", data_format="channels_first", name="name")""".right(),
                 null
@@ -174,6 +174,15 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                         }
                     }
                 }
+            ),
+            Arguments.of(
+                SealedLayer.Flatten(
+                    "name",
+                    None,
+                    DataFormat.ChannelsFirst
+                ),
+                ("""tf.keras.layers.Flatten(data_format="channels_first", name="name")""").right(),
+                null
             )
         )
 
