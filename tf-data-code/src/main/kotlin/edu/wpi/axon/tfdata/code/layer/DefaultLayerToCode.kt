@@ -7,6 +7,7 @@ import arrow.core.right
 import edu.wpi.axon.tfdata.code.boolToPythonString
 import edu.wpi.axon.tfdata.code.listToPythonTuple
 import edu.wpi.axon.tfdata.code.mapToPythonString
+import edu.wpi.axon.tfdata.code.namedArguments
 import edu.wpi.axon.tfdata.code.numberToPythonString
 import edu.wpi.axon.tfdata.code.quoted
 import edu.wpi.axon.tfdata.code.tupleToPythonTuple
@@ -147,9 +148,6 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
     ): String {
         val argsString = args.joinToString(separator = ", ") { it ?: "None" }
         val optionalSeparator = if (args.isNotEmpty()) ", " else ""
-        val namedArgsString = namedArgs.joinToString(separator = ", ") {
-            if (it.second != null) """${it.first}=${it.second}""" else "None"
-        }
-        return "$className($argsString$optionalSeparator$namedArgsString)"
+        return "$className($argsString$optionalSeparator${namedArguments(namedArgs)})"
     }
 }
