@@ -9,7 +9,7 @@ import arrow.core.Some
 import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.PoolingDataFormat
+import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
@@ -56,16 +56,17 @@ internal class LoadLayersFromHDF5IntegrationTest {
                             Right(Tuple2(2, 2)),
                             Right(Tuple2(2, 2)),
                             PoolingPadding.Valid,
-                            PoolingDataFormat.ChannelsLast
+                            DataFormat.ChannelsLast
                         ).trainable(),
                         SealedLayer.Dropout(
                             "dropout_19",
                             None,
                             0.25
                         ).trainable(),
-                        SealedLayer.UnknownLayer(
+                        SealedLayer.Flatten(
                             "flatten_8",
-                            None
+                            None,
+                            DataFormat.ChannelsLast
                         ).trainable(),
                         SealedLayer.Dense(
                             "dense_22",

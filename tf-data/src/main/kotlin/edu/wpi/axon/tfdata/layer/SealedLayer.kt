@@ -85,24 +85,35 @@ sealed class SealedLayer : Layer {
     }
 
     /**
-     * A Dense layer.
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/BatchNormalization
      *
-     * @param units The number of neurons.
-     * @param activation The [Activation] function.
+     * Does not support the `adjustment` parameter.
      */
-    data class Dense(
+    data class BatchNormalization(
         override val name: String,
         override val inputs: Option<Set<String>>,
-        val units: Int,
-        val activation: Activation
+        val axis: Int = -1,
+        val momentum: Double = 0.99,
+        val epsilon: Double = 0.001,
+        val center: Boolean = true,
+        val scale: Boolean = true,
+        val betaInitializer: Initializer = Initializer.Zeros,
+        val gammaInitializer: Initializer = Initializer.Ones,
+        val movingMeanInitializer: Initializer = Initializer.Zeros,
+        val movingVarianceInitializer: Initializer = Initializer.Ones,
+        val betaRegularizer: Regularizer? = null,
+        val gammaRegularizer: Regularizer? = null,
+        val betaConstraint: Constraint? = null,
+        val gammaConstraint: Constraint? = null,
+        val renorm: Boolean = false,
+        val renormClipping: Map<String, Double>? = null,
+        val renormMomentum: Double? = 0.99,
+        val fused: Boolean? = null,
+        val virtualBatchSize: Int? = null
     ) : SealedLayer()
 
     /**
-     * A 2D convolutional layer.
-     *
-     * @param filters The output dimension.
-     * @param kernel The (x,y) size of the kernel.
-     * @param activation The [Activation] function.
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/Conv2D
      */
     data class Conv2D(
         override val name: String,
@@ -113,13 +124,17 @@ sealed class SealedLayer : Layer {
     ) : SealedLayer()
 
     /**
-     * A Dropout layer. Applies dropout to the input, randomly setting a fraction of input units to
-     * `0` at each update during training time to counteract overfitting.
-     *
-     * @param rate The fraction of the input units to drop. Between `0` and `1`.
-     * @param noiseShape A 1D integer tensor representing the shape of the binary dropout mask that
-     * will be multiplied with the input.
-     * @param seed The random seed.
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/Dense
+     */
+    data class Dense(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val units: Int,
+        val activation: Activation
+    ) : SealedLayer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/Dropout
      */
     data class Dropout(
         override val name: String,
@@ -137,7 +152,16 @@ sealed class SealedLayer : Layer {
     }
 
     /**
-     * A MaxPooling2D layer.
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/Flatten
+     */
+    data class Flatten(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val dataFormat: DataFormat? = null
+    ) : SealedLayer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/MaxPool2D
      */
     data class MaxPooling2D(
         override val name: String,
@@ -145,7 +169,7 @@ sealed class SealedLayer : Layer {
         val poolSize: Either<Int, Tuple2<Int, Int>> = Right(Tuple2(2, 2)),
         val strides: Either<Int, Tuple2<Int, Int>>? = null,
         val padding: PoolingPadding = PoolingPadding.Valid,
-        val dataFormat: PoolingDataFormat? = null
+        val dataFormat: DataFormat? = null
     ) : SealedLayer()
 }
 

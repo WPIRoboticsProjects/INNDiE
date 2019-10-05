@@ -15,8 +15,11 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.PoolingDataFormat
+import edu.wpi.axon.tfdata.layer.Constraint
+import edu.wpi.axon.tfdata.layer.DataFormat
+import edu.wpi.axon.tfdata.layer.Initializer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
+import edu.wpi.axon.tfdata.layer.Regularizer
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import io.jhdf.HdfFile
@@ -127,11 +130,41 @@ class LoadLayersFromHDF5(
         val json = data["config"] as JsonObject
         val name = json["name"] as String
         return when (className) {
-            "Dense" -> SealedLayer.Dense(
+            "InputLayer" -> SealedLayer.InputLayer(
+                name,
+                (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
+                    require(it.first() == null) {
+                        "First element of InputLayer batch_input_shape was not null: " +
+                            it.joinToString()
+                    }
+                    it.drop(1)
+                }
+            )
+
+            "BatchNormalization", "BatchNormalizationV1" -> SealedLayer.BatchNormalization(
                 name,
                 data.inboundNodes(),
-                json["units"] as Int,
-                parseActivation(json)
+                (json["axis"] as JsonArray<Int>).let {
+                    require(it.size == 1)
+                    it.first()
+                },
+                json["momentum"] as Double,
+                json["epsilon"] as Double,
+                json["center"] as Boolean,
+                json["scale"] as Boolean,
+                json["beta_initializer"].initializer(),
+                json["gamma_initializer"].initializer(),
+                json["moving_mean_initializer"].initializer(),
+                json["moving_variance_initializer"].initializer(),
+                json["beta_regularizer"].regularizer(),
+                json["gamma_regularizer"].regularizer(),
+                json["beta_contraint"].constraint(),
+                json["gamma_contraint"].constraint(),
+                json["renorm"] as Boolean? ?: false,
+                json["renorm_clipping"] as Map<String, Double>?,
+                json["renorm_momentum"] as Double?,
+                json["fused"] as Boolean?,
+                json["virtual_batch_size"] as Int?
             )
 
             "Conv2D" -> SealedLayer.Conv2D(
@@ -142,15 +175,11 @@ class LoadLayersFromHDF5(
                 parseActivation(json)
             )
 
-            "InputLayer" -> SealedLayer.InputLayer(
+            "Dense" -> SealedLayer.Dense(
                 name,
-                (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
-                    require(it.first() == null) {
-                        "First element of InputLayer batch_input_shape was not null: " +
-                            it.joinToString()
-                    }
-                    it.drop(1)
-                }
+                data.inboundNodes(),
+                json["units"] as Int,
+                parseActivation(json)
             )
 
             "Dropout" -> SealedLayer.Dropout(
@@ -165,13 +194,19 @@ class LoadLayersFromHDF5(
                 json["seed"] as Int?
             )
 
+            "Flatten" -> SealedLayer.Flatten(
+                name,
+                data.inboundNodes(),
+                json["data_format"].dataFormatOrNull()
+            )
+
             "MaxPool2D", "MaxPooling2D" -> SealedLayer.MaxPooling2D(
                 name,
                 data.inboundNodes(),
                 json["pool_size"].tuple2OrInt(),
                 json["strides"].tuple2OrIntOrNull(),
                 json["padding"].poolingPadding(),
-                json["data_format"].poolingDataFormatOrNull()
+                json["data_format"].dataFormatOrNull()
             )
 
             else -> SealedLayer.UnknownLayer(
@@ -189,15 +224,41 @@ class LoadLayersFromHDF5(
         }
 }
 
+private fun Any?.initializer(): Initializer {
+    require(this != null)
+    require(this is JsonObject)
+    return when (this["class_name"]) {
+        "Zeros" -> Initializer.Zeros
+        "Ones" -> Initializer.Ones
+        else -> throw IllegalStateException("Unknown initializer: $this")
+    }
+}
+
+private fun Any?.regularizer(): Regularizer? {
+    if (this == null) {
+        return null
+    } else {
+        TODO()
+    }
+}
+
+private fun Any?.constraint(): Constraint? {
+    if (this == null) {
+        return null
+    } else {
+        TODO()
+    }
+}
+
 private fun Any?.poolingPadding(): PoolingPadding = when (this as? String) {
     "valid" -> PoolingPadding.Valid
     "same" -> PoolingPadding.Same
     else -> throw IllegalArgumentException("Not convertible: $this")
 }
 
-private fun Any?.poolingDataFormatOrNull(): PoolingDataFormat? = when (this as? String) {
-    "channels_first" -> PoolingDataFormat.ChannelsFirst
-    "channels_last" -> PoolingDataFormat.ChannelsLast
+private fun Any?.dataFormatOrNull(): DataFormat? = when (this as? String) {
+    "channels_first" -> DataFormat.ChannelsFirst
+    "channels_last" -> DataFormat.ChannelsLast
     null -> null
     else -> throw IllegalArgumentException("Not convertible: $this")
 }
