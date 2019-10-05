@@ -73,3 +73,14 @@ fun mapToPythonString(map: Map<String, Double>?): String =
     map?.entries?.joinToString(separator = ", ", prefix = "{", postfix = "}") {
         "${it.key}: ${it.value}"
     } ?: "None"
+
+/**
+ * Constructs a string specifying named arguments.
+ *
+ * @param namedArgs The arguments (parameter name to argument value).
+ * @return The code for the arguments.
+ */
+fun <T : Any> namedArguments(namedArgs: List<Pair<String, T?>>) =
+    namedArgs.joinToString(separator = ", ") {
+        if (it.second != null) """${it.first}=${it.second}""" else "None"
+    }

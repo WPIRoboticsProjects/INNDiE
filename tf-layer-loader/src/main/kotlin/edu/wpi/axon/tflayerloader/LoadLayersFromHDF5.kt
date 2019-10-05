@@ -265,6 +265,19 @@ private fun Any?.constraint(): Constraint? =
         require(this is JsonObject)
         val config = this["config"] as JsonObject
         when (this["class_name"]) {
+            "MaxNorm" -> Constraint.MaxNorm(config["max_value"] as Double, config["axis"] as Int)
+
+            "MinMaxNorm" -> Constraint.MinMaxNorm(
+                config["min_value"] as Double,
+                config["max_value"] as Double,
+                config["rate"] as Double,
+                config["axis"] as Int
+            )
+
+            "NonNeg" -> Constraint.NonNeg
+
+            "UnitNorm" -> Constraint.UnitNorm(config["axis"] as Int)
+
             else ->
                 throw IllegalStateException("Unknown constraint: ${this.entries.joinToString()}")
         }

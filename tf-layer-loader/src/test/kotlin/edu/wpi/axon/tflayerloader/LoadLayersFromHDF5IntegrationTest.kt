@@ -9,6 +9,7 @@ import arrow.core.Some
 import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
@@ -197,6 +198,90 @@ internal class LoadLayersFromHDF5IntegrationTest {
                         1,
                         Activation.Linear,
                         kernelRegularizer = Regularizer.L1L2(0.01, 0.0)
+                    ).trainable()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `load sequential with maxnorm constraint`() {
+        LoadLayersFromHDF5(DefaultLayersToGraph()).load(
+            File(this::class.java.getResource("sequential_with_maxnorm_constraint.h5").toURI())
+        ).attempt().unsafeRunSync().shouldBeRight { model ->
+            model.shouldBeInstanceOf<Model.Sequential> {
+                it.name shouldBe "sequential_12"
+                it.batchInputShape shouldBe listOf(null, 1)
+                it.layers.shouldContainExactly(
+                    SealedLayer.Dense(
+                        "dense_6",
+                        None,
+                        1,
+                        Activation.Linear,
+                        kernelConstraint = Constraint.MaxNorm(2.0, 0)
+                    ).trainable()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `load sequential with minmaxnorm constraint`() {
+        LoadLayersFromHDF5(DefaultLayersToGraph()).load(
+            File(this::class.java.getResource("sequential_with_minmaxnorm_constraint.h5").toURI())
+        ).attempt().unsafeRunSync().shouldBeRight { model ->
+            model.shouldBeInstanceOf<Model.Sequential> {
+                it.name shouldBe "sequential_13"
+                it.batchInputShape shouldBe listOf(null, 1)
+                it.layers.shouldContainExactly(
+                    SealedLayer.Dense(
+                        "dense_7",
+                        None,
+                        1,
+                        Activation.Linear,
+                        kernelConstraint = Constraint.MinMaxNorm(1.0, 2.0, 3.0, 0)
+                    ).trainable()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `load sequential with unitnorm constraint`() {
+        LoadLayersFromHDF5(DefaultLayersToGraph()).load(
+            File(this::class.java.getResource("sequential_with_unitnorm_constraint.h5").toURI())
+        ).attempt().unsafeRunSync().shouldBeRight { model ->
+            model.shouldBeInstanceOf<Model.Sequential> {
+                it.name shouldBe "sequential_15"
+                it.batchInputShape shouldBe listOf(null, 1)
+                it.layers.shouldContainExactly(
+                    SealedLayer.Dense(
+                        "dense_9",
+                        None,
+                        1,
+                        Activation.Linear,
+                        kernelConstraint = Constraint.UnitNorm(0)
+                    ).trainable()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `load sequential with nonneg constraint`() {
+        LoadLayersFromHDF5(DefaultLayersToGraph()).load(
+            File(this::class.java.getResource("sequential_with_nonneg_constraint.h5").toURI())
+        ).attempt().unsafeRunSync().shouldBeRight { model ->
+            model.shouldBeInstanceOf<Model.Sequential> {
+                it.name shouldBe "sequential_14"
+                it.batchInputShape shouldBe listOf(null, 1)
+                it.layers.shouldContainExactly(
+                    SealedLayer.Dense(
+                        "dense_8",
+                        None,
+                        1,
+                        Activation.Linear,
+                        kernelConstraint = Constraint.NonNeg
                     ).trainable()
                 )
             }
