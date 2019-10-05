@@ -11,6 +11,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.PoolingPadding
+import edu.wpi.axon.tfdata.layer.Regularizer
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
@@ -175,6 +176,27 @@ internal class LoadLayersFromHDF5IntegrationTest {
                         Some(setOf("rnn_12")),
                         10,
                         Activation.SoftMax
+                    ).trainable()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `load sequential with l1 regularizer`() {
+        LoadLayersFromHDF5(DefaultLayersToGraph()).load(
+            File(this::class.java.getResource("sequential_with_l1_regularizer.h5").toURI())
+        ).attempt().unsafeRunSync().shouldBeRight { model ->
+            model.shouldBeInstanceOf<Model.Sequential> {
+                it.name shouldBe "sequential_9"
+                it.batchInputShape shouldBe listOf(null, 1)
+                it.layers.shouldContainExactly(
+                    SealedLayer.Dense(
+                        "dense_3",
+                        None,
+                        1,
+                        Activation.Linear,
+                        kernelRegularizer = Regularizer.L1L2(0.01, 0.0)
                     ).trainable()
                 )
             }

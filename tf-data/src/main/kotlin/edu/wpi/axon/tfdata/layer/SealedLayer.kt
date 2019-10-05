@@ -130,7 +130,15 @@ sealed class SealedLayer : Layer {
         override val name: String,
         override val inputs: Option<Set<String>>,
         val units: Int,
-        val activation: Activation
+        val activation: Activation = Activation.Linear,
+        val useBias: Boolean = true,
+        val kernelInitializer: Initializer = Initializer.GlorotUniform(null),
+        val biasInitializer: Initializer = Initializer.Zeros,
+        val kernelRegularizer: Regularizer? = null,
+        val biasRegularizer: Regularizer? = null,
+        val activityRegularizer: Regularizer? = null,
+        val kernelConstraint: Constraint? = null,
+        val biasConstraint: Constraint? = null
     ) : SealedLayer()
 
     /**

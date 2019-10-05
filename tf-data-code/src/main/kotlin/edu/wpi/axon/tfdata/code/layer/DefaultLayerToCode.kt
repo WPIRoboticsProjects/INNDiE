@@ -124,6 +124,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
 
     override fun makeNewActivation(activation: Activation) = "tf.keras.activations." +
         when (activation) {
+            is Activation.Linear -> "linear"
             is Activation.ReLu -> "relu"
             is Activation.SoftMax -> "softmax"
             is Activation.UnknownActivation -> throw IllegalArgumentException(

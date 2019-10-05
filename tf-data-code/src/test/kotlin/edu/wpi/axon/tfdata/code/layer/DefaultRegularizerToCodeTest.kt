@@ -23,16 +23,6 @@ internal class DefaultRegularizerToCodeTest {
         @Suppress("unused")
         fun regularizerSource() = listOf(
             Arguments.of(
-                Regularizer.L1(0.01),
-                """tf.keras.regularizers.l1(0.01)""".right(),
-                null
-            ),
-            Arguments.of(
-                Regularizer.L2(0.01),
-                """tf.keras.regularizers.l2(0.01)""".right(),
-                null
-            ),
-            Arguments.of(
                 Regularizer.L1L2(0.01, 0.02),
                 """tf.keras.regularizers.L1L2(0.01, 0.02)""".right(),
                 null

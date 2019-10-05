@@ -179,7 +179,15 @@ class LoadLayersFromHDF5(
                 name,
                 data.inboundNodes(),
                 json["units"] as Int,
-                parseActivation(json)
+                parseActivation(json),
+                json["use_bias"] as Boolean,
+                json["kernel_initializer"].initializer(),
+                json["bias_initializer"].initializer(),
+                json["kernel_regularizer"].regularizer(),
+                json["bias_regularizer"].regularizer(),
+                json["activity_regularizer"].regularizer(),
+                json["kernel_constraint"].constraint(),
+                json["bias_constraint"].constraint()
             )
 
             "Dropout" -> SealedLayer.Dropout(
@@ -218,6 +226,7 @@ class LoadLayersFromHDF5(
 
     private fun parseActivation(json: JsonObject): Activation =
         when (val name = json["activation"] as String) {
+            "linear" -> Activation.Linear
             "relu" -> Activation.ReLu
             "softmax" -> Activation.SoftMax
             else -> Activation.UnknownActivation(name)
@@ -227,28 +236,39 @@ class LoadLayersFromHDF5(
 private fun Any?.initializer(): Initializer {
     require(this != null)
     require(this is JsonObject)
+    val config = this["config"] as JsonObject
     return when (this["class_name"]) {
         "Zeros" -> Initializer.Zeros
         "Ones" -> Initializer.Ones
-        else -> throw IllegalStateException("Unknown initializer: $this")
+        "GlorotUniform" -> Initializer.GlorotUniform(config["seed"] as Int?)
+        else -> throw IllegalStateException("Unknown initializer: ${this.entries.joinToString()}")
     }
 }
 
-private fun Any?.regularizer(): Regularizer? {
+private fun Any?.regularizer(): Regularizer? =
     if (this == null) {
-        return null
+        null
     } else {
-        TODO()
+        require(this is JsonObject)
+        val config = this["config"] as JsonObject
+        when (this["class_name"]) {
+            "L1L2" -> Regularizer.L1L2(config["l1"] as Double, config["l2"] as Double)
+            else ->
+                throw IllegalStateException("Unknown regularizer: ${this.entries.joinToString()}")
+        }
     }
-}
 
-private fun Any?.constraint(): Constraint? {
+private fun Any?.constraint(): Constraint? =
     if (this == null) {
-        return null
+        null
     } else {
-        TODO()
+        require(this is JsonObject)
+        val config = this["config"] as JsonObject
+        when (this["class_name"]) {
+            else ->
+                throw IllegalStateException("Unknown constraint: ${this.entries.joinToString()}")
+        }
     }
-}
 
 private fun Any?.poolingPadding(): PoolingPadding = when (this as? String) {
     "valid" -> PoolingPadding.Valid
