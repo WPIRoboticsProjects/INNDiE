@@ -249,6 +249,8 @@ private fun Any?.initializer(): Initializer {
             }
         )
 
+        "Identity" -> Initializer.Identity(config["gain"] as Double)
+
         "Zeros" -> Initializer.Zeros
         "Ones" -> Initializer.Ones
         "GlorotUniform" -> Initializer.GlorotUniform(config["seed"] as Int?)

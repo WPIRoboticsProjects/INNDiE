@@ -1,0 +1,31 @@
+package edu.wpi.axon.tflayerloader
+
+import arrow.core.None
+import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.Regularizer
+import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.trainable
+import io.kotlintest.matchers.collections.shouldContainExactly
+import io.kotlintest.shouldBe
+import org.junit.jupiter.api.Test
+
+internal class LoadLayersWithRegularizersIntegrationTest {
+
+    @Test
+    fun `load sequential with l1 regularizer`() {
+        loadModel<Model.Sequential>("sequential_with_l1_regularizer.h5") {
+            it.name shouldBe "sequential_9"
+            it.batchInputShape shouldBe listOf(null, 1)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_3",
+                    None,
+                    1,
+                    Activation.Linear,
+                    kernelRegularizer = Regularizer.L1L2(0.01, 0.0)
+                ).trainable()
+            )
+        }
+    }
+}

@@ -3,18 +3,14 @@
 
 package edu.wpi.axon.tflayerloader
 
-import arrow.core.Left
 import arrow.core.None
 import arrow.core.Right
 import arrow.core.Some
 import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
-import edu.wpi.axon.tfdata.layer.Initializer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
-import edu.wpi.axon.tfdata.layer.Regularizer
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.matchers.booleans.shouldBeTrue
@@ -158,159 +154,6 @@ internal class LoadLayersFromHDF5IntegrationTest {
                     Some(setOf("rnn_12")),
                     10,
                     Activation.SoftMax
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with l1 regularizer`() {
-        loadModel<Model.Sequential>("sequential_with_l1_regularizer.h5") {
-            it.name shouldBe "sequential_9"
-            it.batchInputShape shouldBe listOf(null, 1)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense_3",
-                    None,
-                    1,
-                    Activation.Linear,
-                    kernelRegularizer = Regularizer.L1L2(0.01, 0.0)
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with maxnorm constraint`() {
-        loadModel<Model.Sequential>("sequential_with_maxnorm_constraint.h5") {
-            it.name shouldBe "sequential_12"
-            it.batchInputShape shouldBe listOf(null, 1)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense_6",
-                    None,
-                    1,
-                    Activation.Linear,
-                    kernelConstraint = Constraint.MaxNorm(2.0, 0)
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with minmaxnorm constraint`() {
-        loadModel<Model.Sequential>("sequential_with_minmaxnorm_constraint.h5") {
-            it.name shouldBe "sequential_13"
-            it.batchInputShape shouldBe listOf(null, 1)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense_7",
-                    None,
-                    1,
-                    Activation.Linear,
-                    kernelConstraint = Constraint.MinMaxNorm(1.0, 2.0, 3.0, 0)
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with unitnorm constraint`() {
-        loadModel<Model.Sequential>("sequential_with_unitnorm_constraint.h5") {
-            it.name shouldBe "sequential_15"
-            it.batchInputShape shouldBe listOf(null, 1)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense_9",
-                    None,
-                    1,
-                    Activation.Linear,
-                    kernelConstraint = Constraint.UnitNorm(0)
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with nonneg constraint`() {
-        loadModel<Model.Sequential>("sequential_with_nonneg_constraint.h5") {
-            it.name shouldBe "sequential_14"
-            it.batchInputShape shouldBe listOf(null, 1)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense_8",
-                    None,
-                    1,
-                    Activation.Linear,
-                    kernelConstraint = Constraint.NonNeg
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with constant int initializer`() {
-        loadModel<Model.Sequential>("sequential_with_constant_int_initializer.h5") {
-            it.name shouldBe "sequential"
-            it.batchInputShape shouldBe listOf(null, 1)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense",
-                    None,
-                    1,
-                    Activation.Linear,
-                    kernelInitializer = Initializer.Constant(Left(0.0))
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with constant list initializer`() {
-        loadModel<Model.Sequential>("sequential_with_constant_list_initializer.h5") {
-            it.name shouldBe "sequential_2"
-            it.batchInputShape shouldBe listOf(null, 2)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense_2",
-                    None,
-                    2,
-                    Activation.Linear,
-                    kernelInitializer = Initializer.Constant(Right(listOf(1.0, 2.1)))
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with constant tuple initializer`() {
-        loadModel<Model.Sequential>("sequential_with_constant_tuple_initializer.h5") {
-            it.name shouldBe "sequential_3"
-            it.batchInputShape shouldBe listOf(null, 2)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense_3",
-                    None,
-                    2,
-                    Activation.Linear,
-                    kernelInitializer = Initializer.Constant(Right(listOf(1.0, 2.1)))
-                ).trainable()
-            )
-        }
-    }
-
-    @Test
-    fun `load sequential with constant nparray initializer`() {
-        loadModel<Model.Sequential>("sequential_with_constant_nparray_initializer.h5") {
-            it.name shouldBe "sequential_4"
-            it.batchInputShape shouldBe listOf(null, 2)
-            it.layers.shouldContainExactly(
-                SealedLayer.Dense(
-                    "dense_4",
-                    None,
-                    2,
-                    Activation.Linear,
-                    kernelInitializer = Initializer.Constant(Right(listOf(1.0, 2.1)))
                 ).trainable()
             )
         }

@@ -16,7 +16,13 @@ sealed class Initializer {
         val value: Either<Double, List<Double>>
     ) : Initializer()
 
-    object Identity : Initializer()
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/initializers/identity
+     */
+    data class Identity(
+        val gain: Double = 1.0
+    ) : Initializer()
+
     object Normal : Initializer()
 
     /**
