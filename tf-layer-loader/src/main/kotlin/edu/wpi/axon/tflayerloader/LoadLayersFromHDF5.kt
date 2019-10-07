@@ -253,6 +253,15 @@ private fun Any?.initializer(): Initializer {
 
         "Zeros" -> Initializer.Zeros
         "Ones" -> Initializer.Ones
+
+        "Orthogonal" -> Initializer.Orthogonal(config["gain"] as Double, config["seed"] as Int?)
+
+        "RandomNormal" -> Initializer.RandomNormal(
+            config["mean"] as Double,
+            config["stddev"] as Double,
+            config["seed"] as Int?
+        )
+
         "GlorotUniform" -> Initializer.GlorotUniform(config["seed"] as Int?)
         else -> throw IllegalStateException("Unknown initializer: ${this.entries.joinToString()}")
     }

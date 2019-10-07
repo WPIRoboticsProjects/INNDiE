@@ -30,8 +30,23 @@ sealed class Initializer {
      */
     object Ones : Initializer()
 
-    object Orthogonal : Initializer()
-    object RandomNormal : Initializer()
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/initializers/orthogonal
+     */
+    data class Orthogonal(
+        val gain: Double = 1.0,
+        val seed: Int? = null
+    ) : Initializer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/initializers/RandomNormal
+     */
+    data class RandomNormal(
+        val mean: Double = 0.0,
+        val stddev: Double = 0.05,
+        val seed: Int? = null
+    ) : Initializer()
+
     object RandomUniform : Initializer()
     object TruncatedNormal : Initializer()
     object Uniform : Initializer()
@@ -46,13 +61,13 @@ sealed class Initializer {
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/glorot_uniform_initializer
      */
     data class GlorotNormal(
-        val seed: Int?
+        val seed: Int? = null
     ) : Initializer()
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/glorot_uniform_initializer
      */
     data class GlorotUniform(
-        val seed: Int?
+        val seed: Int? = null
     ) : Initializer()
 }

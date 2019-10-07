@@ -98,4 +98,38 @@ internal class LoadLayersWithInitializersIntegrationTest {
             )
         }
     }
+
+    @Test
+    fun `load sequential with orthogonal initializer`() {
+        loadModel<Model.Sequential>("sequential_with_orthogonal_initializer.h5") {
+            it.name shouldBe "sequential_6"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_6",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.Orthogonal(1.2, 3)
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load sequential with randomnormal initializer`() {
+        loadModel<Model.Sequential>("sequential_with_randomnormal_initializer.h5") {
+            it.name shouldBe "sequential_7"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_7",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.RandomNormal(1.0, 0.5, null)
+                ).trainable()
+            )
+        }
+    }
 }
