@@ -238,6 +238,17 @@ private fun Any?.initializer(): Initializer {
     require(this is JsonObject)
     val config = this["config"] as JsonObject
     return when (this["class_name"]) {
+        "Constant" -> Initializer.Constant(
+            when (val value = config["value"]) {
+                is Number -> Left(value.toDouble())
+
+                // This works for list, tuple, and nparray
+                is JsonArray<*> -> Right((value as JsonArray<Number>).map { it.toDouble() })
+
+                else -> throw IllegalStateException("Unknown Constant initializer value: $value")
+            }
+        )
+
         "Zeros" -> Initializer.Zeros
         "Ones" -> Initializer.Ones
         "GlorotUniform" -> Initializer.GlorotUniform(config["seed"] as Int?)

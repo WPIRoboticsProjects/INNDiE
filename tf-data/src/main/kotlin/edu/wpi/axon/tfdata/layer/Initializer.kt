@@ -1,5 +1,7 @@
 package edu.wpi.axon.tfdata.layer
 
+import arrow.core.Either
+
 /**
  * Methods to initialize weights.
  *
@@ -8,14 +10,38 @@ package edu.wpi.axon.tfdata.layer
 sealed class Initializer {
 
     /**
-     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/zeros_initializer
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/initializers/constant
      */
-    object Zeros : Initializer()
+    data class Constant(
+        val value: Either<Double, List<Double>>
+    ) : Initializer()
+
+    object Identity : Initializer()
+    object Normal : Initializer()
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/initializers/ones
      */
     object Ones : Initializer()
+
+    object Orthogonal : Initializer()
+    object RandomNormal : Initializer()
+    object RandomUniform : Initializer()
+    object TruncatedNormal : Initializer()
+    object Uniform : Initializer()
+    object VarianceScaling : Initializer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/zeros_initializer
+     */
+    object Zeros : Initializer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/glorot_uniform_initializer
+     */
+    data class GlorotNormal(
+        val seed: Int?
+    ) : Initializer()
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/glorot_uniform_initializer
