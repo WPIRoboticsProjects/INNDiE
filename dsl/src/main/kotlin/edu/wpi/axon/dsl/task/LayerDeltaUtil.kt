@@ -1,7 +1,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.boolToPythonString
+import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.tfdata.layer.SealedLayer
 
 /**
@@ -45,7 +45,7 @@ internal fun buildTrainableFlags(
     when (it) {
         is SealedLayer.MetaLayer.TrainableLayer -> {
             val layerInModel = getLayerInModel(model, it.layer.name)
-            """$layerInModel.trainable = ${boolToPythonString(it.trainable)}"""
+            """$layerInModel.trainable = ${pythonString(it.trainable)}"""
         }
 
         is SealedLayer.MetaLayer.UntrainableLayer -> null

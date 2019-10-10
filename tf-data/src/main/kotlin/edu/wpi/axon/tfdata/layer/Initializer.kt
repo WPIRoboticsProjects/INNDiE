@@ -14,7 +14,7 @@ sealed class Initializer {
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/initializers/constant
      */
     data class Constant(
-        val value: Either<Double, List<Double>>
+        val value: Either<Double, List<Double>> = Left(0.0)
     ) : Initializer()
 
     /**

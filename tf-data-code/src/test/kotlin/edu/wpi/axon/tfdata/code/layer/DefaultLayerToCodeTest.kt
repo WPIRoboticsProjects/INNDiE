@@ -10,10 +10,12 @@ import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.layer.Activation
+import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
+import edu.wpi.axon.tfdata.layer.Regularizer
 import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.tfdata.layer.trainable
 import io.kotlintest.shouldBe
@@ -139,10 +141,10 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     gammaInitializer = Initializer.Ones,
                     movingMeanInitializer = Initializer.Zeros,
                     movingVarianceInitializer = Initializer.Ones,
-                    betaRegularizer = null,
-                    gammaRegularizer = null,
-                    betaConstraint = null,
-                    gammaConstraint = null,
+                    betaRegularizer = Regularizer.L1L2(),
+                    gammaRegularizer = Regularizer.L1L2(),
+                    betaConstraint = Constraint.NonNeg,
+                    gammaConstraint = Constraint.NonNeg,
                     renorm = false,
                     renormClipping = null,
                     renormMomentum = 0.99,

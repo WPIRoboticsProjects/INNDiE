@@ -12,7 +12,7 @@ internal class DefaultConstraintToCodeTest {
 
     @ParameterizedTest
     @MethodSource("constraintSource")
-    fun `test constraints`(constraint: Constraint?, expected: Either<String, String>) {
+    fun `test constraints`(constraint: Constraint, expected: Either<String, String>) {
         DefaultConstraintToCode().makeNewConstraint(constraint) shouldBe expected
     }
 

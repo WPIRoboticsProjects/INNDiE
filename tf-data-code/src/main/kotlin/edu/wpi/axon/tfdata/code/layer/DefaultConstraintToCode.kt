@@ -1,13 +1,12 @@
 package edu.wpi.axon.tfdata.code.layer
 
-import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.tfdata.code.namedArguments
 import edu.wpi.axon.tfdata.layer.Constraint
 
 class DefaultConstraintToCode : ConstraintToCode {
 
-    override fun makeNewConstraint(constraint: Constraint?) = when (constraint) {
+    override fun makeNewConstraint(constraint: Constraint) = when (constraint) {
         is Constraint.MaxNorm -> makeNewConstraint(
             "MaxNorm",
             listOf(
@@ -37,8 +36,6 @@ class DefaultConstraintToCode : ConstraintToCode {
                 "axis" to constraint.axis
             )
         ).right()
-
-        else -> "Cannot make an unknown constraint: $constraint".left()
     }
 
     private fun makeNewConstraint(

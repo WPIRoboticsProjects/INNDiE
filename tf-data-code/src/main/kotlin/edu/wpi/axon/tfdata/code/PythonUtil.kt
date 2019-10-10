@@ -1,78 +1,56 @@
 package edu.wpi.axon.tfdata.code
 
+import arrow.core.Either
 import arrow.core.Tuple2
 
-/**
- * Converts a [Boolean] to the equivalent Python code.
- *
- * @param bool The [Boolean].
- * @return The Python code equivalent.
- */
-fun boolToPythonString(bool: Boolean?): String = when (bool) {
-    null -> "None"
-    true -> "True"
-    false -> "False"
-}
+data class Unquoted(val value: String)
+data class ListAsList(val list: List<Any?>)
+data class ListAsTuple(val list: List<Any?>)
+
+fun String.unquoted() = Unquoted(this)
+
+fun List<Any?>.asList() = ListAsList(this)
+
+fun List<Any?>.asTuple() = ListAsTuple(this)
 
 /**
- * Converts a [Number] to the equivalent Python code.
+ * Converts a value into its Python string equivalent.
  *
- * @param number The [Number].
- * @return The Python code equivalent.
+ * @param value The value to convert.
+ * @return The Python string.
  */
-fun numberToPythonString(number: Number?): String = when (number) {
+fun pythonString(value: Any?): String = when (value) {
     null -> "None"
-    else -> number.toString()
-}
+    is Unquoted -> value.value
+    is String -> """"$value""""
+    is Boolean -> if (value) "True" else "False"
+    is Tuple2<*, *> -> "(${pythonString(value.a)}, ${pythonString(value.b)})"
+    is Either<*, *> -> value.fold({ pythonString(it) }, { pythonString(it) })
 
-/**
- * Converts a [List] to the equivalent Python code for a tuple.
- *
- * @param list The [List].
- * @param mapElement A mapping function applied to each element of the [list].
- * @return The Python code equivalent.
- */
-fun <T> listToPythonTuple(list: List<T>?, mapElement: ((T) -> String)? = null): String =
-    when (list) {
-        null -> "None"
-        else -> if (list.size == 1) {
-            "(${list.first()},)"
-        } else {
-            list.joinToString(
-                separator = ",",
-                prefix = "(",
-                postfix = ")",
-                transform = mapElement
-            )
-        }
+    is ListAsTuple -> if (value.list.size == 1) {
+        "(${value.list.first()},)"
+    } else {
+        value.list.joinToString(
+            separator = ",",
+            prefix = "(",
+            postfix = ")",
+            transform = ::pythonString
+        )
     }
 
-/**
- * Converts a [Tuple2] to the equivalent Python code.
- *
- * @param tuple The [Tuple2].
- * @return The Python code equivalent.
- */
-fun tupleToPythonTuple(tuple: Tuple2<*, *>) = "(${tuple.a}, ${tuple.b})"
+    is ListAsList -> value.list.joinToString(
+        separator = ",",
+        prefix = "[",
+        postfix = "]",
+        transform = ::pythonString
+    )
 
-/**
- * Puts quotes around a string. `null` strings become `None`.
- *
- * @param string The [String].
- * @return The quoted string or `None`.
- */
-fun quoted(string: String?) = if (string == null) "None" else """"$string""""
+    is Map<*, *> -> value.entries.joinToString(separator = ", ", prefix = "{", postfix = "}") {
+        "${it.key}: ${pythonString(it.value)}"
+    }
 
-/**
- * Converts a [Map] to the equivalent Python code.
- *
- * @param map The [Map].
- * @return The Python code equivalent.
- */
-fun mapToPythonString(map: Map<String, Double>?): String =
-    map?.entries?.joinToString(separator = ", ", prefix = "{", postfix = "}") {
-        "${it.key}: ${it.value}"
-    } ?: "None"
+    else -> value.toString()
+}
 
 /**
  * Constructs a string specifying named arguments.
@@ -80,7 +58,5 @@ fun mapToPythonString(map: Map<String, Double>?): String =
  * @param namedArgs The arguments (parameter name to argument value).
  * @return The code for the arguments.
  */
-fun <T : Any> namedArguments(namedArgs: List<Pair<String, T?>>) =
-    namedArgs.joinToString(separator = ", ") {
-        if (it.second != null) """${it.first}=${it.second}""" else "None"
-    }
+inline fun <reified T : Any?> namedArguments(namedArgs: List<Pair<String, T>>) =
+    namedArgs.joinToString(separator = ", ") { "${it.first}=${pythonString(it.second)}" }

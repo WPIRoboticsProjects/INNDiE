@@ -11,5 +11,5 @@ interface ConstraintToCode {
      * @param constraint The [Constraint].
      * @return The code to make a new instance of the [constraint].
      */
-    fun makeNewConstraint(constraint: Constraint?): Either<String, String>
+    fun makeNewConstraint(constraint: Constraint): Either<String, String>
 }

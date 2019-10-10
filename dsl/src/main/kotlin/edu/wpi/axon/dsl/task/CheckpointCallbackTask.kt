@@ -5,8 +5,7 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.ModelCheckpointSaveFrequency
-import edu.wpi.axon.tfdata.code.boolToPythonString
-import edu.wpi.axon.tfdata.code.numberToPythonString
+import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
 
 /**
@@ -74,12 +73,12 @@ class CheckpointCallbackTask(name: String) : BaseTask(name) {
         |${output.name} = tf.keras.callbacks.ModelCheckpoint(
         |    "$filePath",
         |    monitor="$monitor",
-        |    verbose=${numberToPythonString(verbose)},
-        |    save_best_only=${boolToPythonString(saveBestOnly)},
-        |    save_weights_only=${boolToPythonString(saveWeightsOnly)},
+        |    verbose=${pythonString(verbose)},
+        |    save_best_only=${pythonString(saveBestOnly)},
+        |    save_weights_only=${pythonString(saveWeightsOnly)},
         |    mode="$mode",
         |    save_freq=$saveFrequency,
-        |    load_weights_on_restart=${boolToPythonString(loadWeightsOnRestart)}
+        |    load_weights_on_restart=${pythonString(loadWeightsOnRestart)}
         |)
     """.trimMargin()
 }
