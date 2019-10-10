@@ -262,9 +262,21 @@ private fun Any?.initializer(): Initializer {
             config["seed"] as Int?
         )
 
+        "RandomUniform" -> Initializer.RandomUniform(
+            config["minval"].randomUniformVal(),
+            config["maxval"].randomUniformVal(),
+            config["seed"] as Int?
+        )
+
         "GlorotUniform" -> Initializer.GlorotUniform(config["seed"] as Int?)
         else -> throw IllegalStateException("Unknown initializer: ${this.entries.joinToString()}")
     }
+}
+
+private fun Any?.randomUniformVal() = when (this) {
+    is Double -> Left(this)
+    is JsonArray<*> -> Right((this as JsonArray<Double>).toList())
+    else -> throw IllegalStateException("Unknown RandomUniform val: $this")
 }
 
 private fun Any?.regularizer(): Regularizer? =

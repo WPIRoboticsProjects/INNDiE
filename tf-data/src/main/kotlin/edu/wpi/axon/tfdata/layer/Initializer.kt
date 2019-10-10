@@ -1,6 +1,7 @@
 package edu.wpi.axon.tfdata.layer
 
 import arrow.core.Either
+import arrow.core.Left
 
 /**
  * Methods to initialize weights.
@@ -47,7 +48,15 @@ sealed class Initializer {
         val seed: Int? = null
     ) : Initializer()
 
-    object RandomUniform : Initializer()
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/initializers/RandomUniform
+     */
+    data class RandomUniform(
+        val minVal: Either<Double, List<Double>> = Left(-0.05),
+        val maxVal: Either<Double, List<Double>> = Left(0.05),
+        val seed: Int? = null
+    ) : Initializer()
+
     object TruncatedNormal : Initializer()
     object Uniform : Initializer()
     object VarianceScaling : Initializer()

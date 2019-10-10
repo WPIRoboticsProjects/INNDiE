@@ -132,4 +132,42 @@ internal class LoadLayersWithInitializersIntegrationTest {
             )
         }
     }
+
+    @Test
+    fun `load sequential with randomuniform initializer`() {
+        loadModel<Model.Sequential>("sequential_with_randomuniform_initializer.h5") {
+            it.name shouldBe "sequential_2"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_2",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.RandomUniform(Left(-0.1), Left(0.1), null)
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load sequential with randomuniform tensor initializer`() {
+        loadModel<Model.Sequential>("sequential_with_randomuniform_tensor_initializer.h5") {
+            it.name shouldBe "sequential_3"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_3",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.RandomUniform(
+                        Right(listOf(-0.1, -0.2)),
+                        Right(listOf(0.1, 0.2)),
+                        null
+                    )
+                ).trainable()
+            )
+        }
+    }
 }
