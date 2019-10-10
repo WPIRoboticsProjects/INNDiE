@@ -2,6 +2,7 @@ package edu.wpi.axon.tfdata.code.layer
 
 import arrow.core.Either
 import arrow.core.Left
+import arrow.core.Right
 import arrow.core.right
 import edu.wpi.axon.tfdata.layer.Initializer
 import io.kotlintest.shouldBe
@@ -25,6 +26,42 @@ internal class DefaultInitializerToCodeTest {
             Arguments.of(
                 Initializer.Constant(Left(0.0)),
                 "tf.keras.initializers.Constant(value=0.0)".right()
+            ),
+            Arguments.of(
+                Initializer.Identity(1.2),
+                "tf.keras.initializers.Identity(gain=1.2)".right()
+            ),
+            Arguments.of(
+                Initializer.Ones,
+                "tf.keras.initializers.Ones()".right()
+            ),
+            Arguments.of(
+                Initializer.Orthogonal(1.1, null),
+                "tf.keras.initializers.Orthogonal(gain=1.1, seed=None)".right()
+            ),
+            Arguments.of(
+                Initializer.RandomNormal(1.0, 2.0, null),
+                "tf.keras.initializers.RandomNormal(mean=1.0, stddev=2.0, seed=None)".right()
+            ),
+            Arguments.of(
+                Initializer.RandomUniform(Left(-0.05), Left(0.05), null),
+                "tf.keras.initializers.RandomUniform(minval=-0.05, maxval=0.05, seed=None)".right()
+            ),
+            Arguments.of(
+                Initializer.RandomUniform(Right(listOf(1.0, 2.0)), Right(listOf(3.0, 4.0)), null),
+                "tf.keras.initializers.RandomUniform(minval=[1.0, 2.0], maxval=[3.0, 4.0], seed=None)".right()
+            ),
+            Arguments.of(
+                Initializer.Zeros,
+                "tf.keras.initializers.Zeros()".right()
+            ),
+            Arguments.of(
+                Initializer.GlorotNormal(1),
+                "tf.keras.initializers.GlorotNormal(seed=1)".right()
+            ),
+            Arguments.of(
+                Initializer.GlorotUniform(1),
+                "tf.keras.initializers.GlorotUniform(seed=1)".right()
             )
         )
     }
