@@ -204,4 +204,109 @@ internal class LoadLayersWithInitializersIntegrationTest {
             )
         }
     }
+
+    @Test
+    fun `load sequential with truncatednormal tensor initializer`() {
+        loadModel<Model.Sequential>("sequential_with_truncatednormal_initializer.h5") {
+            it.name shouldBe "sequential_6"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_6",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.TruncatedNormal(1.0, 2.0, null)
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load sequential with variancescaling fanin uniform tensor initializer`() {
+        loadModel<Model.Sequential>("sequential_with_variancescaling_fanin_uniform_initializer.h5") {
+            it.name shouldBe "sequential_8"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_8",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.VarianceScaling(
+                        1.0,
+                        Initializer.VarianceScaling.Mode.FanIn,
+                        Initializer.VarianceScaling.Distribution.Uniform,
+                        null
+                    )
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load sequential with variancescaling fanout normal tensor initializer`() {
+        loadModel<Model.Sequential>("sequential_with_variancescaling_fanout_normal_initializer.h5") {
+            it.name shouldBe "sequential_9"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_9",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.VarianceScaling(
+                        1.0,
+                        Initializer.VarianceScaling.Mode.FanOut,
+                        Initializer.VarianceScaling.Distribution.Normal,
+                        null
+                    )
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load sequential with variancescaling fanavg truncatednormal tensor initializer`() {
+        loadModel<Model.Sequential>("sequential_with_variancescaling_fanavg_truncatednormal_initializer.h5") {
+            it.name shouldBe "sequential_10"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_10",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.VarianceScaling(
+                        1.0,
+                        Initializer.VarianceScaling.Mode.FanAvg,
+                        Initializer.VarianceScaling.Distribution.TruncatedNormal,
+                        null
+                    )
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load sequential with variancescaling fanavg untruncatednormal tensor initializer`() {
+        loadModel<Model.Sequential>("sequential_with_variancescaling_fanavg_untruncatednormal_initializer.h5") {
+            it.name shouldBe "sequential_11"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_11",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.VarianceScaling(
+                        1.0,
+                        Initializer.VarianceScaling.Mode.FanAvg,
+                        Initializer.VarianceScaling.Distribution.UntruncatedNormal,
+                        null
+                    )
+                ).trainable()
+            )
+        }
+    }
 }

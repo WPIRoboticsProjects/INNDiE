@@ -17,8 +17,6 @@ class DefaultInitializerToCode : InitializerToCode {
             listOf("gain" to initializer.gain)
         ).right()
 
-        Initializer.Normal -> TODO()
-
         Initializer.Ones -> makeNewInitializer("Ones", emptyList()).right()
 
         is Initializer.Orthogonal -> makeNewInitializer(
@@ -47,11 +45,24 @@ class DefaultInitializerToCode : InitializerToCode {
             )
         ).right()
 
-        Initializer.TruncatedNormal -> TODO()
+        is Initializer.TruncatedNormal -> makeNewInitializer(
+            "TruncatedNormal",
+            listOf(
+                "mean" to initializer.mean,
+                "stddev" to initializer.stddev,
+                "seed" to initializer.seed
+            )
+        ).right()
 
-        Initializer.Uniform -> TODO()
-
-        Initializer.VarianceScaling -> TODO()
+        is Initializer.VarianceScaling -> makeNewInitializer(
+            "VarianceScaling",
+            listOf(
+                "scale" to initializer.scale,
+                "mode" to initializer.mode.value,
+                "distribution" to initializer.distribution.value,
+                "seed" to initializer.seed
+            )
+        ).right()
 
         Initializer.Zeros -> makeNewInitializer("Zeros", emptyList()).right()
 

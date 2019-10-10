@@ -52,6 +52,19 @@ internal class DefaultInitializerToCodeTest {
                 "tf.keras.initializers.RandomUniform(minval=[1.0, 2.0], maxval=[3.0, 4.0], seed=None)".right()
             ),
             Arguments.of(
+                Initializer.TruncatedNormal(1.0, 2.0, null),
+                "tf.keras.initializers.TruncatedNormal(mean=1.0, stddev=2.0, seed=None)".right()
+            ),
+            Arguments.of(
+                Initializer.VarianceScaling(
+                    1.0,
+                    Initializer.VarianceScaling.Mode.FanAvg,
+                    Initializer.VarianceScaling.Distribution.UntruncatedNormal,
+                    null
+                ),
+                """tf.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="untruncated_normal", seed=None)""".right()
+            ),
+            Arguments.of(
                 Initializer.Zeros,
                 "tf.keras.initializers.Zeros()".right()
             ),
