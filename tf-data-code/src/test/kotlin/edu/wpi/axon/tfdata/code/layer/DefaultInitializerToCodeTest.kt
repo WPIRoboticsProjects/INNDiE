@@ -57,11 +57,11 @@ internal class DefaultInitializerToCodeTest {
             ),
             Arguments.of(
                 Initializer.GlorotNormal(1),
-                "tf.keras.initializers.GlorotNormal(seed=1)".right()
+                "tf.keras.initializers.glorot_normal(seed=1)".right()
             ),
             Arguments.of(
                 Initializer.GlorotUniform(1),
-                "tf.keras.initializers.GlorotUniform(seed=1)".right()
+                "tf.keras.initializers.glorot_uniform(seed=1)".right()
             )
         )
     }

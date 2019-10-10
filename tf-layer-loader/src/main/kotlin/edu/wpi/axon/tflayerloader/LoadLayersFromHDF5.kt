@@ -268,7 +268,10 @@ private fun Any?.initializer(): Initializer {
             config["seed"] as Int?
         )
 
+        "GlorotNormal" -> Initializer.GlorotNormal(config["seed"] as Int?)
+
         "GlorotUniform" -> Initializer.GlorotUniform(config["seed"] as Int?)
+
         else -> throw IllegalStateException("Unknown initializer: ${this.entries.joinToString()}")
     }
 }

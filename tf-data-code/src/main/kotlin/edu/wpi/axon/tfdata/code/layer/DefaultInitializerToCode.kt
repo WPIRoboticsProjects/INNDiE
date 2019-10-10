@@ -56,12 +56,12 @@ class DefaultInitializerToCode : InitializerToCode {
         Initializer.Zeros -> makeNewInitializer("Zeros", emptyList()).right()
 
         is Initializer.GlorotNormal -> makeNewInitializer(
-            "GlorotNormal",
+            "glorot_normal",
             listOf("seed" to initializer.seed)
         ).right()
 
         is Initializer.GlorotUniform -> makeNewInitializer(
-            "GlorotUniform",
+            "glorot_uniform",
             listOf("seed" to initializer.seed)
         ).right()
     }

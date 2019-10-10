@@ -170,4 +170,38 @@ internal class LoadLayersWithInitializersIntegrationTest {
             )
         }
     }
+
+    @Test
+    fun `load sequential with glorotnormal tensor initializer`() {
+        loadModel<Model.Sequential>("sequential_with_glorotnormal_initializer.h5") {
+            it.name shouldBe "sequential_4"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_4",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.GlorotNormal(null)
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load sequential with glorotuniform tensor initializer`() {
+        loadModel<Model.Sequential>("sequential_with_glorotuniform_initializer.h5") {
+            it.name shouldBe "sequential_5"
+            it.batchInputShape shouldBe listOf(null, 2)
+            it.layers.shouldContainExactly(
+                SealedLayer.Dense(
+                    "dense_5",
+                    None,
+                    2,
+                    Activation.Linear,
+                    kernelInitializer = Initializer.GlorotUniform(null)
+                ).trainable()
+            )
+        }
+    }
 }
