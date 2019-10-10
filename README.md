@@ -50,3 +50,14 @@ To add a layer,
 3. Use it in `LoadLayersFromHDF5::parseLayer` and amend any tests that now fail because they
 previously did not understand the new layer type. If no tests fail, add a test that loads a model
 containing the new layer type.
+
+## Adding an Initializer
+
+To add an initializer,
+
+1. Add it in `Initializer` as a sealed subclass.
+2. Add a case for it in `DefaultInitializerToCode`. Add test cases in
+`DefaultInitializerToCodeTest`.
+3. Add a case for it in `LoadLayersFromHDF5::initializer`. Generate new models that use each
+variance of the new `Initializer` and add a test in `LoadLayersWithInitializersIntegrationTest` that
+loads each one. 
