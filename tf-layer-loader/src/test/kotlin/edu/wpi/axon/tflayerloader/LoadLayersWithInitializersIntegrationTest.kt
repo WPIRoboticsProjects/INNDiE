@@ -1,3 +1,5 @@
+@file:SuppressWarnings("LongMethod", "LargeClass", "TooManyFunctions")
+
 package edu.wpi.axon.tflayerloader
 
 import arrow.core.Left
