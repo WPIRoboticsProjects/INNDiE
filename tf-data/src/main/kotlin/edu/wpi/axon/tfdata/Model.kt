@@ -3,9 +3,9 @@
 package edu.wpi.axon.tfdata
 
 import com.google.common.graph.ImmutableGraph
-import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.Layer
 
-typealias LayerGraph = ImmutableGraph<SealedLayer.MetaLayer>
+typealias LayerGraph = ImmutableGraph<Layer.MetaLayer>
 
 sealed class Model {
 
@@ -20,7 +20,7 @@ sealed class Model {
     data class Sequential(
         override val name: String,
         val batchInputShape: List<Int?>,
-        val layers: Set<SealedLayer.MetaLayer>
+        val layers: Set<Layer.MetaLayer>
     ) : Model()
 
     data class General(

@@ -17,8 +17,7 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.SealedLayer
-import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tflayerloader.layerGraphIsValid
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.booleans.shouldBeTrue
@@ -38,15 +37,15 @@ import org.octogonapus.ktguava.collections.toImmutableGraph
 internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     private fun layerGraph(
-        vararg layers: Pair<SealedLayer.MetaLayer, SealedLayer.MetaLayer>
-    ): ImmutableGraph<SealedLayer.MetaLayer> {
+        vararg layers: Pair<Layer.MetaLayer, Layer.MetaLayer>
+    ): ImmutableGraph<Layer.MetaLayer> {
         layers.size.shouldBeGreaterThanOrEqual(1)
 
         val layerGraph =
             GraphBuilder.directed()
                 .expectedNodeCount(layers.size)
                 .allowsSelfLoops(false)
-                .build<SealedLayer.MetaLayer>()
+                .build<Layer.MetaLayer>()
 
         layers.forEach { (fst, snd) ->
             layerGraph.putEdge(fst, snd)
@@ -58,16 +57,16 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
     }
 
     private fun makeModel(
-        vararg layers: Pair<SealedLayer.MetaLayer, SealedLayer.MetaLayer>,
-        input: Set<SealedLayer.MetaLayer.UntrainableLayer>,
-        output: Set<SealedLayer.MetaLayer>,
+        vararg layers: Pair<Layer.MetaLayer, Layer.MetaLayer>,
+        input: Set<Layer.MetaLayer.UntrainableLayer>,
+        output: Set<Layer.MetaLayer>,
         name: String = ""
     ): Model.General {
         val layerGraph = layerGraph(*layers)
 
         return Model.General(
             name,
-            input.mapTo(mutableSetOf()) { (it.layer as SealedLayer.InputLayer).toInputData() },
+            input.mapTo(mutableSetOf()) { (it.layer as Layer.InputLayer).toInputData() },
             layerGraph.toImmutableGraph(),
             output.mapTo(mutableSetOf()) { Model.General.OutputData(it.name) }
         )
@@ -81,8 +80,8 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
             })
         }
 
-        val input1 = SealedLayer.InputLayer("in1", listOf())
-        val layer1 = SealedLayer.UnknownLayer("l1", Some(setOf())).trainable()
+        val input1 = Layer.InputLayer("in1", listOf())
+        val layer1 = Layer.UnknownLayer("l1", Some(setOf())).trainable()
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
@@ -97,8 +96,8 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `keep all 2 layers`() {
-        val input1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+        val input1 = Layer.InputLayer("l1", listOf())
+        val layer2 = Layer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -134,9 +133,9 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `remove the last layer`() {
-        val input1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
-        val layer3 = SealedLayer.UnknownLayer("l3", Some(setOf(layer2.name))).trainable()
+        val input1 = Layer.InputLayer("l1", listOf())
+        val layer2 = Layer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+        val layer3 = Layer.UnknownLayer("l3", Some(setOf(layer2.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -180,10 +179,10 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `replace one layer`() {
-        val input1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+        val input1 = Layer.InputLayer("l1", listOf())
+        val layer2 = Layer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
         val layer3 =
-            SealedLayer.Dense("l3", Some(setOf(input1.name)), 10, Activation.SoftMax).trainable()
+            Layer.Dense("l3", Some(setOf(input1.name)), 10, Activation.SoftMax).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -230,9 +229,9 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `replace a layer with an invalid layer`() {
-        val input1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
-        val layer3 = SealedLayer.UnknownLayer("l3", Some(setOf(input1.name))).trainable()
+        val input1 = Layer.InputLayer("l1", listOf())
+        val layer2 = Layer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+        val layer3 = Layer.UnknownLayer("l3", Some(setOf(input1.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -267,9 +266,9 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `copy a layer with two inputs`() {
-        val input1 = SealedLayer.InputLayer("l1", listOf())
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
-        val layer3 = SealedLayer.Dense(
+        val input1 = Layer.InputLayer("l1", listOf())
+        val layer2 = Layer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+        val layer3 = Layer.Dense(
             "l3",
             Some(setOf(input1.name, layer2.name)),
             10,
@@ -323,10 +322,10 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `two model inputs are separated`() {
-        val input1 = SealedLayer.InputLayer("in1", listOf())
-        val input2 = SealedLayer.InputLayer("in2", listOf())
+        val input1 = Layer.InputLayer("in1", listOf())
+        val input2 = Layer.InputLayer("in2", listOf())
         val layer1 =
-            SealedLayer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
+            Layer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -376,10 +375,10 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `swap two model inputs`() {
-        val input1 = SealedLayer.InputLayer("in1", listOf())
-        val input2 = SealedLayer.InputLayer("in2", listOf())
+        val input1 = Layer.InputLayer("in1", listOf())
+        val input2 = Layer.InputLayer("in2", listOf())
         val layer1 =
-            SealedLayer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
+            Layer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -429,11 +428,11 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `reorder three model inputs`() {
-        val input1 = SealedLayer.InputLayer("in1", listOf())
-        val input2 = SealedLayer.InputLayer("in2", listOf())
-        val input3 = SealedLayer.InputLayer("in3", listOf())
+        val input1 = Layer.InputLayer("in1", listOf())
+        val input2 = Layer.InputLayer("in2", listOf())
+        val input3 = Layer.InputLayer("in3", listOf())
         val layer1 =
-            SealedLayer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
+            Layer.UnknownLayer("l1", Some(setOf(input1.name, input2.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -488,9 +487,9 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `two outputs where the output layers depend on each other`() {
-        val input1 = SealedLayer.InputLayer("in1", listOf())
-        val layer1 = SealedLayer.UnknownLayer("l1", Some(setOf(input1.name))).trainable()
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(layer1.name))).trainable()
+        val input1 = Layer.InputLayer("in1", listOf())
+        val layer1 = Layer.UnknownLayer("l1", Some(setOf(input1.name))).trainable()
+        val layer2 = Layer.UnknownLayer("l2", Some(setOf(layer1.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -537,9 +536,9 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `two outputs where the output layers don't depend on each other`() {
-        val input1 = SealedLayer.InputLayer("in1", listOf())
-        val layer1 = SealedLayer.UnknownLayer("l1", Some(setOf(input1.name))).trainable()
-        val layer2 = SealedLayer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
+        val input1 = Layer.InputLayer("in1", listOf())
+        val layer1 = Layer.UnknownLayer("l1", Some(setOf(input1.name))).trainable()
+        val layer2 = Layer.UnknownLayer("l2", Some(setOf(input1.name))).trainable()
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()

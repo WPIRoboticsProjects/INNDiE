@@ -11,7 +11,7 @@ import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
-import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tflayerloader.layerGraphIsValid
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
@@ -71,10 +71,10 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
     }
 
     override fun code(): String {
-        val handledLayers = mutableSetOf<SealedLayer.MetaLayer>()
-        val layerVariableNames = mutableMapOf<SealedLayer.MetaLayer, String>()
+        val handledLayers = mutableSetOf<Layer.MetaLayer>()
+        val layerVariableNames = mutableMapOf<Layer.MetaLayer, String>()
 
-        fun StringBuilder.appendLayerCode(layer: SealedLayer.MetaLayer) {
+        fun StringBuilder.appendLayerCode(layer: Layer.MetaLayer) {
             if (layer !in handledLayers) {
                 newModel.layers
                     // Append the predecessors first because they are the dependencies of this node
@@ -87,7 +87,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
 
                 val layerOp = when (layer.layer) {
                     // Always make a new input layer
-                    is SealedLayer.InputLayer -> LayerOperation.MakeNewLayer(layer)
+                    is Layer.InputLayer -> LayerOperation.MakeNewLayer(layer)
 
                     else -> if (layer in currentModel.layers.nodes()) {
                         LayerOperation.CopyLayer(layer)
@@ -115,7 +115,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         val modelInputCode = newModel.input.joinToString(prefix = "[", postfix = "]") { input ->
             // There will only be one matching layer because all the layer names are unique
             val correspondingLayer = newModel.layers.nodes().first {
-                it.layer is SealedLayer.InputLayer && it.name == input.id
+                it.layer is Layer.InputLayer && it.name == input.id
             }
 
             layerVariableNames.entries.first { it.key == correspondingLayer }.value
@@ -142,9 +142,9 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
      */
     private fun makeLayerCode(
         layerOp: LayerOperation,
-        layerVariableNames: Map<SealedLayer.MetaLayer, String>
+        layerVariableNames: Map<Layer.MetaLayer, String>
     ) = when (val layer = layerOp.layer.layer) {
-        is SealedLayer.InputLayer -> makeNewLayer(layer)
+        is Layer.InputLayer -> makeNewLayer(layer)
 
         else -> {
             val newLayerCode = when (layerOp) {
@@ -169,7 +169,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
      */
     private fun makeLayerInputCode(
         layerInputs: Set<String>,
-        layerVariableNames: Map<SealedLayer.MetaLayer, String>
+        layerVariableNames: Map<Layer.MetaLayer, String>
     ): String {
         val entries = layerVariableNames.entries
 
@@ -194,7 +194,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
      * @param layer The layer.
      * @return The code for the layer.
      */
-    private fun makeNewLayer(layer: SealedLayer) =
+    private fun makeNewLayer(layer: Layer) =
         layerToCode.makeNewLayer(layer).fold(
             { throw IllegalStateException("Tried to make a new layer but got $it") },
             { it }

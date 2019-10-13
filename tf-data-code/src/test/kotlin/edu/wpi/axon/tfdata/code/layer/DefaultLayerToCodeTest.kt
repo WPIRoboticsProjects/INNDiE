@@ -13,11 +13,9 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
-import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
-import edu.wpi.axon.tfdata.layer.SealedLayer
-import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.Layer
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -53,47 +51,47 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
         @Suppress("unused")
         fun layerSource() = listOf(
             Arguments.of(
-                SealedLayer.Dense("name", None, 3, Activation.ReLu),
+                Layer.Dense("name", None, 3, Activation.ReLu),
                 """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                SealedLayer.Dense("name", Some(setOf("input_name")), 3, Activation.ReLu),
+                Layer.Dense("name", Some(setOf("input_name")), 3, Activation.ReLu),
                 """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                SealedLayer.Dense("name", None, 3, Activation.ReLu).trainable(),
+                Layer.Dense("name", None, 3, Activation.ReLu).trainable(),
                 """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                SealedLayer.InputLayer("name", listOf(3), 4, null, true),
+                Layer.InputLayer("name", listOf(3), 4, null, true),
                 """tf.keras.Input(shape=(3,), batch_size=4, dtype=None, sparse=True)""".right(),
                 null
             ),
             Arguments.of(
-                SealedLayer.InputLayer("name", listOf(224, 224, 3), null, null, false),
+                Layer.InputLayer("name", listOf(224, 224, 3), null, null, false),
                 """tf.keras.Input(shape=(224,224,3), batch_size=None, dtype=None, sparse=False)""".right(),
                 null
             ),
             Arguments.of(
-                SealedLayer.Dropout("name", Some(setOf("in1")), 0.2),
+                Layer.Dropout("name", Some(setOf("in1")), 0.2),
                 """tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                SealedLayer.Dropout("name", Some(setOf("in1")), 0.2, listOf(1, 2, 3), 2),
+                Layer.Dropout("name", Some(setOf("in1")), 0.2, listOf(1, 2, 3), 2),
                 """tf.keras.layers.Dropout(0.2, noise_shape=(1,2,3), seed=2, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                SealedLayer.UnknownLayer("", None),
+                Layer.UnknownLayer("", None),
                 """Cannot construct an unknown layer: UnknownLayer(name=, inputs=None)""".left(),
                 null
             ),
             Arguments.of(
-                SealedLayer.MaxPooling2D(
+                Layer.MaxPooling2D(
                     "name",
                     None,
                     Left(1),
@@ -105,7 +103,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 null
             ),
             Arguments.of(
-                SealedLayer.MaxPooling2D(
+                Layer.MaxPooling2D(
                     "name",
                     None,
                     Left(1),
@@ -117,7 +115,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 null
             ),
             Arguments.of(
-                SealedLayer.MaxPooling2D(
+                Layer.MaxPooling2D(
                     "name",
                     None,
                     Right(Tuple2(1, 2)),
@@ -129,7 +127,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 null
             ),
             Arguments.of(
-                SealedLayer.BatchNormalization(
+                Layer.BatchNormalization(
                     name = "name",
                     inputs = None,
                     axis = -1,
@@ -178,7 +176,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 }
             ),
             Arguments.of(
-                SealedLayer.Flatten(
+                Layer.Flatten(
                     "name",
                     None,
                     DataFormat.ChannelsFirst

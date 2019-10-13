@@ -18,9 +18,9 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
+import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
-import edu.wpi.axon.tfdata.layer.SealedLayer
 import edu.wpi.axon.util.singleAssign
 import io.jhdf.HdfFile
 import java.io.File
@@ -100,9 +100,9 @@ class LoadLayersFromHDF5(
                     inputId,
                     (layers.first {
                         it.name == inputId &&
-                            it is SealedLayer.MetaLayer.UntrainableLayer &&
-                            it.layer is SealedLayer.InputLayer
-                    }.layer as SealedLayer.InputLayer).batchInputShape
+                            it is Layer.MetaLayer.UntrainableLayer &&
+                            it.layer is Layer.InputLayer
+                    }.layer as Layer.InputLayer).batchInputShape
                 )
             },
             layers = layersToGraph.convertToGraph(layers).fold({ TODO() }, { it }),
@@ -110,27 +110,26 @@ class LoadLayersFromHDF5(
         )
     }
 
-    private fun parseMetaLayer(layer: SealedLayer, json: JsonObject): SealedLayer.MetaLayer {
+    private fun parseMetaLayer(layer: Layer, json: JsonObject): Layer.MetaLayer {
         return when (layer) {
             // Don't wrap a MetaLayer more than once
-            is SealedLayer.MetaLayer -> layer
+            is Layer.MetaLayer -> layer
 
             else -> {
-                val name = json["name"] as String
                 when (val trainable = json["trainable"] as Boolean?) {
-                    null -> SealedLayer.MetaLayer.UntrainableLayer(name, layer)
-                    else -> SealedLayer.MetaLayer.TrainableLayer(name, layer, trainable)
+                    null -> layer.untrainable()
+                    else -> layer.trainable(trainable)
                 }
             }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun parseLayer(className: String, data: JsonObject): SealedLayer {
+    private fun parseLayer(className: String, data: JsonObject): Layer {
         val json = data["config"] as JsonObject
         val name = json["name"] as String
         return when (className) {
-            "InputLayer" -> SealedLayer.InputLayer(
+            "InputLayer" -> Layer.InputLayer(
                 name,
                 (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
                     require(it.first() == null) {
@@ -141,7 +140,7 @@ class LoadLayersFromHDF5(
                 }
             )
 
-            "BatchNormalization", "BatchNormalizationV1" -> SealedLayer.BatchNormalization(
+            "BatchNormalization", "BatchNormalizationV1" -> Layer.BatchNormalization(
                 name,
                 data.inboundNodes(),
                 (json["axis"] as JsonArray<Int>).let {
@@ -168,7 +167,7 @@ class LoadLayersFromHDF5(
             )
 
             "Conv2D"
-            -> SealedLayer.Conv2D(
+            -> Layer.Conv2D(
                 name,
                 data.inboundNodes(),
                 json["filters"] as Int,
@@ -176,7 +175,7 @@ class LoadLayersFromHDF5(
                 parseActivation(json)
             )
 
-            "Dense" -> SealedLayer.Dense(
+            "Dense" -> Layer.Dense(
                 name,
                 data.inboundNodes(),
                 json["units"] as Int,
@@ -191,7 +190,7 @@ class LoadLayersFromHDF5(
                 json["bias_constraint"].constraint()
             )
 
-            "Dropout" -> SealedLayer.Dropout(
+            "Dropout" -> Layer.Dropout(
                 name,
                 data.inboundNodes(),
                 json["rate"].double(),
@@ -203,13 +202,13 @@ class LoadLayersFromHDF5(
                 json["seed"] as Int?
             )
 
-            "Flatten" -> SealedLayer.Flatten(
+            "Flatten" -> Layer.Flatten(
                 name,
                 data.inboundNodes(),
                 json["data_format"].dataFormatOrNull()
             )
 
-            "MaxPool2D", "MaxPooling2D" -> SealedLayer.MaxPooling2D(
+            "MaxPool2D", "MaxPooling2D" -> Layer.MaxPooling2D(
                 name,
                 data.inboundNodes(),
                 json["pool_size"].tuple2OrInt(),
@@ -218,7 +217,7 @@ class LoadLayersFromHDF5(
                 json["data_format"].dataFormatOrNull()
             )
 
-            else -> SealedLayer.UnknownLayer(
+            else -> Layer.UnknownLayer(
                 name,
                 data.inboundNodes()
             )
