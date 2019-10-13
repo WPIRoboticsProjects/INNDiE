@@ -11,8 +11,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.PoolingPadding
-import edu.wpi.axon.tfdata.layer.SealedLayer
-import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.Layer
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -29,21 +28,21 @@ internal class LoadLayersFromHDF5IntegrationTest {
             it.batchInputShape.shouldContainExactly(null, 28, 28, 1)
             it.layers.shouldContainExactly(
                 setOf(
-                    SealedLayer.Conv2D(
+                    Layer.Conv2D(
                         "conv2d_16",
                         None,
                         32,
                         Tuple2(3, 3),
                         Activation.ReLu
                     ).trainable(),
-                    SealedLayer.Conv2D(
+                    Layer.Conv2D(
                         "conv2d_17",
                         None,
                         64,
                         Tuple2(3, 3),
                         Activation.ReLu
                     ).trainable(),
-                    SealedLayer.MaxPooling2D(
+                    Layer.MaxPooling2D(
                         "max_pooling2d_8",
                         None,
                         Right(Tuple2(2, 2)),
@@ -51,28 +50,28 @@ internal class LoadLayersFromHDF5IntegrationTest {
                         PoolingPadding.Valid,
                         DataFormat.ChannelsLast
                     ).trainable(),
-                    SealedLayer.Dropout(
+                    Layer.Dropout(
                         "dropout_19",
                         None,
                         0.25
                     ).trainable(),
-                    SealedLayer.Flatten(
+                    Layer.Flatten(
                         "flatten_8",
                         None,
                         DataFormat.ChannelsLast
                     ).trainable(),
-                    SealedLayer.Dense(
+                    Layer.Dense(
                         "dense_22",
                         None,
                         128,
                         Activation.ReLu
                     ).trainable(),
-                    SealedLayer.Dropout(
+                    Layer.Dropout(
                         "dropout_20",
                         None,
                         0.5
                     ).trainable(),
-                    SealedLayer.Dense(
+                    Layer.Dense(
                         "dense_23",
                         None,
                         10,
@@ -112,13 +111,13 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load non-sequential model 1`() {
         val layers = setOf(
-            SealedLayer.InputLayer("input_2", listOf(3)),
-            SealedLayer.Dense(
+            Layer.InputLayer("input_2", listOf(3)),
+            Layer.Dense(
                 "dense_2",
                 Some(setOf("input_2")),
                 4,
                 Activation.ReLu
-            ).trainable(), SealedLayer.Dense(
+            ).trainable(), Layer.Dense(
                 "dense_3",
                 Some(setOf("dense_2")),
                 5,
@@ -147,9 +146,9 @@ internal class LoadLayersFromHDF5IntegrationTest {
             it.output.shouldContainExactly(Model.General.OutputData("dense_1"))
             it.layers.nodes().shouldContainExactly(
                 // TODO: Add an RNN layer class
-                SealedLayer.InputLayer("input_15", listOf(null, 5)),
-                SealedLayer.UnknownLayer("rnn_12", Some(setOf("input_15"))).trainable(),
-                SealedLayer.Dense(
+                Layer.InputLayer("input_15", listOf(null, 5)),
+                Layer.UnknownLayer("rnn_12", Some(setOf("input_15"))).trainable(),
+                Layer.Dense(
                     "dense_1",
                     Some(setOf("rnn_12")),
                     10,

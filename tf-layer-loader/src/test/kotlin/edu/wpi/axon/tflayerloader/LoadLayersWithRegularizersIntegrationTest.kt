@@ -4,8 +4,7 @@ import arrow.core.None
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Regularizer
-import edu.wpi.axon.tfdata.layer.SealedLayer
-import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.Layer
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
@@ -18,7 +17,7 @@ internal class LoadLayersWithRegularizersIntegrationTest {
             it.name shouldBe "sequential_9"
             it.batchInputShape shouldBe listOf(null, 1)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_3",
                     None,
                     1,

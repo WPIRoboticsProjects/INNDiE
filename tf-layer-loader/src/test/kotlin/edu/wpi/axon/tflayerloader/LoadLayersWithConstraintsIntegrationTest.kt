@@ -4,8 +4,7 @@ import arrow.core.None
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
-import edu.wpi.axon.tfdata.layer.SealedLayer
-import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.Layer
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
@@ -18,7 +17,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
             it.name shouldBe "sequential_12"
             it.batchInputShape shouldBe listOf(null, 1)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_6",
                     None,
                     1,
@@ -35,7 +34,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
             it.name shouldBe "sequential_13"
             it.batchInputShape shouldBe listOf(null, 1)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_7",
                     None,
                     1,
@@ -52,7 +51,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
             it.name shouldBe "sequential_15"
             it.batchInputShape shouldBe listOf(null, 1)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_9",
                     None,
                     1,
@@ -69,7 +68,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
             it.name shouldBe "sequential_14"
             it.batchInputShape shouldBe listOf(null, 1)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_8",
                     None,
                     1,

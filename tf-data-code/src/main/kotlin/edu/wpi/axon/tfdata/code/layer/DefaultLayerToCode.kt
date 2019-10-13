@@ -9,7 +9,6 @@ import edu.wpi.axon.tfdata.code.namedArguments
 import edu.wpi.axon.tfdata.code.unquoted
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tfdata.layer.SealedLayer
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
@@ -20,9 +19,9 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
     private val regularizerToCode: RegularizerToCode by inject()
 
     override fun makeNewLayer(layer: Layer): Either<String, String> = when (layer) {
-        is SealedLayer.MetaLayer -> makeNewLayer(layer.layer)
+        is Layer.MetaLayer -> makeNewLayer(layer.layer)
 
-        is SealedLayer.InputLayer -> makeLayerCode(
+        is Layer.InputLayer -> makeLayerCode(
             "tf.keras.Input",
             listOf(),
             listOf(
@@ -33,7 +32,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
-        is SealedLayer.BatchNormalization -> Either.fx {
+        is Layer.BatchNormalization -> Either.fx {
             makeLayerCode(
                 "tf.keras.layers.BatchNormalization",
                 listOf(),
@@ -78,7 +77,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         }
 
-        is SealedLayer.Dense -> makeLayerCode(
+        is Layer.Dense -> makeLayerCode(
             "tf.keras.layers.Dense",
             listOf(),
             listOf(
@@ -88,7 +87,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
-        is SealedLayer.Dropout -> makeLayerCode(
+        is Layer.Dropout -> makeLayerCode(
             "tf.keras.layers.Dropout",
             listOf(layer.rate.toString()),
             listOf(
@@ -98,7 +97,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
-        is SealedLayer.Flatten -> makeLayerCode(
+        is Layer.Flatten -> makeLayerCode(
             "tf.keras.layers.Flatten",
             listOf(),
             listOf(
@@ -107,7 +106,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
-        is SealedLayer.MaxPooling2D -> makeLayerCode(
+        is Layer.MaxPooling2D -> makeLayerCode(
             "tf.keras.layers.MaxPooling2D",
             listOf(),
             listOf(
@@ -119,6 +118,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
+        // TODO: Remove this
         else -> "Cannot construct an unknown layer: $layer".left()
     }
 

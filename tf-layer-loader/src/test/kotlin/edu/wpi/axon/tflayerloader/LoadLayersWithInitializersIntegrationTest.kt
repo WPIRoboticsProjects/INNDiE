@@ -8,8 +8,7 @@ import arrow.core.Right
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Initializer
-import edu.wpi.axon.tfdata.layer.SealedLayer
-import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.Layer
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
@@ -22,7 +21,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential"
             it.batchInputShape shouldBe listOf(null, 1)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense",
                     None,
                     1,
@@ -39,7 +38,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_2"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_2",
                     None,
                     2,
@@ -56,7 +55,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_3"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_3",
                     None,
                     2,
@@ -73,7 +72,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_4"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_4",
                     None,
                     2,
@@ -90,7 +89,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_5"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_5",
                     None,
                     2,
@@ -107,7 +106,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_6"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_6",
                     None,
                     2,
@@ -124,7 +123,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_7"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_7",
                     None,
                     2,
@@ -141,7 +140,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_2"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_2",
                     None,
                     2,
@@ -158,7 +157,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_3"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_3",
                     None,
                     2,
@@ -179,7 +178,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_4"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_4",
                     None,
                     2,
@@ -196,7 +195,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_5"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_5",
                     None,
                     2,
@@ -213,7 +212,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_6"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_6",
                     None,
                     2,
@@ -230,7 +229,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_8"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_8",
                     None,
                     2,
@@ -252,7 +251,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_9"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_9",
                     None,
                     2,
@@ -274,7 +273,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_10"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_10",
                     None,
                     2,
@@ -296,7 +295,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.name shouldBe "sequential_11"
             it.batchInputShape shouldBe listOf(null, 2)
             it.layers.shouldContainExactly(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_11",
                     None,
                     2,
