@@ -5,8 +5,6 @@ import arrow.core.Left
 
 /**
  * Methods to initialize weights.
- *
- * TODO: https://github.com/wpilibsuite/Axon/issues/90
  */
 sealed class Initializer {
 
