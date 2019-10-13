@@ -1,4 +1,4 @@
-@file:Suppress("UNCHECKED_CAST")
+@file:Suppress("UNCHECKED_CAST", "StringLiteralDuplication")
 
 package edu.wpi.axon.tflayerloader
 
@@ -148,8 +148,8 @@ class LoadLayersFromHDF5(
                     require(it.size == 1)
                     it.first()
                 },
-                json["momentum"] as Double,
-                json["epsilon"] as Double,
+                json["momentum"].double(),
+                json["epsilon"].double(),
                 json["center"] as Boolean,
                 json["scale"] as Boolean,
                 json["beta_initializer"].initializer(),
@@ -167,7 +167,8 @@ class LoadLayersFromHDF5(
                 json["virtual_batch_size"] as Int?
             )
 
-            "Conv2D" -> SealedLayer.Conv2D(
+            "Conv2D"
+            -> SealedLayer.Conv2D(
                 name,
                 data.inboundNodes(),
                 json["filters"] as Int,
@@ -193,7 +194,7 @@ class LoadLayersFromHDF5(
             "Dropout" -> SealedLayer.Dropout(
                 name,
                 data.inboundNodes(),
-                json["rate"] as Double,
+                json["rate"].double(),
                 (json["noise_shape"] as JsonArray<Int>?)?.toList()?.let {
                     throw IllegalStateException(
                         "noise_shape was not null (this isn't bad): ${it.joinToString()}"
@@ -238,11 +239,78 @@ private fun Any?.initializer(): Initializer {
     require(this is JsonObject)
     val config = this["config"] as JsonObject
     return when (this["class_name"]) {
+        "Constant" -> Initializer.Constant(
+            when (val value = config["value"]) {
+                is Number -> Left(value.toDouble())
+
+                // This works for list, tuple, and nparray
+                is JsonArray<*> -> Right((value as JsonArray<Number>).map { it.toDouble() })
+
+                else -> throw IllegalStateException("Unknown Constant initializer value: $value")
+            }
+        )
+
+        "Identity" -> Initializer.Identity(config["gain"].double())
+
         "Zeros" -> Initializer.Zeros
         "Ones" -> Initializer.Ones
+
+        "Orthogonal" -> Initializer.Orthogonal(config["gain"].double(), config["seed"] as Int?)
+
+        "RandomNormal" -> Initializer.RandomNormal(
+            config["mean"].double(),
+            config["stddev"].double(),
+            config["seed"] as Int?
+        )
+
+        "RandomUniform" -> Initializer.RandomUniform(
+            config["minval"].randomUniformVal(),
+            config["maxval"].randomUniformVal(),
+            config["seed"] as Int?
+        )
+
+        "TruncatedNormal" -> Initializer.TruncatedNormal(
+            config["mean"].double(),
+            config["stddev"].double(),
+            config["seed"] as Int?
+        )
+
+        "VarianceScaling" -> Initializer.VarianceScaling(
+            config["scale"].double(),
+            config["mode"].varianceScalingMode(),
+            config["distribution"].varianceScalingDistribution(),
+            config["seed"] as Int?
+        )
+
+        "GlorotNormal" -> Initializer.GlorotNormal(config["seed"] as Int?)
+
         "GlorotUniform" -> Initializer.GlorotUniform(config["seed"] as Int?)
+
         else -> throw IllegalStateException("Unknown initializer: ${this.entries.joinToString()}")
     }
+}
+
+private fun Any?.double() = (this as Number).toDouble()
+
+private fun Any?.randomUniformVal() = when (this) {
+    is Double -> Left(this)
+    is JsonArray<*> -> Right((this as JsonArray<Double>).toList())
+    else -> throw IllegalStateException("Unknown RandomUniform val: $this")
+}
+
+private fun Any?.varianceScalingMode() = when (this) {
+    "fan_in" -> Initializer.VarianceScaling.Mode.FanIn
+    "fan_out" -> Initializer.VarianceScaling.Mode.FanOut
+    "fan_avg" -> Initializer.VarianceScaling.Mode.FanAvg
+    else -> throw IllegalStateException("Unknown VarianceScaling mode: $this")
+}
+
+private fun Any?.varianceScalingDistribution() = when (this) {
+    "normal" -> Initializer.VarianceScaling.Distribution.Normal
+    "uniform" -> Initializer.VarianceScaling.Distribution.Uniform
+    "truncated_normal" -> Initializer.VarianceScaling.Distribution.TruncatedNormal
+    "untruncated_normal" -> Initializer.VarianceScaling.Distribution.UntruncatedNormal
+    else -> throw IllegalStateException("Unknown VarianceScaling distribution: $this")
 }
 
 private fun Any?.regularizer(): Regularizer? =
@@ -252,7 +320,7 @@ private fun Any?.regularizer(): Regularizer? =
         require(this is JsonObject)
         val config = this["config"] as JsonObject
         when (this["class_name"]) {
-            "L1L2" -> Regularizer.L1L2(config["l1"] as Double, config["l2"] as Double)
+            "L1L2" -> Regularizer.L1L2(config["l1"].double(), config["l2"].double())
             else ->
                 throw IllegalStateException("Unknown regularizer: ${this.entries.joinToString()}")
         }
@@ -265,12 +333,12 @@ private fun Any?.constraint(): Constraint? =
         require(this is JsonObject)
         val config = this["config"] as JsonObject
         when (this["class_name"]) {
-            "MaxNorm" -> Constraint.MaxNorm(config["max_value"] as Double, config["axis"] as Int)
+            "MaxNorm" -> Constraint.MaxNorm(config["max_value"].double(), config["axis"] as Int)
 
             "MinMaxNorm" -> Constraint.MinMaxNorm(
-                config["min_value"] as Double,
-                config["max_value"] as Double,
-                config["rate"] as Double,
+                config["min_value"].double(),
+                config["max_value"].double(),
+                config["rate"].double(),
                 config["axis"] as Int
             )
 

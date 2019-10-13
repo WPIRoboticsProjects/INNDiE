@@ -11,5 +11,5 @@ interface RegularizerToCode {
      * @param regularizer The [Regularizer].
      * @return The code to make a new instance of the [regularizer].
      */
-    fun makeNewRegularizer(regularizer: Regularizer?): Either<String, String>
+    fun makeNewRegularizer(regularizer: Regularizer): Either<String, String>
 }

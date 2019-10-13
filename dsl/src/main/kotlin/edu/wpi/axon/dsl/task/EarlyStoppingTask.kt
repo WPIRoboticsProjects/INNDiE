@@ -4,8 +4,7 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.boolToPythonString
-import edu.wpi.axon.tfdata.code.numberToPythonString
+import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
 
 class EarlyStoppingTask(name: String) : BaseTask(name) {
@@ -71,8 +70,8 @@ class EarlyStoppingTask(name: String) : BaseTask(name) {
         |    patience=$patience,
         |    verbose=$verbose,
         |    mode="$mode",
-        |    baseline=${numberToPythonString(baseline)},
-        |    restore_best_weights=${boolToPythonString(restoreBestWeights)}
+        |    baseline=${pythonString(baseline)},
+        |    restore_best_weights=${pythonString(restoreBestWeights)}
         |)
     """.trimMargin()
 }

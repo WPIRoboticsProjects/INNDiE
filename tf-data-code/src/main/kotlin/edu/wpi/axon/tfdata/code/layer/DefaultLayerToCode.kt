@@ -4,13 +4,9 @@ import arrow.core.Either
 import arrow.core.extensions.fx
 import arrow.core.left
 import arrow.core.right
-import edu.wpi.axon.tfdata.code.boolToPythonString
-import edu.wpi.axon.tfdata.code.listToPythonTuple
-import edu.wpi.axon.tfdata.code.mapToPythonString
+import edu.wpi.axon.tfdata.code.asTuple
 import edu.wpi.axon.tfdata.code.namedArguments
-import edu.wpi.axon.tfdata.code.numberToPythonString
-import edu.wpi.axon.tfdata.code.quoted
-import edu.wpi.axon.tfdata.code.tupleToPythonTuple
+import edu.wpi.axon.tfdata.code.unquoted
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.SealedLayer
@@ -30,10 +26,10 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             "tf.keras.Input",
             listOf(),
             listOf(
-                "shape" to listToPythonTuple(layer.batchInputShape, ::numberToPythonString),
-                "batch_size" to numberToPythonString(layer.batchSize),
-                "dtype" to numberToPythonString(layer.dtype),
-                "sparse" to boolToPythonString(layer.sparse)
+                "shape" to layer.batchInputShape.asTuple(),
+                "batch_size" to layer.batchSize,
+                "dtype" to layer.dtype,
+                "sparse" to layer.sparse
             )
         ).right()
 
@@ -42,26 +38,42 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
                 "tf.keras.layers.BatchNormalization",
                 listOf(),
                 listOf(
-                    "axis" to layer.axis.toString(),
-                    "momentum" to layer.momentum.toString(),
-                    "epsilon" to layer.epsilon.toString(),
-                    "center" to boolToPythonString(layer.center),
-                    "scale" to boolToPythonString(layer.scale),
-                    "beta_initializer" to !initializerToCode.makeNewInitializer(layer.betaInitializer),
-                    "gamma_initializer" to !initializerToCode.makeNewInitializer(layer.gammaInitializer),
-                    "moving_mean_initializer" to !initializerToCode.makeNewInitializer(layer.movingMeanInitializer),
-                    "moving_variance_initializer" to !initializerToCode.makeNewInitializer(layer.movingVarianceInitializer),
-                    "beta_regularizer" to !regularizerToCode.makeNewRegularizer(layer.betaRegularizer),
-                    "gamma_regularizer" to !regularizerToCode.makeNewRegularizer(layer.gammaRegularizer),
-                    "beta_constraint" to !constraintToCode.makeNewConstraint(layer.betaConstraint),
-                    "gamma_constraint" to !constraintToCode.makeNewConstraint(layer.gammaConstraint),
-                    "renorm" to boolToPythonString(layer.renorm),
-                    "renorm_clipping" to mapToPythonString(layer.renormClipping),
-                    "renorm_momentum" to layer.renormMomentum.toString(),
-                    "fused" to boolToPythonString(layer.fused),
-                    "virtual_batch_size" to numberToPythonString(layer.virtualBatchSize),
-                    "adjustment" to "None",
-                    "name" to quoted(layer.name)
+                    "axis" to layer.axis,
+                    "momentum" to layer.momentum,
+                    "epsilon" to layer.epsilon,
+                    "center" to layer.center,
+                    "scale" to layer.scale,
+                    "beta_initializer" to initializerToCode.makeNewInitializer(layer.betaInitializer).bind().unquoted(),
+                    "gamma_initializer" to initializerToCode.makeNewInitializer(layer.gammaInitializer).bind().unquoted(),
+                    "moving_mean_initializer" to initializerToCode.makeNewInitializer(layer.movingMeanInitializer).bind().unquoted(),
+                    "moving_variance_initializer" to initializerToCode.makeNewInitializer(layer.movingVarianceInitializer).bind().unquoted(),
+                    "beta_regularizer" to layer.betaRegularizer?.let {
+                        regularizerToCode.makeNewRegularizer(
+                            it
+                        ).bind().unquoted()
+                    },
+                    "gamma_regularizer" to layer.gammaRegularizer?.let {
+                        regularizerToCode.makeNewRegularizer(
+                            it
+                        ).bind().unquoted()
+                    },
+                    "beta_constraint" to layer.betaConstraint?.let {
+                        constraintToCode.makeNewConstraint(
+                            it
+                        ).bind().unquoted()
+                    },
+                    "gamma_constraint" to layer.gammaConstraint?.let {
+                        constraintToCode.makeNewConstraint(
+                            it
+                        ).bind().unquoted()
+                    },
+                    "renorm" to layer.renorm,
+                    "renorm_clipping" to layer.renormClipping,
+                    "renorm_momentum" to layer.renormMomentum,
+                    "fused" to layer.fused,
+                    "virtual_batch_size" to layer.virtualBatchSize,
+                    "adjustment" to "None".unquoted(),
+                    "name" to layer.name
                 )
             )
         }
@@ -70,9 +82,9 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             "tf.keras.layers.Dense",
             listOf(),
             listOf(
-                "units" to layer.units.toString(),
-                "activation" to makeNewActivation(layer.activation),
-                "name" to quoted(layer.name)
+                "units" to layer.units,
+                "activation" to makeNewActivation(layer.activation).unquoted(),
+                "name" to layer.name
             )
         ).right()
 
@@ -80,9 +92,9 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             "tf.keras.layers.Dropout",
             listOf(layer.rate.toString()),
             listOf(
-                "noise_shape" to listToPythonTuple(layer.noiseShape),
-                "seed" to numberToPythonString(layer.seed),
-                "name" to quoted(layer.name)
+                "noise_shape" to layer.noiseShape?.asTuple(),
+                "seed" to layer.seed,
+                "name" to layer.name
             )
         ).right()
 
@@ -90,35 +102,22 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             "tf.keras.layers.Flatten",
             listOf(),
             listOf(
-                "data_format" to quoted(layer.dataFormat?.value),
-                "name" to quoted(layer.name)
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
             )
         ).right()
 
-        is SealedLayer.MaxPooling2D -> {
-            val poolSizeString = when (val poolSize = layer.poolSize) {
-                is Either.Left -> poolSize.a.toString()
-                is Either.Right -> tupleToPythonTuple(poolSize.b)
-            }
-
-            val stridesString = when (val strides = layer.strides) {
-                is Either.Left -> strides.a.toString()
-                is Either.Right -> tupleToPythonTuple(strides.b)
-                null -> "None"
-            }
-
-            makeLayerCode(
-                "tf.keras.layers.MaxPooling2D",
-                listOf(),
-                listOf(
-                    "pool_size" to poolSizeString,
-                    "strides" to stridesString,
-                    "padding" to quoted(layer.padding.value),
-                    "data_format" to quoted(layer.dataFormat?.value),
-                    "name" to quoted(layer.name)
-                )
-            ).right()
-        }
+        is SealedLayer.MaxPooling2D -> makeLayerCode(
+            "tf.keras.layers.MaxPooling2D",
+            listOf(),
+            listOf(
+                "pool_size" to layer.poolSize,
+                "strides" to layer.strides,
+                "padding" to layer.padding.value,
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
 
         else -> "Cannot construct an unknown layer: $layer".left()
     }
@@ -144,7 +143,7 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
     private fun makeLayerCode(
         className: String,
         args: List<String?>,
-        namedArgs: List<Pair<String, String?>>
+        namedArgs: List<Pair<String, *>>
     ): String {
         val argsString = args.joinToString(separator = ", ") { it ?: "None" }
         val optionalSeparator = if (args.isNotEmpty()) ", " else ""

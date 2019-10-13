@@ -1,7 +1,6 @@
 package edu.wpi.axon.tfdata.code.layer
 
 import arrow.core.Either
-import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.tfdata.layer.Regularizer
 import io.kotlintest.shouldBe
@@ -13,7 +12,7 @@ internal class DefaultRegularizerToCodeTest {
 
     @ParameterizedTest
     @MethodSource("regularizerSource")
-    fun `test regularizers`(regularizer: Regularizer?, expected: Either<String, String>) {
+    fun `test regularizers`(regularizer: Regularizer, expected: Either<String, String>) {
         DefaultRegularizerToCode().makeNewRegularizer(regularizer) shouldBe expected
     }
 
@@ -26,10 +25,6 @@ internal class DefaultRegularizerToCodeTest {
                 Regularizer.L1L2(0.01, 0.02),
                 """tf.keras.regularizers.L1L2(0.01, 0.02)""".right(),
                 null
-            ),
-            Arguments.of(
-                null,
-                "Cannot make an unknown regularizer: null".left()
             )
         )
     }
