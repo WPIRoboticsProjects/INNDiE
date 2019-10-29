@@ -33,4 +33,19 @@ internal class LoadSpecificLayerTypesIntegrationTest {
             )
         }
     }
+
+    @Test
+    fun `load GlobalMaxPooling2D`() {
+        loadModel<Model.Sequential>("sequential_with_globalmaxpooling2d.h5") {
+            it.name shouldBe "sequential_8"
+            it.batchInputShape shouldBe listOf(null, null, 2, 2)
+            it.layers.shouldContainExactly(
+                Layer.GlobalMaxPooling2D(
+                    "global_max_pooling2d",
+                    None,
+                    DataFormat.ChannelsLast
+                ).trainable()
+            )
+        }
+    }
 }

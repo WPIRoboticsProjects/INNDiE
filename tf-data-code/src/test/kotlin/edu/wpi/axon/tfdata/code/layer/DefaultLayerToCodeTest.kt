@@ -195,6 +195,15 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 ),
                 Right("""tf.keras.layers.AvgPool2D(pool_size=(2, 2), strides=3, padding="valid", data_format="channels_last", name="name")"""),
                 null
+            ),
+            Arguments.of(
+                Layer.GlobalMaxPooling2D(
+                    "name",
+                    None,
+                    DataFormat.ChannelsFirst
+                ),
+                Right("""tf.keras.layers.GlobalMaxPooling2D(data_format="channels_first", name="name")"""),
+                null
             )
         )
 

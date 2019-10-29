@@ -216,6 +216,12 @@ class LoadLayersFromHDF5(
                 json["data_format"].dataFormatOrNull()
             )
 
+            "GlobalMaxPooling2D", "GlobalMaxPool2D" -> Layer.GlobalMaxPooling2D(
+                name,
+                data.inboundNodes(),
+                json["data_format"].dataFormatOrNull()
+            )
+
             "MaxPool2D", "MaxPooling2D" -> Layer.MaxPooling2D(
                 name,
                 data.inboundNodes(),
