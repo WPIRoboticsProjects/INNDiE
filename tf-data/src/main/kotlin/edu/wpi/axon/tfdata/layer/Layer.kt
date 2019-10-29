@@ -246,4 +246,17 @@ sealed class Layer {
             }
         }
     }
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/UpSampling2D
+     *
+     * Bug: TF does not export a value for [interpolation].
+     */
+    data class UpSampling2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val size: Either<Int, Tuple2<Int, Int>> = Right(Tuple2(2, 2)),
+        val dataFormat: DataFormat? = null,
+        val interpolation: Interpolation = Interpolation.Nearest
+    ) : Layer()
 }

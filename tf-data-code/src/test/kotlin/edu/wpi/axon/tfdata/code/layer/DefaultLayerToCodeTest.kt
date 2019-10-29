@@ -13,6 +13,7 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
+import edu.wpi.axon.tfdata.layer.Interpolation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
@@ -213,6 +214,17 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     null
                 ),
                 Right("""tf.keras.layers.SpatialDropout2D(0.2, data_format=None, name="name")"""),
+                null
+            ),
+            Arguments.of(
+                Layer.UpSampling2D(
+                    "name",
+                    None,
+                    Right(Tuple2(2, 2)),
+                    null,
+                    Interpolation.Nearest
+                ),
+                Right("""tf.keras.layers.UpSampling2D(size=(2, 2), data_format=None, interpolation="nearest", name="name")"""),
                 null
             )
         )

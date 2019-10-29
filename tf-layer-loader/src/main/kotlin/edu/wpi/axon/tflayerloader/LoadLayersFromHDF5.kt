@@ -18,6 +18,7 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
+import edu.wpi.axon.tfdata.layer.Interpolation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
@@ -238,6 +239,14 @@ class LoadLayersFromHDF5(
                 json["data_format"].dataFormatOrNull()
             )
 
+            "UpSampling2D" -> Layer.UpSampling2D(
+                name,
+                data.inboundNodes(),
+                json["size"].tuple2OrInt(),
+                json["data_format"].dataFormatOrNull(),
+                json["interpolation"].interpolation()
+            )
+
             else -> Layer.UnknownLayer(
                 name,
                 data.inboundNodes()
@@ -381,6 +390,12 @@ private fun Any?.dataFormatOrNull(): DataFormat? = when (this as? String) {
     "channels_first" -> DataFormat.ChannelsFirst
     "channels_last" -> DataFormat.ChannelsLast
     null -> null
+    else -> throw IllegalArgumentException("Not convertible: $this")
+}
+
+private fun Any?.interpolation(): Interpolation = when (this as? String) {
+    "nearest" -> Interpolation.Nearest
+    "bilinear" -> Interpolation.Bilinear
     else -> throw IllegalArgumentException("Not convertible: $this")
 }
 

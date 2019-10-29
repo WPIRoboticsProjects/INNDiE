@@ -148,6 +148,17 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
+        is Layer.UpSampling2D -> makeLayerCode(
+            "tf.keras.layers.UpSampling2D",
+            listOf(),
+            listOf(
+                "size" to layer.size,
+                "data_format" to layer.dataFormat?.value,
+                "interpolation" to layer.interpolation.value,
+                "name" to layer.name
+            )
+        ).right()
+
         // TODO: Remove this
         else -> "Cannot construct an unknown layer: $layer".left()
     }

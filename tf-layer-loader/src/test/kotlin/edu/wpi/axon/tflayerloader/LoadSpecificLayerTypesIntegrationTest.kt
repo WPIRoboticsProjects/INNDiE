@@ -8,6 +8,7 @@ import arrow.core.Right
 import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.DataFormat
+import edu.wpi.axon.tfdata.layer.Interpolation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import io.kotlintest.matchers.collections.shouldContainExactly
@@ -60,6 +61,40 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                     None,
                     0.2,
                     null
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load UpSampling2D`() {
+        loadModel<Model.Sequential>("sequential_with_upsampling2d_nearest.h5") {
+            it.name shouldBe "sequential_3"
+            it.batchInputShape shouldBe listOf(null, null, 2, 2)
+            it.layers.shouldContainExactly(
+                Layer.UpSampling2D(
+                    "up_sampling2d_3",
+                    None,
+                    Right(Tuple2(2, 2)),
+                    DataFormat.ChannelsLast,
+                    Interpolation.Nearest
+                ).trainable()
+            )
+        }
+    }
+
+    @Test
+    fun `load UpSampling2D bilinear`() {
+        loadModel<Model.Sequential>("sequential_with_upsampling2d_bilinear.h5") {
+            it.name shouldBe "sequential_2"
+            it.batchInputShape shouldBe listOf(null, null, 2, 2)
+            it.layers.shouldContainExactly(
+                Layer.UpSampling2D(
+                    "up_sampling2d_2",
+                    None,
+                    Right(Tuple2(2, 2)),
+                    DataFormat.ChannelsLast,
+                    Interpolation.Bilinear
                 ).trainable()
             )
         }
