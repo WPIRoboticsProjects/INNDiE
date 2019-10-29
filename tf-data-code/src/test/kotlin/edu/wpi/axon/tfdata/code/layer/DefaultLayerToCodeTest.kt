@@ -204,6 +204,16 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 ),
                 Right("""tf.keras.layers.GlobalMaxPooling2D(data_format="channels_first", name="name")"""),
                 null
+            ),
+            Arguments.of(
+                Layer.SpatialDropout2D(
+                    "name",
+                    None,
+                    0.2,
+                    null
+                ),
+                Right("""tf.keras.layers.SpatialDropout2D(0.2, data_format=None, name="name")"""),
+                null
             )
         )
 

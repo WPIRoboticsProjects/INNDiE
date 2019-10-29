@@ -231,6 +231,13 @@ class LoadLayersFromHDF5(
                 json["data_format"].dataFormatOrNull()
             )
 
+            "SpatialDropout2D" -> Layer.SpatialDropout2D(
+                name,
+                data.inboundNodes(),
+                json["rate"].double(),
+                json["data_format"].dataFormatOrNull()
+            )
+
             else -> Layer.UnknownLayer(
                 name,
                 data.inboundNodes()

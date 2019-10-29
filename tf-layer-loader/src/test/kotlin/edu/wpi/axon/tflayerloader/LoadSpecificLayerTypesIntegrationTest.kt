@@ -48,4 +48,20 @@ internal class LoadSpecificLayerTypesIntegrationTest {
             )
         }
     }
+
+    @Test
+    fun `load SpatialDropout2D`() {
+        loadModel<Model.Sequential>("sequential_with_spatialdropout2d.h5") {
+            it.name shouldBe "sequential_9"
+            it.batchInputShape shouldBe listOf(null, null, 2, 2)
+            it.layers.shouldContainExactly(
+                Layer.SpatialDropout2D(
+                    "spatial_dropout2d",
+                    None,
+                    0.2,
+                    null
+                ).trainable()
+            )
+        }
+    }
 }

@@ -229,4 +229,21 @@ sealed class Layer {
         val padding: PoolingPadding = PoolingPadding.Valid,
         val dataFormat: DataFormat? = null
     ) : Layer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/SpatialDropout2D
+     */
+    data class SpatialDropout2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val rate: Double,
+        val dataFormat: DataFormat? = null
+    ) : Layer() {
+
+        init {
+            require(rate in 0.0..1.0) {
+                "rate ($rate) was outside the allowed range of [0, 1]."
+            }
+        }
+    }
 }

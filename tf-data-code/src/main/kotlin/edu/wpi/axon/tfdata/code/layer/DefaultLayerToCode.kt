@@ -139,6 +139,15 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
+        is Layer.SpatialDropout2D -> makeLayerCode(
+            "tf.keras.layers.SpatialDropout2D",
+            listOf(layer.rate.toString()),
+            listOf(
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
+
         // TODO: Remove this
         else -> "Cannot construct an unknown layer: $layer".left()
     }
