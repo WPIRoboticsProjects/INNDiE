@@ -13,9 +13,9 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
+import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
-import edu.wpi.axon.tfdata.layer.Layer
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -182,6 +182,18 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     DataFormat.ChannelsFirst
                 ),
                 ("""tf.keras.layers.Flatten(data_format="channels_first", name="name")""").right(),
+                null
+            ),
+            Arguments.of(
+                Layer.AveragePooling2D(
+                    "name",
+                    None,
+                    Right(Tuple2(2, 2)),
+                    Left(3),
+                    PoolingPadding.Valid,
+                    DataFormat.ChannelsLast
+                ),
+                Right("""tf.keras.layers.AvgPool2D(pool_size=(2, 2), strides=3, padding="valid", data_format="channels_last", name="name")"""),
                 null
             )
         )

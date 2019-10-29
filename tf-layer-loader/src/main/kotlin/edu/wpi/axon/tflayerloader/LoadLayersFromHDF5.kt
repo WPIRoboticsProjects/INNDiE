@@ -166,8 +166,16 @@ class LoadLayersFromHDF5(
                 json["virtual_batch_size"] as Int?
             )
 
-            "Conv2D"
-            -> Layer.Conv2D(
+            "AvgPool2D", "AveragePooling2D" -> Layer.AveragePooling2D(
+                name,
+                data.inboundNodes(),
+                json["pool_size"].tuple2OrInt(),
+                json["strides"].tuple2OrIntOrNull(),
+                json["padding"].poolingPadding(),
+                json["data_format"].dataFormatOrNull()
+            )
+
+            "Conv2D" -> Layer.Conv2D(
                 name,
                 data.inboundNodes(),
                 json["filters"] as Int,

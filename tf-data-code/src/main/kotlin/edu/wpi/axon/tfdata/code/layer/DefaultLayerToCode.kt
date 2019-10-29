@@ -77,6 +77,18 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         }
 
+        is Layer.AveragePooling2D -> makeLayerCode(
+            "tf.keras.layers.AvgPool2D",
+            listOf(),
+            listOf(
+                "pool_size" to layer.poolSize,
+                "strides" to layer.strides,
+                "padding" to layer.padding.value,
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
+
         is Layer.Dense -> makeLayerCode(
             "tf.keras.layers.Dense",
             listOf(),
