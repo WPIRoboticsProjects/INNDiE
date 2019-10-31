@@ -49,7 +49,7 @@ private open class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
 
     override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
         if (isInitialized())
-            throw Exception("Value has already been assigned!")
+            throw InitializedPropertyModificationException("Value has already been assigned!")
         this.value = value
     }
 

@@ -1,7 +1,7 @@
 package edu.wpi.axon.dsl.imports
 
-import arrow.data.Nel
-import arrow.data.Validated
+import arrow.core.Nel
+import arrow.core.Validated
 
 /**
  * Validates sets of Imports.

@@ -1,19 +1,14 @@
 package edu.wpi.axon.dsl.task
 
+import arrow.core.None
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.boolToPythonString
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
-import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
-
-private sealed class LayerOperation(open val layer: SealedLayer.MetaLayer) {
-    data class CopyLayer(override val layer: SealedLayer.MetaLayer) : LayerOperation(layer)
-    data class MakeNewLayer(override val layer: SealedLayer.MetaLayer) : LayerOperation(layer)
-}
 
 /**
  * Adds and removes layers on a new model using a starting Sequential model.
@@ -28,12 +23,12 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
     /**
      * The current layers in the model.
      */
-    var currentLayers: Set<SealedLayer.MetaLayer> by singleAssign()
+    var currentLayers: Set<Layer.MetaLayer> by singleAssign()
 
     /**
      * The layers the new model should have.
      */
-    var newLayers: Set<SealedLayer.MetaLayer> by singleAssign()
+    var newLayers: Set<Layer.MetaLayer> by singleAssign()
 
     /**
      * The variable to output the new model to.
@@ -54,30 +49,18 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
 
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
+    override fun isConfiguredCorrectly(): Boolean {
+        return super.isConfiguredCorrectly() && currentLayers.all { it.inputs is None } &&
+            newLayers.all { it.inputs is None }
+    }
+
     override fun code(): String {
-        val layerOperations = createLayerOperations(currentLayers)
+        val layerOperations = createLayerOperations(currentLayers, newLayers)
 
         return """
         |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})
-        |${buildTrainableFlags(layerOperations)}
+        |${buildTrainableFlags(layerOperations.map { it.layer }, newModelOutput)}
         """.trimMargin()
-    }
-
-    private fun createLayerOperations(currentLayers: Set<SealedLayer.MetaLayer>): List<LayerOperation> {
-        // The base layers inside the Trainable or Untrainable layer wrappers
-        val innerCurrentLayers = currentLayers.map { it.layer }
-
-        return newLayers.map {
-            // Compare using the inner layer so the trainable status does not matter
-            if (it.layer in innerCurrentLayers) {
-                // Copy layers that are already in the base model to preserve as much
-                // configuration information as possible
-                LayerOperation.CopyLayer(it)
-            } else {
-                // We are forced to make new layers if they aren't in the base model
-                LayerOperation.MakeNewLayer(it)
-            }
-        }
     }
 
     @Suppress("SameParameterValue")
@@ -92,7 +75,7 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
             postfix = postfix
         ) {
             when (it) {
-                is LayerOperation.CopyLayer -> getLayerInModel(modelInput.name, it.layer.name)
+                is LayerOperation.CopyLayer -> getLayerInModel(modelInput, it.layer.name)
                 is LayerOperation.MakeNewLayer -> layerToCode.makeNewLayer(it.layer).fold(
                     { throw IllegalStateException("Tried to make a new layer but got $it") },
                     { it }
@@ -100,17 +83,4 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
             }
         }
     }
-
-    private fun buildTrainableFlags(layerOperations: List<LayerOperation>): String =
-        layerOperations.joinToString(separator = "\n") {
-            val layerInModel = getLayerInModel(newModelOutput.name, it.layer.name)
-            when (val layer = it.layer) {
-                is SealedLayer.MetaLayer.TrainableLayer ->
-                    """$layerInModel.trainable = ${boolToPythonString(layer.trainable)}"""
-                is SealedLayer.MetaLayer.UntrainableLayer -> ""
-            }
-        }
-
-    private fun getLayerInModel(modelName: String, layerName: String) =
-        """$modelName.get_layer("$layerName")"""
 }

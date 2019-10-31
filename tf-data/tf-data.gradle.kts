@@ -10,4 +10,6 @@ dependencies {
         name = "kt-guava-core",
         version = property("kt-guava.version") as String
     )
+
+    testImplementation(project(":test-util"))
 }

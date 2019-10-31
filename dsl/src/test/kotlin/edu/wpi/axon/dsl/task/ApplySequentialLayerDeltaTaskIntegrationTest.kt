@@ -1,4 +1,10 @@
-@file:SuppressWarnings("TooManyFunctions", "StringLiteralDuplication", "LargeClass")
+@file:SuppressWarnings(
+    "TooManyFunctions",
+    "StringLiteralDuplication",
+    "LargeClass",
+    "LongMethod",
+    "SpreadOperator"
+)
 
 package edu.wpi.axon.dsl.task
 
@@ -8,8 +14,9 @@ import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.SealedLayer
-import edu.wpi.axon.tfdata.layer.trainable
+import edu.wpi.axon.tfdata.layer.Layer
+import io.kotlintest.matchers.booleans.shouldBeFalse
+import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import org.junit.jupiter.api.Test
@@ -23,7 +30,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
+        val layer1 = Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(layer1)
@@ -31,6 +38,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             newModelOutput = configuredCorrectly("new_model")
         }
 
+        task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([base_model.get_layer("dense_1")])
             |new_model.get_layer("dense_1").trainable = True
@@ -43,8 +51,8 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
-        val layer2 = SealedLayer.UnknownLayer("unknown_1", None).trainable()
+        val layer1 = Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
+        val layer2 = Layer.UnknownLayer("unknown_1", None).trainable()
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(layer1, layer2)
@@ -71,7 +79,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers =
-                setOf(SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable())
+                setOf(Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable())
             newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
         }
@@ -91,8 +99,8 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(
-                SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable(),
-                SealedLayer.UnknownLayer("unknown_1", None).trainable()
+                Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable(),
+                Layer.UnknownLayer("unknown_1", None).trainable()
             )
             newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
@@ -105,6 +113,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     }
 
     @Test
+    @SuppressWarnings("MaxLineLength")
     fun `add one layer`() {
         startKoin {
             modules(defaultModule())
@@ -113,12 +122,12 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf()
-            newLayers = setOf(SealedLayer.Dense("dense_1", None, 10, Activation.ReLu).trainable())
+            newLayers = setOf(Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
-            |new_model = tf.keras.Sequential([tf.keras.layers.Dense(name="dense_1", units=10, activation=tf.keras.activations.relu)])
+            |new_model = tf.keras.Sequential([tf.keras.layers.Dense(units=10, activation=tf.keras.activations.relu, name="dense_1")])
             |new_model.get_layer("dense_1").trainable = True
         """.trimMargin()
     }
@@ -133,16 +142,16 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf()
             newLayers = setOf(
-                SealedLayer.Dense("dense_1", None, 128, Activation.ReLu).trainable(),
-                SealedLayer.Dense("dense_2", None, 10, Activation.SoftMax).trainable()
+                Layer.Dense("dense_1", None, 128, Activation.ReLu).trainable(),
+                Layer.Dense("dense_2", None, 10, Activation.SoftMax).trainable()
             )
             newModelOutput = configuredCorrectly("new_model")
         }
 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([
-            |    tf.keras.layers.Dense(name="dense_1", units=128, activation=tf.keras.activations.relu),
-            |    tf.keras.layers.Dense(name="dense_2", units=10, activation=tf.keras.activations.softmax)
+            |    tf.keras.layers.Dense(units=128, activation=tf.keras.activations.relu, name="dense_1"),
+            |    tf.keras.layers.Dense(units=10, activation=tf.keras.activations.softmax, name="dense_2")
             |])
             |new_model.get_layer("dense_1").trainable = True
             |new_model.get_layer("dense_2").trainable = True
@@ -158,7 +167,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf()
-            newLayers = setOf(SealedLayer.UnknownLayer("layer_1", None).trainable())
+            newLayers = setOf(Layer.UnknownLayer("layer_1", None).trainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -175,7 +184,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf()
             newLayers = setOf(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_1",
                     None,
                     128,
@@ -194,16 +203,16 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = SealedLayer.UnknownLayer("unknown_3", None).trainable()
+        val layer1 = Layer.UnknownLayer("unknown_3", None).trainable()
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(
                 layer1,
-                SealedLayer.Dense("dense_2", None, 10, Activation.SoftMax).trainable()
+                Layer.Dense("dense_2", None, 10, Activation.SoftMax).trainable()
             )
             newLayers = setOf(
                 layer1,
-                SealedLayer.Dense("dense_2", None, 3, Activation.SoftMax).trainable()
+                Layer.Dense("dense_2", None, 3, Activation.SoftMax).trainable()
             )
             newModelOutput = configuredCorrectly("new_model")
         }
@@ -211,7 +220,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         task.code() shouldBe """
             |new_model = tf.keras.Sequential([
             |    base_model.get_layer("unknown_3"),
-            |    tf.keras.layers.Dense(name="dense_2", units=3, activation=tf.keras.activations.softmax)
+            |    tf.keras.layers.Dense(units=3, activation=tf.keras.activations.softmax, name="dense_2")
             |])
             |new_model.get_layer("unknown_3").trainable = True
             |new_model.get_layer("dense_2").trainable = True
@@ -224,7 +233,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = SealedLayer.UnknownLayer("unknown_1", None).trainable()
+        val layer1 = Layer.UnknownLayer("unknown_1", None).trainable()
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(layer1)
@@ -244,7 +253,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = SealedLayer.Dense(
+        val layer1 = Layer.Dense(
             "dense_1",
             None,
             10,
@@ -270,7 +279,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val baseLayer1 = SealedLayer.Dense("dense_1", None, 10, Activation.ReLu)
+        val baseLayer1 = Layer.Dense("dense_1", None, 10, Activation.ReLu)
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf(baseLayer1.trainable())
@@ -294,7 +303,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modelInput = configuredCorrectly("base_model")
             currentLayers = setOf()
             newLayers = setOf(
-                SealedLayer.Dense(
+                Layer.Dense(
                     "dense_1",
                     Some(setOf("input_name")),
                     10,
@@ -304,6 +313,6 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             newModelOutput = configuredCorrectly("new_model")
         }
 
-        shouldThrow<IllegalStateException> { task.code() }
+        task.isConfiguredCorrectly().shouldBeFalse()
     }
 }

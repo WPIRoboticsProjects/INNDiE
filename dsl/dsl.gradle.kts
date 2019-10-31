@@ -15,17 +15,17 @@ fun DependencyHandler.koin(name: String) =
     create(group = "org.koin", name = name, version = property("koin.version") as String)
 
 dependencies {
+    api(arrow("arrow-core"))
     api(arrow("arrow-core-data"))
-    api(arrow("arrow-core-extensions"))
-    api(arrow("arrow-syntax"))
-    api(arrow("arrow-typeclasses"))
-    api(arrow("arrow-extras-data"))
-    api(arrow("arrow-extras-extensions"))
     api(arrow("arrow-optics"))
-    api(arrow("arrow-generic"))
+    api(arrow("arrow-fx"))
+    api(arrow("arrow-syntax"))
+    api(arrow("arrow-free"))
+    api(arrow("arrow-free-data"))
+    api(arrow("arrow-recursion"))
     api(arrow("arrow-recursion-data"))
-    api(arrow("arrow-recursion-extensions"))
     kapt(arrow("arrow-meta"))
+    kapt(arrow("arrow-generic"))
 
     api(koin("koin-core"))
     api(project(":dsl-interface"))
@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":util"))
     implementation(project(":tf-data-code"))
     implementation(project(":logging"))
+    implementation(project(":tf-layer-loader"))
 
     implementation(
         group = "com.mitchtalmadge",

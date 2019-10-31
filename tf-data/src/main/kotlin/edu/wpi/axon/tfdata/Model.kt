@@ -3,11 +3,16 @@
 package edu.wpi.axon.tfdata
 
 import com.google.common.graph.ImmutableGraph
-import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.Layer
 
-sealed class Model(
-    open val name: String
-) {
+typealias LayerGraph = ImmutableGraph<Layer.MetaLayer>
+
+sealed class Model {
+
+    /**
+     * The name of the model.
+     */
+    abstract val name: String
 
     /**
      * A linear stack of layers.
@@ -15,16 +20,24 @@ sealed class Model(
     data class Sequential(
         override val name: String,
         val batchInputShape: List<Int?>,
-        val layers: Set<SealedLayer.MetaLayer>
-    ) : Model(name)
+        val layers: Set<Layer.MetaLayer>
+    ) : Model()
 
     data class General(
         override val name: String,
         val input: Set<InputData>,
-        val layers: ImmutableGraph<SealedLayer.MetaLayer>,
+        val layers: LayerGraph,
         val output: Set<OutputData>
-    ) : Model(name) {
-        data class InputData(val id: String, val type: List<Int?>)
+    ) : Model() {
+
+        data class InputData(
+            val id: String,
+            val type: List<Int?>,
+            val batchSize: Int? = null,
+            val dtype: Number? = null,
+            val sparse: Boolean = false
+        )
+
         data class OutputData(val id: String)
     }
 }

@@ -1,7 +1,8 @@
 package edu.wpi.axon.training
 
-import arrow.data.ValidatedNel
-import arrow.data.invalidNel
+import arrow.core.NonEmptyList
+import arrow.core.Validated
+import arrow.core.invalidNel
 import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
@@ -18,7 +19,7 @@ import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
@@ -26,7 +27,7 @@ import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import java.io.File
 
 /**
- * Trains a Sequential model.
+ * Trains a [Model.Sequential].
  *
  * @param userModelPath The path to the model file.
  * @param userDataset The dataset to train on.
@@ -44,13 +45,15 @@ class TrainSequential(
     private val userLoss: Loss,
     private val userMetrics: Set<String>,
     private val userEpochs: Int,
-    private val userNewLayers: Set<SealedLayer.MetaLayer>,
+    private val userNewLayers: Set<Layer.MetaLayer>,
     private val generateDebugComments: Boolean = false
 ) {
 
+    private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
+
     @Suppress("UNUSED_VARIABLE")
-    fun generateScript(): ValidatedNel<String, String> {
-        return LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(userModelPath)).map { currentModel ->
+    fun generateScript(): Validated<NonEmptyList<String>, String> =
+        loadLayersFromHDF5.load(File(userModelPath)).map { currentModel ->
             require(currentModel is Model.Sequential)
 
             require(currentModel.batchInputShape.count { it == null } <= 1)
@@ -145,5 +148,4 @@ class TrainSequential(
             { Throwables.getStackTraceAsString(it).invalidNel() },
             { it }
         )
-    }
 }

@@ -1,3 +1,5 @@
+@file:SuppressWarnings("LongMethod", "LargeClass", "TooManyFunctions")
+
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly

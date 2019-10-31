@@ -3,11 +3,11 @@
 package edu.wpi.axon.dsl
 
 import arrow.core.Either
-import arrow.data.Invalid
-import arrow.data.Nel
-import arrow.data.ValidatedNel
-import arrow.data.invalidNel
-import arrow.data.valid
+import arrow.core.Invalid
+import arrow.core.Nel
+import arrow.core.ValidatedNel
+import arrow.core.invalidNel
+import arrow.core.valid
 import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.imports.Import
@@ -118,7 +118,7 @@ class ScriptGenerator(
                 append('\n')
                 appendTaskCode(generateDebugComments, graph.b, finalCompositeTask, handledNodes)
             }.trim().valid()
-        }
+        }.also { logger.info { "Generated script:\n$it" } }
     }
 
     /**
