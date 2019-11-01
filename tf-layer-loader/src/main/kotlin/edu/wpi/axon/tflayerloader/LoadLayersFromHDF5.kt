@@ -402,7 +402,8 @@ private fun Any?.dataFormatOrNull(): DataFormat? = when (this as? String) {
 }
 
 private fun Any?.interpolation(): Interpolation = when (this as? String) {
-    "nearest" -> Interpolation.Nearest
+    // Null in versions < v1.15.0 (TF bug). Use nearest as the default
+    null, "nearest" -> Interpolation.Nearest
     "bilinear" -> Interpolation.Bilinear
     else -> throw IllegalArgumentException("Not convertible: $this")
 }
