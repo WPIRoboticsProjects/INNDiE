@@ -118,6 +118,15 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
+        is Layer.GlobalAveragePooling2D -> makeLayerCode(
+            "tf.keras.layers.GlobalAveragePooling2D",
+            listOf(),
+            listOf(
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
+
         is Layer.GlobalMaxPooling2D -> makeLayerCode(
             "tf.keras.layers.GlobalMaxPooling2D",
             listOf(),

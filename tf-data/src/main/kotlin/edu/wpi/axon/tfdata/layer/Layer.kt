@@ -84,6 +84,17 @@ sealed class Layer {
     ) : Layer()
 
     /**
+     * A layer that contains an entire model inside it.
+     *
+     * @param model The model that acts as this layer.
+     */
+    data class ModelLayer(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val model: Model
+    ) : Layer()
+
+    /**
      * A layer that accepts input data and has no parameters.
      *
      * // TODO: tensor parameter
@@ -207,6 +218,15 @@ sealed class Layer {
         override val name: String,
         override val inputs: Option<Set<String>>,
         val dataFormat: DataFormat? = null
+    ) : Layer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/GlobalAveragePooling2D
+     */
+    data class GlobalAveragePooling2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val dataFormat: DataFormat?
     ) : Layer()
 
     /**

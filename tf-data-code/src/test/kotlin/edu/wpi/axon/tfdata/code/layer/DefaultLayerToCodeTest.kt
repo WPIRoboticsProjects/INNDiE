@@ -226,6 +226,15 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 ),
                 Right("""tf.keras.layers.UpSampling2D(size=(2, 2), data_format=None, interpolation="nearest", name="name")"""),
                 null
+            ),
+            Arguments.of(
+                Layer.GlobalAveragePooling2D(
+                    "name",
+                    None,
+                    DataFormat.ChannelsLast
+                ),
+                Right("""tf.keras.layers.GlobalAveragePooling2D(data_format="channels_last", name="name")"""),
+                null
             )
         )
 

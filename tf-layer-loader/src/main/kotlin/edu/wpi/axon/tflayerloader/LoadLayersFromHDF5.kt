@@ -130,6 +130,8 @@ class LoadLayersFromHDF5(
         val json = data["config"] as JsonObject
         val name = json["name"] as String
         return when (className) {
+            "Sequential", "Model" -> Layer.ModelLayer(name, data.inboundNodes(), parseModel(data))
+
             "InputLayer" -> Layer.InputLayer(
                 name,
                 (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
@@ -212,6 +214,12 @@ class LoadLayersFromHDF5(
             )
 
             "Flatten" -> Layer.Flatten(
+                name,
+                data.inboundNodes(),
+                json["data_format"].dataFormatOrNull()
+            )
+
+            "GlobalAveragePooling2D", "GlobalAvgPool2D" -> Layer.GlobalAveragePooling2D(
                 name,
                 data.inboundNodes(),
                 json["data_format"].dataFormatOrNull()
