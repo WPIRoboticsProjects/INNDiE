@@ -17,6 +17,7 @@ import com.vaadin.flow.server.VaadinSession
 import edu.wpi.axon.ui.model.TrainingModel
 import edu.wpi.axon.ui.view.AboutView
 import edu.wpi.axon.ui.view.DatasetView
+import edu.wpi.axon.ui.view.JobsView
 import edu.wpi.axon.ui.view.ModelView
 import edu.wpi.axon.ui.view.TrainingView
 
@@ -37,6 +38,9 @@ class AxonLayout : AppLayout() {
             addToNavbar()
             tabs {
                 orientation = Tabs.Orientation.HORIZONTAL
+                tab {
+                    add(routerLink(VaadinIcon.CONTROLLER, "Jobs", JobsView::class))
+                }
                 tab {
                     add(routerLink(VaadinIcon.CAMERA, "Dataset", DatasetView::class))
                 }
