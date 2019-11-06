@@ -4,8 +4,7 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Verbosity
-import edu.wpi.axon.tfdata.code.boolToPythonString
-import edu.wpi.axon.tfdata.code.numberToPythonString
+import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
 
 /**
@@ -84,12 +83,12 @@ class TrainTask(name: String) : BaseTask(name) {
         |${modelInput.name}.fit(
         |    ${trainInputData.name},
         |    ${trainOutputData.name},
-        |    batch_size=${numberToPythonString(batchSize)},
+        |    batch_size=${pythonString(batchSize)},
         |    epochs=$epochs,
         |    verbose=$verbose,
         |    callbacks=${callbacks.joinToString(prefix = "[", postfix = "]") { it.name }},
         |    validation_data=(${validationInputData.name}, ${validationOutputData.name}),
-        |    shuffle=${boolToPythonString(shuffle)}
+        |    shuffle=${pythonString(shuffle)}
         |)
     """.trimMargin()
 }

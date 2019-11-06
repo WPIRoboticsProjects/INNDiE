@@ -6,7 +6,7 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
-import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
@@ -23,12 +23,12 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
     /**
      * The current layers in the model.
      */
-    var currentLayers: Set<SealedLayer.MetaLayer> by singleAssign()
+    var currentLayers: Set<Layer.MetaLayer> by singleAssign()
 
     /**
      * The layers the new model should have.
      */
-    var newLayers: Set<SealedLayer.MetaLayer> by singleAssign()
+    var newLayers: Set<Layer.MetaLayer> by singleAssign()
 
     /**
      * The variable to output the new model to.

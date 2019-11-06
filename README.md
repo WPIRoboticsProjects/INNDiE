@@ -39,3 +39,25 @@ singular DAG.
 
 If at any point the `ScriptGenerator` or any of its dependencies determines
 that the configuration is invalid, an error type is returned.
+
+## Adding a Layer
+
+To add a layer,
+
+1. Add it in `SealedLayer` as a sealed subclass. Any parameter validation should be tested.
+2. Add test cases that use it in `DefaultLayerToCodeTest` and then add it as a case in
+`DefaultLayerToCode`.
+3. Use it in `LoadLayersFromHDF5::parseLayer` and amend any tests that now fail because they
+previously did not understand the new layer type. If no tests fail, add a test that loads a model
+containing the new layer type.
+
+## Adding an Initializer
+
+To add an initializer,
+
+1. Add it in `Initializer` as a sealed subclass.
+2. Add a case for it in `DefaultInitializerToCode`. Add test cases in
+`DefaultInitializerToCodeTest`.
+3. Add a case for it in `LoadLayersFromHDF5::initializer`. Generate new models that use each
+variance of the new `Initializer` and add a test in `LoadLayersWithInitializersIntegrationTest` that
+loads each one. 

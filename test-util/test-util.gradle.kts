@@ -23,16 +23,28 @@ dependencies {
         version = property("mockk.version") as String
     )
 
-    api(
-        group = "io.kotlintest",
-        name = "kotlintest-assertions",
-        version = property("kotlintest.version") as String
-    )
-    api(
-        group = "io.kotlintest",
-        name = "kotlintest-assertions-arrow",
-        version = property("kotlintest.version") as String
-    )
+    // api(
+    //     group = "io.kotlintest",
+    //     name = "kotlintest-assertions",
+    //     version = property("kotlintest.version") as String
+    // )
+    // api(
+    //     group = "io.kotlintest",
+    //     name = "kotlintest-assertions-arrow",
+    //     version = property("kotlintest.version") as String
+    // )
+
+    // TODO: Go back to the old dependencies once 4.x.x is out
+    // https://github.com/wpilibsuite/Axon/issues/84
+    api(fileTree("$rootDir/libraries") {
+        include("*.jar")
+        exclude {
+            it.file.name.contains("runner")
+        }
+    })
+
+    // Needed by kotlintest
+    api(group = "com.github.wumpz", name = "diffutils", version = "2.2")
 
     api(
         group = "org.junit.jupiter",

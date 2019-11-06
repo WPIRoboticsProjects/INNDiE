@@ -1,8 +1,8 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.boolToPythonString
-import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.code.pythonString
+import edu.wpi.axon.tfdata.layer.Layer
 
 /**
  * Determines the layer operations to transform [currentLayers] into [newLayers].
@@ -12,8 +12,8 @@ import edu.wpi.axon.tfdata.layer.SealedLayer
  * @return The necessary layer operations.
  */
 internal fun createLayerOperations(
-    currentLayers: Iterable<SealedLayer.MetaLayer>,
-    newLayers: Iterable<SealedLayer.MetaLayer>
+    currentLayers: Iterable<Layer.MetaLayer>,
+    newLayers: Iterable<Layer.MetaLayer>
 ): List<LayerOperation> {
     // The base layers inside the Trainable or Untrainable layer wrappers
     val innerCurrentLayers = currentLayers.map { it.layer }
@@ -39,16 +39,16 @@ internal fun createLayerOperations(
  * @return The code to set the `trainable` flags.
  */
 internal fun buildTrainableFlags(
-    layerOperations: Iterable<SealedLayer.MetaLayer>,
+    layerOperations: Iterable<Layer.MetaLayer>,
     model: Variable
 ) = layerOperations.mapNotNull {
     when (it) {
-        is SealedLayer.MetaLayer.TrainableLayer -> {
+        is Layer.MetaLayer.TrainableLayer -> {
             val layerInModel = getLayerInModel(model, it.layer.name)
-            """$layerInModel.trainable = ${boolToPythonString(it.trainable)}"""
+            """$layerInModel.trainable = ${pythonString(it.trainable)}"""
         }
 
-        is SealedLayer.MetaLayer.UntrainableLayer -> null
+        is Layer.MetaLayer.UntrainableLayer -> null
     }
 }.joinToString("\n")
 

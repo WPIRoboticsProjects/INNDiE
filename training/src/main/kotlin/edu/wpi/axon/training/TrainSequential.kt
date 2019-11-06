@@ -19,7 +19,7 @@ import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.layer.SealedLayer
+import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
@@ -45,7 +45,7 @@ class TrainSequential(
     private val userLoss: Loss,
     private val userMetrics: Set<String>,
     private val userEpochs: Int,
-    private val userNewLayers: Set<SealedLayer.MetaLayer>,
+    private val userNewLayers: Set<Layer.MetaLayer>,
     private val generateDebugComments: Boolean = false
 ) {
 
