@@ -84,6 +84,17 @@ sealed class Layer {
     ) : Layer()
 
     /**
+     * A layer that contains an entire model inside it.
+     *
+     * @param model The model that acts as this layer.
+     */
+    data class ModelLayer(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val model: Model
+    ) : Layer()
+
+    /**
      * A layer that accepts input data and has no parameters.
      *
      * // TODO: tensor parameter
@@ -139,6 +150,18 @@ sealed class Layer {
         val renormMomentum: Double? = 0.99,
         val fused: Boolean? = null,
         val virtualBatchSize: Int? = null
+    ) : Layer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/AveragePooling2D
+     */
+    data class AveragePooling2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val poolSize: Either<Int, Tuple2<Int, Int>> = Right(Tuple2(2, 2)),
+        val strides: Either<Int, Tuple2<Int, Int>>? = null,
+        val padding: PoolingPadding = PoolingPadding.Valid,
+        val dataFormat: DataFormat? = null
     ) : Layer()
 
     /**
@@ -198,6 +221,24 @@ sealed class Layer {
     ) : Layer()
 
     /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/GlobalAveragePooling2D
+     */
+    data class GlobalAveragePooling2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val dataFormat: DataFormat?
+    ) : Layer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/GlobalMaxPool2D
+     */
+    data class GlobalMaxPooling2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val dataFormat: DataFormat? = null
+    ) : Layer()
+
+    /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/MaxPool2D
      */
     data class MaxPooling2D(
@@ -207,5 +248,35 @@ sealed class Layer {
         val strides: Either<Int, Tuple2<Int, Int>>? = null,
         val padding: PoolingPadding = PoolingPadding.Valid,
         val dataFormat: DataFormat? = null
+    ) : Layer()
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/SpatialDropout2D
+     */
+    data class SpatialDropout2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val rate: Double,
+        val dataFormat: DataFormat? = null
+    ) : Layer() {
+
+        init {
+            require(rate in 0.0..1.0) {
+                "rate ($rate) was outside the allowed range of [0, 1]."
+            }
+        }
+    }
+
+    /**
+     * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/UpSampling2D
+     *
+     * Bug: TF does not export a value for [interpolation].
+     */
+    data class UpSampling2D(
+        override val name: String,
+        override val inputs: Option<Set<String>>,
+        val size: Either<Int, Tuple2<Int, Int>> = Right(Tuple2(2, 2)),
+        val dataFormat: DataFormat? = null,
+        val interpolation: Interpolation = Interpolation.Nearest
     ) : Layer()
 }

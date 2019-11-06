@@ -18,6 +18,7 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Initializer
+import edu.wpi.axon.tfdata.layer.Interpolation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
@@ -129,6 +130,8 @@ class LoadLayersFromHDF5(
         val json = data["config"] as JsonObject
         val name = json["name"] as String
         return when (className) {
+            "Sequential", "Model" -> Layer.ModelLayer(name, data.inboundNodes(), parseModel(data))
+
             "InputLayer" -> Layer.InputLayer(
                 name,
                 (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
@@ -166,8 +169,16 @@ class LoadLayersFromHDF5(
                 json["virtual_batch_size"] as Int?
             )
 
-            "Conv2D"
-            -> Layer.Conv2D(
+            "AvgPool2D", "AveragePooling2D" -> Layer.AveragePooling2D(
+                name,
+                data.inboundNodes(),
+                json["pool_size"].tuple2OrInt(),
+                json["strides"].tuple2OrIntOrNull(),
+                json["padding"].poolingPadding(),
+                json["data_format"].dataFormatOrNull()
+            )
+
+            "Conv2D" -> Layer.Conv2D(
                 name,
                 data.inboundNodes(),
                 json["filters"] as Int,
@@ -208,6 +219,18 @@ class LoadLayersFromHDF5(
                 json["data_format"].dataFormatOrNull()
             )
 
+            "GlobalAveragePooling2D", "GlobalAvgPool2D" -> Layer.GlobalAveragePooling2D(
+                name,
+                data.inboundNodes(),
+                json["data_format"].dataFormatOrNull()
+            )
+
+            "GlobalMaxPooling2D", "GlobalMaxPool2D" -> Layer.GlobalMaxPooling2D(
+                name,
+                data.inboundNodes(),
+                json["data_format"].dataFormatOrNull()
+            )
+
             "MaxPool2D", "MaxPooling2D" -> Layer.MaxPooling2D(
                 name,
                 data.inboundNodes(),
@@ -215,6 +238,21 @@ class LoadLayersFromHDF5(
                 json["strides"].tuple2OrIntOrNull(),
                 json["padding"].poolingPadding(),
                 json["data_format"].dataFormatOrNull()
+            )
+
+            "SpatialDropout2D" -> Layer.SpatialDropout2D(
+                name,
+                data.inboundNodes(),
+                json["rate"].double(),
+                json["data_format"].dataFormatOrNull()
+            )
+
+            "UpSampling2D" -> Layer.UpSampling2D(
+                name,
+                data.inboundNodes(),
+                json["size"].tuple2OrInt(),
+                json["data_format"].dataFormatOrNull(),
+                json["interpolation"].interpolation()
             )
 
             else -> Layer.UnknownLayer(
@@ -360,6 +398,13 @@ private fun Any?.dataFormatOrNull(): DataFormat? = when (this as? String) {
     "channels_first" -> DataFormat.ChannelsFirst
     "channels_last" -> DataFormat.ChannelsLast
     null -> null
+    else -> throw IllegalArgumentException("Not convertible: $this")
+}
+
+private fun Any?.interpolation(): Interpolation = when (this as? String) {
+    // Null in versions < v1.15.0 (TF bug). Use nearest as the default
+    null, "nearest" -> Interpolation.Nearest
+    "bilinear" -> Interpolation.Bilinear
     else -> throw IllegalArgumentException("Not convertible: $this")
 }
 
