@@ -25,7 +25,7 @@ internal class UploadModelToS3TaskTest : KoinTestFixture() {
         }
 
         task.code() shouldBe """
-            |axonawsclient.impl_upload_model_file("modelName.h5", "bucketName", "region-name")
+            |axon.client.impl_upload_model_file("modelName.h5", "bucketName", "region-name")
         """.trimMargin()
     }
 }

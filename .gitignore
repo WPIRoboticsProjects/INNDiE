@@ -177,3 +177,5 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+*.whl

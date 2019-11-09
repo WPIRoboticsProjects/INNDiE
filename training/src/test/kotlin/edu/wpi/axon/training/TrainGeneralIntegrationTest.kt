@@ -23,10 +23,14 @@ internal class TrainGeneralIntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "network_with_add.h5"
+        val newModelName = "network_with_add-trained.h5"
         val (model, path) = loadModel(modelName)
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneral(
-                userModelPath = path,
+                userOldModelPath = path,
+                userNewModelPath = newModelName,
+                userBucketName = getTestBucketName(),
+                userRegion = getTestRegion(),
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -35,7 +39,10 @@ internal class TrainGeneralIntegrationTest : KoinTestFixture() {
                 userNewModel = it
             ).generateScript().shouldBeValid {
                 it.a shouldBe """
+                |import axon.client
                 |import tensorflow as tf
+                |
+                |axon.client.impl_download_model_file("$modelName", "${getTestBucketName()}", "${getTestRegion()}")
                 |
                 |model = tf.keras.models.load_model("$modelName")
                 |
@@ -90,6 +97,10 @@ internal class TrainGeneralIntegrationTest : KoinTestFixture() {
                 |    validation_data=(xTest, yTest),
                 |    shuffle=True
                 |)
+                |
+                |newModelVar.save("$newModelName")
+                |
+                |axon.client.impl_upload_model_file("$newModelName", "${getTestBucketName()}", "${getTestRegion()}")
                 """.trimMargin()
             }
         }

@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: axon
+Version: 0.1.0
+Summary: The Axon CLI
+Home-page: https://github.com/wpilibsuite/Axon
+License: UNKNOWN
+Project-URL: Bug Reports, https://github.com/wpilibsuite/Axon/issues
+Project-URL: Source, https://github.com/wpilibsuite/Axon
+Description: # Axon AWS CLI
+        
+        This is a CLI used by Axon to interface with AWS.
+        
+Platform: UNKNOWN
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

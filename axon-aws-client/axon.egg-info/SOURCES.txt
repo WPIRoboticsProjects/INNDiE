@@ -1,0 +1,9 @@
+README.md
+setup.py
+axon/client.py
+axon.egg-info/PKG-INFO
+axon.egg-info/SOURCES.txt
+axon.egg-info/dependency_links.txt
+axon.egg-info/entry_points.txt
+axon.egg-info/requires.txt
+axon.egg-info/top_level.txt

@@ -26,7 +26,7 @@ class UploadModelToS3Task(name: String) : BaseTask(name), KoinComponent {
      */
     var region: String by singleAssign()
 
-    override val imports = setOf(makeImport("import axonawsclient"))
+    override val imports = setOf(makeImport("import axon.client"))
 
     override val inputs: Set<Variable> = emptySet()
 
@@ -35,6 +35,6 @@ class UploadModelToS3Task(name: String) : BaseTask(name), KoinComponent {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
-        |axonawsclient.impl_upload_model_file("$modelName", "$bucketName", "$region")
+        |axon.client.impl_upload_model_file("$modelName", "$bucketName", "$region")
     """.trimMargin()
 }

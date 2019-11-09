@@ -25,7 +25,7 @@ internal class DownloadModelFromS3TaskTest : KoinTestFixture() {
         }
 
         task.code() shouldBe """
-            |axonawsclient.impl_download_model_file("modelName.h5", "bucketName", "region-name")
+            |axon.client.impl_download_model_file("modelName.h5", "bucketName", "region-name")
         """.trimMargin()
     }
 }

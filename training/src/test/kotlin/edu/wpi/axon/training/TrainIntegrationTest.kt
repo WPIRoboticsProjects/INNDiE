@@ -24,9 +24,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         val (model, path) = loadModel("network_with_add.h5")
         model.shouldBeInstanceOf<Model.General> {
             Train(
-                userModelPath = path,
-                userBucketName = userBucketName,
-                userRegion = userRegion,
+                userOldModelPath = path,
+                userNewModelPath = "network_with_add-trained.h5",
+                userBucketName = getTestBucketName(),
+                userRegion = getTestRegion(),
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -46,9 +47,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         val (model, path) = loadModel("custom_fashion_mnist.h5")
         model.shouldBeInstanceOf<Model.Sequential> {
             Train(
-                userModelPath = path,
-                userBucketName = userBucketName,
-                userRegion = userRegion,
+                userOldModelPath = path,
+                userNewModelPath = "custom_fashion_mnist-trained.h5",
+                userBucketName = getTestBucketName(),
+                userRegion = getTestRegion(),
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -69,9 +71,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         val (generalModel, _) = loadModel("network_with_add.h5")
         sequentialModel.shouldBeInstanceOf<Model.Sequential> {
             Train(
-                userModelPath = sequentialPath,
-                userBucketName = userBucketName,
-                userRegion = userRegion,
+                userOldModelPath = sequentialPath,
+                userNewModelPath = "custom_fashion_mnist-trained.h5",
+                userBucketName = getTestBucketName(),
+                userRegion = getTestRegion(),
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -92,9 +95,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         val (sequentialModel, _) = loadModel("custom_fashion_mnist.h5")
         generalModel.shouldBeInstanceOf<Model.General> {
             Train(
-                userModelPath = generalPath,
-                userBucketName = userBucketName,
-                userRegion = userRegion,
+                userOldModelPath = generalPath,
+                userNewModelPath = "network_with_add-trained.h5",
+                userBucketName = getTestBucketName(),
+                userRegion = getTestRegion(),
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -112,9 +116,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         }
 
         Train(
-            userModelPath = this::class.java.getResource("badModel1.h5").toURI().path,
-            userBucketName = userBucketName,
-            userRegion = userRegion,
+            userOldModelPath = this::class.java.getResource("badModel1.h5").toURI().path,
+            userNewModelPath = "badModel1-trained.h5",
+            userBucketName = getTestBucketName(),
+            userRegion = getTestRegion(),
             userDataset = Dataset.Mnist,
             userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             userLoss = Loss.SparseCategoricalCrossentropy,

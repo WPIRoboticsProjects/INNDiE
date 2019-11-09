@@ -14,7 +14,8 @@ import java.io.File
 /**
  * Trains a [Model].
  *
- * @param userModelPath The path to the model file.
+ * @param userOldModelPath The name of the model to load.
+ * @param userNewModelPath The name of the model to save to.
  * @param userDataset The dataset to train on.
  * @param userOptimizer The [Optimizer] to use.
  * @param userLoss The [Loss] function to use.
@@ -24,7 +25,8 @@ import java.io.File
  * @param generateDebugComments Whether to put debug comments in the output.
  */
 class Train(
-    private val userModelPath: String,
+    private val userOldModelPath: String,
+    private val userNewModelPath: String,
     private val userBucketName: String,
     private val userRegion: String,
     private val userDataset: Dataset,
@@ -39,12 +41,13 @@ class Train(
     private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
 
     fun generateScript(): ValidatedNel<String, String> =
-        loadLayersFromHDF5.load(File(userModelPath)).map { userCurrentModel ->
+        loadLayersFromHDF5.load(File(userOldModelPath)).map { userCurrentModel ->
             when (userCurrentModel) {
                 is Model.Sequential -> {
                     if (userNewModel is Model.Sequential) {
                         TrainSequential(
-                            userModelPath = userModelPath,
+                            userOldModelPath = userOldModelPath,
+                            userNewModelPath = userNewModelPath,
                             userBucketName = userBucketName,
                             userRegion = userRegion,
                             userDataset = userDataset,
@@ -64,7 +67,10 @@ class Train(
                 is Model.General -> {
                     if (userNewModel is Model.General) {
                         TrainGeneral(
-                            userModelPath = userModelPath,
+                            userOldModelPath = userOldModelPath,
+                            userNewModelPath = userNewModelPath,
+                            userBucketName = userBucketName,
+                            userRegion = userRegion,
                             userDataset = userDataset,
                             userOptimizer = userOptimizer,
                             userLoss = userLoss,

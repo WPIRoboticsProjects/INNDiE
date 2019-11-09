@@ -6,8 +6,9 @@ import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import java.io.File
 
-internal const val userBucketName = "axon-salmon-testbucket1"
-internal const val userRegion = "us-east-1"
+// TODO: Make these dev-configurable without requiring code changes
+internal fun getTestBucketName() = "axon-salmon-testbucket1"
+internal fun getTestRegion() = "us-east-1"
 
 /**
  * Loads a model with name [modelName] from the test resources.

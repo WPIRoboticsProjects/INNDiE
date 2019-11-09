@@ -32,7 +32,8 @@ import java.io.File
 /**
  * Trains a [Model.Sequential].
  *
- * @param userModelPath The path to the model file.
+ * @param userOldModelPath The name of the model to load.
+ * @param userNewModelPath The name of the model to save to.
  * @param userDataset The dataset to train on.
  * @param userOptimizer The [Optimizer] to use.
  * @param userLoss The [Loss] function to use.
@@ -42,7 +43,8 @@ import java.io.File
  * @param generateDebugComments Whether to put debug comments in the output.
  */
 class TrainSequential(
-    private val userModelPath: String,
+    private val userOldModelPath: String,
+    private val userNewModelPath: String,
     private val userBucketName: String,
     private val userRegion: String,
     private val userDataset: Dataset,
@@ -54,12 +56,19 @@ class TrainSequential(
     private val generateDebugComments: Boolean = false
 ) {
 
+    init {
+        require(userOldModelPath != userNewModelPath) {
+            "The old model path ($userOldModelPath) cannot equal the new model " +
+                "path ($userNewModelPath)."
+        }
+    }
+
     private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
-    private val userModelName = userModelPath.substringAfterLast('/')
+    private val userOldModelName = userOldModelPath.substringAfterLast('/')
 
     @Suppress("UNUSED_VARIABLE")
     fun generateScript(): Validated<NonEmptyList<String>, String> =
-        loadLayersFromHDF5.load(File(userModelPath)).map { currentModel ->
+        loadLayersFromHDF5.load(File(userOldModelPath)).map { currentModel ->
             require(currentModel is Model.Sequential)
 
             require(currentModel.batchInputShape.count { it == null } <= 1)
@@ -99,14 +108,14 @@ class TrainSequential(
                 }
 
                 val downloadModelFromS3Task by tasks.running(DownloadModelFromS3Task::class) {
-                    modelName = userModelName
+                    modelName = userOldModelName
                     bucketName = userBucketName
                     region = userRegion
                 }
 
                 val model by variables.creating(Variable::class)
                 val loadModelTask by tasks.running(LoadModelTask::class) {
-                    modelPath = userModelName
+                    modelPath = userOldModelName
                     modelOutput = model
                     dependencies += downloadModelFromS3Task
                 }
@@ -155,12 +164,12 @@ class TrainSequential(
 
                 val saveModelTask by tasks.running(SaveModelTask::class) {
                     modelInput = newModel
-                    modelFileName = userModelName
+                    modelFileName = userNewModelPath
                     dependencies += trainModelTask
                 }
 
                 val uploadModelToS3Task by tasks.running(UploadModelToS3Task::class) {
-                    modelName = userModelName
+                    modelName = userNewModelPath
                     bucketName = userBucketName
                     region = userRegion
                     dependencies += saveModelTask

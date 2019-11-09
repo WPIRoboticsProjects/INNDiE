@@ -11,10 +11,13 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
+import edu.wpi.axon.dsl.task.DownloadModelFromS3Task
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
+import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.TrainTask
+import edu.wpi.axon.dsl.task.UploadModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -27,7 +30,8 @@ import java.io.File
 /**
  * Trains a [Model.General].
  *
- * @param userModelPath The path to the model file.
+ * @param userOldModelPath The name of the model to load.
+ * @param userNewModelPath The name of the model to save to.
  * @param userDataset The dataset to train on.
  * @param userOptimizer The [Optimizer] to use.
  * @param userLoss The [Loss] function to use.
@@ -37,7 +41,10 @@ import java.io.File
  * @param generateDebugComments Whether to put debug comments in the output.
  */
 class TrainGeneral(
-    private val userModelPath: String,
+    private val userOldModelPath: String,
+    private val userNewModelPath: String,
+    private val userBucketName: String,
+    private val userRegion: String,
     private val userDataset: Dataset,
     private val userOptimizer: Optimizer,
     private val userLoss: Loss,
@@ -47,11 +54,19 @@ class TrainGeneral(
     private val generateDebugComments: Boolean = false
 ) {
 
+    init {
+        require(userOldModelPath != userNewModelPath) {
+            "The old model path ($userOldModelPath) cannot equal the new model " +
+                "path ($userNewModelPath)."
+        }
+    }
+
     private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
+    private val userOldModelName = userOldModelPath.substringAfterLast('/')
 
     @Suppress("UNUSED_VARIABLE")
     fun generateScript(): Validated<NonEmptyList<String>, String> =
-        loadLayersFromHDF5.load(File(userModelPath)).map { userCurrentModel ->
+        loadLayersFromHDF5.load(File(userOldModelPath)).map { userCurrentModel ->
             require(userCurrentModel is Model.General)
 
             val script = ScriptGenerator(
@@ -72,10 +87,17 @@ class TrainGeneral(
 
                 // TODO: How does the user configure data preprocessing?
 
+                val downloadModelFromS3Task by tasks.running(DownloadModelFromS3Task::class) {
+                    modelName = userOldModelName
+                    bucketName = userBucketName
+                    region = userRegion
+                }
+
                 val model by variables.creating(Variable::class)
                 val loadModelTask by tasks.running(LoadModelTask::class) {
-                    modelPath = userModelPath.substringAfterLast('/')
+                    modelPath = userOldModelName
                     modelOutput = model
+                    dependencies += downloadModelFromS3Task
                 }
 
                 val newModelVar by variables.creating(Variable::class)
@@ -120,7 +142,20 @@ class TrainGeneral(
                     dependencies += compileModelTask
                 }
 
-                lastTask = trainModelTask
+                val saveModelTask by tasks.running(SaveModelTask::class) {
+                    modelInput = newModelVar
+                    modelFileName = userNewModelPath
+                    dependencies += trainModelTask
+                }
+
+                val uploadModelToS3Task by tasks.running(UploadModelToS3Task::class) {
+                    modelName = userNewModelPath
+                    bucketName = userBucketName
+                    region = userRegion
+                    dependencies += saveModelTask
+                }
+
+                lastTask = uploadModelToS3Task
             }
 
             script.code(generateDebugComments)

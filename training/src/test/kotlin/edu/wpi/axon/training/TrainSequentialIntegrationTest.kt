@@ -25,9 +25,10 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
 
         val localModelPath = this::class.java.getResource("badModel1.h5").toURI().path
         TrainSequential(
-            userModelPath = localModelPath,
-            userBucketName = userBucketName,
-            userRegion = userRegion,
+            userOldModelPath = localModelPath,
+            userNewModelPath = "badModel1-trained.h5",
+            userBucketName = getTestBucketName(),
+            userRegion = getTestRegion(),
             userDataset = Dataset.Mnist,
             userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             userLoss = Loss.SparseCategoricalCrossentropy,
@@ -44,12 +45,14 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "custom_fashion_mnist.h5"
+        val newModelName = "custom_fashion_mnist-trained.h5"
         val (model, path) = loadModel(modelName)
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequential(
-                userModelPath = path,
-                userBucketName = userBucketName,
-                userRegion = userRegion,
+                userOldModelPath = path,
+                userNewModelPath = newModelName,
+                userBucketName = getTestBucketName(),
+                userRegion = getTestRegion(),
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -62,34 +65,34 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
                 }
             ).generateScript().shouldBeValid {
                 it.a shouldBe """
-                |import axonawsclient
+                |import axon.client
                 |import tensorflow as tf
                 |
-                |axonawsclient.impl_download_model_file("$modelName", "$userBucketName", "$userRegion")
+                |axon.client.impl_download_model_file("$modelName", "${getTestBucketName()}", "${getTestRegion()}")
                 |
                 |model = tf.keras.models.load_model("$modelName")
                 |
                 |newModel = tf.keras.Sequential([
-                |    model.get_layer("conv2d_6"),
-                |    model.get_layer("conv2d_7"),
-                |    model.get_layer("max_pooling2d_3"),
-                |    model.get_layer("dropout_6"),
-                |    model.get_layer("flatten_3"),
-                |    model.get_layer("dense_6"),
-                |    model.get_layer("dropout_7"),
-                |    model.get_layer("dense_7")
+                |    model.get_layer("conv2d_4"),
+                |    model.get_layer("conv2d_5"),
+                |    model.get_layer("max_pooling2d_2"),
+                |    model.get_layer("dropout_4"),
+                |    model.get_layer("flatten_2"),
+                |    model.get_layer("dense_4"),
+                |    model.get_layer("dropout_5"),
+                |    model.get_layer("dense_5")
                 |])
-                |newModel.get_layer("conv2d_6").trainable = False
-                |newModel.get_layer("conv2d_7").trainable = False
-                |newModel.get_layer("max_pooling2d_3").trainable = False
-                |newModel.get_layer("dropout_6").trainable = False
-                |newModel.get_layer("flatten_3").trainable = False
-                |newModel.get_layer("dense_6").trainable = True
-                |newModel.get_layer("dropout_7").trainable = True
-                |newModel.get_layer("dense_7").trainable = True
+                |newModel.get_layer("conv2d_4").trainable = False
+                |newModel.get_layer("conv2d_5").trainable = False
+                |newModel.get_layer("max_pooling2d_2").trainable = False
+                |newModel.get_layer("dropout_4").trainable = False
+                |newModel.get_layer("flatten_2").trainable = False
+                |newModel.get_layer("dense_4").trainable = True
+                |newModel.get_layer("dropout_5").trainable = True
+                |newModel.get_layer("dense_5").trainable = True
                 |
                 |checkpointCallback = tf.keras.callbacks.ModelCheckpoint(
-                |    "sequential_3-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
+                |    "sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
                 |    monitor="val_loss",
                 |    verbose=1,
                 |    save_best_only=False,
@@ -132,9 +135,9 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
                 |    shuffle=True
                 |)
                 |
-                |newModel.save("$modelName")
+                |newModel.save("$newModelName")
                 |
-                |axonawsclient.impl_upload_model_file("$modelName", "$userBucketName", "$userRegion")
+                |axon.client.impl_upload_model_file("$newModelName", "${getTestBucketName()}", "${getTestRegion()}")
                 """.trimMargin()
             }
         }
