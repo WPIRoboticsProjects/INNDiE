@@ -1,14 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name="client",
+    name="axonawsclient",
     version="0.1.0",
-    py_modules=["client"],
-    install_requires=[
-        "click", "boto3", 'ipify'
-    ],
+    packages=find_packages(),
     entry_points="""
         [console_scripts]
-        client=client:cli
+        axonawsclient=axonawsclient:cli
     """
 )

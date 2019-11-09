@@ -363,6 +363,20 @@ def impl_upload_model_file(local_file_path, bucket_name, region):
                        "axon-uploaded-trained-models/" + os.path.basename(local_file_path))
 
 
+def impl_download_model_file(local_file_path, bucket_name, region):
+    """
+    Downloads a model from S3.
+
+    :param local_file_path: The path to the model file on disk.
+    :param bucket_name: The S3 bucket name.
+    :param region: The region.
+    """
+    client = boto3.client("s3", region_name=region)
+    client.download_file(bucket_name,
+                         "axon-uploaded-trained-models/" + os.path.basename(local_file_path),
+                         local_file_path)
+
+
 @click.group()
 def cli():
     return
@@ -426,3 +440,11 @@ def get_container_ip(cluster_name, task, region):
 @click.option("--region", default="us-east-1", help="The region to connect to.")
 def upload_model_file(local_file_path, bucket_name, region):
     impl_upload_model_file(local_file_path, bucket_name, region)
+
+
+@cli.command()
+@click.argument("local-file-path")
+@click.argument("bucket-name")
+@click.option("--region", default="us-east-1", help="The region to connect to.")
+def download_model_file(local_file_path, bucket_name, region):
+    impl_download_model_file(local_file_path, bucket_name, region)
