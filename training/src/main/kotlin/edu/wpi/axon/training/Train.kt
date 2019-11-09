@@ -25,6 +25,8 @@ import java.io.File
  */
 class Train(
     private val userModelPath: String,
+    private val userBucketName: String,
+    private val userRegion: String,
     private val userDataset: Dataset,
     private val userOptimizer: Optimizer,
     private val userLoss: Loss,
@@ -43,6 +45,8 @@ class Train(
                     if (userNewModel is Model.Sequential) {
                         TrainSequential(
                             userModelPath = userModelPath,
+                            userBucketName = userBucketName,
+                            userRegion = userRegion,
                             userDataset = userDataset,
                             userOptimizer = userOptimizer,
                             userLoss = userLoss,

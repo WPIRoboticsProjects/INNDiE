@@ -25,6 +25,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.General> {
             Train(
                 userModelPath = path,
+                userBucketName = userBucketName,
+                userRegion = userRegion,
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -45,6 +47,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.Sequential> {
             Train(
                 userModelPath = path,
+                userBucketName = userBucketName,
+                userRegion = userRegion,
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -66,6 +70,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         sequentialModel.shouldBeInstanceOf<Model.Sequential> {
             Train(
                 userModelPath = sequentialPath,
+                userBucketName = userBucketName,
+                userRegion = userRegion,
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -87,6 +93,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         generalModel.shouldBeInstanceOf<Model.General> {
             Train(
                 userModelPath = generalPath,
+                userBucketName = userBucketName,
+                userRegion = userRegion,
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -105,6 +113,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
 
         Train(
             userModelPath = this::class.java.getResource("badModel1.h5").toURI().path,
+            userBucketName = userBucketName,
+            userRegion = userRegion,
             userDataset = Dataset.Mnist,
             userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             userLoss = Loss.SparseCategoricalCrossentropy,

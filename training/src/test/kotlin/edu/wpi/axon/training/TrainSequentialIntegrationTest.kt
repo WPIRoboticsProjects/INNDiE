@@ -26,6 +26,8 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
         val localModelPath = this::class.java.getResource("badModel1.h5").toURI().path
         TrainSequential(
             userModelPath = localModelPath,
+            userBucketName = userBucketName,
+            userRegion = userRegion,
             userDataset = Dataset.Mnist,
             userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             userLoss = Loss.SparseCategoricalCrossentropy,
@@ -46,6 +48,8 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequential(
                 userModelPath = path,
+                userBucketName = userBucketName,
+                userRegion = userRegion,
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -58,7 +62,10 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
                 }
             ).generateScript().shouldBeValid {
                 it.a shouldBe """
+                |import axonawsclient
                 |import tensorflow as tf
+                |
+                |axonawsclient.impl_download_model_file("$modelName", "$userBucketName", "$userRegion")
                 |
                 |model = tf.keras.models.load_model("$modelName")
                 |
@@ -124,6 +131,10 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
                 |    validation_data=(scaledXTest, yTest),
                 |    shuffle=True
                 |)
+                |
+                |newModel.save("$modelName")
+                |
+                |axonawsclient.impl_upload_model_file("$modelName", "$userBucketName", "$userRegion")
                 """.trimMargin()
             }
         }
