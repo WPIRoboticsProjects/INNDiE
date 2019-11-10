@@ -103,7 +103,7 @@ stages:
         - task: DockerInstaller@0
           displayName: 'Install Docker'
           inputs:
-            dockerVersion: 19.03.1
+            dockerVersion: 17.09.0
             releaseType: stable
 
         - task: Gradle@2
