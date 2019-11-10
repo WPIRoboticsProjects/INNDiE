@@ -30,7 +30,7 @@ class TrainSequential(
 
     init {
         require(userOldModelName != trainState.userNewModelName) {
-            "The old model name (${userOldModelName}) cannot equal the new model " +
+            "The old model name ($userOldModelName) cannot equal the new model " +
                 "name (${trainState.userNewModelName})."
         }
     }
