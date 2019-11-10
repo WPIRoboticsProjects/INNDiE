@@ -27,8 +27,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = "network_with_add-trained.h5",
-                    userBucketName = getTestBucketName(),
-                    userRegion = getTestRegion(),
                     userDataset = Dataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -52,8 +50,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = "custom_fashion_mnist-trained.h5",
-                    userBucketName = getTestBucketName(),
-                    userRegion = getTestRegion(),
                     userDataset = Dataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -75,8 +71,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             TrainState(
                 userOldModelPath = this::class.java.getResource("badModel1.h5").toURI().path,
                 userNewModelName = "badModel1-trained.h5",
-                userBucketName = getTestBucketName(),
-                userRegion = getTestRegion(),
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,

@@ -54,7 +54,7 @@ class TrainSequential(
                 val scaledXTrain = reshapeAndScale(xTrain, reshapeArgsFromBatchShape, 255)
                 val scaledXTest = reshapeAndScale(xTest, reshapeArgsFromBatchShape, 255)
 
-                val model = downloadAndLoadModel(trainState, userOldModelName)
+                val model = loadModel(trainState, userOldModelName)
 
                 val newModel by variables.creating(Variable::class)
                 val applyLayerDeltaTask by tasks.running(ApplySequentialLayerDeltaTask::class) {
@@ -64,7 +64,7 @@ class TrainSequential(
                     newModelOutput = newModel
                 }
 
-                lastTask = compileTrainSaveUpload(
+                lastTask = compileTrainSave(
                     trainState,
                     currentModel,
                     newModel,

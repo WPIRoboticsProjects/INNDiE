@@ -49,7 +49,7 @@ class TrainGeneral(
 
                 // TODO: How does the user configure data preprocessing?
 
-                val model = downloadAndLoadModel(trainState, userOldModelName)
+                val model = loadModel(trainState, userOldModelName)
 
                 val newModelVar by variables.creating(Variable::class)
                 val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
@@ -59,7 +59,7 @@ class TrainGeneral(
                     newModelOutput = newModelVar
                 }
 
-                lastTask = compileTrainSaveUpload(
+                lastTask = compileTrainSave(
                     trainState,
                     userCurrentModel,
                     newModelVar,

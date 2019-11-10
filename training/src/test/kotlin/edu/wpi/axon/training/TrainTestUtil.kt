@@ -1,14 +1,17 @@
 package edu.wpi.axon.training
 
+import arrow.core.Tuple3
+import arrow.fx.IO
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.either.shouldBeRight
+import io.kotlintest.matchers.file.shouldExist
+import io.kotlintest.shouldBe
+import java.io.BufferedReader
 import java.io.File
-
-// TODO: Make these dev-configurable without requiring code changes
-internal fun getTestBucketName() = "axon-salmon-testbucket1"
-internal fun getTestRegion() = "us-east-1"
+import java.io.InputStreamReader
+import java.nio.file.Paths
 
 /**
  * Loads a model with name [modelName] from the test resources.
@@ -24,4 +27,88 @@ internal fun loadModel(modelName: String, stub: () -> Unit = {}): Pair<Model, St
     val model = layers.attempt().unsafeRunSync()
     model.shouldBeRight()
     return model.b as Model to localModelPath
+}
+
+/**
+ * Tests that a training scripts works by running it in the axon-ci Docker container and asserting
+ * that the expected trained model file is written to disk.
+ *
+ * @param oldModelPath The path to load the old model from.
+ * @param oldModelName The name of the old model.
+ * @param newModelName The name of the new model.
+ * @param script The content of the script to run.
+ * @param dir The working directory.
+ */
+internal fun testTrainingScript(
+    oldModelPath: String,
+    oldModelName: String,
+    newModelName: String,
+    script: String,
+    dir: File
+) {
+    Paths.get(oldModelPath).toFile().copyTo(Paths.get(dir.absolutePath, oldModelName).toFile())
+    Paths.get(dir.absolutePath, "script.py").toFile().writeText(script)
+
+    runCommand(
+        listOf(
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            "${dir.absolutePath}:/home",
+            "wpilib/axon-ci:latest",
+            "script.py"
+        ),
+        emptyMap(),
+        dir
+    ).attempt().unsafeRunSync().shouldBeRight { (exitCode, stdOut, stdErr) ->
+        println(
+            """
+            |Process std out:
+            |$stdOut
+            |
+            |Process std err:
+            |$stdErr
+            |
+            """.trimMargin()
+        )
+
+        exitCode shouldBe 0
+        Paths.get(dir.absolutePath, newModelName).shouldExist()
+    }
+}
+
+/**
+ * Runs a command as a process.
+ *
+ * @param command The command and its arguments.
+ * @param env Any extra env vars.
+ * @param dir The working directory of the process.
+ * @return The exit code, std out, and std err.
+ */
+@Suppress("BlockingMethodInNonBlockingContext")
+internal fun runCommand(
+    command: List<String>,
+    env: Map<String, String>,
+    dir: File
+): IO<Tuple3<Int, String, String>> = IO {
+    val proc = ProcessBuilder(command)
+        .directory(dir)
+        .also {
+            val builderEnv = it.environment()
+            env.forEach { (key, value) ->
+                builderEnv[key] = value
+            }
+        }.start()
+
+    BufferedReader(InputStreamReader(proc.inputStream)).useLines { procStdOut ->
+        BufferedReader(InputStreamReader(proc.errorStream)).useLines { procStdErr ->
+            val exitCode = proc.waitFor()
+            Tuple3(
+                exitCode,
+                procStdOut.joinToString("\n"),
+                procStdErr.joinToString("\n")
+            )
+        }
+    }
 }

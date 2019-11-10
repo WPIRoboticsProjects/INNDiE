@@ -1,8 +1,12 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package edu.wpi.axon.training
 
 import arrow.core.Tuple4
 import edu.wpi.axon.dsl.ScriptGenerator
+import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
+import edu.wpi.axon.dsl.run
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
@@ -18,18 +22,23 @@ import edu.wpi.axon.dsl.task.UploadModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 
-internal fun ScriptGenerator.downloadAndLoadModel(trainState: TrainState<*>, oldModelName: String): Variable {
-    val downloadModelFromS3Task by tasks.running(DownloadModelFromS3Task::class) {
-        modelName = trainState.userOldModelPath
-        bucketName = trainState.userBucketName
-        region = trainState.userRegion
-    }
+internal fun ScriptGenerator.loadModel(trainState: TrainState<*>, oldModelName: String): Variable {
+    val downloadModelFromS3Task = if (trainState.userAuth != null) {
+        tasks.run(DownloadModelFromS3Task::class) {
+            modelName = trainState.userOldModelPath
+            bucketName = trainState.userAuth.first
+            region = trainState.userAuth.second
+        }
+    } else null
 
-    val model by variables.creating(Variable::class)
-    val loadModelTask by tasks.running(LoadModelTask::class) {
+    val model = variables.create(Variable::class)
+    val loadModelTask = tasks.run(LoadModelTask::class) {
         modelPath = oldModelName
         modelOutput = model
-        dependencies += downloadModelFromS3Task
+
+        if (downloadModelFromS3Task != null) {
+            dependencies += downloadModelFromS3Task
+        }
     }
 
     return model
@@ -43,7 +52,7 @@ internal fun ScriptGenerator.loadExampleDataset(
     val xTest by variables.creating(Variable::class)
     val yTest by variables.creating(Variable::class)
 
-    val loadExampleDatasetTask by tasks.running(LoadExampleDatasetTask::class) {
+    tasks.run(LoadExampleDatasetTask::class) {
         dataset = trainState.userDataset
         xTrainOutput = xTrain
         yTrainOutput = yTrain
@@ -60,7 +69,7 @@ internal fun ScriptGenerator.reshapeAndScale(
     scaleIn: Number?
 ): Variable {
     val scaledDataset by variables.creating(Variable::class)
-    val reshapeAndScaleXTestTask by tasks.running(ReshapeAndScaleTask::class) {
+    tasks.run(ReshapeAndScaleTask::class) {
         input = dataset
         output = scaledDataset
         reshapeArgs = reshapeArgsIn
@@ -70,7 +79,7 @@ internal fun ScriptGenerator.reshapeAndScale(
     return scaledDataset
 }
 
-internal fun ScriptGenerator.compileTrainSaveUpload(
+internal fun ScriptGenerator.compileTrainSave(
     trainState: TrainState<*>,
     currentModel: Model,
     newModel: Variable,
@@ -89,7 +98,7 @@ internal fun ScriptGenerator.compileTrainSaveUpload(
     }
 
     val checkpointCallback by variables.creating(Variable::class)
-    val checkpointCallbackTask by tasks.running(CheckpointCallbackTask::class) {
+    tasks.run(CheckpointCallbackTask::class) {
         filePath = "${currentModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
         saveWeightsOnly = true
         verbose = 1
@@ -97,7 +106,7 @@ internal fun ScriptGenerator.compileTrainSaveUpload(
     }
 
     val earlyStoppingCallback by variables.creating(Variable::class)
-    val earlyStoppingCallbackTask by tasks.running(EarlyStoppingTask::class) {
+    tasks.run(EarlyStoppingTask::class) {
         patience = 10
         verbose = 1
         output = earlyStoppingCallback
@@ -120,12 +129,16 @@ internal fun ScriptGenerator.compileTrainSaveUpload(
         dependencies += trainModelTask
     }
 
-    val uploadModelToS3Task by tasks.running(UploadModelToS3Task::class) {
-        modelName = trainState.userNewModelName
-        bucketName = trainState.userBucketName
-        region = trainState.userRegion
-        dependencies += saveModelTask
-    }
+    return if (trainState.userAuth != null) {
+        val uploadModelToS3Task by tasks.running(UploadModelToS3Task::class) {
+            modelName = trainState.userNewModelName
+            bucketName = trainState.userAuth.first
+            region = trainState.userAuth.second
+            dependencies += saveModelTask
+        }
 
-    return uploadModelToS3Task
+        uploadModelToS3Task
+    } else {
+        saveModelTask
+    }
 }
