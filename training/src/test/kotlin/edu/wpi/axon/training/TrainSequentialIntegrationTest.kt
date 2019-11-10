@@ -25,7 +25,7 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val localModelPath = this::class.java.getResource("badModel1.h5").toURI().path
+        val localModelPath = this::class.java.getResource("badModel1.h5").file
         TrainSequential(
             TrainState(
                 userOldModelPath = localModelPath,
