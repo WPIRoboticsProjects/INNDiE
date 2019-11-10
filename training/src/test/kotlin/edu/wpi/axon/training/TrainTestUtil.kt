@@ -8,6 +8,7 @@ import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.shouldBe
+import mu.KotlinLogging
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -62,7 +63,7 @@ internal fun testTrainingScript(
         emptyMap(),
         dir
     ).attempt().unsafeRunSync().shouldBeRight { (exitCode, stdOut, stdErr) ->
-        println(
+        KotlinLogging.logger { }.info {
             """
             |Process std out:
             |$stdOut
@@ -71,7 +72,7 @@ internal fun testTrainingScript(
             |$stdErr
             |
             """.trimMargin()
-        )
+        }
 
         exitCode shouldBe 0
         Paths.get(dir.absolutePath, newModelName).shouldExist()
