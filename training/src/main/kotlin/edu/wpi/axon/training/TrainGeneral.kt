@@ -9,17 +9,12 @@ import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
-import edu.wpi.axon.dsl.task.CheckpointCallbackTask
-import edu.wpi.axon.dsl.task.CompileModelTask
-import edu.wpi.axon.dsl.task.EarlyStoppingTask
-import edu.wpi.axon.dsl.task.SaveModelTask
-import edu.wpi.axon.dsl.task.TrainTask
-import edu.wpi.axon.dsl.task.UploadModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import java.io.File
+import java.nio.file.Paths
 
 /**
  * Trains a [Model.General].
@@ -30,10 +25,12 @@ class TrainGeneral(
     private val trainState: TrainState<Model.General>
 ) {
 
+    private val userOldModelName = Paths.get(trainState.userOldModelPath).fileName.toString()
+
     init {
-        require(trainState.userOldModelPath != trainState.userNewModelPath) {
-            "The old model path (${trainState.userOldModelPath}) cannot equal the new model " +
-                "path (${trainState.userNewModelPath})."
+        require(userOldModelName != trainState.userNewModelName) {
+            "The old model name (${userOldModelName}) cannot equal the new model " +
+                "name (${trainState.userNewModelName})."
         }
     }
 
@@ -52,7 +49,7 @@ class TrainGeneral(
 
                 // TODO: How does the user configure data preprocessing?
 
-                val model = downloadAndLoadModel(trainState)
+                val model = downloadAndLoadModel(trainState, userOldModelName)
 
                 val newModelVar by variables.creating(Variable::class)
                 val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
@@ -62,54 +59,16 @@ class TrainGeneral(
                     newModelOutput = newModelVar
                 }
 
-                val compileModelTask by tasks.running(CompileModelTask::class) {
-                    modelInput = newModelVar
-                    optimizer = trainState.userOptimizer
-                    loss = trainState.userLoss
-                    metrics = trainState.userMetrics
-                    dependencies += applyLayerDeltaTask
-                }
-
-                val checkpointCallback by variables.creating(Variable::class)
-                val checkpointCallbackTask by tasks.running(CheckpointCallbackTask::class) {
-                    filePath = "${userCurrentModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
-                    saveWeightsOnly = true
-                    verbose = 1
-                    output = checkpointCallback
-                }
-
-                val earlyStoppingCallback by variables.creating(Variable::class)
-                val earlyStoppingCallbackTask by tasks.running(EarlyStoppingTask::class) {
-                    patience = 10
-                    verbose = 1
-                    output = earlyStoppingCallback
-                }
-
-                val trainModelTask by tasks.running(TrainTask::class) {
-                    modelInput = newModelVar
-                    trainInputData = xTrain
-                    trainOutputData = yTrain
-                    validationInputData = xTest
-                    validationOutputData = yTest
-                    callbacks = setOf(checkpointCallback, earlyStoppingCallback)
-                    epochs = trainState.userEpochs
-                    dependencies += compileModelTask
-                }
-
-                val saveModelTask by tasks.running(SaveModelTask::class) {
-                    modelInput = newModelVar
-                    modelFileName = trainState.userNewModelPath
-                    dependencies += trainModelTask
-                }
-
-                val uploadModelToS3Task by tasks.running(UploadModelToS3Task::class) {
-                    modelName = trainState.userNewModelPath
-                    bucketName = trainState.userBucketName
-                    region = trainState.userRegion
-                    dependencies += saveModelTask
-                }
-
-                lastTask = uploadModelToS3Task
+                lastTask = compileTrainSaveUpload(
+                    trainState,
+                    userCurrentModel,
+                    newModelVar,
+                    applyLayerDeltaTask,
+                    xTrain,
+                    yTrain,
+                    xTest,
+                    yTest
+                )
             }
 
             script.code(trainState.generateDebugComments)

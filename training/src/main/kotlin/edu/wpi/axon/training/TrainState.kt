@@ -8,8 +8,8 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 /**
  * All configuration data needed to generate a training script.
  *
- * @param userOldModelPath The name of the model to load.
- * @param userNewModelPath The name of the model to save to.
+ * @param userOldModelPath The path to the model to load.
+ * @param userNewModelName The name of the model to save to.
  * @param userBucketName The name of the S3 bucket to download/upload models from/to.
  * @param userRegion The AWS region to authenticate to.
  * @param userDataset The dataset to train on.
@@ -22,7 +22,7 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
  */
 data class TrainState<T : Model>(
     val userOldModelPath: String,
-    val userNewModelPath: String,
+    val userNewModelName: String,
     val userBucketName: String,
     val userRegion: String,
     val userDataset: Dataset,

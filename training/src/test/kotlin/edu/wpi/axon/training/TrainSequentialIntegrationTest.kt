@@ -25,16 +25,22 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
 
         val localModelPath = this::class.java.getResource("badModel1.h5").toURI().path
         TrainSequential(
-            userOldModelPath = localModelPath,
-            userNewModelPath = "badModel1-trained.h5",
-            userBucketName = getTestBucketName(),
-            userRegion = getTestRegion(),
-            userDataset = Dataset.Mnist,
-            userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-            userLoss = Loss.SparseCategoricalCrossentropy,
-            userMetrics = setOf("accuracy"),
-            userEpochs = 50,
-            userNewLayers = emptySet()
+            TrainState(
+                userOldModelPath = localModelPath,
+                userNewModelName = "badModel1-trained.h5",
+                userBucketName = getTestBucketName(),
+                userRegion = getTestRegion(),
+                userDataset = Dataset.Mnist,
+                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 50,
+                userNewModel = Model.Sequential(
+                    "",
+                    emptyList(),
+                    emptySet()
+                )
+            )
         ).generateScript().shouldBeInvalid()
     }
 
@@ -49,20 +55,23 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
         val (model, path) = loadModel(modelName)
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequential(
-                userOldModelPath = path,
-                userNewModelPath = newModelName,
-                userBucketName = getTestBucketName(),
-                userRegion = getTestRegion(),
-                userDataset = Dataset.Mnist,
-                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 50,
-                userNewLayers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
-                    // Only train the last 3 layers
-                    if (it.layers.size - index <= 3) layer.layer.trainable()
-                    else layer.layer.trainable(false)
-                }
+                TrainState(
+                    userOldModelPath = path,
+                    userNewModelName = newModelName,
+                    userBucketName = getTestBucketName(),
+                    userRegion = getTestRegion(),
+                    userDataset = Dataset.Mnist,
+                    userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                    userLoss = Loss.SparseCategoricalCrossentropy,
+                    userMetrics = setOf("accuracy"),
+                    userEpochs = 1,
+                    userNewModel = it.copy(
+                        layers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
+                            // Only train the last 3 layers
+                            if (it.layers.size - index <= 3) layer.layer.trainable()
+                            else layer.layer.trainable(false)
+                        })
+                )
             ).generateScript().shouldBeValid {
                 it.a shouldBe """
                 |import axon.client

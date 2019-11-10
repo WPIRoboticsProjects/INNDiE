@@ -24,16 +24,18 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         val (model, path) = loadModel("network_with_add.h5")
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneral(
-                userOldModelPath = path,
-                userNewModelPath = "network_with_add-trained.h5",
-                userBucketName = getTestBucketName(),
-                userRegion = getTestRegion(),
-                userDataset = Dataset.Mnist,
-                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 50,
-                userNewModel = it
+                TrainState(
+                    userOldModelPath = path,
+                    userNewModelName = "network_with_add-trained.h5",
+                    userBucketName = getTestBucketName(),
+                    userRegion = getTestRegion(),
+                    userDataset = Dataset.Mnist,
+                    userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                    userLoss = Loss.SparseCategoricalCrossentropy,
+                    userMetrics = setOf("accuracy"),
+                    userEpochs = 50,
+                    userNewModel = it
+                )
             ).generateScript().shouldBeValid()
         }
     }
@@ -47,16 +49,18 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         val (model, path) = loadModel("custom_fashion_mnist.h5")
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequential(
-                userOldModelPath = path,
-                userNewModelPath = "custom_fashion_mnist-trained.h5",
-                userBucketName = getTestBucketName(),
-                userRegion = getTestRegion(),
-                userDataset = Dataset.Mnist,
-                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 50,
-                userNewModel = it
+                TrainState(
+                    userOldModelPath = path,
+                    userNewModelName = "custom_fashion_mnist-trained.h5",
+                    userBucketName = getTestBucketName(),
+                    userRegion = getTestRegion(),
+                    userDataset = Dataset.Mnist,
+                    userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                    userLoss = Loss.SparseCategoricalCrossentropy,
+                    userMetrics = setOf("accuracy"),
+                    userEpochs = 50,
+                    userNewModel = it
+                )
             ).generateScript().shouldBeValid()
         }
     }
@@ -68,16 +72,18 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         }
 
         TrainGeneral(
-            userOldModelPath = this::class.java.getResource("badModel1.h5").toURI().path,
-            userNewModelPath = "badModel1-trained.h5",
-            userBucketName = getTestBucketName(),
-            userRegion = getTestRegion(),
-            userDataset = Dataset.Mnist,
-            userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-            userLoss = Loss.SparseCategoricalCrossentropy,
-            userMetrics = setOf("accuracy"),
-            userEpochs = 50,
-            userNewModel = mockk()
+            TrainState(
+                userOldModelPath = this::class.java.getResource("badModel1.h5").toURI().path,
+                userNewModelName = "badModel1-trained.h5",
+                userBucketName = getTestBucketName(),
+                userRegion = getTestRegion(),
+                userDataset = Dataset.Mnist,
+                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 50,
+                userNewModel = mockk()
+            )
         ).generateScript().shouldBeInvalid()
     }
 }

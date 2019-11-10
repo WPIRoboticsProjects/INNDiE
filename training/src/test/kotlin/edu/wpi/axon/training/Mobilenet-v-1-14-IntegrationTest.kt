@@ -27,16 +27,18 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
         val (model, path) = loadModel(modelName)
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneral(
-                userOldModelPath = path,
-                userNewModelPath = newModelName,
-                userBucketName = getTestBucketName(),
-                userRegion = getTestRegion(),
-                userDataset = Dataset.Mnist,
-                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 50,
-                userNewModel = it
+                TrainState(
+                    userOldModelPath = path,
+                    userNewModelName = newModelName,
+                    userBucketName = getTestBucketName(),
+                    userRegion = getTestRegion(),
+                    userDataset = Dataset.Mnist,
+                    userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                    userLoss = Loss.SparseCategoricalCrossentropy,
+                    userMetrics = setOf("accuracy"),
+                    userEpochs = 50,
+                    userNewModel = it
+                )
             ).generateScript().shouldBeValid {
                 it.a shouldBe """
                 |import axon.client
