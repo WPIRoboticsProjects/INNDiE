@@ -15,6 +15,12 @@ stages:
         vmImage: ubuntu-16.04
 
       steps:
+        - task: DockerInstaller@0
+          displayName: 'Install Docker'
+          inputs:
+            dockerVersion: 19.03.4
+            releaseType: stable
+
         - task: Gradle@2
           displayName: 'Check'
           inputs:
@@ -55,6 +61,13 @@ stages:
         vmImage: macOS-10.14
 
       steps:
+        - task: DockerInstaller@0
+          displayName: 'Install Docker'
+          inputs:
+            dockerVersion: 19.03.4
+            releaseType: stable
+
+
         - task: Gradle@2
           displayName: 'Check'
           inputs:
@@ -88,6 +101,13 @@ stages:
         vmImage: windows-2019
 
       steps:
+        - task: DockerInstaller@0
+          displayName: 'Install Docker'
+          inputs:
+            dockerVersion: 19.03.4
+            releaseType: stable
+
+
         - task: Gradle@2
           displayName: 'Check'
           inputs:
