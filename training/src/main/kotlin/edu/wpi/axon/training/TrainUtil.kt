@@ -1,9 +1,11 @@
 package edu.wpi.axon.training
 
+import arrow.core.Tuple4
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.DownloadModelFromS3Task
+import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.variable.Variable
 
@@ -22,4 +24,22 @@ internal fun ScriptGenerator.downloadAndLoadModel(trainState: TrainState<*>): Va
     }
 
     return model
+}
+
+internal fun ScriptGenerator.loadExampleDataset(
+    trainState: TrainState<*>
+): Tuple4<Variable, Variable, Variable, Variable> {
+    val xTrain by variables.creating(Variable::class)
+    val yTrain by variables.creating(Variable::class)
+    val xTest by variables.creating(Variable::class)
+    val yTest by variables.creating(Variable::class)
+    val loadMnistDataTask by tasks.running(LoadExampleDatasetTask::class) {
+        dataset = trainState.userDataset
+        xTrainOutput = xTrain
+        yTrainOutput = yTrain
+        xTestOutput = xTest
+        yTestOutput = yTest
+    }
+
+    return Tuple4(xTrain, yTrain, xTest, yTest)
 }

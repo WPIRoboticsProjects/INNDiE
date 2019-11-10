@@ -12,7 +12,6 @@ import edu.wpi.axon.dsl.task.ApplySequentialLayerDeltaTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
-import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.TrainTask
@@ -46,24 +45,14 @@ class TrainSequential(
         loadLayersFromHDF5.load(File(trainState.userOldModelPath)).map { currentModel ->
             require(currentModel is Model.Sequential)
 
-            require(currentModel.batchInputShape.count { it == null } <= 1)
-            val reshapeArgsFromBatchShape = currentModel.batchInputShape.map { it ?: -1 }
+            require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)
+            val reshapeArgsFromBatchShape = trainState.userNewModel.batchInputShape.map { it ?: -1 }
 
             val script = ScriptGenerator(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
                 DefaultPolymorphicNamedDomainObjectContainer.of()
             ) {
-                val xTrain by variables.creating(Variable::class)
-                val yTrain by variables.creating(Variable::class)
-                val xTest by variables.creating(Variable::class)
-                val yTest by variables.creating(Variable::class)
-                val loadMnistDataTask by tasks.running(LoadExampleDatasetTask::class) {
-                    dataset = trainState.userDataset
-                    xTrainOutput = xTrain
-                    yTrainOutput = yTrain
-                    xTestOutput = xTest
-                    yTestOutput = yTest
-                }
+                val (xTrain, yTrain, xTest, yTest) = loadExampleDataset(trainState)
 
                 // TODO: How does the user configure this preprocessing?
                 val scaledXTrain by variables.creating(Variable::class)

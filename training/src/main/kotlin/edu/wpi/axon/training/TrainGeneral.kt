@@ -12,7 +12,6 @@ import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
-import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.task.UploadModelToS3Task
@@ -49,17 +48,7 @@ class TrainGeneral(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
                 DefaultPolymorphicNamedDomainObjectContainer.of()
             ) {
-                val xTrain by variables.creating(Variable::class)
-                val yTrain by variables.creating(Variable::class)
-                val xTest by variables.creating(Variable::class)
-                val yTest by variables.creating(Variable::class)
-                val loadMnistDataTask by tasks.running(LoadExampleDatasetTask::class) {
-                    dataset = trainState.userDataset
-                    xTrainOutput = xTrain
-                    yTrainOutput = yTrain
-                    xTestOutput = xTest
-                    yTestOutput = yTest
-                }
+                val (xTrain, yTrain, xTest, yTest) = loadExampleDataset(trainState)
 
                 // TODO: How does the user configure data preprocessing?
 
