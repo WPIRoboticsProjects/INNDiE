@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 import java.io.File
+import java.nio.file.Paths
 
 internal class TrainSequentialIntegrationTest : KoinTestFixture() {
 
@@ -25,7 +26,8 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val localModelPath = this::class.java.getResource("badModel1.h5").file
+        val localModelPath =
+            Paths.get(this::class.java.getResource("badModel1.h5").toURI()).toString()
         TrainSequential(
             TrainState(
                 userOldModelPath = localModelPath,
