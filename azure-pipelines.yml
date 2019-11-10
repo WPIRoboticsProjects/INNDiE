@@ -67,6 +67,9 @@ stages:
             dockerVersion: 19.03.4
             releaseType: stable
 
+        - bash: docker run hello-world
+          displayName: 'Test Docker'
+
         - task: Gradle@2
           displayName: 'Check'
           inputs:
