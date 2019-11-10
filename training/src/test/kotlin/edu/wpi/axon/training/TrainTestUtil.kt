@@ -14,6 +14,8 @@ import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Paths
 
+private val LOGGER = KotlinLogging.logger("training-test-util")
+
 /**
  * Loads a model with name [modelName] from the test resources.
  *
@@ -63,7 +65,7 @@ internal fun testTrainingScript(
         emptyMap(),
         dir
     ).attempt().unsafeRunSync().shouldBeRight { (exitCode, stdOut, stdErr) ->
-        KotlinLogging.logger { }.info {
+        LOGGER.info {
             """
             |Process std out:
             |$stdOut
