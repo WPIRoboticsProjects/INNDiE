@@ -134,6 +134,7 @@ allprojects {
 
     testlogger {
         theme = ThemeType.STANDARD_PARALLEL
+        showStandardStreams = true
     }
 
     spotless {
@@ -259,6 +260,7 @@ configure(javaProjects) {
             showCauses = true
             showStackTraces = true
             exceptionFormat = TestExceptionFormat.FULL
+            showStandardStreams = true
         }
 
         @Suppress("UnstableApiUsage")
