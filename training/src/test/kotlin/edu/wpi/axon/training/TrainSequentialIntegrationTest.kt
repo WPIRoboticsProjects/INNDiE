@@ -11,6 +11,7 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
@@ -44,6 +45,7 @@ internal class TrainSequentialIntegrationTest : KoinTestFixture() {
     }
 
     @Test
+    @Tag("needsDockerSupport")
     fun `test with fashion mnist`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultModule())

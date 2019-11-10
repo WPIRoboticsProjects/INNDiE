@@ -27,7 +27,7 @@ stages:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
-            options: '--stacktrace -PlogTests -Pheadless'
+            options: '--stacktrace -PlogTests -Pheadless -PhasDockerSupport'
             javaHomeOption: 'JDKVersion'
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
@@ -61,15 +61,6 @@ stages:
         vmImage: macOS-10.14
 
       steps:
-        - task: DockerInstaller@0
-          displayName: 'Install Docker'
-          inputs:
-            dockerVersion: 19.03.4
-            releaseType: stable
-
-        - bash: docker run hello-world
-          displayName: 'Test Docker'
-
         - task: Gradle@2
           displayName: 'Check'
           inputs:
@@ -103,12 +94,6 @@ stages:
         vmImage: windows-2019
 
       steps:
-        - task: DockerInstaller@0
-          displayName: 'Install Docker'
-          inputs:
-            dockerVersion: 17.09.0-ce
-            releaseType: stable
-
         - task: Gradle@2
           displayName: 'Check'
           inputs:
