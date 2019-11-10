@@ -23,7 +23,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
 
         val (model, path) = loadModel("network_with_add.h5")
         model.shouldBeInstanceOf<Model.General> {
-            Train(
+            TrainGeneral(
                 userOldModelPath = path,
                 userNewModelPath = "network_with_add-trained.h5",
                 userBucketName = getTestBucketName(),
@@ -46,7 +46,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
 
         val (model, path) = loadModel("custom_fashion_mnist.h5")
         model.shouldBeInstanceOf<Model.Sequential> {
-            Train(
+            TrainSequential(
                 userOldModelPath = path,
                 userNewModelPath = "custom_fashion_mnist-trained.h5",
                 userBucketName = getTestBucketName(),
@@ -56,56 +56,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userLoss = Loss.SparseCategoricalCrossentropy,
                 userMetrics = setOf("accuracy"),
                 userEpochs = 50,
-                userNewModel = model
+                userNewModel = it
             ).generateScript().shouldBeValid()
-        }
-    }
-
-    @Test
-    fun `test sequential model on disk with general new model`() {
-        startKoin {
-            modules(defaultModule())
-        }
-
-        val (sequentialModel, sequentialPath) = loadModel("custom_fashion_mnist.h5")
-        val (generalModel, _) = loadModel("network_with_add.h5")
-        sequentialModel.shouldBeInstanceOf<Model.Sequential> {
-            Train(
-                userOldModelPath = sequentialPath,
-                userNewModelPath = "custom_fashion_mnist-trained.h5",
-                userBucketName = getTestBucketName(),
-                userRegion = getTestRegion(),
-                userDataset = Dataset.Mnist,
-                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 50,
-                userNewModel = generalModel
-            ).generateScript().shouldBeInvalid()
-        }
-    }
-
-    @Test
-    fun `test general model on disk with sequential new model`() {
-        startKoin {
-            modules(defaultModule())
-        }
-
-        val (generalModel, generalPath) = loadModel("network_with_add.h5")
-        val (sequentialModel, _) = loadModel("custom_fashion_mnist.h5")
-        generalModel.shouldBeInstanceOf<Model.General> {
-            Train(
-                userOldModelPath = generalPath,
-                userNewModelPath = "network_with_add-trained.h5",
-                userBucketName = getTestBucketName(),
-                userRegion = getTestRegion(),
-                userDataset = Dataset.Mnist,
-                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 50,
-                userNewModel = sequentialModel
-            ).generateScript().shouldBeInvalid()
         }
     }
 
@@ -115,7 +67,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        Train(
+        TrainGeneral(
             userOldModelPath = this::class.java.getResource("badModel1.h5").toURI().path,
             userNewModelPath = "badModel1-trained.h5",
             userBucketName = getTestBucketName(),
