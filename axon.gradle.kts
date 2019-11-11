@@ -234,9 +234,7 @@ configure(javaProjects) {
              */
             excludeTags("needsSpecialSoftware")
 
-            if (project.hasProperty("hasDockerSupport")) {
-                // includeTags("needsDockerSupport")
-            } else {
+            if (!project.hasProperty("hasDockerSupport")) {
                 excludeTags("needsDockerSupport")
             }
         }
