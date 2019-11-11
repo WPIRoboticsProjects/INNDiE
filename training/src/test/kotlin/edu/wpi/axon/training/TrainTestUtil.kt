@@ -24,7 +24,7 @@ private val LOGGER = KotlinLogging.logger("training-test-util")
  * @return The model and its path.
  */
 internal fun loadModel(modelName: String, stub: () -> Unit = {}): Pair<Model, String> {
-    val localModelPath = stub::class.java.getResource(modelName).toURI().path
+    val localModelPath = Paths.get(stub::class.java.getResource(modelName).toURI()).toString()
     val layers = LoadLayersFromHDF5(DefaultLayersToGraph())
         .load(File(localModelPath))
     val model = layers.attempt().unsafeRunSync()
