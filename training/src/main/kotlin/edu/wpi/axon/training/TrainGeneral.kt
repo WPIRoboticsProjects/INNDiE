@@ -14,7 +14,6 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import java.io.File
-import java.nio.file.Paths
 
 /**
  * Trains a [Model.General].
@@ -25,11 +24,9 @@ class TrainGeneral(
     private val trainState: TrainState<Model.General>
 ) {
 
-    private val userOldModelName = Paths.get(trainState.userOldModelPath).fileName.toString()
-
     init {
-        require(userOldModelName != trainState.userNewModelName) {
-            "The old model name ($userOldModelName) cannot equal the new model " +
+        require(trainState.userOldModelName != trainState.userNewModelName) {
+            "The old model name (${trainState.userOldModelName}) cannot equal the new model " +
                 "name (${trainState.userNewModelName})."
         }
     }
@@ -38,8 +35,8 @@ class TrainGeneral(
 
     @Suppress("UNUSED_VARIABLE")
     fun generateScript(): Validated<NonEmptyList<String>, String> =
-        loadLayersFromHDF5.load(File(trainState.userOldModelPath)).map { userCurrentModel ->
-            require(userCurrentModel is Model.General)
+        loadLayersFromHDF5.load(File(trainState.userOldModelPath)).map { userOldModel ->
+            require(userOldModel is Model.General)
 
             val script = ScriptGenerator(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
@@ -49,19 +46,19 @@ class TrainGeneral(
 
                 // TODO: How does the user configure data preprocessing?
 
-                val model = loadModel(trainState, userOldModelName)
+                val model = loadModel(trainState)
 
                 val newModelVar by variables.creating(Variable::class)
                 val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
                     modelInput = model
-                    currentModel = userCurrentModel
+                    oldModel = userOldModel
                     newModel = trainState.userNewModel
                     newModelOutput = newModelVar
                 }
 
                 lastTask = compileTrainSave(
                     trainState,
-                    userCurrentModel,
+                    userOldModel,
                     newModelVar,
                     applyLayerDeltaTask,
                     xTrain,

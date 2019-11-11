@@ -22,7 +22,14 @@ import edu.wpi.axon.dsl.task.UploadModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 
-internal fun ScriptGenerator.loadModel(trainState: TrainState<*>, oldModelName: String): Variable {
+/**
+ * Loads a model in to a variable using. Downloads the model from S3 first if credentials were
+ * provided.
+ *
+ * @param trainState The training state.
+ * @return The loaded model from [LoadModelTask].
+ */
+internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
     val downloadModelFromS3Task = if (trainState.userAuth != null) {
         tasks.run(DownloadModelFromS3Task::class) {
             modelName = trainState.userOldModelPath
@@ -33,7 +40,7 @@ internal fun ScriptGenerator.loadModel(trainState: TrainState<*>, oldModelName: 
 
     val model = variables.create(Variable::class)
     val loadModelTask = tasks.run(LoadModelTask::class) {
-        modelPath = oldModelName
+        modelPath = trainState.userOldModelName
         modelOutput = model
 
         if (downloadModelFromS3Task != null) {
@@ -44,6 +51,12 @@ internal fun ScriptGenerator.loadModel(trainState: TrainState<*>, oldModelName: 
     return model
 }
 
+/**
+ * Loads an example dataset into variables.
+ *
+ * @param trainState The training state.
+ * @return A tuple in the format `{xTrain, yTrain, xTest, yTest}`.
+ */
 internal fun ScriptGenerator.loadExampleDataset(
     trainState: TrainState<*>
 ): Tuple4<Variable, Variable, Variable, Variable> {
@@ -63,6 +76,14 @@ internal fun ScriptGenerator.loadExampleDataset(
     return Tuple4(xTrain, yTrain, xTest, yTest)
 }
 
+/**
+ * Runs the [ReshapeAndScaleTask] on the input.
+ *
+ * @param dataset The dataset for [ReshapeAndScaleTask.input].
+ * @param reshapeArgsIn The reshape args for [ReshapeAndScaleTask.reshapeArgs].
+ * @param scaleIn The scale arg for [ReshapeAndScaleTask.scale].
+ * @return The [ReshapeAndScaleTask.output].
+ */
 internal fun ScriptGenerator.reshapeAndScale(
     dataset: Variable,
     reshapeArgsIn: List<Int>,
@@ -79,9 +100,23 @@ internal fun ScriptGenerator.reshapeAndScale(
     return scaledDataset
 }
 
+/**
+ * Compiles, trains (with callbacks), and saves a model. Also uploads the model to S3 if credentials
+ * were provided.
+ *
+ * @param trainState The training state.
+ * @param oldModel The model on disk the user is starting training with.
+ * @param newModel The new model that will be compiled, trained, and saved.
+ * @param applyLayerDeltaTask Will be depended on by the [CompileModelTask].
+ * @param xTrain The x-axis train data.
+ * @param yTrain The y-axis train data.
+ * @param xTest The x-axis test data.
+ * @param yTest The y-axis test data.
+ * @return The last task in the sequence of operations.
+ */
 internal fun ScriptGenerator.compileTrainSave(
     trainState: TrainState<*>,
-    currentModel: Model,
+    oldModel: Model,
     newModel: Variable,
     applyLayerDeltaTask: Task,
     xTrain: Variable,
@@ -99,7 +134,7 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val checkpointCallback by variables.creating(Variable::class)
     tasks.run(CheckpointCallbackTask::class) {
-        filePath = "${currentModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+        filePath = "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
         saveWeightsOnly = true
         verbose = 1
         output = checkpointCallback
