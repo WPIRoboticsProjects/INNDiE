@@ -12,6 +12,7 @@ import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
+import java.nio.file.Paths
 
 internal class TrainIntegrationTest : KoinTestFixture() {
 
@@ -69,7 +70,9 @@ internal class TrainIntegrationTest : KoinTestFixture() {
 
         TrainGeneral(
             TrainState(
-                userOldModelPath = this::class.java.getResource("badModel1.h5").toURI().path,
+                userOldModelPath = Paths.get(
+                    this::class.java.getResource("badModel1.h5").toURI()
+                ).toString(),
                 userNewModelName = "badModel1-trained.h5",
                 userDataset = Dataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
