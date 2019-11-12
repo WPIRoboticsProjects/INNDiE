@@ -23,7 +23,7 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
     /**
      * The current layers in the model.
      */
-    var currentLayers: Set<Layer.MetaLayer> by singleAssign()
+    var oldLayers: Set<Layer.MetaLayer> by singleAssign()
 
     /**
      * The layers the new model should have.
@@ -50,12 +50,12 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun isConfiguredCorrectly(): Boolean {
-        return super.isConfiguredCorrectly() && currentLayers.all { it.inputs is None } &&
+        return super.isConfiguredCorrectly() && oldLayers.all { it.inputs is None } &&
             newLayers.all { it.inputs is None }
     }
 
     override fun code(): String {
-        val layerOperations = createLayerOperations(currentLayers, newLayers)
+        val layerOperations = createLayerOperations(oldLayers, newLayers)
 
         return """
         |${newModelOutput.name} = tf.keras.Sequential(${buildSequentialArgs(layerOperations, 4)})

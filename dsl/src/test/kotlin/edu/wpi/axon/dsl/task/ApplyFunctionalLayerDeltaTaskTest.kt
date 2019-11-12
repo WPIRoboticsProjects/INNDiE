@@ -85,7 +85,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel =
+            oldModel =
                 makeModel(input1 to layer1, input = setOf(input1), output = setOf(layer1))
             newModel = makeModel(input1 to layer1, input = setOf(input1), output = setOf(layer1))
             newModelOutput = configuredCorrectly("new_model")
@@ -113,7 +113,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel =
+            oldModel =
                 makeModel(input1 to layer2, input = setOf(input1), output = setOf(layer2))
             newModel = makeModel(input1 to layer2, input = setOf(input1), output = setOf(layer2))
             newModelOutput = configuredCorrectly("new_model")
@@ -151,7 +151,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(
+            oldModel = makeModel(
                 input1 to layer2,
                 layer2 to layer3,
                 input = setOf(input1),
@@ -199,7 +199,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(
+            oldModel = makeModel(
                 input1 to layer2,
                 input = setOf(input1),
                 output = setOf(layer2)
@@ -248,7 +248,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel =
+            oldModel =
                 makeModel(input1 to layer2, input = setOf(input1), output = setOf(layer2))
             newModel = makeModel(input1 to layer3, input = setOf(input1), output = setOf(layer3))
             newModelOutput = configuredCorrectly("new_model")
@@ -289,7 +289,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(
+            oldModel = makeModel(
                 input1 to layer2,
                 input1 to layer3,
                 layer2 to layer3,
@@ -342,7 +342,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(
+            oldModel = makeModel(
                 input1 to layer1,
                 input2 to layer1,
                 input = setOf(input1, input2),
@@ -395,7 +395,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(
+            oldModel = makeModel(
                 input1 to layer1,
                 input2 to layer1,
                 input = setOf(input1, input2),
@@ -450,7 +450,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(
+            oldModel = makeModel(
                 input1 to layer1,
                 input2 to layer1,
                 input3 to layer1,
@@ -505,7 +505,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(
+            oldModel = makeModel(
                 input1 to layer1,
                 layer1 to layer2,
                 input = setOf(input1),
@@ -554,7 +554,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplyFunctionalLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            currentModel = makeModel(
+            oldModel = makeModel(
                 input1 to layer1,
                 input1 to layer2,
                 input = setOf(input1),
