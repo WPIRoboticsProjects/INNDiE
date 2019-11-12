@@ -6,7 +6,6 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.either.shouldBeRight
-import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.shouldBe
 import mu.KotlinLogging
 import java.io.BufferedReader
