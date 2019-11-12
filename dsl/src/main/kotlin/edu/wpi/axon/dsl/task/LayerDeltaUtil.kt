@@ -5,18 +5,18 @@ import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.tfdata.layer.Layer
 
 /**
- * Determines the layer operations to transform [currentLayers] into [newLayers].
+ * Determines the layer operations to transform [oldLayers] into [newLayers].
  *
- * @param currentLayers The layers currently in the model.
+ * @param oldLayers The layers currently in the model.
  * @param newLayers The layers that will be in the new model.
  * @return The necessary layer operations.
  */
 internal fun createLayerOperations(
-    currentLayers: Iterable<Layer.MetaLayer>,
+    oldLayers: Iterable<Layer.MetaLayer>,
     newLayers: Iterable<Layer.MetaLayer>
 ): List<LayerOperation> {
     // The base layers inside the Trainable or Untrainable layer wrappers
-    val innerCurrentLayers = currentLayers.map { it.layer }
+    val innerCurrentLayers = oldLayers.map { it.layer }
 
     return newLayers.map {
         // Compare using the inner layer so the trainable status does not matter
