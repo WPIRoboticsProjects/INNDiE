@@ -134,6 +134,7 @@ allprojects {
 
     testlogger {
         theme = ThemeType.STANDARD_PARALLEL
+        showStandardStreams = true
     }
 
     spotless {
@@ -232,6 +233,10 @@ configure(javaProjects) {
             These tests need some sort of software that can't be reasonably installed on CI servers.
              */
             excludeTags("needsSpecialSoftware")
+
+            if (!project.hasProperty("hasDockerSupport")) {
+                excludeTags("needsDockerSupport")
+            }
         }
 
         jvmArgs = listOf("-Xss512m")
@@ -259,6 +264,7 @@ configure(javaProjects) {
             showCauses = true
             showStackTraces = true
             exceptionFormat = TestExceptionFormat.FULL
+            showStandardStreams = true
         }
 
         @Suppress("UnstableApiUsage")

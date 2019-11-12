@@ -24,7 +24,7 @@ internal class `Mobilenet-v-1-15-IntegrationTest` : KoinTestFixture() {
         }
 
         val modelName = "mobilenet_tf_1_15_0.h5"
-        val (model, path) = loadModel(modelName)
+        val (model, _) = loadModel(modelName)
         model.shouldBeInstanceOf<Model.Sequential> {
             it.layers.shouldHaveSize(3)
             it.layers.toList().let {

@@ -31,7 +31,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
     /**
      * The current model.
      */
-    var currentModel: Model.General by singleAssign()
+    var oldModel: Model.General by singleAssign()
 
     /**
      * The new model.
@@ -63,7 +63,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         return super.isConfiguredCorrectly() && Either.fx<String, Unit> {
             !Either.monadError<String>().run {
                 tupled(
-                    layerGraphIsValid(currentModel.layers),
+                    layerGraphIsValid(oldModel.layers),
                     layerGraphIsValid(newModel.layers)
                 )
             }
@@ -89,7 +89,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                     // Always make a new input layer
                     is Layer.InputLayer -> LayerOperation.MakeNewLayer(layer)
 
-                    else -> if (layer in currentModel.layers.nodes()) {
+                    else -> if (layer in oldModel.layers.nodes()) {
                         LayerOperation.CopyLayer(layer)
                     } else {
                         LayerOperation.MakeNewLayer(layer)
