@@ -29,12 +29,9 @@ class JobsView : KComposite() {
     private val root = ui {
         verticalLayout {
             grid<Job>(dataProvider = dataProvider) {
-                flexGrow = 0.0
                 addColumnFor(Job::name)
                 addColumnFor(Job::state)
-                addColumnFor(Job::userDataset, TextRenderer {
-                    it.userDataset.name
-                })
+                addColumnFor(Job::dataset, TextRenderer { it.dataset.name })
 
                 addColumn(ComponentRenderer<Button, Job>(SerializableFunction { job ->
                     Button("Clone") {
@@ -42,7 +39,6 @@ class JobsView : KComposite() {
                     }
                 })).apply {
                     textAlign = ColumnTextAlign.END
-                    flexGrow = 0
                 }
                 addColumn(ComponentRenderer<Button, Job>(SerializableFunction { job ->
                     Button("Run") {
@@ -50,13 +46,11 @@ class JobsView : KComposite() {
                     }
                 })).apply {
                     textAlign = ColumnTextAlign.END
-                    flexGrow = 0
                 }
                 addColumn(ComponentRenderer<Button, Job>(SerializableFunction { job ->
                     Button("Remove") { deleteJob(job) }
                 })).apply {
                     textAlign = ColumnTextAlign.END
-                    flexGrow = 0
                 }
 
                 gridContextMenu {

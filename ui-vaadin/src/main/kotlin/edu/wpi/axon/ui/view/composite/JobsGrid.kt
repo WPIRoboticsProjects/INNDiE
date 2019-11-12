@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.component
+package edu.wpi.axon.ui.view.composite
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.addColumnFor
@@ -12,7 +12,7 @@ import com.vaadin.flow.data.renderer.TextRenderer
 import edu.wpi.axon.ui.model.Job
 import edu.wpi.axon.ui.temp.JobService
 
-class JobsMiniList : KComposite() {
+class JobsGrid : KComposite() {
     private val dataProvider = DataProvider.fromCallbacks<Job>(
             { JobService.fetchJobs(it.offset, it.limit) },
             { JobService.getJobCount() }
@@ -23,9 +23,7 @@ class JobsMiniList : KComposite() {
             grid<Job>(dataProvider = dataProvider) {
                 addColumnFor(Job::name)
                 addColumnFor(Job::state)
-                addColumnFor(Job::userDataset, TextRenderer {
-                    it.userDataset.name
-                })
+                addColumnFor(Job::dataset, TextRenderer { it.dataset.name })
                 gridContextMenu {
                     item("Clone", { if (it != null) Notification.show("Clone Context: ${it.name}") })
                     item("Run", { if (it != null) Notification.show("Run Context: ${it.name}") })
