@@ -57,10 +57,16 @@ internal fun testTrainingScript(
             "docker",
             "run",
             "--rm",
-            "-v",
-            "${dir.absolutePath}:/home",
+            "--entrypoint",
+            "/bin/bash",
             "wpilib/axon-ci:latest",
-            "script.py"
+            "-c",
+            "/usr/bin/python3.6",
+            "script.py",
+            "&&",
+            "test",
+            "-f",
+            newModelName
         ),
         emptyMap(),
         dir
@@ -77,7 +83,6 @@ internal fun testTrainingScript(
         }
 
         exitCode shouldBe 0
-        Paths.get(dir.absolutePath, newModelName).shouldExist()
     }
 }
 
