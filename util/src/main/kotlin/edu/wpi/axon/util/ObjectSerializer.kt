@@ -6,17 +6,15 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.internal.SerialClassDescImpl
 
-class ObjectSerializer<T : Any>(val obj: T) : KSerializer<T> {
+/**
+ * A [KSerializer] for object types.
+ */
+class ObjectSerializer<T : Any>(private val obj: T) : KSerializer<T> {
 
-    override val descriptor: SerialDescriptor =
-        SerialClassDescImpl(obj::class.simpleName!!)
+    override val descriptor: SerialDescriptor = SerialClassDescImpl(obj::class.simpleName!!)
 
-    override fun deserialize(decoder: Decoder): T {
-        return obj
-    }
+    override fun deserialize(decoder: Decoder): T = obj
 
-    override fun serialize(encoder: Encoder, obj: T) {
-        val composite = encoder.beginStructure(descriptor)
-        composite.endStructure(descriptor)
-    }
+    override fun serialize(encoder: Encoder, obj: T) =
+        encoder.beginStructure(descriptor).endStructure(descriptor)
 }
