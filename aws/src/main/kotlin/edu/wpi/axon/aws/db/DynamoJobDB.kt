@@ -87,6 +87,8 @@ class DynamoJobDB(
         }
     }
 
+    override fun getJobsWithStatus(status: TrainingScriptProgress): IO<List<Job>> = TODO()
+
     override fun deleteTable(): IO<Unit> = dbClient.flatMap { dbClient ->
         IO {
             dbClient.deleteTable {

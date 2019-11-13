@@ -6,11 +6,43 @@ import edu.wpi.axon.dbdata.TrainingScriptProgress
 
 interface JobDB {
 
+    /**
+     * Puts the [job] in the DB.
+     *
+     * @param job The new [Job].
+     * @return An effect for continuation.
+     */
     fun createNewJob(job: Job): IO<Unit>
 
+    /**
+     * Updates the status of a job in the DB.
+     *
+     * @param job The [Job] to update (with the old status).
+     * @param newStatus The new status.
+     * @return The new [Job] (with the [newStatus]).
+     */
     fun updateJobStatus(job: Job, newStatus: TrainingScriptProgress): IO<Job>
 
+    /**
+     * Gets a job with a [name].
+     *
+     * @param name The name of the [Job].
+     * @return The [Job].
+     */
     fun getJobWithName(name: String): IO<Job>
 
+    /**
+     * Gets all [Job]s with the [status].
+     *
+     * @param status The status.
+     * @return The matching [Job]s.
+     */
+    fun getJobsWithStatus(status: TrainingScriptProgress): IO<List<Job>>
+
+    /**
+     * Deletes the table containing the jobs.
+     *
+     * @return An effect for continuation.
+     */
     fun deleteTable(): IO<Unit>
 }
