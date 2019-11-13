@@ -1,4 +1,4 @@
-package edu.wpi.axon.awsdb
+package edu.wpi.axon.aws.db
 
 // TODO: What else does a job have?
 data class Job(

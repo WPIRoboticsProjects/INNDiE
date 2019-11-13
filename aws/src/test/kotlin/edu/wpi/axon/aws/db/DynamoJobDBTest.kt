@@ -1,16 +1,15 @@
-package edu.wpi.axon.awsdb
+package edu.wpi.axon.aws.db
 
 import arrow.fx.IO
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.collections.shouldContain
 import io.kotlintest.shouldBe
+import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
-import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 internal class DynamoJobDBTest {
 
@@ -21,7 +20,11 @@ internal class DynamoJobDBTest {
     fun `create new job`() {
         withRandomTable { db, tableName ->
             IO {
-                val job = Job(randomString(), randomString(), 42)
+                val job = Job(
+                    RandomStringUtils.randomAlphanumeric(10),
+                    RandomStringUtils.randomAlphanumeric(10),
+                    42
+                )
 
                 val result = db.createNewJob(job).attempt().unsafeRunSync()
 
@@ -57,7 +60,7 @@ internal class DynamoJobDBTest {
      * @param testBody The body of the test method. Given a new [DynamoJobDB] and a table name.
      */
     private fun withRandomTable(testBody: (DynamoJobDB, String) -> IO<Unit>) {
-        val tableName = randomString()
+        val tableName = RandomStringUtils.randomAlphanumeric(10)
         IO {
             DynamoJobDB(tableName, region)
         }.bracket(
@@ -67,10 +70,4 @@ internal class DynamoJobDBTest {
             use = { testBody(it, tableName) }
         ).unsafeRunSync()
     }
-
-    /**
-     * Creates a random string from 10 positive bytes.
-     */
-    private fun randomString() =
-        Random.nextBytes(10).joinToString("") { it.toInt().absoluteValue.toString() }
 }

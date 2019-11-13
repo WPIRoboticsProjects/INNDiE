@@ -1,4 +1,4 @@
-package edu.wpi.axon.awsdb
+package edu.wpi.axon.aws.db
 
 import arrow.core.Left
 import arrow.core.Right
