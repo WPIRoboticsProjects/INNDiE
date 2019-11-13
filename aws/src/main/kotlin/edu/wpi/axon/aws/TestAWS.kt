@@ -2,36 +2,42 @@ package edu.wpi.axon.aws
 
 import arrow.fx.IO
 import arrow.fx.extensions.fx
-import arrow.fx.typeclasses.ExitCase
 import mu.KotlinLogging
+import org.apache.commons.lang3.RandomStringUtils
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.Ec2Client
 import software.amazon.awssdk.services.ec2.model.InstanceType
+import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import software.amazon.awssdk.services.ssm.SsmClient
+import java.util.Base64
 
 class TestAWS {
 
-    fun uploadAndStartScript(script: String): IO<Unit> {
+    private fun String.toBase64() =
+        Base64.getEncoder().encodeToString(byteInputStream().readAllBytes())
+
+    fun uploadAndStartScript(
+        oldModelName: String,
+        newModelName: String,
+        bucketName: String,
+        scriptContents: String
+    ): IO<Unit> {
         val s3 = S3Client.builder()
             .region(Region.US_EAST_1)
             .build()
 
-        // The bucket to store things in
-        val bucketName = "axon-salmon-testbucket1"
-
         // The file name for the generated script
-        val scriptFileName = "testobject1"
+        val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
         return IO.fx {
             IO {
                 s3.putObject(
                     // TODO: This will replace the content if the file already exists
                     PutObjectRequest.builder().bucket(bucketName)
-                        .key(scriptFileName).build(),
-                    RequestBody.fromString(script)
+                        .key("axon-uploaded-training-scripts/$scriptFileName").build(),
+                    RequestBody.fromString(scriptContents)
                 )
             }.bind()
 
@@ -39,55 +45,50 @@ class TestAWS {
                 .region(Region.US_EAST_1)
                 .build()
 
-            IO {
-                ec2.runInstances {
-                    it.imageId("ami-0b69ea66ff7391e80")
-                        .instanceType(InstanceType.T2_MICRO)
-                        .maxCount(1)
-                        .minCount(1)
-                }
-            }.bracketCase(
-                { startInstanceResponse, exitCase ->
-                    when (exitCase) {
-                        is ExitCase.Completed, ExitCase.Canceled -> IO {
-                            ec2.stopInstances {
-                                it.instanceIds(startInstanceResponse.instances().map { it.instanceId() })
-                            }
+            // TODO: Add a security group that will handle the REST API
+            val scriptForEC2 = """
+                |#!/bin/bash
+                |exec 1> >(logger -s -t ${'$'}(basename ${'$'}0)) 2>&1
+                |apt update
+                |apt install -y build-essential curl libcurl4-openssl-dev libssl-dev wget python3.6 python3-pip python3-dev apt-transport-https ca-certificates software-properties-common
+                |curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                |add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+                |apt update
+                |apt-cache policy docker-ce
+                |apt install -y docker-ce
+                |systemctl status docker
+                |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.4/axon-0.1.4-py2.py3-none-any.whl
+                |axon download-model-file "$oldModelName" "$bucketName"
+                |axon download-training-script "$scriptFileName" "$bucketName"
+                |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 $scriptFileName"
+                |axon upload-model-file "$newModelName" "$bucketName"
+                |shutdown -h now
+                """.trimMargin()
 
-                            Unit
-                        }
+            LOGGER.info {
+                """
+                |Sending script to EC2:
+                |$scriptForEC2
+                |
+                """.trimMargin()
+            }
 
-                        is ExitCase.Error -> IO {
-                            ec2.stopInstances {
-                                it.instanceIds(startInstanceResponse.instances().map { it.instanceId() })
-                            }
-
-                            logger.catching(exitCase.e)
-                        }
-                    }
-                },
-                {
-                    IO {
-                        val instance = it.instances().first()
-                        val ssm = SsmClient.builder()
-                            .region(Region.US_EAST_1)
-                            .build()
-
-                        ssm.sendCommand {
-                            it.instanceIds(instance.instanceId())
-                                .documentName("AWS-RunShellScript")
-                                .parameters(emptyMap())
-                                .outputS3BucketName(bucketName)
-                        }
-                    }
-                }
-            ).bind()
+            ec2.runInstances {
+                it.imageId("ami-04b9e92b5572fa0d1")
+                    .instanceType(InstanceType.T2_MICRO)
+                    .maxCount(1)
+                    .minCount(1)
+                    .userData(scriptForEC2.toBase64())
+                    .securityGroups("axon-ec2-autogenerated")
+                    .instanceInitiatedShutdownBehavior(ShutdownBehavior.TERMINATE)
+                    .iamInstanceProfile { it.name("axon-ec2-role-manual") }
+            }
 
             Unit
         }
     }
 
     companion object {
-        private val logger = KotlinLogging.logger { }
+        private val LOGGER = KotlinLogging.logger { }
     }
 }

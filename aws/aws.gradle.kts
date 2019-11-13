@@ -18,4 +18,5 @@ dependencies {
     implementation(group = "software.amazon.awssdk", name = "aws-sdk-java", version = "2.9.9")
 
     implementation(project(":logging"))
+    implementation(project(":util"))
 }
