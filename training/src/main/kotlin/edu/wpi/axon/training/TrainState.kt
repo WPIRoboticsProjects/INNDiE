@@ -18,7 +18,10 @@ import java.nio.file.Paths
  * @param userEpochs The number of epochs.
  * @param userNewModel The new model.
  * @param userAuth The name of the S3 bucket to download/upload models from/to and the AWS region
- * to authenticate to, or `null` if the model should be trained entirely locally.
+ * to authenticate to, or `null` if the model should be trained entirely locally. This causes the
+ * script to make calls to S3 ON ITS OWN. This parameter should not be confused with using
+ * EC2TrainingScriptRunner, which handles S3 independently of the script (i.e., when using
+ * EC2TrainingScriptRunner, the script should not try to deal with S3 itself).
  * @param generateDebugComments Whether to put debug comments in the output.
  */
 data class TrainState<T : Model>(

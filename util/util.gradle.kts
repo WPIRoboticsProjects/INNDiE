@@ -12,5 +12,11 @@ dependencies {
         version = property("kt-guava.version") as String
     )
 
+    api(
+        group = "org.apache.commons",
+        name = "commons-lang3",
+        version = property("commons-lang3.version") as String
+    )
+
     api(project(":logging"))
 }

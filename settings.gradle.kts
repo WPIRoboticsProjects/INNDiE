@@ -28,6 +28,7 @@ pluginManagement {
 
 rootProject.name = "axon"
 
+include(":aws")
 include(":dsl")
 include(":dsl-interface")
 include(":dsl-test-util")
