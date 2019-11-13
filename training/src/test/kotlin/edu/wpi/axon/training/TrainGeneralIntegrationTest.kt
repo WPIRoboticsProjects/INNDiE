@@ -31,7 +31,7 @@ internal class TrainGeneralIntegrationTest : KoinTestFixture() {
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = newModelName,
-                    userDataset = Dataset.Mnist,
+                    userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),

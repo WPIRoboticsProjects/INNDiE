@@ -17,7 +17,7 @@ internal class LoadExampleDatasetTaskTest : KoinTestFixture() {
 
     @Test
     fun `test code gen`() {
-        val mockDataset = mockk<Dataset> { every { name } returns "dataset_name" }
+        val mockDataset = mockk<Dataset.ExampleDataset> { every { name } returns "dataset_name" }
         val mockDatasetToCode = mockk<DatasetToCode> {
             every { datasetToCode(mockDataset) } returns "dataset_code"
         }

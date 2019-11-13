@@ -11,5 +11,7 @@ dependencies {
         version = property("kt-guava.version") as String
     )
 
+    implementation(project(":util"))
+
     testImplementation(project(":test-util"))
 }
