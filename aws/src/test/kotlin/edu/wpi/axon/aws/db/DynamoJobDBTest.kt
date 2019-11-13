@@ -67,16 +67,11 @@ internal class DynamoJobDBTest : KoinTestFixture() {
                                 mapOf(
                                     DynamoJobDB.KEY_JOB_NAME to AttributeValue.builder()
                                         .s(job.name)
-                                        .build(),
-                                    DynamoJobDB.KEY_NEW_MODEL_NAME to AttributeValue.builder()
-                                        .s(job.userNewModelName)
                                         .build()
                                 )
                             )
                     }.item().let { jobFromDB ->
                         jobFromDB[DynamoJobDB.KEY_JOB_NAME]!!.s().shouldBe(job.name)
-                        jobFromDB[DynamoJobDB.KEY_NEW_MODEL_NAME]!!.s()
-                            .shouldBe(job.userNewModelName)
                         jobFromDB[DynamoJobDB.KEY_DATA]!!.s().let { jobData ->
                             jobData.shouldBe(job.serialize())
                             Job.deserialize(jobData).shouldBe(job)

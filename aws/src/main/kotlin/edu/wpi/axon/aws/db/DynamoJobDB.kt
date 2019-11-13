@@ -4,6 +4,7 @@ import arrow.core.Left
 import arrow.core.Right
 import arrow.fx.IO
 import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.dbdata.TrainingScriptProgress
 import kotlinx.coroutines.delay
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -36,7 +37,6 @@ class DynamoJobDB(
                         .item(
                             mapOf(
                                 KEY_JOB_NAME to AttributeValue.builder().s(job.name).build(),
-                                KEY_NEW_MODEL_NAME to AttributeValue.builder().s(job.userNewModelName).build(),
                                 KEY_DATA to AttributeValue.builder().s(job.serialize()).build()
                             )
                         )
@@ -72,19 +72,11 @@ class DynamoJobDB(
                             KeySchemaElement.builder()
                                 .keyType(KeyType.HASH)
                                 .attributeName(KEY_JOB_NAME)
-                                .build(),
-                            KeySchemaElement.builder()
-                                .keyType(KeyType.RANGE)
-                                .attributeName(KEY_NEW_MODEL_NAME)
                                 .build()
                         )
                         .attributeDefinitions(
                             AttributeDefinition.builder()
                                 .attributeName(KEY_JOB_NAME)
-                                .attributeType(ScalarAttributeType.S)
-                                .build(),
-                            AttributeDefinition.builder()
-                                .attributeName(KEY_NEW_MODEL_NAME)
                                 .attributeType(ScalarAttributeType.S)
                                 .build()
                         )
@@ -130,7 +122,6 @@ class DynamoJobDB(
     companion object {
 
         const val KEY_JOB_NAME = "job-name"
-        const val KEY_NEW_MODEL_NAME = "new-model-name"
         const val KEY_DATA = "data"
     }
 }
