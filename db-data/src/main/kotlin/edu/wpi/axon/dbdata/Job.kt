@@ -15,6 +15,7 @@ import kotlinx.serialization.modules.plus
 @Serializable
 data class Job(
     val name: String,
+    @Polymorphic val status: TrainingScriptProgress,
     val userOldModelPath: String,
     val userNewModelName: String,
     @Polymorphic val userDataset: Dataset,
@@ -27,14 +28,14 @@ data class Job(
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable,
-        context = datasetModule + optimizerModule + lossModule
+        context = datasetModule + optimizerModule + lossModule + trainingScriptProgressModule
     ).stringify(serializer(), this)
 
     companion object {
 
         fun deserialize(data: String): Job = Json(
             JsonConfiguration.Stable,
-            context = datasetModule + optimizerModule + lossModule
+            context = datasetModule + optimizerModule + lossModule + trainingScriptProgressModule
         ).parse(serializer(), data)
     }
 }

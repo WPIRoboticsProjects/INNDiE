@@ -5,6 +5,8 @@ import arrow.core.Right
 import arrow.fx.IO
 import edu.wpi.axon.dbdata.Job
 import kotlinx.coroutines.delay
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition
@@ -15,9 +17,10 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import software.amazon.awssdk.services.dynamodb.model.TableStatus
 
 class DynamoJobDB(
-    private val tableName: String,
-    private val region: Region
-) : JobDB {
+    private val tableName: String
+) : JobDB, KoinComponent {
+
+    private val region: Region by inject()
 
     private val dbClient: IO<DynamoDbClient> = IO {
         DynamoDbClient.builder().region(region).build()

@@ -1,6 +1,7 @@
 package edu.wpi.axon.aws
 
 import arrow.fx.IO
+import edu.wpi.axon.dbdata.TrainingScriptProgress
 
 interface TrainingScriptRunner {
 

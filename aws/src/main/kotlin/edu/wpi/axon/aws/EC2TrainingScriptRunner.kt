@@ -2,6 +2,7 @@ package edu.wpi.axon.aws
 
 import arrow.fx.IO
 import arrow.fx.extensions.fx
+import edu.wpi.axon.dbdata.TrainingScriptProgress
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
