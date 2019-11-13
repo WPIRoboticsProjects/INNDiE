@@ -30,6 +30,7 @@ data class TrainState<T : Model>(
     val userMetrics: Set<String>,
     val userEpochs: Int,
     val userNewModel: T,
+    // TODO: Remove this because it is unused now
     val userAuth: Pair<String, String>? = null,
     val generateDebugComments: Boolean = false
 ) {
