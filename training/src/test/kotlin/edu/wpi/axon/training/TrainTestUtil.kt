@@ -6,7 +6,6 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.either.shouldBeRight
-import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.shouldBe
 import mu.KotlinLogging
 import java.io.BufferedReader
@@ -57,10 +56,13 @@ internal fun testTrainingScript(
             "docker",
             "run",
             "--rm",
-            "-v",
-            "${dir.absolutePath}:/home",
             "wpilib/axon-ci:latest",
-            "script.py"
+            "/usr/bin/python3.6",
+            "script.py",
+            "&&",
+            "test",
+            "-f",
+            newModelName
         ),
         emptyMap(),
         dir
@@ -77,7 +79,6 @@ internal fun testTrainingScript(
         }
 
         exitCode shouldBe 0
-        Paths.get(dir.absolutePath, newModelName).shouldExist()
     }
 }
 

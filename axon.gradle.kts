@@ -20,7 +20,7 @@ plugins {
     checkstyle
 }
 
-val awsdbProject = project(":awsdb")
+val awsProject = project(":aws")
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
@@ -37,7 +37,7 @@ val trainingProject = project(":training")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
-    awsdbProject,
+    awsProject,
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
@@ -57,7 +57,7 @@ val kotlinProjects = setOf(
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
-    awsdbProject,
+    awsProject,
     dslProject,
     dslInterfaceProject,
     loggingProject,
