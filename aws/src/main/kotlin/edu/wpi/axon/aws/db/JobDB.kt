@@ -8,7 +8,9 @@ interface JobDB {
 
     fun createNewJob(job: Job): IO<Unit>
 
-    fun updateJobStatus(name: String, newStatus: TrainingScriptProgress): IO<Job>
+    fun updateJobStatus(job: Job, newStatus: TrainingScriptProgress): IO<Job>
+
+    fun getJobWithName(name: String): IO<Job>
 
     fun deleteTable(): IO<Unit>
 }

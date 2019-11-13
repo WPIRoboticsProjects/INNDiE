@@ -47,6 +47,46 @@ class DynamoJobDB(
         }
     }
 
+    override fun updateJobStatus(job: Job, newStatus: TrainingScriptProgress): IO<Job> =
+        dbClient.flatMap { dbClient ->
+            ensureJobTable(dbClient).flatMap {
+                waitForTableStatus(dbClient, TableStatus.ACTIVE)
+            }.flatMap {
+                IO {
+                    val newJob = job.copy(status = newStatus)
+
+                    dbClient.updateItem {
+                        it.tableName(tableName)
+                            .key(mapOf(KEY_JOB_NAME to AttributeValue.builder().s(job.name).build()))
+                            .updateExpression(
+                                """SET $KEY_DATA = :newJobData"""
+                            )
+                            .expressionAttributeValues(
+                                mapOf(""":newJobData""" to AttributeValue.builder().s(newJob.serialize()).build())
+                            )
+                    }
+
+                    newJob
+                }
+            }
+        }
+
+    override fun getJobWithName(name: String): IO<Job> = dbClient.flatMap { dbClient ->
+        ensureJobTable(dbClient).flatMap {
+            waitForTableStatus(dbClient, TableStatus.ACTIVE)
+        }.flatMap {
+            IO {
+                Job.deserialize(
+                    dbClient.getItem {
+                        it.tableName(tableName)
+                            .key(mapOf(KEY_JOB_NAME to AttributeValue.builder().s(name).build()))
+                            .projectionExpression(KEY_DATA)
+                    }.item()[KEY_DATA]!!.s()
+                )
+            }
+        }
+    }
+
     override fun deleteTable(): IO<Unit> = dbClient.flatMap { dbClient ->
         IO {
             dbClient.deleteTable {
@@ -121,7 +161,7 @@ class DynamoJobDB(
 
     companion object {
 
-        const val KEY_JOB_NAME = "job-name"
-        const val KEY_DATA = "data"
+        const val KEY_JOB_NAME = "JobName"
+        const val KEY_DATA = "JobData"
     }
 }

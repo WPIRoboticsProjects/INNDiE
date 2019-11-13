@@ -24,7 +24,7 @@ import kotlin.random.Random
 internal class DynamoJobDBTest : KoinTestFixture() {
 
     @Test
-    @Disabled("Needs supervision.")
+    @Disabled("Needs DynamoDB supervision.")
     fun `create new job`() {
         startKoin {
             modules(module {
@@ -34,27 +34,7 @@ internal class DynamoJobDBTest : KoinTestFixture() {
 
         withRandomTable { db, tableName ->
             IO {
-                val job = Job(
-                    RandomStringUtils.randomAlphanumeric(10),
-                    TrainingScriptProgress.Completed,
-                    RandomStringUtils.randomAlphanumeric(10),
-                    RandomStringUtils.randomAlphanumeric(10),
-                    Random.nextDataset(),
-                    Optimizer.Adam(
-                        Random.nextDouble(),
-                        Random.nextDouble(),
-                        Random.nextDouble(),
-                        Random.nextDouble(),
-                        Random.nextBoolean()
-                    ),
-                    Loss.SparseCategoricalCrossentropy,
-                    setOf(
-                        RandomStringUtils.randomAlphanumeric(10),
-                        RandomStringUtils.randomAlphanumeric(10)
-                    ),
-                    Random.nextInt(),
-                    Random.nextBoolean()
-                )
+                val job = Random.nextJob()
 
                 val result = db.createNewJob(job).attempt().unsafeRunSync()
 
@@ -82,6 +62,34 @@ internal class DynamoJobDBTest : KoinTestFixture() {
         }
     }
 
+    @Test
+    @Disabled("Needs DynamoDB supervision.")
+    fun `update job status`() {
+        startKoin {
+            modules(module {
+                single { Region.US_EAST_1 }
+            })
+        }
+
+        withRandomTable { db, _ ->
+            IO {
+                val job = Random.nextJob()
+
+                val result = db.createNewJob(job).attempt().unsafeRunSync()
+
+                result.shouldBeRight {
+                    db.getJobWithName(job.name).map {
+                        it.shouldBe(job)
+                    }.flatMap {
+                        db.updateJobStatus(job, TrainingScriptProgress.NotStarted)
+                    }.map {
+                        it.shouldBe(job.copy(status = TrainingScriptProgress.NotStarted))
+                    }.unsafeRunSync()
+                }
+            }
+        }
+    }
+
     /**
      * Runs the [testBody] with a [DynamoJobDB] and a random, newly created table. Deletes the table
      * when finished.
@@ -99,4 +107,26 @@ internal class DynamoJobDBTest : KoinTestFixture() {
             use = { testBody(it, tableName) }
         ).unsafeRunSync()
     }
+
+    private fun Random.nextJob() = Job(
+        RandomStringUtils.randomAlphanumeric(10),
+        TrainingScriptProgress.Completed,
+        RandomStringUtils.randomAlphanumeric(10),
+        RandomStringUtils.randomAlphanumeric(10),
+        nextDataset(),
+        Optimizer.Adam(
+            nextDouble(),
+            nextDouble(),
+            nextDouble(),
+            nextDouble(),
+            nextBoolean()
+        ),
+        Loss.SparseCategoricalCrossentropy,
+        setOf(
+            RandomStringUtils.randomAlphanumeric(10),
+            RandomStringUtils.randomAlphanumeric(10)
+        ),
+        nextInt(),
+        nextBoolean()
+    )
 }
