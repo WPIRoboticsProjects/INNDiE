@@ -13,6 +13,7 @@ plugins {
     id("org.jetbrains.dokka")
     id("com.adarshr.test-logger")
     id("info.solidsoft.pitest")
+    id("org.jetbrains.kotlin.plugin.serialization")
     `maven-publish`
     `java-library`
     jacoco
@@ -21,6 +22,8 @@ plugins {
 }
 
 val awsProject = project(":aws")
+val dbDataProject = project(":db-data")
+val dbDataTestUtilProject = project(":db-data-test-util")
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
@@ -38,6 +41,8 @@ val utilProject = project(":util")
 
 val kotlinProjects = setOf(
     awsProject,
+    dbDataProject,
+    dbDataTestUtilProject,
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
@@ -58,6 +63,7 @@ val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
     awsProject,
+    dbDataProject,
     dslProject,
     dslInterfaceProject,
     loggingProject,
@@ -97,7 +103,7 @@ buildscript {
 
     dependencies {
         // Gives us the KotlinJvmProjectExtension
-        classpath(kotlin("gradle-plugin", property("kotlin.version") as String))
+        classpath(kotlin("gradle-plugin", property("kotlinVersion") as String))
         "pitest"("org.pitest:pitest-junit5-plugin:0.9")
     }
 }
@@ -323,10 +329,11 @@ configure(javaProjects) {
 }
 
 configure(kotlinProjects) {
-    val kotlinVersion = property("kotlin.version") as String
+    val kotlinVersion = property("kotlinVersion") as String
 
     apply {
         plugin("kotlin")
+        plugin("kotlinx-serialization")
         plugin("org.jlleitschuh.gradle.ktlint")
         plugin("io.gitlab.arturbosch.detekt")
         plugin("org.jetbrains.dokka")
@@ -344,6 +351,11 @@ configure(kotlinProjects) {
             group = "org.jetbrains.kotlinx",
             name = "kotlinx-coroutines-core",
             version = property("kotlin-coroutines.version") as String
+        )
+        implementation(
+            group = "org.jetbrains.kotlinx",
+            name = "kotlinx-serialization-runtime",
+            version = property("kotlinx-serialization-runtime.version") as String
         )
     }
 

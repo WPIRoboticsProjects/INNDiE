@@ -8,8 +8,8 @@ import org.junit.jupiter.params.provider.MethodSource
 internal class DatasetTest {
 
     @ParameterizedTest
-    @MethodSource("datasetSource")
-    fun `test dataset names`(dataset: Dataset, expected: String) {
+    @MethodSource("exampleDatasetSource")
+    fun `test example dataset names`(dataset: Dataset.ExampleDataset, expected: String) {
         dataset.name shouldBe expected
     }
 
@@ -17,14 +17,14 @@ internal class DatasetTest {
 
         @JvmStatic
         @Suppress("unused")
-        fun datasetSource() = listOf(
-            Arguments.of(Dataset.BostonHousing, "boston_housing"),
-            Arguments.of(Dataset.Cifar10, "cifar10"),
-            Arguments.of(Dataset.Cifar100, "cifar100"),
-            Arguments.of(Dataset.FashionMnist, "fashion_mnist"),
-            Arguments.of(Dataset.IMDB, "imdb"),
-            Arguments.of(Dataset.Mnist, "mnist"),
-            Arguments.of(Dataset.Reuters, "reuters")
+        fun exampleDatasetSource() = listOf(
+            Arguments.of(Dataset.ExampleDataset.BostonHousing, "boston_housing"),
+            Arguments.of(Dataset.ExampleDataset.Cifar10, "cifar10"),
+            Arguments.of(Dataset.ExampleDataset.Cifar100, "cifar100"),
+            Arguments.of(Dataset.ExampleDataset.FashionMnist, "fashion_mnist"),
+            Arguments.of(Dataset.ExampleDataset.IMDB, "imdb"),
+            Arguments.of(Dataset.ExampleDataset.Mnist, "mnist"),
+            Arguments.of(Dataset.ExampleDataset.Reuters, "reuters")
         )
     }
 }

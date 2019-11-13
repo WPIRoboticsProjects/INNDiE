@@ -10,6 +10,7 @@ val pitestPluginVersion: String by settings
 val vaadinFlowPluginVersion: String by settings
 val grettyPluginVersion: String by settings
 val nodePluginVersion: String by settings
+val kotlinVersion: String by settings
 
 pluginManagement {
     plugins {
@@ -23,12 +24,15 @@ pluginManagement {
         id("com.devsoap.vaadin-flow") version vaadinFlowPluginVersion
         id("org.gretty") version grettyPluginVersion
         id("com.moowork.node") version nodePluginVersion
+        id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     }
 }
 
 rootProject.name = "axon"
 
 include(":aws")
+include(":db-data")
+include(":db-data-test-util")
 include(":dsl")
 include(":dsl-interface")
 include(":dsl-test-util")

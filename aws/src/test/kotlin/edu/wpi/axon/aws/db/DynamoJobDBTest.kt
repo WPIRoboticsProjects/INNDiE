@@ -1,7 +1,8 @@
 package edu.wpi.axon.aws.db
 
 import arrow.fx.IO
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.dbdata.nextDataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.assertions.arrow.either.shouldBeRight
@@ -28,7 +29,7 @@ internal class DynamoJobDBTest {
                     RandomStringUtils.randomAlphanumeric(10),
                     RandomStringUtils.randomAlphanumeric(10),
                     RandomStringUtils.randomAlphanumeric(10),
-                    Dataset.Cifar10,
+                    Random.nextDataset(),
                     Optimizer.Adam(
                         Random.nextDouble(),
                         Random.nextDouble(),

@@ -3,6 +3,7 @@ package edu.wpi.axon.aws.db
 import arrow.core.Left
 import arrow.core.Right
 import arrow.fx.IO
+import edu.wpi.axon.dbdata.Job
 import kotlinx.coroutines.delay
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
@@ -53,6 +54,11 @@ class DynamoJobDB(
         }
     }
 
+    /**
+     * Ensures the job table exists.
+     *
+     * @param client The client to use.
+     */
     private fun ensureJobTable(client: DynamoDbClient): IO<Unit> {
         return IO {
             if (!client.listTables().tableNames().contains(tableName)) {
@@ -91,13 +97,24 @@ class DynamoJobDB(
         }
     }
 
+    /**
+     * Waits (tail-recursively) for the [TableStatus] to equal a [desiredStatus].
+     *
+     * @param dbClient The client to use.
+     * @param desiredStatus The desired status.
+     * @return Waits for the [desiredStatus].
+     */
     private fun waitForTableStatus(
         dbClient: DynamoDbClient,
-        status: TableStatus
+        desiredStatus: TableStatus
     ): IO<DynamoDbClient> =
         IO.tailRecM(dbClient) { i ->
             IO {
-                if (i.describeTable { it.tableName(tableName) }.table().tableStatus() == status) {
+                val currentStatus = i.describeTable {
+                    it.tableName(tableName)
+                }.table().tableStatus()
+
+                if (currentStatus == desiredStatus) {
                     Right(i)
                 } else {
                     // Table is not at the status yet, so wait to check again

@@ -19,6 +19,9 @@ dependencies {
 
     api(koin("koin-core"))
 
+    api(project(":tf-data"))
+    api(project(":db-data"))
+
     // implementation(platform("software.amazon.awssdk:bom:2.9.9"))
     implementation(
         group = "software.amazon.awssdk",
@@ -28,7 +31,7 @@ dependencies {
 
     implementation(project(":logging"))
     implementation(project(":util"))
-    implementation(project(":tf-data"))
 
     testImplementation(project(":test-util"))
+    testImplementation(project(":db-data-test-util"))
 }
