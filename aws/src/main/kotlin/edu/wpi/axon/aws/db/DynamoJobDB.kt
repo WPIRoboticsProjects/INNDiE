@@ -32,8 +32,8 @@ class DynamoJobDB(
                         .item(
                             mapOf(
                                 KEY_JOB_NAME to AttributeValue.builder().s(job.name).build(),
-                                KEY_DATASET to AttributeValue.builder().s(job.dataset).build(),
-                                KEY_DATA to AttributeValue.builder().n(job.data.toString()).build()
+                                KEY_NEW_MODEL_NAME to AttributeValue.builder().s(job.userNewModelName).build(),
+                                KEY_DATA to AttributeValue.builder().s(job.serialize()).build()
                             )
                         )
                 }
@@ -66,7 +66,7 @@ class DynamoJobDB(
                                 .build(),
                             KeySchemaElement.builder()
                                 .keyType(KeyType.RANGE)
-                                .attributeName(KEY_DATASET)
+                                .attributeName(KEY_NEW_MODEL_NAME)
                                 .build()
                         )
                         .attributeDefinitions(
@@ -75,7 +75,7 @@ class DynamoJobDB(
                                 .attributeType(ScalarAttributeType.S)
                                 .build(),
                             AttributeDefinition.builder()
-                                .attributeName(KEY_DATASET)
+                                .attributeName(KEY_NEW_MODEL_NAME)
                                 .attributeType(ScalarAttributeType.S)
                                 .build()
                         )
@@ -110,7 +110,7 @@ class DynamoJobDB(
     companion object {
 
         const val KEY_JOB_NAME = "job-name"
-        const val KEY_DATASET = "dataset"
+        const val KEY_NEW_MODEL_NAME = "new-model-name"
         const val KEY_DATA = "data"
     }
 }

@@ -1,6 +1,9 @@
 package edu.wpi.axon.aws.db
 
 import arrow.fx.IO
+import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.loss.Loss
+import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.collections.shouldContain
 import io.kotlintest.shouldBe
@@ -10,6 +13,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import kotlin.random.Random
 
 internal class DynamoJobDBTest {
 
@@ -23,7 +27,22 @@ internal class DynamoJobDBTest {
                 val job = Job(
                     RandomStringUtils.randomAlphanumeric(10),
                     RandomStringUtils.randomAlphanumeric(10),
-                    42
+                    RandomStringUtils.randomAlphanumeric(10),
+                    Dataset.Cifar10,
+                    Optimizer.Adam(
+                        Random.nextDouble(),
+                        Random.nextDouble(),
+                        Random.nextDouble(),
+                        Random.nextDouble(),
+                        Random.nextBoolean()
+                    ),
+                    Loss.SparseCategoricalCrossentropy,
+                    setOf(
+                        RandomStringUtils.randomAlphanumeric(10),
+                        RandomStringUtils.randomAlphanumeric(10)
+                    ),
+                    Random.nextInt(),
+                    Random.nextBoolean()
                 )
 
                 val result = db.createNewJob(job).attempt().unsafeRunSync()
@@ -38,15 +57,18 @@ internal class DynamoJobDBTest {
                                     DynamoJobDB.KEY_JOB_NAME to AttributeValue.builder()
                                         .s(job.name)
                                         .build(),
-                                    DynamoJobDB.KEY_DATASET to AttributeValue.builder()
-                                        .s(job.dataset)
+                                    DynamoJobDB.KEY_NEW_MODEL_NAME to AttributeValue.builder()
+                                        .s(job.userNewModelName)
                                         .build()
                                 )
                             )
                     }.item().let { jobFromDB ->
                         jobFromDB[DynamoJobDB.KEY_JOB_NAME]!!.s().shouldBe(job.name)
-                        jobFromDB[DynamoJobDB.KEY_DATASET]!!.s().shouldBe(job.dataset)
-                        jobFromDB[DynamoJobDB.KEY_DATA]!!.n().toInt().shouldBe(job.data)
+                        jobFromDB[DynamoJobDB.KEY_NEW_MODEL_NAME]!!.s().shouldBe(job.userNewModelName)
+                        jobFromDB[DynamoJobDB.KEY_DATA]!!.s().let { jobData ->
+                            jobData.shouldBe(job.serialize())
+                            Job.deserialize(jobData).shouldBe(job)
+                        }
                     }
                 }
             }
@@ -54,7 +76,7 @@ internal class DynamoJobDBTest {
     }
 
     /**
-     * Runs the [testBody] with a [DynamoJobDB] and a random, newly created table. Deleted the table
+     * Runs the [testBody] with a [DynamoJobDB] and a random, newly created table. Deletes the table
      * when finished.
      *
      * @param testBody The body of the test method. Given a new [DynamoJobDB] and a table name.

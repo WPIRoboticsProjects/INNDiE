@@ -28,6 +28,7 @@ dependencies {
 
     implementation(project(":logging"))
     implementation(project(":util"))
+    implementation(project(":tf-data"))
 
     testImplementation(project(":test-util"))
 }
