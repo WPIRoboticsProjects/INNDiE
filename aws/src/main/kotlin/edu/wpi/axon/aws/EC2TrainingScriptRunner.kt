@@ -18,6 +18,12 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
 
+/**
+ * A [TrainingScriptRunner] that runs the training script on EC2 and hosts datasets and models on
+ * S3. This implementation requires that the script does not try to manage models with S3 itself:
+ * this class will handle all of that. The script should just load and save the model from/to its
+ * current directory.
+ */
 class EC2TrainingScriptRunner : TrainingScriptRunner, KoinComponent {
 
     private val region: Region by inject()
@@ -34,6 +40,22 @@ class EC2TrainingScriptRunner : TrainingScriptRunner, KoinComponent {
         newModelName: String,
         scriptContents: String
     ): IO<Long> {
+        // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
+        // own working with S3.
+        if (scriptContents.contains("download_model_file") ||
+            scriptContents.contains("upload_model_file")
+        ) {
+            return IO.raiseError(
+                IllegalArgumentException(
+                    """
+                    |Cannot start the script because it interfaces with AWS:
+                    |$scriptContents
+                    |
+                    """.trimMargin()
+                )
+            )
+        }
+
         // The file name for the generated script
         val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
