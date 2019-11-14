@@ -1,6 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-
 pluginManagement {
     val spotlessPluginVersion: String by settings
     val ktlintPluginVersion: String by settings
