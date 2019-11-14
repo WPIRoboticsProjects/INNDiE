@@ -27,7 +27,7 @@ class DynamoJobDB(
         DynamoDbClient.builder().region(region).build()
     }
 
-    override fun createNewJob(job: Job): IO<Unit> = dbClient.flatMap { dbClient ->
+    override fun putJob(job: Job): IO<Unit> = dbClient.flatMap { dbClient ->
         ensureJobTable(dbClient).flatMap {
             waitForTableStatus(dbClient, TableStatus.ACTIVE)
         }.flatMap {
