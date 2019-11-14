@@ -36,7 +36,7 @@ internal class DynamoJobDBTest : KoinTestFixture() {
             IO {
                 val job = Random.nextJob()
 
-                val result = db.createNewJob(job).attempt().unsafeRunSync()
+                val result = db.putJob(job).attempt().unsafeRunSync()
 
                 result.shouldBeRight {
                     val dbClient = DynamoDbClient.builder().region(get()).build()
@@ -75,7 +75,7 @@ internal class DynamoJobDBTest : KoinTestFixture() {
             IO {
                 val job = Random.nextJob()
 
-                val result = db.createNewJob(job).attempt().unsafeRunSync()
+                val result = db.putJob(job).attempt().unsafeRunSync()
 
                 result.shouldBeRight {
                     db.getJobWithName(job.name).map {

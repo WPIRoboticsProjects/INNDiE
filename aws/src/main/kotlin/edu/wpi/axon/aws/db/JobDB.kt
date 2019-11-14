@@ -7,12 +7,12 @@ import edu.wpi.axon.dbdata.TrainingScriptProgress
 interface JobDB {
 
     /**
-     * Puts the [job] in the DB.
+     * Puts (create or replace) the [job] in the DB.
      *
      * @param job The new [Job].
      * @return An effect for continuation.
      */
-    fun createNewJob(job: Job): IO<Unit>
+    fun putJob(job: Job): IO<Unit>
 
     /**
      * Updates the status of a job in the DB.
