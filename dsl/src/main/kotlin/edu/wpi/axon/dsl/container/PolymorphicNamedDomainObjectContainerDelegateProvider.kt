@@ -1,10 +1,10 @@
 package edu.wpi.axon.dsl.container
 
 import edu.wpi.axon.dsl.UniqueVariableNameGenerator
-import org.koin.core.KoinComponent
-import org.koin.core.inject
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 
 /**
  * Provides a delegate when adding a new named domain object. The name of the new object is derived

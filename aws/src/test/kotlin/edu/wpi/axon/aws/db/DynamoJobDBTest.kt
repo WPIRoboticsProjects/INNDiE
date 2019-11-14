@@ -10,6 +10,7 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.collections.shouldContain
 import io.kotlintest.shouldBe
+import kotlin.random.Random
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -19,7 +20,6 @@ import org.koin.dsl.module
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
-import kotlin.random.Random
 
 internal class DynamoJobDBTest : KoinTestFixture() {
 

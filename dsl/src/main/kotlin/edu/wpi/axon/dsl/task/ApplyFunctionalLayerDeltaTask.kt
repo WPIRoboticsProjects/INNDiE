@@ -122,7 +122,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         }
 
         val modelOutputCode = newModel.output.joinToString(prefix = "[", postfix = "]") { output ->
-            layerVariableNames[newModel.layers.nodes().first { it.name == output.id } ]!!
+            layerVariableNames[newModel.layers.nodes().first { it.name == output.id }]!!
         }
 
         val modelCode =

@@ -10,8 +10,8 @@ import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.DataFormat
-import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.axon.tfdata.layer.PoolingPadding
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder

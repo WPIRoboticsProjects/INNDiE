@@ -3,6 +3,8 @@ package edu.wpi.axon.aws
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.dbdata.TrainingScriptProgress
+import java.util.Base64
+import java.util.concurrent.atomic.AtomicLong
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
@@ -16,8 +18,6 @@ import software.amazon.awssdk.services.ec2.model.InstanceType
 import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import java.util.Base64
-import java.util.concurrent.atomic.AtomicLong
 
 /**
  * A [TrainingScriptRunner] that runs the training script on EC2 and hosts datasets and models on

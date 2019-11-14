@@ -10,9 +10,9 @@ import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.mockk.mockk
+import java.nio.file.Paths
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
-import java.nio.file.Paths
 
 internal class TrainIntegrationTest : KoinTestFixture() {
 

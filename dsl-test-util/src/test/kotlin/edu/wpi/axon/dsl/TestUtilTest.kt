@@ -1,9 +1,9 @@
 package edu.wpi.axon.dsl
 
 import io.kotlintest.shouldBe
-import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
+import org.junit.jupiter.api.Test
 
 internal class TestUtilTest {
 

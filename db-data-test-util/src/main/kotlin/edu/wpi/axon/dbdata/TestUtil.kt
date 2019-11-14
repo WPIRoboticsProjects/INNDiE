@@ -1,8 +1,8 @@
 package edu.wpi.axon.dbdata
 
 import edu.wpi.axon.tfdata.Dataset
-import org.apache.commons.lang3.RandomStringUtils
 import kotlin.random.Random
+import org.apache.commons.lang3.RandomStringUtils
 
 fun Random.nextDataset(): Dataset {
     return if (nextBoolean()) {
