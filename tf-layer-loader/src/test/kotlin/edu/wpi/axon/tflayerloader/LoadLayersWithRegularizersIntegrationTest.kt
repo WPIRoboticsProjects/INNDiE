@@ -3,8 +3,8 @@ package edu.wpi.axon.tflayerloader
 import arrow.core.None
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Regularizer
 import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.axon.tfdata.layer.Regularizer
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test

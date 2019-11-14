@@ -1,8 +1,8 @@
 package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
-import org.junit.jupiter.api.fail
 import kotlin.reflect.KClass
+import org.junit.jupiter.api.fail
 
 class MockContainer<T : Any>(
     private val backingMap: MutableMap<String, T>

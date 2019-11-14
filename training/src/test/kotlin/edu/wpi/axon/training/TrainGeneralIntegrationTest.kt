@@ -10,10 +10,10 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
+import java.io.File
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
-import java.io.File
 
 internal class TrainGeneralIntegrationTest : KoinTestFixture() {
 

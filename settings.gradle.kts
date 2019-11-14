@@ -1,18 +1,18 @@
 @file:Suppress("UnstableApiUsage")
 
-val spotlessPluginVersion: String by settings
-val ktlintPluginVersion: String by settings
-val spotbugsPluginVersion: String by settings
-val detektPluginVersion: String by settings
-val dokkaPluginVersion: String by settings
-val testloggerPluginVersion: String by settings
-val pitestPluginVersion: String by settings
-val vaadinFlowPluginVersion: String by settings
-val grettyPluginVersion: String by settings
-val nodePluginVersion: String by settings
-val kotlinVersion: String by settings
-
 pluginManagement {
+    val spotlessPluginVersion: String by settings
+    val ktlintPluginVersion: String by settings
+    val spotbugsPluginVersion: String by settings
+    val detektPluginVersion: String by settings
+    val dokkaPluginVersion: String by settings
+    val testloggerPluginVersion: String by settings
+    val pitestPluginVersion: String by settings
+    val vaadinFlowPluginVersion: String by settings
+    val grettyPluginVersion: String by settings
+    val nodePluginVersion: String by settings
+    val kotlinVersion: String by settings
+
     plugins {
         id("com.diffplug.gradle.spotless") version spotlessPluginVersion
         id("org.jlleitschuh.gradle.ktlint") version ktlintPluginVersion
