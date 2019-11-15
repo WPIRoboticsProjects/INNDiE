@@ -6,6 +6,10 @@ fun DependencyHandler.arrow(name: String) =
 fun DependencyHandler.koin(name: String) =
     create(group = "org.koin", name = name, version = property("koin.version") as String)
 
+repositories {
+    maven("https://dl.bintray.com/kotlin/exposed")
+}
+
 dependencies {
     api(arrow("arrow-core"))
     api(arrow("arrow-core-data"))
@@ -32,6 +36,9 @@ dependencies {
         name = "aws-java-sdk",
         version = "1.11.674"
     )
+
+    implementation("org.jetbrains.exposed:exposed:0.17.7")
+    implementation("mysql:mysql-connector-java:5.1.46")
 
     implementation(project(":logging"))
     implementation(project(":util"))
