@@ -47,20 +47,18 @@ class JobEntity(id: EntityID<Int>) : IntEntity(id) {
     var userEpochs by Jobs.userEpochs
     var generateDebugComments by Jobs.generateDebugComments
 
-    fun toJob(): Job {
-        return Job(
-            name = name,
-            status = TrainingScriptProgress.deserialize(status),
-            userOldModelPath = userOldModelPath,
-            userNewModelName = userNewModelName,
-            userDataset = Dataset.deserialize(userDataset),
-            userOptimizer = Optimizer.deserialize(userOptimizer),
-            userLoss = Loss.deserialize(userLoss),
-            userMetrics = klaxon.parseArray<String>(userMetrics)!!.toSet(),
-            userEpochs = userEpochs,
-            generateDebugComments = generateDebugComments
-        )
-    }
+    fun toJob() = Job(
+        name = name,
+        status = TrainingScriptProgress.deserialize(status),
+        userOldModelPath = userOldModelPath,
+        userNewModelName = userNewModelName,
+        userDataset = Dataset.deserialize(userDataset),
+        userOptimizer = Optimizer.deserialize(userOptimizer),
+        userLoss = Loss.deserialize(userLoss),
+        userMetrics = klaxon.parseArray<String>(userMetrics)!!.toSet(),
+        userEpochs = userEpochs,
+        generateDebugComments = generateDebugComments
+    )
 }
 
 class DefaultJobDB(private val database: Database) : JobDB {
@@ -70,7 +68,6 @@ class DefaultJobDB(private val database: Database) : JobDB {
     init {
         transaction(database) {
             addLogger(StdOutSqlLogger)
-
             SchemaUtils.create(Jobs)
         }
     }
