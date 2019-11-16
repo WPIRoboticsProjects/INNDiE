@@ -37,6 +37,12 @@ dependencies {
         version = "1.11.674"
     )
 
+    implementation(
+        group = "com.beust",
+        name = "klaxon",
+        version = property("klaxon.version") as String
+    )
+
     implementation("org.jetbrains.exposed:exposed:0.17.7")
     implementation("mysql:mysql-connector-java:5.1.46")
 

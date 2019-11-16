@@ -1,7 +1,10 @@
 package edu.wpi.axon.dbdata
 
 import edu.wpi.axon.util.ObjectSerializer
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.modules.SerializersModule
 
 /**
@@ -26,6 +29,21 @@ sealed class TrainingScriptProgress {
      * The training is finished.
      */
     object Completed : TrainingScriptProgress()
+
+    fun serialize(): String = Json(
+        JsonConfiguration.Stable,
+        context = trainingScriptProgressModule
+    ).stringify(PolymorphicWrapper.serializer(), PolymorphicWrapper(this))
+
+    companion object {
+        fun deserialize(data: String): TrainingScriptProgress = Json(
+            JsonConfiguration.Stable,
+            context = trainingScriptProgressModule
+        ).parse(PolymorphicWrapper.serializer(), data).wrapped
+    }
+
+    @Serializable
+    private data class PolymorphicWrapper(@Polymorphic val wrapped: TrainingScriptProgress)
 }
 
 val trainingScriptProgressModule = SerializersModule {
