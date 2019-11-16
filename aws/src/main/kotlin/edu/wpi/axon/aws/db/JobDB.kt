@@ -38,11 +38,4 @@ interface JobDB {
      * @return The matching [Job]s.
      */
     fun getJobsWithStatus(status: TrainingScriptProgress): IO<List<Job>>
-
-    /**
-     * Deletes the table containing the jobs.
-     *
-     * @return An effect for continuation.
-     */
-    fun deleteTable(): IO<Unit>
 }

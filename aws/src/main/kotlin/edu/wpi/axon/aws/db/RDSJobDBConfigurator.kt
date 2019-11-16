@@ -9,8 +9,6 @@ import com.amazonaws.services.rds.model.DBCluster
 import com.amazonaws.services.rds.model.DescribeDBClustersRequest
 import com.amazonaws.services.rds.model.ScalingConfiguration
 import com.amazonaws.services.rds.model.VpcSecurityGroupMembership
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -20,34 +18,17 @@ import software.amazon.awssdk.services.ec2.model.IpPermission
 import software.amazon.awssdk.services.ec2.model.IpRange
 import software.amazon.awssdk.services.ec2.model.Ipv6Range
 
-class RDSJobDB : JobDB, KoinComponent {
+/**
+ * Configures a Job DB in RDS.
+ */
+class RDSJobDBConfigurator : JobDBConfigurator, KoinComponent {
 
     private val regions: Regions by inject()
     private val region: Region by inject()
     private val ec2Client by lazy { Ec2Client.builder().region(region).build() }
     private val rdsClient by lazy { AmazonRDSClient.builder().withRegion(regions).build() }
 
-    override fun putJob(job: Job): IO<Unit> {
-        TODO("not implemented")
-    }
-
-    override fun updateJobStatus(job: Job, newStatus: TrainingScriptProgress): IO<Job> {
-        TODO("not implemented")
-    }
-
-    override fun getJobWithName(name: String): IO<Job> {
-        TODO("not implemented")
-    }
-
-    override fun getJobsWithStatus(status: TrainingScriptProgress): IO<List<Job>> {
-        TODO("not implemented")
-    }
-
-    override fun deleteTable(): IO<Unit> {
-        TODO("not implemented")
-    }
-
-    internal fun ensureConfiguration(): IO<Unit> =
+    override fun ensureConfiguration(): IO<Unit> =
         ensureDBCluster().flatMap { ensureDBClusterHasCorrectSG(it) }
 
     private fun ensureDBCluster(): IO<DBCluster> = IO {
