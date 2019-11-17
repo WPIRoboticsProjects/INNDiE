@@ -9,7 +9,9 @@ import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.CloneCommand
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.internal.storage.file.WindowCache
 import org.eclipse.jgit.lib.RepositoryBuilder
+import org.eclipse.jgit.storage.file.WindowCacheConfig
 
 /**
  * An [ExampleModelManager] that pulls models from a Git repository.
@@ -69,6 +71,9 @@ class GitExampleModelManager : ExampleModelManager {
             } else {
                 // The repo is not on disk, clone to get it
                 LOGGER.debug { "Repo dir $exampleModelRepoDir does not exist. Cloning." }
+                WindowCacheConfig().apply {
+                    isPackedGitMMAP = true
+                }.install()
                 CloneCommand().setURI(exampleModelRepo)
                     .setDirectory(exampleModelRepoDir)
                     .call()
