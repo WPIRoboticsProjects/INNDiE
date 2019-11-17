@@ -6,7 +6,6 @@ import java.net.URL
 import java.nio.file.Paths
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
-import org.eclipse.jgit.api.CloneCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.RepositoryBuilder
 
@@ -74,10 +73,18 @@ class GitExampleModelManager : ExampleModelManager {
             } else {
                 // The repo is not on disk, clone to get it
                 LOGGER.debug { "Repo dir $exampleModelRepoDir does not exist. Cloning." }
-                CloneCommand().setURI(exampleModelRepo)
+                Git.cloneRepository()
+                    .setURI(exampleModelRepo)
                     .setDirectory(exampleModelRepoDir)
                     .call()
-                    .use { it.repository.close() }
+                    .use {
+                        Git.wrap(it.repository).use {
+                            it.submoduleInit().call()
+                            it.submoduleUpdate().call()
+                        }
+                    }
+
+                Unit
             }
         }
     }
