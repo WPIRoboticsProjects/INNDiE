@@ -4,11 +4,9 @@ import io.kotlintest.assertions.arrow.either.shouldBeLeft
 import io.kotlintest.matchers.collections.shouldContain
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.file.shouldExist
-import io.kotlintest.matchers.longs.shouldBeLessThan
 import io.kotlintest.shouldBe
 import java.io.File
 import java.nio.file.Paths
-import kotlin.system.measureTimeMillis
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -28,17 +26,11 @@ internal class GitExampleModelManagerTest {
     fun `update cache twice`(@TempDir tempDir: File) {
         val manager = getGitExampleModelManagerForTesting(tempDir)
 
-        val timeForFirstUpdate = measureTimeMillis {
-            manager.updateCache().unsafeRunSync()
-        }
+        manager.updateCache().unsafeRunSync()
         manager.exampleModelRepoDir.shouldExist()
 
-        val timeForSecondUpdate = measureTimeMillis {
-            manager.updateCache().unsafeRunSync()
-        }
+        manager.updateCache().unsafeRunSync()
         manager.exampleModelRepoDir.shouldExist()
-
-        timeForSecondUpdate.shouldBeLessThan(timeForFirstUpdate)
     }
 
     @Test
