@@ -2,7 +2,6 @@ package edu.wpi.axon.ui.view
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.addColumnFor
-import com.github.mvysny.karibudsl.v10.flexGrow
 import com.github.mvysny.karibudsl.v10.grid
 import com.github.mvysny.karibudsl.v10.gridContextMenu
 import com.github.mvysny.karibudsl.v10.item

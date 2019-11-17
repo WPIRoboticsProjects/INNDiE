@@ -13,7 +13,7 @@ class DatasetSelector : JobComposite() {
         verticalLayout {
             formLayout {
                 formItem {
-                     comboBox<Dataset>("Dataset") {
+                    comboBox<Dataset>("Dataset") {
                         setItems(Dataset::class.sealedSubclasses.mapNotNull { it.objectInstance })
                         setItemLabelGenerator { it.name }
                         bind(binder).bind(Job::dataset)

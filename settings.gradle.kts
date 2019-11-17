@@ -47,6 +47,7 @@ include(":tf-layer-loader")
 include(":ui-electron")
 include(":ui-vaadin")
 include(":training")
+include(":training-test-util")
 include(":util")
 
 /**

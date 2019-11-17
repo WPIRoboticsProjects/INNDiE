@@ -41,5 +41,5 @@ dependencies {
         name = "karibu-testing-v10",
         version = property("karibu-testing-v10.version") as String
     )
-    testImplementation(project(":test-util"))
+    testImplementation(project(":training-test-util"))
 }

@@ -38,6 +38,7 @@ val tfLayerLoaderProject = project(":tf-layer-loader")
 val uiElectronProject = project(":ui-electron")
 val uiVaadinProject = project(":ui-vaadin")
 val trainingProject = project(":training")
+val trainingTestUtilProject = project(":training-test-util")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
@@ -58,6 +59,7 @@ val kotlinProjects = setOf(
     uiElectronProject,
     uiVaadinProject,
     trainingProject,
+    trainingTestUtilProject,
     utilProject
 )
 

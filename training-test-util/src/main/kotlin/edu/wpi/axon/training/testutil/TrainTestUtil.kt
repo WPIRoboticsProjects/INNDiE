@@ -1,4 +1,4 @@
-package edu.wpi.axon.training
+package edu.wpi.axon.training.testutil
 
 import arrow.core.Tuple3
 import arrow.fx.IO
@@ -22,7 +22,7 @@ private val LOGGER = KotlinLogging.logger("training-test-util")
  * @param stub Used to get the calling class. Do not use this parameter.
  * @return The model and its path.
  */
-internal fun loadModel(modelName: String, stub: () -> Unit = {}): Pair<Model, String> {
+fun loadModel(modelName: String, stub: () -> Unit = {}): Pair<Model, String> {
     val localModelPath = Paths.get(stub::class.java.getResource(modelName).toURI()).toString()
     val layers = LoadLayersFromHDF5(DefaultLayersToGraph())
         .load(File(localModelPath))
@@ -41,7 +41,7 @@ internal fun loadModel(modelName: String, stub: () -> Unit = {}): Pair<Model, St
  * @param script The content of the script to run.
  * @param dir The working directory.
  */
-internal fun testTrainingScript(
+fun testTrainingScript(
     oldModelPath: String,
     oldModelName: String,
     newModelName: String,
@@ -91,7 +91,7 @@ internal fun testTrainingScript(
  * @return The exit code, std out, and std err.
  */
 @Suppress("BlockingMethodInNonBlockingContext")
-internal fun runCommand(
+fun runCommand(
     command: List<String>,
     env: Map<String, String>,
     dir: File

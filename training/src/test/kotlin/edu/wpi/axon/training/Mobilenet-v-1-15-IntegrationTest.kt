@@ -9,6 +9,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.axon.training.testutil.loadModel
 import io.kotlintest.matchers.collections.shouldHaveSize
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.kotlintest.shouldBe
