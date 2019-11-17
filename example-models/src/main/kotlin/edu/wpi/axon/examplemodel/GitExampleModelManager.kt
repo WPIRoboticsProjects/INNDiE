@@ -1,15 +1,15 @@
 package edu.wpi.axon.examplemodel
 
 import arrow.fx.IO
+import java.io.File
+import java.net.URL
+import java.nio.file.Path
+import java.nio.file.Paths
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.CloneCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.RepositoryBuilder
-import java.io.File
-import java.net.URL
-import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * An [ExampleModelManager] that pulls models from a Git repository.

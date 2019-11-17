@@ -6,11 +6,11 @@ import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.matchers.longs.shouldBeLessThan
 import io.kotlintest.shouldBe
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Paths
 import kotlin.system.measureTimeMillis
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 internal class GitExampleModelManagerTest {
 
