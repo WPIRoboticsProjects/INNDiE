@@ -77,12 +77,7 @@ class GitExampleModelManager : ExampleModelManager {
                     .setURI(exampleModelRepo)
                     .setDirectory(exampleModelRepoDir)
                     .call()
-                    .use {
-                        Git.wrap(it.repository).use {
-                            it.submoduleInit().call()
-                            it.submoduleUpdate().call()
-                        }
-                    }
+                    .use { }
 
                 Unit
             }

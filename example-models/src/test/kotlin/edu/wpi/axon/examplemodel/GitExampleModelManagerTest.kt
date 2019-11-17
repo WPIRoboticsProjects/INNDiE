@@ -6,6 +6,7 @@ import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.shouldBe
 import java.io.File
+import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -19,6 +20,7 @@ internal class GitExampleModelManagerTest {
         val manager = getGitExampleModelManagerForTesting(tempDir)
         manager.updateCache().unsafeRunSync()
         manager.exampleModelRepoDir.shouldExist()
+        FileUtils.deleteDirectory(tempDir)
     }
 
     @Test
@@ -30,12 +32,14 @@ internal class GitExampleModelManagerTest {
 
         manager.updateCache().unsafeRunSync()
         manager.exampleModelRepoDir.shouldExist()
+        FileUtils.deleteDirectory(tempDir)
     }
 
     @Test
     fun `get example models without updating cache first`(@TempDir tempDir: File) {
         val manager = getGitExampleModelManagerForTesting(tempDir)
         manager.getAllExampleModels().attempt().unsafeRunSync().shouldBeLeft()
+        FileUtils.deleteDirectory(tempDir)
     }
 
     @Test
@@ -61,6 +65,7 @@ internal class GitExampleModelManagerTest {
                 listOf(1 to 30)
             )
         )
+        FileUtils.deleteDirectory(tempDir)
     }
 
     @Test
@@ -77,6 +82,7 @@ internal class GitExampleModelManagerTest {
                 it.readText().replace(Regex("\\s"), "").shouldBe(model.fileName)
             }
         }
+        FileUtils.deleteDirectory(tempDir)
     }
 
     @Test
@@ -109,6 +115,7 @@ internal class GitExampleModelManagerTest {
                 )
             )
         }
+        FileUtils.deleteDirectory(tempDir)
     }
 
     private fun getGitExampleModelManagerForTesting(tempDir: File) =
