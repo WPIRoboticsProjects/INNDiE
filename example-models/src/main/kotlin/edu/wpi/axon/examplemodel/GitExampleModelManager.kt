@@ -10,7 +10,6 @@ import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.CloneCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.RepositoryBuilder
-import org.eclipse.jgit.storage.file.WindowCacheConfig
 
 /**
  * An [ExampleModelManager] that pulls models from a Git repository.
