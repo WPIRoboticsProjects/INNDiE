@@ -2,7 +2,6 @@ package edu.wpi.axon.examplemodel
 
 import arrow.fx.IO
 import java.io.File
-import java.nio.file.Path
 
 /**
  * Manages downloading, caching, and reading the example models.
@@ -33,8 +32,7 @@ interface ExampleModelManager {
      * Downloads the [ExampleModel].
      *
      * @param exampleModel The model to download.
-     * @param path The [Path] to create a file at.
      * @return The [File] the model was downloaded to.
      */
-    fun download(exampleModel: ExampleModel, path: Path): IO<File>
+    fun download(exampleModel: ExampleModel): IO<File>
 }

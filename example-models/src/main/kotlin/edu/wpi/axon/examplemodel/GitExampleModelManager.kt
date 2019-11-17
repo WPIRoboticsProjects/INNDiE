@@ -3,7 +3,6 @@ package edu.wpi.axon.examplemodel
 import arrow.fx.IO
 import java.io.File
 import java.net.URL
-import java.nio.file.Path
 import java.nio.file.Paths
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
@@ -29,6 +28,12 @@ class GitExampleModelManager : ExampleModelManager {
      */
     val exampleModelRepoDir: File
         get() = Paths.get(cacheDir.absolutePath, "axon-example-models").toFile()
+
+    /**
+     * The directory models are stored in, inside [cacheDir].
+     */
+    val modelsDir: File
+        get() = Paths.get(cacheDir.absolutePath, "models").toFile()
 
     /**
      * The remote that the example models are pulled from.
@@ -72,14 +77,19 @@ class GitExampleModelManager : ExampleModelManager {
                 CloneCommand().setURI(exampleModelRepo)
                     .setDirectory(exampleModelRepoDir)
                     .call()
-                    .use { it.repository.close() }
+                    .use { }
             }
         }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override fun download(exampleModel: ExampleModel, path: Path): IO<File> = IO {
-        val file = path.toFile()
+    override fun download(exampleModel: ExampleModel): IO<File> = IO {
+        // The models dir either has to already exist or be created
+        check(modelsDir.exists() || modelsDir.mkdirs()) {
+            "Failed to make necessary models directories in path: $modelsDir"
+        }
+
+        val file = Paths.get(modelsDir.absolutePath, exampleModel.fileName).toFile()
         file.createNewFile()
         FileUtils.copyURLToFile(URL(exampleModel.url), file)
         file

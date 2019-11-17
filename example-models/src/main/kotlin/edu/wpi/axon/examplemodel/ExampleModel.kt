@@ -12,6 +12,10 @@ data class ExampleModel(
      */
     val name: String,
     /**
+     * The filename the model should be put in.
+     */
+    val fileName: String,
+    /**
      * The url to the model.
      */
     val url: String,
