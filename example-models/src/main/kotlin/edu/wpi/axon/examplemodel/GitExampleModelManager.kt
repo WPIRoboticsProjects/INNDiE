@@ -70,13 +70,10 @@ class GitExampleModelManager : ExampleModelManager {
             } else {
                 // The repo is not on disk, clone to get it
                 LOGGER.debug { "Repo dir $exampleModelRepoDir does not exist. Cloning." }
-                WindowCacheConfig().apply {
-                    isPackedGitMMAP = true
-                }.install()
                 CloneCommand().setURI(exampleModelRepo)
                     .setDirectory(exampleModelRepoDir)
                     .call()
-                    .close()
+                    .use { it.repository.close() }
             }
         }
     }
