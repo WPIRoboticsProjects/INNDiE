@@ -9,7 +9,6 @@ import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.CloneCommand
 import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.internal.storage.file.WindowCache
 import org.eclipse.jgit.lib.RepositoryBuilder
 import org.eclipse.jgit.storage.file.WindowCacheConfig
 
