@@ -4,10 +4,7 @@ import arrow.fx.IO
 import java.io.File
 import java.net.URL
 import java.nio.file.Paths
-import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.lib.RepositoryBuilder
 
 /**
  * An [ExampleModelManager] that pulls models from a Git repository.
@@ -23,33 +20,23 @@ class GitExampleModelManager : ExampleModelManager {
             .toFile()
 
     /**
-     * The example model repository directory, inside [cacheDir].
+     * The example models metadata file.
      */
-    val exampleModelRepoDir: File
-        get() = Paths.get(cacheDir.absolutePath, "axon-example-models").toFile()
+    val exampleModelMetadataFile: File
+        get() = Paths.get(cacheDir.absolutePath, "exampleModels.json").toFile()
 
     /**
-     * The directory models are stored in, inside [cacheDir].
+     * The URL to download the example models metadata from.
      */
-    val modelsDir: File
-        get() = Paths.get(cacheDir.absolutePath, "models").toFile()
-
-    /**
-     * The remote that the example models are pulled from.
-     */
-    var exampleModelRepo = "https://github.com/wpilibsuite/axon-example-models.git"
+    var exampleModelMetadataUrl = "https://raw.githubusercontent.com/wpilibsuite/axon-example-models/master/exampleModels.json"
 
     override fun getAllExampleModels(): IO<Set<ExampleModel>> = IO {
-        check(exampleModelRepoDir.exists()) {
-            "The example model cache (${exampleModelRepoDir.absolutePath}) is not on disk. " +
-                "Try updating the cache."
+        check(exampleModelMetadataFile.exists()) {
+            "The example model metadata file (${exampleModelMetadataFile.absolutePath}) is not on " +
+                    "disk. Try updating the cache."
         }
 
-        val files = exampleModelRepoDir.listFiles()!!
-
-        ExampleModelsMetadata.deserialize(
-            files.first { it.name == "exampleModels.json" }.readText()
-        ).exampleModels
+        ExampleModelsMetadata.deserialize(exampleModelMetadataFile.readText()).exampleModels
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -60,44 +47,20 @@ class GitExampleModelManager : ExampleModelManager {
         }
     }.flatMap {
         IO {
-            if (exampleModelRepoDir.exists()) {
-                // The repo is on disk, pull to update it
-                LOGGER.debug { "Repo dir $exampleModelRepoDir exists. Pulling." }
-                RepositoryBuilder().findGitDir(exampleModelRepoDir).build().use { repo ->
-                    Git(repo).use { git ->
-                        git.pull().call()
-                    }
-                }
-
-                Unit
-            } else {
-                // The repo is not on disk, clone to get it
-                LOGGER.debug { "Repo dir $exampleModelRepoDir does not exist. Cloning." }
-                Git.cloneRepository()
-                    .setURI(exampleModelRepo)
-                    .setDirectory(exampleModelRepoDir)
-                    .call()
-                    .use { }
-
-                Unit
-            }
+            FileUtils.copyURLToFile(URL(exampleModelMetadataUrl), exampleModelMetadataFile)
         }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     override fun download(exampleModel: ExampleModel): IO<File> = IO {
         // The models dir either has to already exist or be created
-        check(modelsDir.exists() || modelsDir.mkdirs()) {
-            "Failed to make necessary models directories in path: $modelsDir"
+        check(cacheDir.exists() || cacheDir.mkdirs()) {
+            "Failed to make necessary models directories in path: $cacheDir"
         }
 
-        val file = Paths.get(modelsDir.absolutePath, exampleModel.fileName).toFile()
+        val file = Paths.get(cacheDir.absolutePath, exampleModel.fileName).toFile()
         file.createNewFile()
         FileUtils.copyURLToFile(URL(exampleModel.url), file)
         file
-    }
-
-    companion object {
-        private val LOGGER = KotlinLogging.logger { }
     }
 }

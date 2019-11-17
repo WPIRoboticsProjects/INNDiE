@@ -12,14 +12,14 @@ import org.junit.jupiter.api.io.TempDir
 
 internal class GitExampleModelManagerTest {
 
-    private val testExampleModelRepo =
-        "https://github.com/wpilibsuite/axon-example-models-testing.git"
+    private val testExampleModelMetadataUrl =
+            "https://raw.githubusercontent.com/wpilibsuite/axon-example-models-testing/master/exampleModels.json"
 
     @Test
     fun `update cache once`(@TempDir tempDir: File) {
         val manager = getGitExampleModelManagerForTesting(tempDir)
         manager.updateCache().unsafeRunSync()
-        manager.exampleModelRepoDir.shouldExist()
+        manager.cacheDir.shouldExist()
         FileUtils.deleteDirectory(tempDir)
     }
 
@@ -28,10 +28,10 @@ internal class GitExampleModelManagerTest {
         val manager = getGitExampleModelManagerForTesting(tempDir)
 
         manager.updateCache().unsafeRunSync()
-        manager.exampleModelRepoDir.shouldExist()
+        manager.cacheDir.shouldExist()
 
         manager.updateCache().unsafeRunSync()
-        manager.exampleModelRepoDir.shouldExist()
+        manager.cacheDir.shouldExist()
         FileUtils.deleteDirectory(tempDir)
     }
 
@@ -47,7 +47,7 @@ internal class GitExampleModelManagerTest {
         val manager = getGitExampleModelManagerForTesting(tempDir)
 
         manager.updateCache().unsafeRunSync()
-        manager.exampleModelRepoDir.shouldExist()
+        manager.cacheDir.shouldExist()
 
         manager.getAllExampleModels().unsafeRunSync().shouldContainExactly(
             ExampleModel(
@@ -73,7 +73,7 @@ internal class GitExampleModelManagerTest {
         val manager = getGitExampleModelManagerForTesting(tempDir)
 
         manager.updateCache().unsafeRunSync()
-        manager.exampleModelRepoDir.shouldExist()
+        manager.cacheDir.shouldExist()
 
         manager.getAllExampleModels().unsafeRunSync().forEach { model ->
             manager.download(model).unsafeRunSync().let {
@@ -92,7 +92,7 @@ internal class GitExampleModelManagerTest {
         }
 
         manager.updateCache().unsafeRunSync()
-        manager.exampleModelRepoDir.shouldExist()
+        manager.cacheDir.shouldExist()
 
         manager.getAllExampleModels().unsafeRunSync().let {
             it.shouldContain(
@@ -121,6 +121,6 @@ internal class GitExampleModelManagerTest {
     private fun getGitExampleModelManagerForTesting(tempDir: File) =
         GitExampleModelManager().apply {
             cacheDir = tempDir
-            exampleModelRepo = testExampleModelRepo
+            exampleModelMetadataUrl = testExampleModelMetadataUrl
         }
 }

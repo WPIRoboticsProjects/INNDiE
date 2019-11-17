@@ -18,12 +18,6 @@ dependencies {
     implementation(project(":logging"))
 
     implementation(
-        group = "org.eclipse.jgit",
-        name = "org.eclipse.jgit",
-        version = "5.5.1.201910021850-r"
-    )
-
-    implementation(
         group = "org.apache.commons",
         name = "commons-io",
         version = property("commons-io.version") as String
