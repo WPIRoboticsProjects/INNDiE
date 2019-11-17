@@ -23,5 +23,11 @@ dependencies {
         version = "5.5.1.201910021850-r"
     )
 
+    implementation(
+        group = "org.apache.commons",
+        name = "commons-io",
+        version = property("commons-io.version") as String
+    )
+
     testImplementation(project(":test-util"))
 }
