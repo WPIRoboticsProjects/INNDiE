@@ -77,7 +77,7 @@ class GitExampleModelManager : ExampleModelManager {
                 CloneCommand().setURI(exampleModelRepo)
                     .setDirectory(exampleModelRepoDir)
                     .call()
-                    .use { }
+                    .use { it.repository.close() }
             }
         }
     }
