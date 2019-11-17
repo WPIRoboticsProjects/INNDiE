@@ -13,6 +13,7 @@ plugins {
     id("org.jetbrains.dokka")
     id("com.adarshr.test-logger")
     id("info.solidsoft.pitest")
+    id("org.jetbrains.kotlin.plugin.serialization")
     `maven-publish`
     `java-library`
     jacoco
@@ -20,9 +21,13 @@ plugins {
     checkstyle
 }
 
+val awsProject = project(":aws")
+val dbDataProject = project(":db-data")
+val dbDataTestUtilProject = project(":db-data-test-util")
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
+val exampleModelsProject = project(":example-models")
 val loggingProject = project(":logging")
 val patternMatchProject = project(":pattern-match")
 val tasksYolov3Project = project(":tasks-yolov3")
@@ -36,9 +41,13 @@ val trainingProject = project(":training")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
+    awsProject,
+    dbDataProject,
+    dbDataTestUtilProject,
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
+    exampleModelsProject,
     loggingProject,
     patternMatchProject,
     tasksYolov3Project,
@@ -55,8 +64,11 @@ val kotlinProjects = setOf(
 val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
+    awsProject,
+    dbDataProject,
     dslProject,
     dslInterfaceProject,
+    exampleModelsProject,
     loggingProject,
     patternMatchProject,
     tasksYolov3Project,
@@ -94,7 +106,7 @@ buildscript {
 
     dependencies {
         // Gives us the KotlinJvmProjectExtension
-        classpath(kotlin("gradle-plugin", property("kotlin.version") as String))
+        classpath(kotlin("gradle-plugin", property("kotlinVersion") as String))
         "pitest"("org.pitest:pitest-junit5-plugin:0.9")
     }
 }
@@ -134,6 +146,7 @@ allprojects {
 
     testlogger {
         theme = ThemeType.STANDARD_PARALLEL
+        showStandardStreams = true
     }
 
     spotless {
@@ -232,6 +245,10 @@ configure(javaProjects) {
             These tests need some sort of software that can't be reasonably installed on CI servers.
              */
             excludeTags("needsSpecialSoftware")
+
+            if (!project.hasProperty("hasDockerSupport")) {
+                excludeTags("needsDockerSupport")
+            }
         }
 
         jvmArgs = listOf("-Xss512m")
@@ -259,6 +276,7 @@ configure(javaProjects) {
             showCauses = true
             showStackTraces = true
             exceptionFormat = TestExceptionFormat.FULL
+            showStandardStreams = true
         }
 
         @Suppress("UnstableApiUsage")
@@ -314,10 +332,11 @@ configure(javaProjects) {
 }
 
 configure(kotlinProjects) {
-    val kotlinVersion = property("kotlin.version") as String
+    val kotlinVersion = property("kotlinVersion") as String
 
     apply {
         plugin("kotlin")
+        plugin("kotlinx-serialization")
         plugin("org.jlleitschuh.gradle.ktlint")
         plugin("io.gitlab.arturbosch.detekt")
         plugin("org.jetbrains.dokka")
@@ -335,6 +354,11 @@ configure(kotlinProjects) {
             group = "org.jetbrains.kotlinx",
             name = "kotlinx-coroutines-core",
             version = property("kotlin-coroutines.version") as String
+        )
+        implementation(
+            group = "org.jetbrains.kotlinx",
+            name = "kotlinx-serialization-runtime",
+            version = property("kotlinx-serialization-runtime.version") as String
         )
     }
 

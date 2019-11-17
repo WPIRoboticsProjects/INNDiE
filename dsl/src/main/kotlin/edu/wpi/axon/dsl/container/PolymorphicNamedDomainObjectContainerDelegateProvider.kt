@@ -1,11 +1,14 @@
 package edu.wpi.axon.dsl.container
 
+import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 
 /**
  * Provides a delegate when adding a new named domain object. The name of the new object is derived
- * from the property name during delegation.
+ * from the [UniqueVariableNameGenerator].
  *
  * @param T The type of the domain objects in the [container].
  * @param U The type of the object being created.
@@ -18,7 +21,10 @@ private constructor(
     private val container: PolymorphicNamedDomainObjectContainer<T>,
     private val type: KClass<U>,
     private val configuration: (U.() -> Unit)? = null
-) {
+) : KoinComponent {
+
+    private val uniqueVariableNameGenerator: UniqueVariableNameGenerator by inject()
+
     companion object {
         fun <T : Any, U : T> of(
             container: PolymorphicNamedDomainObjectContainer<T>,
@@ -28,5 +34,11 @@ private constructor(
     }
 
     operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): DslDelegate<U> =
-        DslDelegate.of(container.create(property.name, type, configuration))
+        DslDelegate.of(
+            container.create(
+                uniqueVariableNameGenerator.uniqueVariableName(),
+                type,
+                configuration
+            )
+        )
 }

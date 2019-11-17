@@ -11,10 +11,10 @@ import io.kotlintest.assertions.arrow.nel.shouldHaveSize
 import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.shouldBe
+import java.util.concurrent.CountDownLatch
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
-import java.util.concurrent.CountDownLatch
 
 @Suppress("UNUSED_VARIABLE")
 internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {

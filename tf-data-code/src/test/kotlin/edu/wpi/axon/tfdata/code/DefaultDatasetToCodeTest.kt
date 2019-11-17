@@ -12,7 +12,7 @@ internal class DefaultDatasetToCodeTest {
 
     @Test
     fun `test code gen`() {
-        val dataset = mockk<Dataset> { every { name } returns "dataset_name" }
+        val dataset = mockk<Dataset.ExampleDataset> { every { name } returns "dataset_name" }
         datasetToCode.datasetToCode(dataset) shouldBe "tf.keras.datasets.dataset_name"
     }
 }

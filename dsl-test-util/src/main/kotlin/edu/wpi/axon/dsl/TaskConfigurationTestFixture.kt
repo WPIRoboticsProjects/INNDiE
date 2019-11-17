@@ -5,14 +5,14 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.shouldThrow
+import kotlin.reflect.KClass
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.full.createType
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.full.createType
 
 /**
  * Tests various ways a task can be configured.

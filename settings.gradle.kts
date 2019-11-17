@@ -1,17 +1,18 @@
 @file:Suppress("UnstableApiUsage")
 
-val spotlessPluginVersion: String by settings
-val ktlintPluginVersion: String by settings
-val spotbugsPluginVersion: String by settings
-val detektPluginVersion: String by settings
-val dokkaPluginVersion: String by settings
-val testloggerPluginVersion: String by settings
-val pitestPluginVersion: String by settings
-val vaadinFlowPluginVersion: String by settings
-val grettyPluginVersion: String by settings
-val nodePluginVersion: String by settings
-
 pluginManagement {
+    val spotlessPluginVersion: String by settings
+    val ktlintPluginVersion: String by settings
+    val spotbugsPluginVersion: String by settings
+    val detektPluginVersion: String by settings
+    val dokkaPluginVersion: String by settings
+    val testloggerPluginVersion: String by settings
+    val pitestPluginVersion: String by settings
+    val vaadinFlowPluginVersion: String by settings
+    val grettyPluginVersion: String by settings
+    val nodePluginVersion: String by settings
+    val kotlinVersion: String by settings
+
     plugins {
         id("com.diffplug.gradle.spotless") version spotlessPluginVersion
         id("org.jlleitschuh.gradle.ktlint") version ktlintPluginVersion
@@ -23,14 +24,19 @@ pluginManagement {
         id("com.devsoap.vaadin-flow") version vaadinFlowPluginVersion
         id("org.gretty") version grettyPluginVersion
         id("com.moowork.node") version nodePluginVersion
+        id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     }
 }
 
 rootProject.name = "axon"
 
+include(":aws")
+include(":db-data")
+include(":db-data-test-util")
 include(":dsl")
 include(":dsl-interface")
 include(":dsl-test-util")
+include(":example-models")
 include(":logging")
 include(":pattern-match")
 include(":tasks-yolov3")

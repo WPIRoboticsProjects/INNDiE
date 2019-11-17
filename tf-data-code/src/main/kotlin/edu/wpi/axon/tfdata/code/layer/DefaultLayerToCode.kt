@@ -77,6 +77,18 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         }
 
+        is Layer.AveragePooling2D -> makeLayerCode(
+            "tf.keras.layers.AvgPool2D",
+            listOf(),
+            listOf(
+                "pool_size" to layer.poolSize,
+                "strides" to layer.strides,
+                "padding" to layer.padding.value,
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
+
         is Layer.Dense -> makeLayerCode(
             "tf.keras.layers.Dense",
             listOf(),
@@ -106,6 +118,24 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
+        is Layer.GlobalAveragePooling2D -> makeLayerCode(
+            "tf.keras.layers.GlobalAveragePooling2D",
+            listOf(),
+            listOf(
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
+
+        is Layer.GlobalMaxPooling2D -> makeLayerCode(
+            "tf.keras.layers.GlobalMaxPooling2D",
+            listOf(),
+            listOf(
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
+
         is Layer.MaxPooling2D -> makeLayerCode(
             "tf.keras.layers.MaxPooling2D",
             listOf(),
@@ -114,6 +144,26 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
                 "strides" to layer.strides,
                 "padding" to layer.padding.value,
                 "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
+
+        is Layer.SpatialDropout2D -> makeLayerCode(
+            "tf.keras.layers.SpatialDropout2D",
+            listOf(layer.rate.toString()),
+            listOf(
+                "data_format" to layer.dataFormat?.value,
+                "name" to layer.name
+            )
+        ).right()
+
+        is Layer.UpSampling2D -> makeLayerCode(
+            "tf.keras.layers.UpSampling2D",
+            listOf(),
+            listOf(
+                "size" to layer.size,
+                "data_format" to layer.dataFormat?.value,
+                "interpolation" to layer.interpolation.value,
                 "name" to layer.name
             )
         ).right()

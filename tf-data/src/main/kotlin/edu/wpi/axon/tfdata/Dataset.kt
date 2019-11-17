@@ -1,19 +1,66 @@
 package edu.wpi.axon.tfdata
 
-sealed class Dataset(val name: String) : Comparable<Dataset> {
-    object BostonHousing : Dataset("boston_housing")
-    object Cifar10 : Dataset("cifar10")
-    object Cifar100 : Dataset("cifar100")
-    object FashionMnist : Dataset("fashion_mnist")
-    object IMDB : Dataset("imdb")
-    object Mnist : Dataset("mnist")
-    object Reuters : Dataset("reuters")
+import edu.wpi.axon.util.ObjectSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
 
-    override fun compareTo(other: Dataset): Int {
-        return COMPARATOR.compare(this, other)
+sealed class Dataset {
+
+    sealed class ExampleDataset(val name: String) : Dataset(), Comparable<ExampleDataset> {
+        object BostonHousing : ExampleDataset("boston_housing")
+        object Cifar10 : ExampleDataset("cifar10")
+        object Cifar100 : ExampleDataset("cifar100")
+        object FashionMnist : ExampleDataset("fashion_mnist")
+        object IMDB : ExampleDataset("imdb")
+        object Mnist : ExampleDataset("mnist")
+        object Reuters : ExampleDataset("reuters")
+
+        companion object {
+            private val COMPARATOR = Comparator.comparing<ExampleDataset, String> { it.name }
+        }
+
+        override fun compareTo(other: ExampleDataset): Int {
+            return COMPARATOR.compare(this, other)
+        }
     }
 
-    companion object {
-        private val COMPARATOR = Comparator.comparing<Dataset, String> { it.name }
+    @Serializable
+    data class Custom(val pathInS3: String) : Dataset()
+}
+
+val datasetModule = SerializersModule {
+    polymorphic(Dataset::class, Dataset.ExampleDataset::class) {
+        addSubclass(
+            Dataset.ExampleDataset.BostonHousing::class,
+            ObjectSerializer(Dataset.ExampleDataset.BostonHousing)
+        )
+        addSubclass(
+            Dataset.ExampleDataset.Cifar10::class,
+            ObjectSerializer(Dataset.ExampleDataset.Cifar10)
+        )
+        addSubclass(
+            Dataset.ExampleDataset.Cifar100::class,
+            ObjectSerializer(Dataset.ExampleDataset.Cifar100)
+        )
+        addSubclass(
+            Dataset.ExampleDataset.FashionMnist::class,
+            ObjectSerializer(Dataset.ExampleDataset.FashionMnist)
+        )
+        addSubclass(
+            Dataset.ExampleDataset.IMDB::class,
+            ObjectSerializer(Dataset.ExampleDataset.IMDB)
+        )
+        addSubclass(
+            Dataset.ExampleDataset.Mnist::class,
+            ObjectSerializer(Dataset.ExampleDataset.Mnist)
+        )
+        addSubclass(
+            Dataset.ExampleDataset.Reuters::class,
+            ObjectSerializer(Dataset.ExampleDataset.Reuters)
+        )
+        addSubclass(
+            Dataset.Custom::class,
+            Dataset.Custom.serializer()
+        )
     }
 }

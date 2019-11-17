@@ -2,10 +2,10 @@ package edu.wpi.axon.dsl.validator.path
 
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Paths
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 internal class DefaultPathValidatorTest {
 

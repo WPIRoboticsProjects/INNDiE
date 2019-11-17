@@ -43,6 +43,9 @@ dependencies {
         }
     })
 
+    // Needed by kotlintest
+    api(group = "com.github.wumpz", name = "diffutils", version = "2.2")
+
     api(
         group = "org.junit.jupiter",
         name = "junit-jupiter",
