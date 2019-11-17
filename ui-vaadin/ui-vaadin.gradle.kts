@@ -21,6 +21,7 @@ vaadin {
 }
 
 dependencies {
+    api(project(":db-data"))
     implementation(project(":tf-data"))
     implementation(project(":training"))
 
