@@ -8,8 +8,6 @@ import java.util.concurrent.atomic.AtomicLong
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
-import org.koin.core.inject
-import org.koin.core.qualifier.named
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.Ec2Client
@@ -24,14 +22,19 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
  * S3. This implementation requires that the script does not try to manage models with S3 itself:
  * this class will handle all of that. The script should just load and save the model from/to its
  * current directory.
+ *
+ * @param bucketName The S3 bucket name to use for dataset and models.
+ * @param instanceType The type of the EC2 instance to run the training script on.
+ * @param region The region to connect to, or `null` to autodetect the region.
  */
-class EC2TrainingScriptRunner : TrainingScriptRunner, KoinComponent {
+class EC2TrainingScriptRunner(
+    private val bucketName: String,
+    private val instanceType: InstanceType,
+    private val region: Region?
+) : TrainingScriptRunner, KoinComponent {
 
-    private val region: Region by inject()
-    private val bucketName: String by inject(named("bucketName"))
-    private val instanceType: InstanceType by inject()
-    private val s3 by lazy { S3Client.builder().region(region).build() }
-    private val ec2 by lazy { Ec2Client.builder().region(region).build() }
+    private val s3 by lazy { S3Client.builder().apply { region?.let { region(it) } }.build() }
+    private val ec2 by lazy { Ec2Client.builder().apply { region?.let { region(it) } }.build() }
 
     private val nextScriptId = AtomicLong()
     private val instanceIds = mutableMapOf<Long, String>()

@@ -1,28 +1,21 @@
 package edu.wpi.axon.aws
 
-import edu.wpi.axon.testutil.KoinTestFixture
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.koin.core.context.startKoin
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
-internal class EC2TrainingScriptRunnerTest : KoinTestFixture() {
+internal class EC2TrainingScriptRunnerTest {
 
     @Test
     @Disabled("Needs EC2 supervision.")
     fun `test running mnist training script`() {
-        startKoin {
-            modules(module {
-                single { Region.US_EAST_1 }
-                single(named("bucketName")) { "axon-salmon-testbucket2" }
-                single { InstanceType.T3_MEDIUM }
-            })
-        }
+        val runner = EC2TrainingScriptRunner(
+            "axon-salmon-testbucket2",
+            InstanceType.T3_MEDIUM,
+            Region.US_EAST_1
+        )
 
-        val runner = EC2TrainingScriptRunner()
         runner.startScript(
             "custom_fashion_mnist.h5",
             "custom_fashion_mnist-trained.h5",

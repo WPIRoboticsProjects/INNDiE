@@ -22,7 +22,10 @@ vaadin {
 
 dependencies {
     api(project(":db-data"))
+
+    implementation(project(":aws"))
     implementation(project(":tf-data"))
+    implementation(project(":tf-layer-loader"))
     implementation(project(":training"))
 
     implementation(platform(vaadin.bom()))
@@ -38,4 +41,5 @@ dependencies {
         name = "karibu-testing-v10",
         version = property("karibu-testing-v10.version") as String
     )
+    testImplementation(project(":test-util"))
 }

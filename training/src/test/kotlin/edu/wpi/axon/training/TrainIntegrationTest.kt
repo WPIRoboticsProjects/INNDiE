@@ -24,7 +24,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
 
         val (model, path) = loadModel("network_with_add.h5")
         model.shouldBeInstanceOf<Model.General> {
-            TrainGeneral(
+            TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = "network_with_add-trained.h5",
@@ -47,7 +47,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
 
         val (model, path) = loadModel("custom_fashion_mnist.h5")
         model.shouldBeInstanceOf<Model.Sequential> {
-            TrainSequential(
+            TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = "custom_fashion_mnist-trained.h5",
@@ -68,7 +68,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        TrainGeneral(
+        TrainGeneralModelScriptGenerator(
             TrainState(
                 userOldModelPath = Paths.get(
                     this::class.java.getResource("badModel1.h5").toURI()

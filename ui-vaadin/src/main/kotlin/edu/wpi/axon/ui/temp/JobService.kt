@@ -9,10 +9,10 @@ object JobService {
     private val jobs = LinkedHashSet<Job>()
 
     init {
-        jobs.add(Job("Job A", JobState.NOT_STARTED, Dataset.FashionMnist))
-        jobs.add(Job("Job B", JobState.IN_PROGRESS, Dataset.Cifar10))
-        jobs.add(Job("Job C", JobState.COMPLETED, Dataset.Cifar100))
-        jobs.add(Job("Job D", JobState.COMPLETED, Dataset.Reuters))
+        jobs.add(Job("Job A", JobState.NOT_STARTED, Dataset.ExampleDataset.FashionMnist))
+        jobs.add(Job("Job B", JobState.IN_PROGRESS, Dataset.ExampleDataset.Cifar10))
+        jobs.add(Job("Job C", JobState.COMPLETED, Dataset.ExampleDataset.Cifar100))
+        jobs.add(Job("Job D", JobState.COMPLETED, Dataset.ExampleDataset.Reuters))
     }
 
     fun fetchJobs(offset: Int, limit: Int): Stream<Job> {

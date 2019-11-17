@@ -29,7 +29,7 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
         val newModelName = "mobilenetv2_1.00_224-trained.h5"
         val (model, path) = loadModel(modelName)
         model.shouldBeInstanceOf<Model.General> {
-            TrainGeneral(
+            TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = newModelName,

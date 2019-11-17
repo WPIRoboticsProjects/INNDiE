@@ -23,7 +23,7 @@ dependencies {
     api(project(":db-data"))
 
     // implementation(platform("software.amazon.awssdk:bom:2.9.9"))
-    implementation(
+    api(
         group = "software.amazon.awssdk",
         name = "aws-sdk-java",
         version = property("aws-sdk-java.version") as String
