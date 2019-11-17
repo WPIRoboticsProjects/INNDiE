@@ -12,9 +12,9 @@ data class ExampleModel(
      */
     val name: String,
     /**
-     * The path to the model in the repo, from the root of the repo.
+     * The url to the model.
      */
-    val path: String,
+    val url: String,
     /**
      * A short description of what the model does.
      */

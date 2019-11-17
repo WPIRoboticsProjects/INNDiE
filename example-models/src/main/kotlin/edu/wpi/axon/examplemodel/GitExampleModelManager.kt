@@ -1,12 +1,12 @@
 package edu.wpi.axon.examplemodel
 
 import arrow.fx.IO
-import java.io.File
-import java.nio.file.Paths
 import mu.KotlinLogging
 import org.eclipse.jgit.api.CloneCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.RepositoryBuilder
+import java.io.File
+import java.nio.file.Paths
 
 /**
  * An [ExampleModelManager] that pulls models from a Git repository.
@@ -40,18 +40,9 @@ class GitExampleModelManager : ExampleModelManager {
 
         val files = exampleModelRepoDir.listFiles()!!
 
-        val metadata = ExampleModelsMetadata.deserialize(
+        ExampleModelsMetadata.deserialize(
             files.first { it.name == "exampleModels.json" }.readText()
-        )
-
-        metadata.exampleModels.forEach { exampleModel ->
-            val modelFile = Paths.get(exampleModelRepoDir.absolutePath, exampleModel.path).toFile()
-            check(modelFile.exists()) {
-                "The model file $modelFile did not exist. Make sure the schema is correct."
-            }
-        }
-
-        metadata.exampleModels
+        ).exampleModels
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -70,6 +61,8 @@ class GitExampleModelManager : ExampleModelManager {
                         git.pull().call()
                     }
                 }
+
+                Unit
             } else {
                 // The repo is not on disk, clone to get it
                 LOGGER.debug { "Repo dir $exampleModelRepoDir does not exist. Cloning." }
@@ -78,7 +71,6 @@ class GitExampleModelManager : ExampleModelManager {
                     .call()
                     .close()
             }
-            Unit
         }
     }
 
