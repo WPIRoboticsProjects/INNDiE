@@ -6,17 +6,19 @@ import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import org.jetbrains.exposed.dao.LongIdTable
+import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 private val klaxon = Klaxon()
 
-internal object Jobs : LongIdTable() {
+internal object Jobs : IntIdTable() {
     val name = varchar("name", 255).uniqueIndex()
     val status = varchar("status", 255)
     val userOldModelPath = varchar("userOldModelPath", 255)
@@ -52,13 +54,7 @@ class JobDb(private val database: Database) {
         }
     }
 
-    fun findByName(name: String): Job? = transaction(database) {
-        Jobs.select { Jobs.name eq name }
-            .map { Jobs.toDomain(it) }
-            .firstOrNull()
-    }
-
-    fun create(job: Job): Long? = transaction(database) {
+    fun create(job: Job): Int? = transaction(database) {
         Jobs.insertAndGetId { row ->
             row[name] = job.name
             row[status] = job.status.serialize()
@@ -71,5 +67,25 @@ class JobDb(private val database: Database) {
             row[userEpochs] = job.userEpochs
             row[generateDebugComments] = job.generateDebugComments
         }.value
+    }
+
+    fun count(): Int = transaction(database) {
+        Jobs.selectAll().count()
+    }
+
+    fun fetch(limit: Int, offset: Int): List<Job> = transaction(database) {
+        Jobs.selectAll()
+            .limit(limit, offset)
+            .map { Jobs.toDomain(it) }
+    }
+
+    fun findByName(name: String): Job? = transaction(database) {
+        Jobs.select { Jobs.name eq name }
+            .map { Jobs.toDomain(it) }
+            .firstOrNull()
+    }
+
+    fun remove(id: Int): Int? = transaction(database) {
+        Jobs.deleteWhere { Jobs.id eq id }
     }
 }

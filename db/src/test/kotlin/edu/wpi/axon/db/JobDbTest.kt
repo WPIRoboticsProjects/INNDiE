@@ -6,6 +6,7 @@ import edu.wpi.axon.dbdata.nextDataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.matchers.collections.shouldContainExactly
+import io.kotlintest.matchers.nulls.shouldBeNull
 import io.kotlintest.matchers.nulls.shouldNotBeNull
 import io.kotlintest.shouldBe
 import org.apache.commons.lang3.RandomStringUtils
@@ -43,6 +44,29 @@ internal class JobDbTest {
 
         db.findByName(job.name).shouldBe(job.copy(id = id))
     }
+
+    @Test
+    fun `count test`(@TempDir tempDir: File) {
+        val db = createDb(tempDir)
+
+        db.count().shouldBe(0)
+
+        db.create(Random.nextJob())
+
+        db.count().shouldBe(1)
+    }
+
+    @Test
+    fun `remove test`(@TempDir tempDir: File) {
+        val db = createDb(tempDir)
+        val job = Random.nextJob()
+
+        val id = db.create(job)!!
+
+        db.remove(id).shouldBe(id)
+        db.findByName(job.name).shouldBeNull()
+    }
+
 
     private fun createDb(tempDir: File) = JobDb(
         Database.connect(
