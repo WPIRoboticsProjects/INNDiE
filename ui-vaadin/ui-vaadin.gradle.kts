@@ -24,9 +24,12 @@ dependencies {
     api(project(":db-data"))
 
     implementation(project(":aws"))
+    implementation(project(":dsl"))
     implementation(project(":tf-data"))
     implementation(project(":tf-layer-loader"))
     implementation(project(":training"))
+    implementation(project(":util"))
+    implementation(project(":logging"))
 
     implementation(platform(vaadin.bom()))
     implementation(vaadin.core())
