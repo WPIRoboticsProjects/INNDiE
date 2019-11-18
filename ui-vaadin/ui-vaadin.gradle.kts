@@ -21,9 +21,12 @@ vaadin {
 }
 
 dependencies {
+    implementation("org.jetbrains.exposed:exposed:0.17.7") // temp
+
     api(project(":db-data"))
 
     implementation(project(":aws"))
+    implementation(project(":db"))
     implementation(project(":dsl"))
     implementation(project(":tf-data"))
     implementation(project(":tf-layer-loader"))

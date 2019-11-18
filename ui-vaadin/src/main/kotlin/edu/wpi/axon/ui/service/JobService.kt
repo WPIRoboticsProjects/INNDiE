@@ -1,40 +1,35 @@
-package edu.wpi.axon.aws.db
+package edu.wpi.axon.ui.service
 
+import com.vaadin.flow.data.provider.DataProvider
+import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import io.kotlintest.matchers.collections.shouldContainExactly
 import org.apache.commons.lang3.RandomStringUtils
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Paths
 import kotlin.random.Random
 
-internal class DefaultJobDBTest {
+object JobService {
 
-    @Test
-    fun `test putting job`(@TempDir tempDir: File) {
-        val db = createDb(tempDir)
-        val job = Random.nextJob()
-
-        db.putJob(job)
-
-        transaction {
-            JobEntity.find { Jobs.name eq job.name }.map { it.toJob() }.shouldContainExactly(job)
-        }
-    }
-
-    private fun createDb(tempDir: File) = DefaultJobDB(
+    val jobs = JobDb(
         Database.connect(
-            url = "jdbc:h2:file:${Paths.get(tempDir.absolutePath, "test.db")}",
+            url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
             driver = "org.h2.Driver"
         )
     )
+
+    val dataProvider = DataProvider.fromCallbacks<Job>(
+        { jobs.fetch(it.limit, it.offset).stream() },
+        { jobs.count() }
+    )
+
+    init {
+        for (i in 1..10) {
+            jobs.create(Random.nextJob())
+        }
+    }
 
     private fun Random.nextJob() = Job(
         RandomStringUtils.randomAlphanumeric(10),

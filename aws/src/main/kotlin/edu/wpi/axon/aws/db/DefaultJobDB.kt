@@ -56,7 +56,7 @@ class JobEntity(id: EntityID<Int>) : IntEntity(id) {
         userMetrics = klaxon.parseArray<String>(userMetrics)!!.toSet(),
         userEpochs = userEpochs,
         generateDebugComments = generateDebugComments,
-        id = id.value.toLong()
+        id = id.value.toInt()
     )
 }
 

@@ -10,7 +10,7 @@ import kotlinx.serialization.modules.SerializersModule
 /**
  * The states a training script can be in.
  */
-sealed class TrainingScriptProgress {
+sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
 
     /**
      * The script has not been started yet.
@@ -35,11 +35,17 @@ sealed class TrainingScriptProgress {
         context = trainingScriptProgressModule
     ).stringify(PolymorphicWrapper.serializer(), PolymorphicWrapper(this))
 
+    override fun compareTo(other: TrainingScriptProgress): Int {
+        return COMPARATOR.compare(this, other)
+    }
+
     companion object {
         fun deserialize(data: String): TrainingScriptProgress = Json(
             JsonConfiguration.Stable,
             context = trainingScriptProgressModule
         ).parse(PolymorphicWrapper.serializer(), data).wrapped
+
+        private val COMPARATOR = Comparator.comparing<TrainingScriptProgress, Int> { it.ordinal() }
     }
 
     @Serializable
@@ -62,3 +68,6 @@ val trainingScriptProgressModule = SerializersModule {
         )
     }
 }
+
+inline fun <reified T : Any> T.ordinal() =
+    T::class.java.superclass.classes.indexOfFirst { sub -> sub == this@ordinal::class.java }

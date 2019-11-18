@@ -24,7 +24,7 @@ data class Job(
     val userMetrics: Set<String>,
     val userEpochs: Int,
     val generateDebugComments: Boolean,
-    val id: Int
+    val id: Int = -1
 ) {
 
     fun serialize(): String = Json(

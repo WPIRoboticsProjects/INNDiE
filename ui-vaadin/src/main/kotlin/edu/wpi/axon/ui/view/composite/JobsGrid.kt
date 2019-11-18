@@ -7,23 +7,18 @@ import com.github.mvysny.karibudsl.v10.gridContextMenu
 import com.github.mvysny.karibudsl.v10.item
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.component.notification.Notification
-import com.vaadin.flow.data.provider.DataProvider
 import com.vaadin.flow.data.renderer.TextRenderer
-import edu.wpi.axon.ui.model.Job
-import edu.wpi.axon.ui.temp.JobService
+import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.ui.service.JobService
 
 class JobsGrid : KComposite() {
-    private val dataProvider = DataProvider.fromCallbacks<Job>(
-        { JobService.fetchJobs(it.offset, it.limit) },
-        { JobService.getJobCount() }
-    )
-
     private val root = ui {
         verticalLayout {
-            grid<Job>(dataProvider = dataProvider) {
+            grid<Job>(dataProvider = JobService.dataProvider) {
                 addColumnFor(Job::name)
-                addColumnFor(Job::state)
-                addColumnFor(Job::dataset, TextRenderer { it.dataset.displayName })
+                addColumnFor(Job::status)
+                addColumnFor(Job::userDataset, TextRenderer { it.userDataset.displayName })
+
                 gridContextMenu {
                     item(
                         "Clone",
@@ -37,7 +32,7 @@ class JobsGrid : KComposite() {
     }
 
     private fun deleteJob(job: Job) {
-        JobService.deleteJob(job)
-        dataProvider.refreshAll()
+        JobService.jobs.remove(job.id)
+        JobService.dataProvider.refreshAll()
     }
 }
