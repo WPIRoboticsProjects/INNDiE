@@ -13,7 +13,6 @@ import com.vaadin.flow.component.tabs.Tabs
 import edu.wpi.axon.ui.view.AboutView
 import edu.wpi.axon.ui.view.DatasetView
 import edu.wpi.axon.ui.view.JobsView
-import edu.wpi.axon.ui.view.ModelView
 import edu.wpi.axon.ui.view.TrainingView
 
 /**
@@ -33,9 +32,6 @@ class AxonLayout : AppLayout() {
                 }
                 tab {
                     add(routerLink(VaadinIcon.CAMERA, "Dataset", DatasetView::class))
-                }
-                tab {
-                    add(routerLink(VaadinIcon.GLOBE_WIRE, "Model", ModelView::class))
                 }
                 tab {
                     add(routerLink(VaadinIcon.AUTOMATION, "Training", TrainingView::class))
