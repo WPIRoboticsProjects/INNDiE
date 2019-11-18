@@ -55,7 +55,8 @@ class JobEntity(id: EntityID<Int>) : IntEntity(id) {
         userLoss = Loss.deserialize(userLoss),
         userMetrics = klaxon.parseArray<String>(userMetrics)!!.toSet(),
         userEpochs = userEpochs,
-        generateDebugComments = generateDebugComments
+        generateDebugComments = generateDebugComments,
+        id = id.value.toLong()
     )
 }
 

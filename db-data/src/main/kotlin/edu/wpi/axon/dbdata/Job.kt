@@ -23,7 +23,8 @@ data class Job(
     @Polymorphic val userLoss: Loss,
     val userMetrics: Set<String>,
     val userEpochs: Int,
-    val generateDebugComments: Boolean
+    val generateDebugComments: Boolean,
+    val id: Long
 ) {
 
     fun serialize(): String = Json(
