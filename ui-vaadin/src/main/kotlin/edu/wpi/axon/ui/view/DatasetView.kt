@@ -11,8 +11,8 @@ import edu.wpi.axon.ui.view.composite.JobsList
 class DatasetView : KComposite() {
     private val root = ui {
         horizontalLayout {
-            JobsList()
-            DatasetSelector()
+            add(JobsList())
+            add(DatasetSelector())
         }
     }
 }

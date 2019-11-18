@@ -14,8 +14,8 @@ import edu.wpi.axon.ui.temp.JobService
 
 class JobsGrid : KComposite() {
     private val dataProvider = DataProvider.fromCallbacks<Job>(
-            { JobService.fetchJobs(it.offset, it.limit) },
-            { JobService.getJobCount() }
+        { JobService.fetchJobs(it.offset, it.limit) },
+        { JobService.getJobCount() }
     )
 
     private val root = ui {
@@ -23,9 +23,12 @@ class JobsGrid : KComposite() {
             grid<Job>(dataProvider = dataProvider) {
                 addColumnFor(Job::name)
                 addColumnFor(Job::state)
-                addColumnFor(Job::dataset, TextRenderer { it.dataset.name })
+                addColumnFor(Job::dataset, TextRenderer { it.dataset.displayName })
                 gridContextMenu {
-                    item("Clone", { if (it != null) Notification.show("Clone Context: ${it.name}") })
+                    item(
+                        "Clone",
+                        { if (it != null) Notification.show("Clone Context: ${it.name}") }
+                    )
                     item("Run", { if (it != null) Notification.show("Run Context: ${it.name}") })
                     item("Remove", { if (it != null) deleteJob(it) })
                 }
