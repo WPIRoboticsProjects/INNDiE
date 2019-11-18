@@ -1,7 +1,10 @@
 package edu.wpi.axon.tfdata
 
 import edu.wpi.axon.util.ObjectSerializer
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.modules.SerializersModule
 
 sealed class Dataset : Comparable<Dataset> {
@@ -26,7 +29,20 @@ sealed class Dataset : Comparable<Dataset> {
 
     companion object {
         private val COMPARATOR = Comparator.comparing<Dataset, String> { it.displayName }
+
+        fun deserialize(data: String): Dataset = Json(
+            JsonConfiguration.Stable,
+            context = datasetModule
+        ).parse(PolymorphicWrapper.serializer(), data).wrapped
     }
+
+    fun serialize(): String = Json(
+        JsonConfiguration.Stable,
+        context = datasetModule
+    ).stringify(PolymorphicWrapper.serializer(), PolymorphicWrapper(this))
+
+    @Serializable
+    private data class PolymorphicWrapper(@Polymorphic val wrapped: Dataset)
 }
 
 val datasetModule = SerializersModule {
