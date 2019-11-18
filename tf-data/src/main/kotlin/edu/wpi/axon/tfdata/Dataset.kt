@@ -1,12 +1,9 @@
 package edu.wpi.axon.tfdata
 
 import edu.wpi.axon.util.ObjectSerializer
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 
-@Serializable
-@Polymorphic
 sealed class Dataset : Comparable<Dataset> {
     abstract val displayName: String
 
