@@ -6,10 +6,6 @@ fun DependencyHandler.arrow(name: String) =
 fun DependencyHandler.koin(name: String) =
     create(group = "org.koin", name = name, version = property("koin.version") as String)
 
-repositories {
-    maven("https://dl.bintray.com/kotlin/exposed")
-}
-
 dependencies {
     api(arrow("arrow-core"))
     api(arrow("arrow-core-data"))

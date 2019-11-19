@@ -131,6 +131,7 @@ allprojects {
         maven("https://oss.sonatype.org/content/repositories/staging/")
         maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
         maven("https://dl.bintray.com/jamesmudd/jhdf")
+        maven("https://dl.bintray.com/kotlin/exposed")
         maven("https://dl.bintray.com/octogonapus/maven-artifacts")
     }
 

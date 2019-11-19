@@ -1,9 +1,5 @@
 description = "Classes to interact with a database"
 
-repositories {
-    maven("https://dl.bintray.com/kotlin/exposed")
-}
-
 dependencies {
     api(project(":db-data"))
     api(project(":tf-data"))
