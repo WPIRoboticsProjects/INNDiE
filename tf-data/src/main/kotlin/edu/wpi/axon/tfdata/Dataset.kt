@@ -23,9 +23,7 @@ sealed class Dataset : Comparable<Dataset> {
     @Serializable
     data class Custom(val pathInS3: String, override val displayName: String) : Dataset()
 
-    override fun compareTo(other: Dataset): Int {
-        return COMPARATOR.compare(this, other)
-    }
+    override fun compareTo(other: Dataset) = COMPARATOR.compare(this, other)
 
     companion object {
         private val COMPARATOR = Comparator.comparing<Dataset, String> { it.displayName }

@@ -23,7 +23,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val (model, path) = loadModel("network_with_add.h5")
+        val (model, path) = loadModel("network_with_add.h5") {}
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
@@ -46,7 +46,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val (model, path) = loadModel("custom_fashion_mnist.h5")
+        val (model, path) = loadModel("custom_fashion_mnist.h5") {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(

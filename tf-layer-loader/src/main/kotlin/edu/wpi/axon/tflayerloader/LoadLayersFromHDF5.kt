@@ -116,11 +116,9 @@ class LoadLayersFromHDF5(
             // Don't wrap a MetaLayer more than once
             is Layer.MetaLayer -> layer
 
-            else -> {
-                when (val trainable = json["trainable"] as Boolean?) {
-                    null -> layer.untrainable()
-                    else -> layer.trainable(trainable)
-                }
+            else -> when (val trainable = json["trainable"] as Boolean?) {
+                null -> layer.untrainable()
+                else -> layer.trainable(trainable)
             }
         }
     }

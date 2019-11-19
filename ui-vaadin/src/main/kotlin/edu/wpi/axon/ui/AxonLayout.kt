@@ -16,7 +16,7 @@ import edu.wpi.axon.ui.view.JobsView
 import edu.wpi.axon.ui.view.TrainingView
 
 /**
- * The main layout of the application
+ * The main layout of the application.
  */
 @BodySize(height = "100vh", width = "100vw")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")

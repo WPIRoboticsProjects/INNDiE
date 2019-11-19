@@ -11,22 +11,20 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
-import java.io.File
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 
 internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture() {
 
     @Test
-    fun `test with custom model with an add`(@TempDir tempDir: File) {
+    fun `test with custom model with an add`() {
         startKoin {
             modules(defaultModule())
         }
 
         val modelName = "network_with_add.h5"
         val newModelName = "network_with_add-trained.h5"
-        val (model, path) = loadModel(modelName)
+        val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(

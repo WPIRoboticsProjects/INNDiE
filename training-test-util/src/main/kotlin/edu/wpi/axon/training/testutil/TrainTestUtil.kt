@@ -19,10 +19,10 @@ private val LOGGER = KotlinLogging.logger("training-test-util")
  * Loads a model with name [modelName] from the test resources.
  *
  * @param modelName The name of the model.
- * @param stub Used to get the calling class. Do not use this parameter.
+ * @param stub Used to get the calling class. Just supply an empty lambda.
  * @return The model and its path.
  */
-fun loadModel(modelName: String, stub: () -> Unit = {}): Pair<Model, String> {
+fun loadModel(modelName: String, stub: () -> Unit): Pair<Model, String> {
     val localModelPath = Paths.get(stub::class.java.getResource(modelName).toURI()).toString()
     val layers = LoadLayersFromHDF5(DefaultLayersToGraph())
         .load(File(localModelPath))

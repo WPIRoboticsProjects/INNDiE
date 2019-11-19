@@ -57,7 +57,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
 
         val modelName = "custom_fashion_mnist.h5"
         val newModelName = "custom_fashion_mnist-trained.h5"
-        val (model, path) = loadModel(modelName)
+        val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
