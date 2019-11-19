@@ -21,15 +21,12 @@ import software.amazon.awssdk.services.ec2.model.Ipv6Range
 /**
  * Configures a Job DB in RDS.
  */
-class RDSJobDBConfigurator : JobDBConfigurator, KoinComponent {
+class RDSJobDBConfigurator : KoinComponent {
 
     private val regions: Regions by inject()
     private val region: Region by inject()
     private val ec2Client by lazy { Ec2Client.builder().region(region).build() }
     private val rdsClient by lazy { AmazonRDSClient.builder().withRegion(regions).build() }
-
-    override fun ensureConfiguration(): IO<Unit> =
-        ensureDBCluster().flatMap { ensureDBClusterHasCorrectSG(it) }
 
     private fun ensureDBCluster(): IO<DBCluster> = IO {
         val clusters = rdsClient.describeDBClusters(
