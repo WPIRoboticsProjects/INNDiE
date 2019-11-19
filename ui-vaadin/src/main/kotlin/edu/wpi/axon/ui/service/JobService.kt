@@ -26,7 +26,7 @@ object JobService {
     )
 
     init {
-        for (i in 1..10) {
+        for (i in 1..20) {
             jobs.create(Random.nextJob())
         }
     }
