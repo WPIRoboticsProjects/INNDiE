@@ -9,15 +9,15 @@ import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.nulls.shouldBeNull
 import io.kotlintest.matchers.nulls.shouldNotBeNull
 import io.kotlintest.shouldBe
+import java.io.File
+import java.nio.file.Paths
+import kotlin.random.Random
 import org.apache.commons.lang3.RandomStringUtils
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Paths
-import kotlin.random.Random
 
 internal class JobDbTest {
     @Test
@@ -66,7 +66,6 @@ internal class JobDbTest {
         db.remove(id).shouldBe(id)
         db.findByName(job.name).shouldBeNull()
     }
-
 
     private fun createDb(tempDir: File) = JobDb(
         Database.connect(

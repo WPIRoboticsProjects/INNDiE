@@ -9,12 +9,15 @@ dependencies {
     testImplementation(project(":test-util"))
     testImplementation(project(":db-data-test-util"))
 
-    implementation("org.jetbrains.exposed:exposed:0.17.7")
+    implementation(
+        group = "org.jetbrains.exposed",
+        name = "exposed",
+        version = property("exposed.version") as String
+    )
 
     implementation(
         group = "com.beust",
         name = "klaxon",
         version = property("klaxon.version") as String
     )
-
 }

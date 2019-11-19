@@ -7,9 +7,9 @@ import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import kotlin.random.Random
 import org.apache.commons.lang3.RandomStringUtils
 import org.jetbrains.exposed.sql.Database
-import kotlin.random.Random
 
 object JobService {
 

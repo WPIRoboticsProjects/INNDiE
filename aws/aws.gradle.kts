@@ -39,8 +39,10 @@ dependencies {
         version = property("klaxon.version") as String
     )
 
-    implementation("org.jetbrains.exposed:exposed:0.17.7")
-    implementation("mysql:mysql-connector-java:5.1.46")
+    implementation(group = "mysql",
+        name = "mysql-connector-java",
+        version = property("mysql-connector-java.version") as String
+    )
 
     implementation(project(":logging"))
     implementation(project(":util"))
