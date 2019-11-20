@@ -13,6 +13,12 @@ internal class DatasetTest {
         dataset.name shouldBe expected
     }
 
+    @ParameterizedTest
+    @MethodSource("exampleDatasetSource")
+    fun `test serialization`(dataset: Dataset.ExampleDataset, expected: String) {
+        Dataset.deserialize(dataset.serialize()).shouldBe(dataset)
+    }
+
     companion object {
 
         @JvmStatic

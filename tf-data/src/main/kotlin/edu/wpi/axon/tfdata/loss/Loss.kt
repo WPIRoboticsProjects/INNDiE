@@ -1,37 +1,22 @@
 package edu.wpi.axon.tfdata.loss
 
-import edu.wpi.axon.util.ObjectSerializer
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.modules.SerializersModule
 
+@Serializable
 sealed class Loss {
 
+    @Serializable
     object SparseCategoricalCrossentropy : Loss()
 
     fun serialize(): String = Json(
-        JsonConfiguration.Stable,
-        context = lossModule
-    ).stringify(PolymorphicWrapper.serializer(), PolymorphicWrapper(this))
+        JsonConfiguration.Stable
+    ).stringify(serializer(), this)
 
     companion object {
         fun deserialize(data: String): Loss = Json(
-            JsonConfiguration.Stable,
-            context = lossModule
-        ).parse(PolymorphicWrapper.serializer(), data).wrapped
-    }
-
-    @Serializable
-    private data class PolymorphicWrapper(@Polymorphic val wrapped: Loss)
-}
-
-val lossModule = SerializersModule {
-    polymorphic<Loss> {
-        addSubclass(
-            Loss.SparseCategoricalCrossentropy::class,
-            ObjectSerializer(Loss.SparseCategoricalCrossentropy)
-        )
+            JsonConfiguration.Stable
+        ).parse(serializer(), data)
     }
 }
