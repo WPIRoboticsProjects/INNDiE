@@ -33,7 +33,7 @@ class DatasetViewTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["BostonHousing", "Cifar10", "FashionMnist", "Mnist"])
+    @ValueSource(strings = ["Boston Housing", "CIFAR-10", "Fashion MNIST", "MNIST"])
     fun testDatasetSelection(input: String) {
         val combobox = _get(ComboBox::class.java) { spec -> spec.withCaption("Dataset") }
 
