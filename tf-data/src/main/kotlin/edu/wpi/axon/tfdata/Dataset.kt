@@ -37,6 +37,10 @@ sealed class Dataset : Comparable<Dataset> {
 
     override fun compareTo(other: Dataset) = COMPARATOR.compare(this, other)
 
+    fun serialize(): String = Json(
+        JsonConfiguration.Stable
+    ).stringify(serializer(), this)
+
     companion object {
         private val COMPARATOR = Comparator.comparing<Dataset, String> { it.displayName }
 
@@ -44,8 +48,4 @@ sealed class Dataset : Comparable<Dataset> {
             JsonConfiguration.Stable
         ).parse(serializer(), data)
     }
-
-    fun serialize(): String = Json(
-        JsonConfiguration.Stable
-    ).stringify(serializer(), this)
 }
