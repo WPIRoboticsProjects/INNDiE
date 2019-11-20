@@ -10,6 +10,9 @@ fun Random.nextDataset(): Dataset {
             it[nextInt(it.size)].objectInstance!!
         }
     } else {
-        Dataset.Custom(RandomStringUtils.randomAlphanumeric(20))
+        Dataset.Custom(
+            RandomStringUtils.randomAlphanumeric(20),
+            RandomStringUtils.randomAlphanumeric(20)
+        )
     }
 }

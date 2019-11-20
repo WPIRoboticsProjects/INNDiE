@@ -5,5 +5,5 @@ dependencies {
     implementation(project(":tf-layer-loader"))
     implementation(project(":logging"))
 
-    testImplementation(project(":test-util"))
+    testImplementation(project(":training-test-util"))
 }

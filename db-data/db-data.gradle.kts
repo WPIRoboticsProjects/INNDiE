@@ -4,4 +4,6 @@ dependencies {
     api(project(":tf-data"))
 
     implementation(project(":util"))
+
+    testImplementation(project(":test-util"))
 }

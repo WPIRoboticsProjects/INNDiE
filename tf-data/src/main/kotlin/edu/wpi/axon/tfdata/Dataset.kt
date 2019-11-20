@@ -1,23 +1,46 @@
 package edu.wpi.axon.tfdata
 
 import edu.wpi.axon.util.ObjectSerializer
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.modules.SerializersModule
 
-sealed class Dataset {
+sealed class Dataset : Comparable<Dataset> {
+    abstract val displayName: String
 
-    sealed class ExampleDataset(val name: String) : Dataset() {
-        object BostonHousing : ExampleDataset("boston_housing")
-        object Cifar10 : ExampleDataset("cifar10")
-        object Cifar100 : ExampleDataset("cifar100")
-        object FashionMnist : ExampleDataset("fashion_mnist")
-        object IMDB : ExampleDataset("imdb")
-        object Mnist : ExampleDataset("mnist")
-        object Reuters : ExampleDataset("reuters")
+    sealed class ExampleDataset(val name: String, override val displayName: String) : Dataset() {
+        object BostonHousing : ExampleDataset("boston_housing", "Boston Housing")
+        object Cifar10 : ExampleDataset("cifar10", "CIFAR-10")
+        object Cifar100 : ExampleDataset("cifar100", "CIFAR-100")
+        object FashionMnist : ExampleDataset("fashion_mnist", "Fashion MNIST")
+        object IMDB : ExampleDataset("imdb", "IMBD")
+        object Mnist : ExampleDataset("mnist", "MNIST")
+        object Reuters : ExampleDataset("reuters", "Reuters")
     }
 
     @Serializable
-    data class Custom(val pathInS3: String) : Dataset()
+    data class Custom(val pathInS3: String, override val displayName: String) : Dataset()
+
+    override fun compareTo(other: Dataset) = COMPARATOR.compare(this, other)
+
+    companion object {
+        private val COMPARATOR = Comparator.comparing<Dataset, String> { it.displayName }
+
+        fun deserialize(data: String): Dataset = Json(
+            JsonConfiguration.Stable,
+            context = datasetModule
+        ).parse(PolymorphicWrapper.serializer(), data).wrapped
+    }
+
+    fun serialize(): String = Json(
+        JsonConfiguration.Stable,
+        context = datasetModule
+    ).stringify(PolymorphicWrapper.serializer(), PolymorphicWrapper(this))
+
+    @Serializable
+    private data class PolymorphicWrapper(@Polymorphic val wrapped: Dataset)
 }
 
 val datasetModule = SerializersModule {

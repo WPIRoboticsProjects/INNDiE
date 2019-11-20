@@ -6,6 +6,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.testutil.loadModel
 import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
@@ -22,9 +23,9 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val (model, path) = loadModel("network_with_add.h5")
+        val (model, path) = loadModel("network_with_add.h5") {}
         model.shouldBeInstanceOf<Model.General> {
-            TrainGeneral(
+            TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = "network_with_add-trained.h5",
@@ -45,9 +46,9 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        val (model, path) = loadModel("custom_fashion_mnist.h5")
+        val (model, path) = loadModel("custom_fashion_mnist.h5") {}
         model.shouldBeInstanceOf<Model.Sequential> {
-            TrainSequential(
+            TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = "custom_fashion_mnist-trained.h5",
@@ -68,7 +69,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             modules(defaultModule())
         }
 
-        TrainGeneral(
+        TrainGeneralModelScriptGenerator(
             TrainState(
                 userOldModelPath = Paths.get(
                     this::class.java.getResource("badModel1.h5").toURI()

@@ -8,17 +8,16 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.testutil.loadModel
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
-import java.io.File
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 
 internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
 
     @Test
-    fun `test with mobilenet`(@TempDir tempDir: File) {
+    fun `test with mobilenet`() {
         startKoin {
             modules(defaultModule())
         }
@@ -27,9 +26,9 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
 
         val modelName = "mobilenetv2_1.00_224.h5"
         val newModelName = "mobilenetv2_1.00_224-trained.h5"
-        val (model, path) = loadModel(modelName)
+        val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
-            TrainGeneral(
+            TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = path,
                     userNewModelName = newModelName,

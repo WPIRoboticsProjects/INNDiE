@@ -22,6 +22,7 @@ plugins {
 }
 
 val awsProject = project(":aws")
+val dbProject = project(":db")
 val dbDataProject = project(":db-data")
 val dbDataTestUtilProject = project(":db-data-test-util")
 val dslProject = project(":dsl")
@@ -38,10 +39,12 @@ val tfLayerLoaderProject = project(":tf-layer-loader")
 val uiElectronProject = project(":ui-electron")
 val uiVaadinProject = project(":ui-vaadin")
 val trainingProject = project(":training")
+val trainingTestUtilProject = project(":training-test-util")
 val utilProject = project(":util")
 
 val kotlinProjects = setOf(
     awsProject,
+    dbProject,
     dbDataProject,
     dbDataTestUtilProject,
     dslProject,
@@ -58,6 +61,7 @@ val kotlinProjects = setOf(
     uiElectronProject,
     uiVaadinProject,
     trainingProject,
+    trainingTestUtilProject,
     utilProject
 )
 
@@ -65,6 +69,7 @@ val javaProjects = setOf<Project>() + kotlinProjects
 
 val publishedProjects = setOf(
     awsProject,
+    dbProject,
     dbDataProject,
     dslProject,
     dslInterfaceProject,
@@ -126,6 +131,7 @@ allprojects {
         maven("https://oss.sonatype.org/content/repositories/staging/")
         maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
         maven("https://dl.bintray.com/jamesmudd/jhdf")
+        maven("https://dl.bintray.com/kotlin/exposed")
         maven("https://dl.bintray.com/octogonapus/maven-artifacts")
     }
 

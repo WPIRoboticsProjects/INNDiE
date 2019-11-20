@@ -22,11 +22,26 @@ dependencies {
     api(project(":tf-data"))
     api(project(":db-data"))
 
-    // implementation(platform("software.amazon.awssdk:bom:2.9.9"))
-    implementation(
+    api(
         group = "software.amazon.awssdk",
         name = "aws-sdk-java",
-        version = property("aws-sdk-java.version") as String
+        version = "2.10.12"
+    )
+    implementation(
+        group = "com.amazonaws",
+        name = "aws-java-sdk",
+        version = "1.11.674"
+    )
+
+    implementation(
+        group = "com.beust",
+        name = "klaxon",
+        version = property("klaxon.version") as String
+    )
+
+    implementation(group = "mysql",
+        name = "mysql-connector-java",
+        version = property("mysql-connector-java.version") as String
     )
 
     implementation(project(":logging"))

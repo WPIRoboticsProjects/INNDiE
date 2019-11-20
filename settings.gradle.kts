@@ -31,6 +31,7 @@ pluginManagement {
 rootProject.name = "axon"
 
 include(":aws")
+include(":db")
 include(":db-data")
 include(":db-data-test-util")
 include(":dsl")
@@ -47,6 +48,7 @@ include(":tf-layer-loader")
 include(":ui-electron")
 include(":ui-vaadin")
 include(":training")
+include(":training-test-util")
 include(":util")
 
 /**

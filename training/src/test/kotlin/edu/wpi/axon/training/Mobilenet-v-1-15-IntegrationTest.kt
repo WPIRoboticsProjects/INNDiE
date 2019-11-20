@@ -9,6 +9,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.axon.training.testutil.loadModel
 import io.kotlintest.matchers.collections.shouldHaveSize
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.kotlintest.shouldBe
@@ -24,7 +25,7 @@ internal class `Mobilenet-v-1-15-IntegrationTest` : KoinTestFixture() {
         }
 
         val modelName = "mobilenet_tf_1_15_0.h5"
-        val (model, _) = loadModel(modelName)
+        val (model, _) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             it.layers.shouldHaveSize(3)
             it.layers.toList().let {
