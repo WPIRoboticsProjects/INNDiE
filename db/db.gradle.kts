@@ -6,9 +6,6 @@ dependencies {
 
     implementation(project(":util"))
 
-    testImplementation(project(":test-util"))
-    testImplementation(project(":db-data-test-util"))
-
     implementation(
         group = "org.jetbrains.exposed",
         name = "exposed",
@@ -20,4 +17,7 @@ dependencies {
         name = "klaxon",
         version = property("klaxon.version") as String
     )
+
+    testImplementation(project(":test-util"))
+    testImplementation(project(":db-data-test-util"))
 }
