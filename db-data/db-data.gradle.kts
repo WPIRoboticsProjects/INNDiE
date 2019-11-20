@@ -6,4 +6,5 @@ dependencies {
     implementation(project(":util"))
 
     testImplementation(project(":test-util"))
+    testImplementation(project(":db-data-test-util"))
 }

@@ -1,10 +1,6 @@
 package edu.wpi.axon.db
 
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
-import edu.wpi.axon.dbdata.nextDataset
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.dbdata.nextJob
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.nulls.shouldBeNull
 import io.kotlintest.matchers.nulls.shouldNotBeNull
@@ -12,7 +8,6 @@ import io.kotlintest.shouldBe
 import java.io.File
 import java.nio.file.Paths
 import kotlin.random.Random
-import org.apache.commons.lang3.RandomStringUtils
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -72,28 +67,5 @@ internal class JobDbTest {
             url = "jdbc:h2:file:${Paths.get(tempDir.absolutePath, "test.db")}",
             driver = "org.h2.Driver"
         )
-    )
-
-    private fun Random.nextJob() = Job(
-        RandomStringUtils.randomAlphanumeric(10),
-        TrainingScriptProgress.Completed,
-        RandomStringUtils.randomAlphanumeric(10),
-        RandomStringUtils.randomAlphanumeric(10),
-        nextDataset(),
-        Optimizer.Adam(
-            nextDouble(),
-            nextDouble(),
-            nextDouble(),
-            nextDouble(),
-            nextBoolean()
-        ),
-        Loss.SparseCategoricalCrossentropy,
-        setOf(
-            RandomStringUtils.randomAlphanumeric(10),
-            RandomStringUtils.randomAlphanumeric(10)
-        ),
-        nextInt(),
-        nextBoolean(),
-        -1
     )
 }

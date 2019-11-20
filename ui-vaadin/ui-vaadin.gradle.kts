@@ -33,6 +33,7 @@ dependencies {
     implementation(project(":training"))
     implementation(project(":util"))
     implementation(project(":logging"))
+    implementation(project(":db-data-test-util"))
 
     implementation(platform(vaadin.bom()))
     implementation(vaadin.core())

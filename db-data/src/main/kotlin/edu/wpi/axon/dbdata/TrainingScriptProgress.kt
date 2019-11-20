@@ -1,20 +1,19 @@
 package edu.wpi.axon.dbdata
 
-import edu.wpi.axon.util.ObjectSerializer
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.modules.SerializersModule
 
 /**
  * The states a training script can be in.
  */
+@Serializable
 sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
 
     /**
      * The script has not been started yet.
      */
+    @Serializable
     object NotStarted : TrainingScriptProgress()
 
     /**
@@ -28,12 +27,12 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
     /**
      * The training is finished.
      */
+    @Serializable
     object Completed : TrainingScriptProgress()
 
     fun serialize(): String = Json(
-        JsonConfiguration.Stable,
-        context = trainingScriptProgressModule
-    ).stringify(PolymorphicWrapper.serializer(), PolymorphicWrapper(this))
+        JsonConfiguration.Stable
+    ).stringify(serializer(), this)
 
     override fun compareTo(other: TrainingScriptProgress): Int {
         return COMPARATOR.compare(this, other)
@@ -41,31 +40,10 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
 
     companion object {
         fun deserialize(data: String): TrainingScriptProgress = Json(
-            JsonConfiguration.Stable,
-            context = trainingScriptProgressModule
-        ).parse(PolymorphicWrapper.serializer(), data).wrapped
+            JsonConfiguration.Stable
+        ).parse(serializer(), data)
 
         private val COMPARATOR = Comparator.comparing<TrainingScriptProgress, Int> { it.ordinal() }
-    }
-
-    @Serializable
-    private data class PolymorphicWrapper(@Polymorphic val wrapped: TrainingScriptProgress)
-}
-
-val trainingScriptProgressModule = SerializersModule {
-    polymorphic<TrainingScriptProgress> {
-        addSubclass(
-            TrainingScriptProgress.NotStarted::class,
-            ObjectSerializer(TrainingScriptProgress.NotStarted)
-        )
-        addSubclass(
-            TrainingScriptProgress.InProgress::class,
-            TrainingScriptProgress.InProgress.serializer()
-        )
-        addSubclass(
-            TrainingScriptProgress.Completed::class,
-            ObjectSerializer(TrainingScriptProgress.Completed)
-        )
     }
 }
 
