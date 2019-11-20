@@ -1,11 +1,6 @@
 package edu.wpi.axon.db
 
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
-import edu.wpi.axon.dbdata.nextDataset
 import edu.wpi.axon.dbdata.nextJob
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.nulls.shouldBeNull
 import io.kotlintest.matchers.nulls.shouldNotBeNull
@@ -13,7 +8,6 @@ import io.kotlintest.shouldBe
 import java.io.File
 import java.nio.file.Paths
 import kotlin.random.Random
-import org.apache.commons.lang3.RandomStringUtils
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
