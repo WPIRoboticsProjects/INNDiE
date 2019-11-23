@@ -1,12 +1,15 @@
 package edu.wpi.axon.tfdata.layer
 
 import com.google.common.math.DoubleMath
+import kotlinx.serialization.Serializable
 
+@Serializable
 sealed class Regularizer {
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/regularizers/L1L2
      */
+    @Serializable
     data class L1L2(
         val l1: Double = 0.0,
         val l2: Double = 0.0

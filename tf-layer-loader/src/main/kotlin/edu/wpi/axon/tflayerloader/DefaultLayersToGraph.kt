@@ -3,8 +3,6 @@
 package edu.wpi.axon.tflayerloader
 
 import arrow.core.Either
-import arrow.core.None
-import arrow.core.Some
 import arrow.core.extensions.either.monadError.monadError
 import arrow.core.extensions.fx
 import arrow.fx.IO
@@ -33,8 +31,8 @@ class DefaultLayersToGraph : LayersToGraph {
             layers.forEach { layer ->
                 val inboundNodes: Set<Layer.MetaLayer> =
                     when (val inputs = layer.layer.inputs) {
-                        is Some -> graph.nodes().filterTo(mutableSetOf()) { it.name in inputs.t }
-                        is None -> emptySet()
+                        null -> emptySet()
+                        else -> graph.nodes().filterTo(mutableSetOf()) { it.name in inputs }
                     }
 
                 inboundNodes.forEach { inboundNode ->

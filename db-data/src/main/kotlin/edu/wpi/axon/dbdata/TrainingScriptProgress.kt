@@ -39,7 +39,7 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
     }
 
     companion object {
-        fun deserialize(data: String): TrainingScriptProgress = Json(
+        fun deserialize(data: String) = Json(
             JsonConfiguration.Stable
         ).parse(serializer(), data)
 

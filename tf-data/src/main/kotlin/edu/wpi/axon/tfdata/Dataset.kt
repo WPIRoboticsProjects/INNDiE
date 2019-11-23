@@ -44,7 +44,7 @@ sealed class Dataset : Comparable<Dataset> {
     companion object {
         private val COMPARATOR = Comparator.comparing<Dataset, String> { it.displayName }
 
-        fun deserialize(data: String): Dataset = Json(
+        fun deserialize(data: String) = Json(
             JsonConfiguration.Stable
         ).parse(serializer(), data)
     }

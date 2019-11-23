@@ -6,10 +6,10 @@ import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.shouldBe
 import java.io.File
+import java.nio.file.Paths
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Paths
 
 internal class GitExampleModelManagerTest {
 
