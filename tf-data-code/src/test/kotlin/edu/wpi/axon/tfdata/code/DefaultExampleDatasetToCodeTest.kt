@@ -6,12 +6,12 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
-internal class DefaultDatasetToCodeTest {
+internal class DefaultExampleDatasetToCodeTest {
 
-    private val datasetToCode = DefaultDatasetToCode()
+    private val datasetToCode = DefaultExampleDatasetToCode()
 
     @Test
-    fun `test code gen`() {
+    fun `test example dataset`() {
         val dataset = mockk<Dataset.ExampleDataset> { every { name } returns "dataset_name" }
         datasetToCode.datasetToCode(dataset) shouldBe "tf.keras.datasets.dataset_name"
     }

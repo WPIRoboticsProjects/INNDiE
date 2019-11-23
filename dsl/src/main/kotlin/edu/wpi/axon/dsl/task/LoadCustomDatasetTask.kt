@@ -1,6 +1,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.Code
+import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
@@ -10,14 +11,14 @@ import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
 /**
- * Loads an example dataset.
+ * Loads a custom dataset.
  */
-class LoadExampleDatasetTask(name: String) : BaseTask(name) {
+class LoadCustomDatasetTask(name: String) : BaseTask(name) {
 
     /**
      * The dataset to load.
      */
-    var dataset: Dataset.ExampleDataset by singleAssign()
+    var dataset: Dataset.Custom by singleAssign()
 
     /**
      * The input data for training.
@@ -39,10 +40,9 @@ class LoadExampleDatasetTask(name: String) : BaseTask(name) {
      */
     var yTestOutput: Variable by singleAssign()
 
-    private val exampleDatasetToCode: ExampleDatasetToCode by inject()
-
     override val imports: Set<Import> = setOf(
-        makeImport("import tensorflow as tf")
+        makeImport("import tensorflow as tf"),
+        makeImport("import axon.client")
     )
 
     override val inputs: Set<Variable> = setOf()
@@ -52,11 +52,15 @@ class LoadExampleDatasetTask(name: String) : BaseTask(name) {
 
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
+    private val variableNameGenerator: UniqueVariableNameGenerator by inject()
+
     override fun code(): String {
-        val output = "(${xTrainOutput.name}, ${yTrainOutput.name}), " +
-            "(${xTestOutput.name}, ${yTestOutput.name})"
+        val descriptionVar = variableNameGenerator.uniqueVariableName()
         return """
-            |$output = ${exampleDatasetToCode.datasetToCode(dataset)}.load_data()
+            |axon.client.convert_dataset(${dataset.pathInS3})
+            |$descriptionVar = {
+            |   ${TODO()}
+            |}
         """.trimMargin()
     }
 }
