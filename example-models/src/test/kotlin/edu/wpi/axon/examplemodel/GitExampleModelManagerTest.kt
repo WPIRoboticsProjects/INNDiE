@@ -9,11 +9,12 @@ import java.io.File
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Paths
 
 internal class GitExampleModelManagerTest {
 
     private val testExampleModelMetadataUrl =
-            "https://raw.githubusercontent.com/wpilibsuite/axon-example-models-testing/master/exampleModels.json"
+        "https://raw.githubusercontent.com/wpilibsuite/axon-example-models-testing/master/exampleModels.json"
 
     @Test
     fun `update cache once`(@TempDir tempDir: File) {
@@ -82,6 +83,27 @@ internal class GitExampleModelManagerTest {
                 it.readText().replace(Regex("\\s"), "").shouldBe(model.fileName)
             }
         }
+        FileUtils.deleteDirectory(tempDir)
+    }
+
+    @Test
+    fun `download twice`(@TempDir tempDir: File) {
+        val manager = getGitExampleModelManagerForTesting(tempDir)
+
+        manager.updateCache().unsafeRunSync()
+        manager.cacheDir.shouldExist()
+        manager.getAllExampleModels().unsafeRunSync().forEach { model ->
+            val file = Paths.get(manager.cacheDir.absolutePath, model.fileName).toFile()
+            file.createNewFile()
+            manager.download(model).unsafeRunSync().let {
+                it.shouldExist()
+                it.name.shouldBe(model.fileName)
+                // Should be empty because we wrote an empty file in the cache before the model was
+                // downloaded
+                it.readText().shouldBe("")
+            }
+        }
+
         FileUtils.deleteDirectory(tempDir)
     }
 
