@@ -25,7 +25,6 @@ class JobRunner(
     region: Region?
 ) {
 
-    private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
     private val scriptRunner = EC2TrainingScriptRunner(bucketName, instanceType, region)
 
     /**
@@ -35,9 +34,7 @@ class JobRunner(
      * @return The script id of the script that was started.
      */
     fun startJob(job: Job): Long = IO.fx {
-        val modelFile = Paths.get(job.userOldModelPath).toFile()
-        val trainModelScriptGenerator = when (
-            val model = loadLayersFromHDF5.load(modelFile).bind()) {
+        val trainModelScriptGenerator = when (val model = job.userModel) {
             is Model.Sequential -> TrainSequentialModelScriptGenerator(toTrainState(job, model))
             is Model.General -> TrainGeneralModelScriptGenerator(toTrainState(job, model))
         }
