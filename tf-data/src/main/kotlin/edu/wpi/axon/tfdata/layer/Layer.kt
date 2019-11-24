@@ -1,8 +1,8 @@
 package edu.wpi.axon.tfdata.layer
 
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.SerializableEither
-import edu.wpi.axon.tfdata.SerializableTuple2
+import edu.wpi.axon.tfdata.SerializableEitherITii
+import edu.wpi.axon.tfdata.SerializableTuple2II
 import kotlinx.serialization.Serializable
 
 /**
@@ -166,9 +166,9 @@ sealed class Layer {
     data class AveragePooling2D(
         override val name: String,
         override val inputs: Set<String>?,
-        val poolSize: SerializableEither<Int, SerializableTuple2<Int, Int>> =
-            SerializableEither.Right(SerializableTuple2(2, 2)),
-        val strides: SerializableEither<Int, SerializableTuple2<Int, Int>>? = null,
+        val poolSize: SerializableEitherITii =
+            SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+        val strides: SerializableEitherITii? = null,
         val padding: PoolingPadding = PoolingPadding.Valid,
         val dataFormat: DataFormat? = null
     ) : Layer()
@@ -181,7 +181,7 @@ sealed class Layer {
         override val name: String,
         override val inputs: Set<String>?,
         val filters: Int,
-        val kernel: SerializableTuple2<Int, Int>,
+        val kernel: SerializableTuple2II,
         val activation: Activation
     ) : Layer()
 
@@ -260,9 +260,9 @@ sealed class Layer {
     data class MaxPooling2D(
         override val name: String,
         override val inputs: Set<String>?,
-        val poolSize: SerializableEither<Int, SerializableTuple2<Int, Int>> =
-            SerializableEither.Right(SerializableTuple2(2, 2)),
-        val strides: SerializableEither<Int, SerializableTuple2<Int, Int>>? = null,
+        val poolSize: SerializableEitherITii =
+            SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+        val strides: SerializableEitherITii? = null,
         val padding: PoolingPadding = PoolingPadding.Valid,
         val dataFormat: DataFormat? = null
     ) : Layer()
@@ -294,8 +294,8 @@ sealed class Layer {
     data class UpSampling2D(
         override val name: String,
         override val inputs: Set<String>?,
-        val size: SerializableEither<Int, SerializableTuple2<Int, Int>> =
-            SerializableEither.Right(SerializableTuple2(2, 2)),
+        val size: SerializableEitherITii =
+            SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
         val dataFormat: DataFormat? = null,
         val interpolation: Interpolation = Interpolation.Nearest
     ) : Layer()

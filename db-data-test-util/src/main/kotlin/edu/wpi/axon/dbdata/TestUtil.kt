@@ -2,7 +2,7 @@ package edu.wpi.axon.dbdata
 
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.SerializableTuple2
+import edu.wpi.axon.tfdata.SerializableTuple2II
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.loss.Loss
@@ -51,7 +51,7 @@ fun Random.nextJob() = Job(
                 RandomStringUtils.randomAlphanumeric(10),
                 null,
                 9,
-                SerializableTuple2(3, 3),
+                SerializableTuple2II(3, 3),
                 Activation.SoftMax
             ).trainable(),
             Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()

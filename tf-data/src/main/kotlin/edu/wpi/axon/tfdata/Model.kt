@@ -33,7 +33,7 @@ sealed class Model {
     data class General(
         override val name: String,
         val input: Set<InputData>,
-        @ContextualSerialization val layers: LayerGraph,
+        @ContextualSerialization val layers: LayerGraph, // TODO: Fix this serializer
         val output: Set<OutputData>
     ) : Model() {
 

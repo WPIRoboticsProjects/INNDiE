@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 internal class JobDbTest {
+
     @Test
     fun `create test`(@TempDir tempDir: File) {
         val db = createDb(tempDir)

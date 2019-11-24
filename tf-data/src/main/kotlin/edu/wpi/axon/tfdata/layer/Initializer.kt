@@ -1,6 +1,6 @@
 package edu.wpi.axon.tfdata.layer
 
-import edu.wpi.axon.tfdata.SerializableEither
+import edu.wpi.axon.tfdata.SerializableEitherDLd
 import kotlinx.serialization.Serializable
 
 /**
@@ -14,7 +14,7 @@ sealed class Initializer {
      */
     @Serializable
     data class Constant(
-        val value: SerializableEither<Double, List<Double>> = SerializableEither.Left(0.0)
+        val value: SerializableEitherDLd = SerializableEitherDLd.Left(0.0)
     ) : Initializer()
 
     /**
@@ -55,8 +55,8 @@ sealed class Initializer {
      */
     @Serializable
     data class RandomUniform(
-        val minVal: SerializableEither<Double, List<Double>> = SerializableEither.Left(-0.05),
-        val maxVal: SerializableEither<Double, List<Double>> = SerializableEither.Left(0.05),
+        val minVal: SerializableEitherDLd = SerializableEitherDLd.Left(-0.05),
+        val maxVal: SerializableEitherDLd = SerializableEitherDLd.Left(0.05),
         val seed: Int? = null
     ) : Initializer()
 
