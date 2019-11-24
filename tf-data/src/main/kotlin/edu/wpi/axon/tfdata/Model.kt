@@ -4,7 +4,6 @@ package edu.wpi.axon.tfdata
 
 import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.tfdata.layer.Layer
-import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -33,7 +32,7 @@ sealed class Model {
     data class General(
         override val name: String,
         val input: Set<InputData>,
-        @ContextualSerialization val layers: LayerGraph, // TODO: Fix this serializer
+        @Serializable(with = ImmutableGraphSerializer::class) val layers: LayerGraph,
         val output: Set<OutputData>
     ) : Model() {
 
