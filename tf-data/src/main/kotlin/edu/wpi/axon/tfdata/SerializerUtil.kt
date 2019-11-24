@@ -55,7 +55,7 @@ sealed class SerializableEitherDLd : SerializableEither<Double, List<Double>> {
     }
 }
 
-interface SerializableTuple2I<out T1, out T2> {
+private interface SerializableTuple2I<out T1, out T2> {
     val data1: T1
     val data2: T2
     fun toTuple2(): Tuple2<T1, T2> = Tuple2(data1, data2)

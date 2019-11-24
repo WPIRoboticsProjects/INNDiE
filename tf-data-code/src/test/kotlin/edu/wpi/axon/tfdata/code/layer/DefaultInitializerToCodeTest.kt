@@ -1,10 +1,8 @@
 package edu.wpi.axon.tfdata.code.layer
 
 import arrow.core.Either
-import arrow.core.Left
-import arrow.core.Right
 import arrow.core.right
-import edu.wpi.axon.tfdata.SerializableEither
+import edu.wpi.axon.tfdata.SerializableEitherDLd
 import edu.wpi.axon.tfdata.layer.Initializer
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
@@ -25,7 +23,7 @@ internal class DefaultInitializerToCodeTest {
         @Suppress("unused")
         fun initializerSource() = listOf(
             Arguments.of(
-                Initializer.Constant(SerializableEither.Left(0.0)),
+                Initializer.Constant(SerializableEitherDLd.Left(0.0)),
                 "tf.keras.initializers.Constant(value=0.0)".right()
             ),
             Arguments.of(
@@ -45,11 +43,19 @@ internal class DefaultInitializerToCodeTest {
                 "tf.keras.initializers.RandomNormal(mean=1.0, stddev=2.0, seed=None)".right()
             ),
             Arguments.of(
-                Initializer.RandomUniform(SerializableEither.Left(-0.05), SerializableEither.Left(0.05), null),
+                Initializer.RandomUniform(
+                    SerializableEitherDLd.Left(-0.05),
+                    SerializableEitherDLd.Left(0.05),
+                    null
+                ),
                 "tf.keras.initializers.RandomUniform(minval=-0.05, maxval=0.05, seed=None)".right()
             ),
             Arguments.of(
-                Initializer.RandomUniform(SerializableEither.Right(listOf(1.0, 2.0)), SerializableEither.Right(listOf(3.0, 4.0)), null),
+                Initializer.RandomUniform(
+                    SerializableEitherDLd.Right(listOf(1.0, 2.0)),
+                    SerializableEitherDLd.Right(listOf(3.0, 4.0)),
+                    null
+                ),
                 "tf.keras.initializers.RandomUniform(minval=[1.0, 2.0], maxval=[3.0, 4.0], seed=None)".right()
             ),
             Arguments.of(

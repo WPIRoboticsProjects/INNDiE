@@ -5,8 +5,8 @@ import arrow.core.Right
 import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tfdata.SerializableEither
-import edu.wpi.axon.tfdata.SerializableTuple2
+import edu.wpi.axon.tfdata.SerializableEitherITii
+import edu.wpi.axon.tfdata.SerializableTuple2II
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
@@ -93,8 +93,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 Layer.MaxPooling2D(
                     "name",
                     null,
-                    SerializableEither.Left(1),
-                    SerializableEither.Left(2),
+                    SerializableEitherITii.Left(1),
+                    SerializableEitherITii.Left(2),
                     PoolingPadding.Valid,
                     null
                 ),
@@ -105,7 +105,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 Layer.MaxPooling2D(
                     "name",
                     null,
-                    SerializableEither.Left(1),
+                    SerializableEitherITii.Left(1),
                     null,
                     PoolingPadding.Same,
                     DataFormat.ChannelsLast
@@ -117,8 +117,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 Layer.MaxPooling2D(
                     "name",
                     null,
-                    SerializableEither.Right(SerializableTuple2(1, 2)),
-                    SerializableEither.Right(SerializableTuple2(3, 4)),
+                    SerializableEitherITii.Right(SerializableTuple2II(1, 2)),
+                    SerializableEitherITii.Right(SerializableTuple2II(3, 4)),
                     PoolingPadding.Valid,
                     DataFormat.ChannelsFirst
                 ),
@@ -187,8 +187,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 Layer.AveragePooling2D(
                     "name",
                     null,
-                    SerializableEither.Right(SerializableTuple2(2, 2)),
-                    SerializableEither.Left(3),
+                    SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+                    SerializableEitherITii.Left(3),
                     PoolingPadding.Valid,
                     DataFormat.ChannelsLast
                 ),
@@ -218,7 +218,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 Layer.UpSampling2D(
                     "name",
                     null,
-                    SerializableEither.Right(SerializableTuple2(2, 2)),
+                    SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
                     null,
                     Interpolation.Nearest
                 ),

@@ -4,8 +4,8 @@
 package edu.wpi.axon.tflayerloader
 
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.SerializableEither
-import edu.wpi.axon.tfdata.SerializableTuple2
+import edu.wpi.axon.tfdata.SerializableEitherITii
+import edu.wpi.axon.tfdata.SerializableTuple2II
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Layer
@@ -30,21 +30,21 @@ internal class LoadLayersFromHDF5IntegrationTest {
                         "conv2d_16",
                         null,
                         32,
-                        SerializableTuple2(3, 3),
+                        SerializableTuple2II(3, 3),
                         Activation.ReLu
                     ).trainable(),
                     Layer.Conv2D(
                         "conv2d_17",
                         null,
                         64,
-                        SerializableTuple2(3, 3),
+                        SerializableTuple2II(3, 3),
                         Activation.ReLu
                     ).trainable(),
                     Layer.MaxPooling2D(
                         "max_pooling2d_8",
                         null,
-                        SerializableEither.Right(SerializableTuple2(2, 2)),
-                        SerializableEither.Right(SerializableTuple2(2, 2)),
+                        SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+                        SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
                         PoolingPadding.Valid,
                         DataFormat.ChannelsLast
                     ).trainable(),

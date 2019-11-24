@@ -3,7 +3,7 @@
 package edu.wpi.axon.tflayerloader
 
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.SerializableEither
+import edu.wpi.axon.tfdata.SerializableEitherDLd
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Initializer
 import edu.wpi.axon.tfdata.layer.Layer
@@ -24,7 +24,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     1,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(SerializableEither.Left(0.0))
+                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Left(0.0))
                 ).trainable()
             )
         }
@@ -41,7 +41,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(SerializableEither.Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).trainable()
             )
         }
@@ -58,7 +58,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(SerializableEither.Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).trainable()
             )
         }
@@ -75,7 +75,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(SerializableEither.Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).trainable()
             )
         }
@@ -143,7 +143,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.RandomUniform(SerializableEither.Left(-0.1), SerializableEither.Left(0.1), null)
+                    kernelInitializer = Initializer.RandomUniform(SerializableEitherDLd.Left(-0.1), SerializableEitherDLd.Left(0.1), null)
                 ).trainable()
             )
         }
@@ -161,8 +161,8 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.RandomUniform(
-                        SerializableEither.Right(listOf(-0.1, -0.2)),
-                        SerializableEither.Right(listOf(0.1, 0.2)),
+                        SerializableEitherDLd.Right(listOf(-0.1, -0.2)),
+                        SerializableEitherDLd.Right(listOf(0.1, 0.2)),
                         null
                     )
                 ).trainable()
