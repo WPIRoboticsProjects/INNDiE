@@ -8,8 +8,6 @@
 
 package edu.wpi.axon.dsl.task
 
-import arrow.core.None
-import arrow.core.Some
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.testutil.KoinTestFixture
@@ -30,7 +28,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
+        val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable()
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf(layer1)
@@ -51,8 +49,8 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable()
-        val layer2 = Layer.UnknownLayer("unknown_1", None).trainable()
+        val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable()
+        val layer2 = Layer.UnknownLayer("unknown_1", null).trainable()
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf(layer1, layer2)
@@ -79,7 +77,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers =
-                setOf(Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable())
+                setOf(Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable())
             newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
         }
@@ -99,8 +97,8 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf(
-                Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable(),
-                Layer.UnknownLayer("unknown_1", None).trainable()
+                Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable(),
+                Layer.UnknownLayer("unknown_1", null).trainable()
             )
             newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
@@ -122,7 +120,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf()
-            newLayers = setOf(Layer.Dense("dense_1", None, 10, Activation.ReLu).trainable())
+            newLayers = setOf(Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -142,8 +140,8 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf()
             newLayers = setOf(
-                Layer.Dense("dense_1", None, 128, Activation.ReLu).trainable(),
-                Layer.Dense("dense_2", None, 10, Activation.SoftMax).trainable()
+                Layer.Dense("dense_1", null, 128, Activation.ReLu).trainable(),
+                Layer.Dense("dense_2", null, 10, Activation.SoftMax).trainable()
             )
             newModelOutput = configuredCorrectly("new_model")
         }
@@ -167,7 +165,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf()
-            newLayers = setOf(Layer.UnknownLayer("layer_1", None).trainable())
+            newLayers = setOf(Layer.UnknownLayer("layer_1", null).trainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -186,7 +184,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             newLayers = setOf(
                 Layer.Dense(
                     "dense_1",
-                    None,
+                    null,
                     128,
                     Activation.UnknownActivation("activation_1")
                 ).trainable()
@@ -203,16 +201,16 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = Layer.UnknownLayer("unknown_3", None).trainable()
+        val layer1 = Layer.UnknownLayer("unknown_3", null).trainable()
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf(
                 layer1,
-                Layer.Dense("dense_2", None, 10, Activation.SoftMax).trainable()
+                Layer.Dense("dense_2", null, 10, Activation.SoftMax).trainable()
             )
             newLayers = setOf(
                 layer1,
-                Layer.Dense("dense_2", None, 3, Activation.SoftMax).trainable()
+                Layer.Dense("dense_2", null, 3, Activation.SoftMax).trainable()
             )
             newModelOutput = configuredCorrectly("new_model")
         }
@@ -233,7 +231,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val layer1 = Layer.UnknownLayer("unknown_1", None).trainable()
+        val layer1 = Layer.UnknownLayer("unknown_1", null).trainable()
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf(layer1)
@@ -255,7 +253,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
 
         val layer1 = Layer.Dense(
             "dense_1",
-            None,
+            null,
             10,
             Activation.UnknownActivation("activation_1")
         ).trainable()
@@ -279,7 +277,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             modules(defaultModule())
         }
 
-        val baseLayer1 = Layer.Dense("dense_1", None, 10, Activation.ReLu)
+        val baseLayer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu)
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf(baseLayer1.trainable())
@@ -305,7 +303,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
             newLayers = setOf(
                 Layer.Dense(
                     "dense_1",
-                    Some(setOf("input_name")),
+                    setOf("input_name"),
                     10,
                     Activation.ReLu
                 ).trainable()

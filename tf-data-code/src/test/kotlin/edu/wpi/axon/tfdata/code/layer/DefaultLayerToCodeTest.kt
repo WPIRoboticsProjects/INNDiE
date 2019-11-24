@@ -1,14 +1,12 @@
 package edu.wpi.axon.tfdata.code.layer
 
 import arrow.core.Either
-import arrow.core.Left
-import arrow.core.None
 import arrow.core.Right
-import arrow.core.Some
-import arrow.core.Tuple2
 import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.axon.tfdata.SerializableEither
+import edu.wpi.axon.tfdata.SerializableTuple2
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
@@ -52,17 +50,17 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
         @Suppress("unused")
         fun layerSource() = listOf(
             Arguments.of(
-                Layer.Dense("name", None, 3, Activation.ReLu),
+                Layer.Dense("name", null, 3, Activation.ReLu),
                 """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                Layer.Dense("name", Some(setOf("input_name")), 3, Activation.ReLu),
+                Layer.Dense("name", setOf("input_name"), 3, Activation.ReLu),
                 """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                Layer.Dense("name", None, 3, Activation.ReLu).trainable(),
+                Layer.Dense("name", null, 3, Activation.ReLu).trainable(),
                 """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
                 null
             ),
@@ -77,26 +75,26 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 null
             ),
             Arguments.of(
-                Layer.Dropout("name", Some(setOf("in1")), 0.2),
+                Layer.Dropout("name", setOf("in1"), 0.2),
                 """tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                Layer.Dropout("name", Some(setOf("in1")), 0.2, listOf(1, 2, 3), 2),
+                Layer.Dropout("name", setOf("in1"), 0.2, listOf(1, 2, 3), 2),
                 """tf.keras.layers.Dropout(0.2, noise_shape=(1,2,3), seed=2, name="name")""".right(),
                 null
             ),
             Arguments.of(
-                Layer.UnknownLayer("", None),
+                Layer.UnknownLayer("", null),
                 """Cannot construct an unknown layer: UnknownLayer(name=, inputs=None)""".left(),
                 null
             ),
             Arguments.of(
                 Layer.MaxPooling2D(
                     "name",
-                    None,
-                    Left(1),
-                    Left(2),
+                    null,
+                    SerializableEither.Left(1),
+                    SerializableEither.Left(2),
                     PoolingPadding.Valid,
                     null
                 ),
@@ -106,8 +104,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.MaxPooling2D(
                     "name",
-                    None,
-                    Left(1),
+                    null,
+                    SerializableEither.Left(1),
                     null,
                     PoolingPadding.Same,
                     DataFormat.ChannelsLast
@@ -118,9 +116,9 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.MaxPooling2D(
                     "name",
-                    None,
-                    Right(Tuple2(1, 2)),
-                    Right(Tuple2(3, 4)),
+                    null,
+                    SerializableEither.Right(SerializableTuple2(1, 2)),
+                    SerializableEither.Right(SerializableTuple2(3, 4)),
                     PoolingPadding.Valid,
                     DataFormat.ChannelsFirst
                 ),
@@ -130,7 +128,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.BatchNormalization(
                     name = "name",
-                    inputs = None,
+                    inputs = null,
                     axis = -1,
                     momentum = 0.99,
                     epsilon = 0.001,
@@ -179,7 +177,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.Flatten(
                     "name",
-                    None,
+                    null,
                     DataFormat.ChannelsFirst
                 ),
                 ("""tf.keras.layers.Flatten(data_format="channels_first", name="name")""").right(),
@@ -188,9 +186,9 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.AveragePooling2D(
                     "name",
-                    None,
-                    Right(Tuple2(2, 2)),
-                    Left(3),
+                    null,
+                    SerializableEither.Right(SerializableTuple2(2, 2)),
+                    SerializableEither.Left(3),
                     PoolingPadding.Valid,
                     DataFormat.ChannelsLast
                 ),
@@ -200,7 +198,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.GlobalMaxPooling2D(
                     "name",
-                    None,
+                    null,
                     DataFormat.ChannelsFirst
                 ),
                 Right("""tf.keras.layers.GlobalMaxPooling2D(data_format="channels_first", name="name")"""),
@@ -209,7 +207,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.SpatialDropout2D(
                     "name",
-                    None,
+                    null,
                     0.2,
                     null
                 ),
@@ -219,8 +217,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.UpSampling2D(
                     "name",
-                    None,
-                    Right(Tuple2(2, 2)),
+                    null,
+                    SerializableEither.Right(SerializableTuple2(2, 2)),
                     null,
                     Interpolation.Nearest
                 ),
@@ -230,7 +228,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             Arguments.of(
                 Layer.GlobalAveragePooling2D(
                     "name",
-                    None,
+                    null,
                     DataFormat.ChannelsLast
                 ),
                 Right("""tf.keras.layers.GlobalAveragePooling2D(data_format="channels_last", name="name")"""),

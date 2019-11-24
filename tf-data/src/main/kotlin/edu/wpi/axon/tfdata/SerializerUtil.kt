@@ -13,18 +13,22 @@ sealed class SerializableEither<L, R> {
     @Serializable
     data class Right<L, R>(val value: R) : SerializableEither<L, R>()
 
-    fun fromEither(either: Either<L, R>) = when (either) {
-        is Either.Left -> TODO() // SerializableEither.Left(either.a)
-        is Either.Right -> SerializableEither.Right(either.b)
-    }
-
     fun toEither(): Either<L, R> = when (this) {
         is Left -> Either.Left(value)
         is Right -> Either.Right(value)
     }
+
+    companion object {
+
+        fun <L, R> fromEither(either: Either<L, R>): SerializableEither<L, R> = when (either) {
+            is Either.Left -> Left(either.a)
+            is Either.Right -> Right(either.b)
+        }
+    }
 }
 
-fun <L, R> Either<L, R>.serializableEither(): SerializableEither<L, R> = SerializableEither.fromEither(this)
+fun <L, R> Either<L, R>.serializableEither(): SerializableEither<L, R> =
+    SerializableEither.fromEither(this)
 
 @Serializable
 data class SerializableTuple2<out T1, out T2>(

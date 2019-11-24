@@ -30,7 +30,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         )
 
         val newModelName = "mobilenetv2_1.00_224-trained.h5"
-        val (_, path) = loadModel("mobilenetv2_1.00_224.h5") {}
+        val (model, path) = loadModel("mobilenetv2_1.00_224.h5") {}
         val job = Job(
             "Job 1",
             TrainingScriptProgress.NotStarted,
@@ -41,6 +41,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             Loss.SparseCategoricalCrossentropy,
             setOf("accuracy"),
             1,
+            model,
             false
         )
 

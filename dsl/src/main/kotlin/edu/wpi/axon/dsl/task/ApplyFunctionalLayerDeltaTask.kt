@@ -1,7 +1,6 @@
 package edu.wpi.axon.dsl.task
 
 import arrow.core.Either
-import arrow.core.Some
 import arrow.core.extensions.either.monadError.monadError
 import arrow.core.extensions.fx
 import edu.wpi.axon.dsl.Code
@@ -152,8 +151,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                 is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
             }
 
-            val layerInputs = (layer.inputs as Some).t
-            val layerInputCode = makeLayerInputCode(layerInputs, layerVariableNames)
+            val layerInputCode = makeLayerInputCode(layer.inputs!!, layerVariableNames)
 
             "$newLayerCode($layerInputCode)"
         }

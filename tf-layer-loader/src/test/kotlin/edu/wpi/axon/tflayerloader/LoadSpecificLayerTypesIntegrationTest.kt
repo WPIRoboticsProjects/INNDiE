@@ -3,10 +3,10 @@
 
 package edu.wpi.axon.tflayerloader
 
-import arrow.core.None
 import arrow.core.Right
-import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.tfdata.SerializableEither
+import edu.wpi.axon.tfdata.SerializableTuple2
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Interpolation
 import edu.wpi.axon.tfdata.layer.Layer
@@ -25,9 +25,9 @@ internal class LoadSpecificLayerTypesIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.AveragePooling2D(
                     "average_pooling2d_7",
-                    None,
-                    Right(Tuple2(2, 2)),
-                    Right(Tuple2(2, 2)),
+                    null,
+                    SerializableEither.Right(SerializableTuple2(2, 2)),
+                    SerializableEither.Right(SerializableTuple2(2, 2)),
                     PoolingPadding.Valid,
                     DataFormat.ChannelsLast
                 ).trainable()
@@ -43,7 +43,7 @@ internal class LoadSpecificLayerTypesIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.GlobalMaxPooling2D(
                     "global_max_pooling2d",
-                    None,
+                    null,
                     DataFormat.ChannelsLast
                 ).trainable()
             )
@@ -58,7 +58,7 @@ internal class LoadSpecificLayerTypesIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.SpatialDropout2D(
                     "spatial_dropout2d",
-                    None,
+                    null,
                     0.2,
                     null
                 ).trainable()
@@ -74,8 +74,8 @@ internal class LoadSpecificLayerTypesIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.UpSampling2D(
                     "up_sampling2d_3",
-                    None,
-                    Right(Tuple2(2, 2)),
+                    null,
+                    SerializableEither.Right(SerializableTuple2(2, 2)),
                     DataFormat.ChannelsLast,
                     Interpolation.Nearest
                 ).trainable()
@@ -91,8 +91,8 @@ internal class LoadSpecificLayerTypesIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.UpSampling2D(
                     "up_sampling2d_2",
-                    None,
-                    Right(Tuple2(2, 2)),
+                    null,
+                    SerializableEither.Right(SerializableTuple2(2, 2)),
                     DataFormat.ChannelsLast,
                     Interpolation.Bilinear
                 ).trainable()

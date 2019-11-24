@@ -1,6 +1,5 @@
 package edu.wpi.axon.tflayerloader
 
-import arrow.core.None
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
@@ -19,7 +18,7 @@ internal class LoadLayersWithRegularizersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_3",
-                    None,
+                    null,
                     1,
                     Activation.Linear,
                     kernelRegularizer = Regularizer.L1L2(0.01, 0.0)
