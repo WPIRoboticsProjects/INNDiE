@@ -22,17 +22,8 @@ import kotlinx.serialization.internal.PairSerializer
 import kotlinx.serialization.internal.SerialClassDescImpl
 import org.octogonapus.ktguava.collections.toImmutableGraph
 
-private interface SerializableEither<L, R> {
-
-    private data class Left<L, R>(val value: L) : SerializableEither<L, R>
-
-    private data class Right<L, R>(val value: R) : SerializableEither<L, R>
-
-    fun toEither(): Either<L, R> = when (this) {
-        is Left -> Either.Left(value)
-        is Right -> Either.Right(value)
-        else -> error("Unhandled case.")
-    }
+interface SerializableEither<L, R> {
+    fun toEither(): Either<L, R>
 }
 
 @Serializable
@@ -43,6 +34,11 @@ sealed class SerializableEitherITii : SerializableEither<Int, SerializableTuple2
 
     @Serializable
     data class Right(val value: SerializableTuple2II) : SerializableEitherITii()
+
+    override fun toEither() = when (this) {
+        is Left -> Either.Left(value)
+        is Right -> Either.Right(value)
+    }
 
     companion object {
 
@@ -63,6 +59,11 @@ sealed class SerializableEitherDLd : SerializableEither<Double, List<Double>> {
     @Serializable
     data class Right(val value: List<Double>) : SerializableEitherDLd()
 
+    override fun toEither() = when (this) {
+        is Left -> Either.Left(value)
+        is Right -> Either.Right(value)
+    }
+
     companion object {
 
         fun fromEither(either: Either<Double, List<Double>>): SerializableEitherDLd =
@@ -73,7 +74,7 @@ sealed class SerializableEitherDLd : SerializableEither<Double, List<Double>> {
     }
 }
 
-private interface SerializableTuple2I<out T1, out T2> {
+interface SerializableTuple2<out T1, out T2> {
     val data1: T1
     val data2: T2
     fun toTuple2(): Tuple2<T1, T2> = Tuple2(data1, data2)
@@ -83,7 +84,7 @@ private interface SerializableTuple2I<out T1, out T2> {
 data class SerializableTuple2II(
     override val data1: Int,
     override val data2: Int
-) : SerializableTuple2I<Int, Int>
+) : SerializableTuple2<Int, Int>
 
 @Serializer(forClass = ImmutableGraph::class)
 class ImmutableGraphSerializer<T : Any>(
