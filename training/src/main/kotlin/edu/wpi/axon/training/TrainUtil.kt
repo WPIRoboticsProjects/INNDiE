@@ -186,6 +186,9 @@ internal fun ScriptGenerator.compileTrainSave(
     applyLayerDeltaTask: Task,
     loadedDataset: LoadedDataset
 ): Task {
+    val hasValidation = loadedDataset.validation.isDefined() ||
+        loadedDataset.validationSplit.fold({ false }, { it > 0.0 })
+
     val compileModelTask by tasks.running(CompileModelTask::class) {
         modelInput = newModel
         optimizer = trainState.userOptimizer
@@ -196,7 +199,14 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val checkpointCallback by variables.creating(Variable::class)
     tasks.run(CheckpointCallbackTask::class) {
-        filePath = "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+        filePath = if (hasValidation) {
+            // Can only use val_loss if there is validation data, which can take the form of
+            // a validation dataset or a nonzero validation split
+            "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+        } else {
+            "${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
+        }
+        monitor = if (hasValidation) "val_loss" else "loss"
         saveWeightsOnly = true
         verbose = 1
         output = checkpointCallback
@@ -204,6 +214,7 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val earlyStoppingCallback by variables.creating(Variable::class)
     tasks.run(EarlyStoppingTask::class) {
+        monitor = if (hasValidation) "val_loss" else "loss"
         patience = 10
         verbose = 1
         output = earlyStoppingCallback
