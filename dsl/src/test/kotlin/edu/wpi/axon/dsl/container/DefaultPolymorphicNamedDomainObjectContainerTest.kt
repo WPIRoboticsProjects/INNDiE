@@ -127,7 +127,7 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
             get() = TODO("not implemented")
         override val outputs: Set<Variable>
             get() = TODO("not implemented")
-        override val dependencies: Set<Code<*>>
+        override val dependencies: MutableSet<Code<*>>
             get() = TODO("not implemented")
 
         override fun code(): String {

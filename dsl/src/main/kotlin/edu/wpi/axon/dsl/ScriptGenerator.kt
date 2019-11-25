@@ -35,6 +35,8 @@ class ScriptGenerator(
     // TODO: Do something with this (probably make the script implement a method and return this)
     // var scriptOutput: Variable? = null
 
+    var pregenerationLastTask: Task? = null
+
     // TODO: Find an intelligent way to derive this instead of needing it to be specified
     // Once CodeGraph verifies there are no islands, we should be able to start from any node and
     // find the last node in the DAG.
@@ -105,6 +107,15 @@ class ScriptGenerator(
         }
 
         val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
+
+        // Add the pregenerationLastTask as a dependency of every task so it is guaranteed to be
+        // generated before any of them
+        pregenerationLastTask?.let {
+            tasks.forEach { _, task ->
+                if (task.name != it.name)
+                    task.dependencies.add(it)
+            }
+        }
 
         @Suppress("UNCHECKED_CAST")
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph

@@ -61,7 +61,7 @@ class EarlyStoppingTask(name: String) : BaseTask(name) {
     override val outputs: Set<Variable>
         get() = setOf(output)
 
-    override val dependencies: Set<Code<*>> = setOf()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
         |${output.name} = tf.keras.callbacks.EarlyStopping(

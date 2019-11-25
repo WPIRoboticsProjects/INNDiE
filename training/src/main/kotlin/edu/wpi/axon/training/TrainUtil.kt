@@ -12,12 +12,13 @@ import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
+import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
 import edu.wpi.axon.dsl.task.DownloadModelFromS3Task
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
-import edu.wpi.axon.dsl.task.LoadSuperviselyDataset
+import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.Task
@@ -125,16 +126,26 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
     require(trainState.userDataset.pathInS3.endsWith(".tar"))
     require(trainState.userBucketName != null)
 
+    // TODO: Run conversion as a separate step so that eager execution is disabled when training
+    // LoadTFRecordOfImagesWithObjects needs eager execution
+    check(pregenerationLastTask == null) {
+        "BUG: pregenerationLastTask was not null and would have been overwritten."
+    }
+    pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+
+    val convertTask = tasks.run(ConvertSuperviselyDatasetToRecord::class) {
+        dataset = trainState.userDataset
+    }
+
     val xTrain by variables.creating(Variable::class)
     val yTrain by variables.creating(Variable::class)
-
-    tasks.run(LoadSuperviselyDataset::class) {
+    tasks.run(LoadTFRecordOfImagesWithObjects::class) {
         dataset = trainState.userDataset
         bucketName = trainState.userBucketName
         region = trainState.userRegion
         xOutput = xTrain
         yOutput = yTrain
-        dependencies += tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+        dependencies += convertTask
     }
 
     return LoadedDataset(
