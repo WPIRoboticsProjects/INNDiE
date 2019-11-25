@@ -1,10 +1,17 @@
 package edu.wpi.axon.dsl.container
 
+import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.MockVariable
+import edu.wpi.axon.dsl.imports.Import
+import edu.wpi.axon.dsl.mockVariableNameGenerator
 import edu.wpi.axon.dsl.mockVariableNameValidator
+import edu.wpi.axon.dsl.runExactlyOnce
+import edu.wpi.axon.dsl.task.BaseTask
+import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
 import io.kotlintest.matchers.booleans.shouldBeTrue
+import io.kotlintest.matchers.maps.shouldContainExactly
 import io.kotlintest.matchers.maps.shouldContainKey
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -91,10 +98,40 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
         }
     }
 
+    @Test
+    fun `run exactly once called twice`() {
+        startKoin {
+            modules(module {
+                mockVariableNameGenerator()
+            })
+        }
+
+        val container = DefaultPolymorphicNamedDomainObjectContainer.of<Task>()
+
+        val task = container.runExactlyOnce(MockTask::class)
+        container.runExactlyOnce(MockTask::class)
+        container.shouldContainExactly(mapOf("var1" to task))
+    }
+
     class TestVariable(
         name: String,
         @Suppress("UNUSED_PARAMETER") anotherParameter: Int
     ) : Variable(name) {
         companion object : Variable("companionName")
+    }
+
+    data class MockTask(override val name: String) : BaseTask(name) {
+        override val imports: Set<Import>
+            get() = TODO("not implemented")
+        override val inputs: Set<Variable>
+            get() = TODO("not implemented")
+        override val outputs: Set<Variable>
+            get() = TODO("not implemented")
+        override val dependencies: Set<Code<*>>
+            get() = TODO("not implemented")
+
+        override fun code(): String {
+            TODO("not implemented")
+        }
     }
 }

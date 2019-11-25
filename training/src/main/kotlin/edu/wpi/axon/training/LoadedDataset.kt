@@ -1,7 +1,7 @@
 package edu.wpi.axon.training
 
-import arrow.core.Option
 import arrow.core.None
+import arrow.core.Option
 import edu.wpi.axon.dsl.variable.Variable
 
 /**

@@ -8,11 +8,13 @@ import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
+import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.DownloadModelFromS3Task
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
+import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadSuperviselyDataset
@@ -132,6 +134,7 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
         region = trainState.userRegion
         xOutput = xTrain
         yOutput = yTrain
+        dependencies += tasks.runExactlyOnce(EnableEagerExecutionTask::class)
     }
 
     return LoadedDataset(

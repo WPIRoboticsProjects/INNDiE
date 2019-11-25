@@ -47,3 +47,15 @@ fun <T : Task, U : T> PolymorphicNamedDomainObjectContainer<T>.run(
     val task by PolymorphicNamedDomainObjectContainerDelegateProvider.of(this, type, configuration)
     return task
 }
+
+/**
+ * Creates a new task and configures it. Only one task of this [type] will ever be created in
+ * the scope of this container.
+ */
+fun <T : Task, U : T> PolymorphicNamedDomainObjectContainer<T>.runExactlyOnce(
+    type: KClass<U>,
+    configuration: (U.() -> Unit)? = null
+): U {
+    @Suppress("UNCHECKED_CAST")
+    return entries.firstOrNull { it.value::class == type }?.value as U? ?: run(type, configuration)
+}
