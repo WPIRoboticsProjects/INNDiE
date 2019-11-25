@@ -1,5 +1,7 @@
 package edu.wpi.axon.ui
 
+import arrow.core.None
+import arrow.core.Option
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
@@ -20,9 +22,9 @@ import software.amazon.awssdk.services.ec2.model.InstanceType
  * @param region The region to connect to, or `null` to autodetect the region.
  */
 class JobRunner(
-    bucketName: String,
+    private val bucketName: String,
     instanceType: InstanceType,
-    region: Region?
+    private val region: Region?
 ) {
 
     private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
@@ -74,8 +76,11 @@ class JobRunner(
         userLoss = job.userLoss,
         userMetrics = job.userMetrics,
         userEpochs = job.userEpochs,
+        userValidationSplit = None, // TODO: Add this to Job and pull it from there
         userNewModel = model,
-        userAuth = null,
+        userBucketName = bucketName,
+        userRegion = Option.fromNullable(region?.id()),
+        handleS3InScript = false,
         generateDebugComments = job.generateDebugComments
     )
 }

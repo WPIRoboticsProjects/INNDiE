@@ -1,5 +1,7 @@
 package edu.wpi.axon.dsl.task
 
+import arrow.core.None
+import arrow.core.Some
 import edu.wpi.axon.dsl.TaskConfigurationTestFixture
 import edu.wpi.axon.testutil.KoinTestFixture
 import io.kotlintest.shouldBe
@@ -21,11 +23,26 @@ internal class DownloadModelFromS3TaskTest : KoinTestFixture() {
         val task = DownloadModelFromS3Task("").apply {
             modelName = "modelName.h5"
             bucketName = "bucketName"
-            region = "region-name"
+            region = Some("region-name")
         }
 
         task.code() shouldBe """
             |axon.client.impl_download_model_file("modelName.h5", "bucketName", "region-name")
+        """.trimMargin()
+    }
+
+    @Test
+    fun `test code gen without a specified region`() {
+        startKoin { }
+
+        val task = DownloadModelFromS3Task("").apply {
+            modelName = "modelName.h5"
+            bucketName = "bucketName"
+            region = None
+        }
+
+        task.code() shouldBe """
+            |axon.client.impl_download_model_file("modelName.h5", "bucketName", None)
         """.trimMargin()
     }
 }

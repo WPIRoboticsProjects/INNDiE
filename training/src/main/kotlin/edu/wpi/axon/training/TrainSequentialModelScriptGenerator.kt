@@ -3,6 +3,7 @@ package edu.wpi.axon.training
 import arrow.core.NonEmptyList
 import arrow.core.Validated
 import arrow.core.invalidNel
+import arrow.fx.IO
 import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
@@ -35,45 +36,38 @@ class TrainSequentialModelScriptGenerator(
     private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
 
     override fun generateScript(): Validated<NonEmptyList<String>, String> =
-        loadLayersFromHDF5.load(File(trainState.userOldModelPath)).map { oldModel ->
-            require(oldModel is Model.Sequential)
+        loadLayersFromHDF5.load(File(trainState.userOldModelPath)).flatMap { oldModel ->
+            IO {
+                require(oldModel is Model.Sequential)
+                require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)
 
-            require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)
-            val reshapeArgsFromBatchShape = trainState.userNewModel.batchInputShape.map { it ?: -1 }
+                val script = ScriptGenerator(
+                    DefaultPolymorphicNamedDomainObjectContainer.of(),
+                    DefaultPolymorphicNamedDomainObjectContainer.of()
+                ) {
+                    val loadedDataset = loadDataset(trainState)
 
-            val script = ScriptGenerator(
-                DefaultPolymorphicNamedDomainObjectContainer.of(),
-                DefaultPolymorphicNamedDomainObjectContainer.of()
-            ) {
-                val (xTrain, yTrain, xTest, yTest) = loadExampleDataset(trainState)
+                    val model = loadModel(trainState)
 
-                // TODO: How does the user configure this preprocessing?
-                val scaledXTrain = reshapeAndScale(xTrain, reshapeArgsFromBatchShape, 255)
-                val scaledXTest = reshapeAndScale(xTest, reshapeArgsFromBatchShape, 255)
+                    val newModel by variables.creating(Variable::class)
+                    val applyLayerDeltaTask by tasks.running(ApplySequentialLayerDeltaTask::class) {
+                        modelInput = model
+                        oldLayers = oldModel.layers
+                        newLayers = trainState.userNewModel.layers
+                        newModelOutput = newModel
+                    }
 
-                val model = loadModel(trainState)
-
-                val newModel by variables.creating(Variable::class)
-                val applyLayerDeltaTask by tasks.running(ApplySequentialLayerDeltaTask::class) {
-                    modelInput = model
-                    oldLayers = oldModel.layers
-                    newLayers = trainState.userNewModel.layers
-                    newModelOutput = newModel
+                    lastTask = compileTrainSave(
+                        trainState,
+                        oldModel,
+                        newModel,
+                        applyLayerDeltaTask,
+                        loadedDataset
+                    )
                 }
 
-                lastTask = compileTrainSave(
-                    trainState,
-                    oldModel,
-                    newModel,
-                    applyLayerDeltaTask,
-                    scaledXTrain,
-                    yTrain,
-                    scaledXTest,
-                    yTest
-                )
+                script.code(trainState.generateDebugComments)
             }
-
-            script.code(trainState.generateDebugComments)
         }.attempt().unsafeRunSync().fold(
             { Throwables.getStackTraceAsString(it).invalidNel() },
             { it }

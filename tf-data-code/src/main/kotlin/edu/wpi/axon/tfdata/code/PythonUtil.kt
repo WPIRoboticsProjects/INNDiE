@@ -1,6 +1,7 @@
 package edu.wpi.axon.tfdata.code
 
 import arrow.core.Either
+import arrow.core.Option
 import arrow.core.Tuple2
 
 data class Unquoted(val value: String)
@@ -26,6 +27,7 @@ fun pythonString(value: Any?): String = when (value) {
     is Boolean -> if (value) "True" else "False"
     is Tuple2<*, *> -> "(${pythonString(value.a)}, ${pythonString(value.b)})"
     is Either<*, *> -> value.fold({ pythonString(it) }, { pythonString(it) })
+    is Option<*> -> value.fold({ pythonString(null) }, { pythonString(it) })
 
     is ListAsTuple -> if (value.list.size == 1) {
         "(${value.list.first()},)"

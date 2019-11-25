@@ -1,11 +1,14 @@
 package edu.wpi.axon.dsl.task
 
+import arrow.core.None
+import arrow.core.Option
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
@@ -23,6 +26,11 @@ class LoadSuperviselyDataset(name: String) : BaseTask(name) {
      * The name of the S3 bucket to download the dataset from.
      */
     var bucketName: String by singleAssign()
+
+    /**
+     * The region.
+     */
+    var region: Option<String> = None
 
     /**
      * The x-axis data.
@@ -134,7 +142,9 @@ class LoadSuperviselyDataset(name: String) : BaseTask(name) {
             |                        features=tf.train.Features(feature=feature)).SerializeToString())
             |    writer.close()
             |
-            |axon.client.impl_download_dataset(${dataset.pathInS3}, $bucketName)
+            |axon.client.impl_download_dataset(${dataset.pathInS3}, $bucketName, ${pythonString(
+            region
+        )})
             |with f as tarfile.open(${dataset.baseNameWithExtension}):
             |   f.extractall()
             |$classes = $parseClasses(${dataset.baseNameWithoutExtension})
