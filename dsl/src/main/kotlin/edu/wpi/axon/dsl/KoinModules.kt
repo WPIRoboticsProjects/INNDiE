@@ -6,8 +6,8 @@ import edu.wpi.axon.dsl.validator.path.DefaultPathValidator
 import edu.wpi.axon.dsl.validator.path.PathValidator
 import edu.wpi.axon.dsl.validator.variablename.PythonVariableNameValidator
 import edu.wpi.axon.dsl.validator.variablename.VariableNameValidator
-import edu.wpi.axon.tfdata.code.ExampleDatasetToCode
 import edu.wpi.axon.tfdata.code.DefaultExampleDatasetToCode
+import edu.wpi.axon.tfdata.code.ExampleDatasetToCode
 import edu.wpi.axon.tfdata.code.layer.DefaultLayerToCode
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.code.loss.DefaultLossToCode

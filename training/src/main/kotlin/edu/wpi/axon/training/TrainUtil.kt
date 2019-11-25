@@ -2,6 +2,7 @@
 
 package edu.wpi.axon.training
 
+import arrow.core.Some
 import arrow.core.Tuple4
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.create
@@ -20,6 +21,7 @@ import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.task.UploadModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 
 /**
@@ -60,6 +62,8 @@ internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
 internal fun ScriptGenerator.loadExampleDataset(
     trainState: TrainState<*>
 ): Tuple4<Variable, Variable, Variable, Variable> {
+    require(trainState.userDataset is Dataset.ExampleDataset)
+
     val xTrain by variables.creating(Variable::class)
     val yTrain by variables.creating(Variable::class)
     val xTest by variables.creating(Variable::class)
@@ -151,8 +155,8 @@ internal fun ScriptGenerator.compileTrainSave(
         modelInput = newModel
         trainInputData = xTrain
         trainOutputData = yTrain
-        validationInputData = xTest
-        validationOutputData = yTest
+        validationInputData = Some(xTest)
+        validationOutputData = Some(yTest)
         callbacks = setOf(checkpointCallback, earlyStoppingCallback)
         epochs = trainState.userEpochs
         dependencies += compileModelTask
