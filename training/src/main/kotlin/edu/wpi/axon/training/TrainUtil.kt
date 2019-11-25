@@ -123,8 +123,6 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
     trainState: TrainState<*>
 ): LoadedDataset {
     require(trainState.userDataset is Dataset.Custom)
-    require(trainState.userDataset.pathInS3.endsWith(".tar"))
-    require(trainState.userBucketName != null)
 
     // TODO: Run conversion as a separate step so that eager execution is disabled when training
     // LoadTFRecordOfImagesWithObjects needs eager execution
@@ -141,8 +139,6 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
     val yTrain by variables.creating(Variable::class)
     tasks.run(LoadTFRecordOfImagesWithObjects::class) {
         dataset = trainState.userDataset
-        bucketName = trainState.userBucketName
-        region = trainState.userRegion
         xOutput = xTrain
         yOutput = yTrain
         dependencies += convertTask

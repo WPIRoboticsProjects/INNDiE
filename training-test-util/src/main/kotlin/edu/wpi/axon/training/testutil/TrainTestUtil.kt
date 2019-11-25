@@ -6,6 +6,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.either.shouldBeRight
+import io.kotlintest.matchers.string.shouldNotBeEmpty
 import io.kotlintest.shouldBe
 import java.io.BufferedReader
 import java.io.File
@@ -78,6 +79,7 @@ fun testTrainingScript(
             """.trimMargin()
         }
 
+        stdOut.shouldNotBeEmpty()
         exitCode shouldBe 0
     }
 }

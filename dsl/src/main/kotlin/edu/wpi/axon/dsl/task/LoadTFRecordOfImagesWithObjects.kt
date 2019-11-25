@@ -1,7 +1,5 @@
 package edu.wpi.axon.dsl.task
 
-import arrow.core.None
-import arrow.core.Option
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
@@ -20,16 +18,6 @@ class LoadTFRecordOfImagesWithObjects(name: String) : BaseTask(name) {
      * The dataset to load.
      */
     var dataset: Dataset.Custom by singleAssign()
-
-    /**
-     * The name of the S3 bucket to download the dataset from.
-     */
-    var bucketName: String by singleAssign()
-
-    /**
-     * The region.
-     */
-    var region: Option<String> = None
 
     /**
      * The x-axis data.
