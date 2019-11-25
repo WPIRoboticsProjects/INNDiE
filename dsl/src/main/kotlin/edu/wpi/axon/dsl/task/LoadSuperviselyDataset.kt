@@ -50,7 +50,8 @@ class LoadSuperviselyDataset(name: String) : BaseTask(name) {
         makeImport("import os"),
         makeImport("import itertools"),
         makeImport("import ntpath"),
-        makeImport("import numpy as np")
+        makeImport("import numpy as np"),
+        makeImport("import tarfile")
     )
 
     override val inputs: Set<Variable> = setOf()
@@ -88,6 +89,8 @@ class LoadSuperviselyDataset(name: String) : BaseTask(name) {
         // TODO: Don't require eager execution
         // TODO: Don't convert this each time, cache it in S3
         return """
+            |assert tf.executing_eagerly()
+            |
             |def $bytesFeature(value):
             |    if isinstance(value, type(tf.constant(0))):
             |        value = value.numpy()
@@ -130,7 +133,7 @@ class LoadSuperviselyDataset(name: String) : BaseTask(name) {
             |                        "image/image_raw": $bytesFeature(open(img_path, "rb").read()),
             |                        "image/height": $int64Feature(img_height),
             |                        "image/width": $int64Feature(img_width),
-            |                        "image/depth": _int64_feature(img_depth),
+            |                        "image/depth": $int64Feature(img_depth),
             |                        "image/bbox/xmin": $int64Feature(x1),
             |                        "image/bbox/xmax": $int64Feature(x2),
             |                        "image/bbox/ymin": $int64Feature(y1),
@@ -142,15 +145,11 @@ class LoadSuperviselyDataset(name: String) : BaseTask(name) {
             |                        features=tf.train.Features(feature=feature)).SerializeToString())
             |    writer.close()
             |
-            |axon.client.impl_download_dataset(${dataset.pathInS3}, $bucketName, ${pythonString(
-            region
-        )})
-            |with f as tarfile.open(${dataset.baseNameWithExtension}):
-            |   f.extractall()
-            |$classes = $parseClasses(${dataset.baseNameWithoutExtension})
-            |$convertToRecord(${dataset.baseNameWithoutExtension}, ${dataset.baseNameWithoutExtension + ".record"})
-            |assert tf.executing_eagerly()
-            |$datasetVar = tf.data.TFRecordDataset(os.path.join(${dataset.baseNameWithoutExtension}, ${dataset.baseNameWithoutExtension + ".record"}))
+            |with tarfile.open("${dataset.baseNameWithExtension}") as f:
+            |    f.extractall()
+            |$classes = $parseClasses("${dataset.baseNameWithoutExtension}")
+            |$convertToRecord('${dataset.baseNameWithoutExtension}', "${dataset.baseNameWithoutExtension + ".record"}")
+            |$datasetVar = tf.data.TFRecordDataset(os.path.join("${dataset.baseNameWithoutExtension}", "${dataset.baseNameWithoutExtension + ".record"}"))
             |
             |$feature = {
             |    "image/filename": tf.FixedLenFeature([], tf.string),
@@ -166,7 +165,7 @@ class LoadSuperviselyDataset(name: String) : BaseTask(name) {
             |}
             |
             |$parsedDataset = $datasetVar.map(lambda it: tf.io.parse_single_example(it, $feature))
-            |for feat in parsed_dataset:
+            |for feat in $parsedDataset:
             |    $imgHeight = feat["image/height"].numpy()
             |    $imgWidth = feat["image/width"].numpy()
             |    $imgDepth = feat["image/depth"].numpy()
@@ -183,13 +182,13 @@ class LoadSuperviselyDataset(name: String) : BaseTask(name) {
             |    img = np.array(img)
             |    $allImages = np.append($allImages, img)
             |
-            |$allIndices = np.array(list(map(lambda it: classes.index(it.decode()), $allLabels)))
-            |# all_indices_onehot = np.array(tf.one_hot($allIndices, len(classes)))
+            |$allIndices = np.array(list(map(lambda it: $classes.index(it.decode()), $allLabels)))
+            |# all_indices_onehot = np.array(tf.one_hot($allIndices, len($classes)))
             |
             |$allImages = $allImages.reshape(-1, $imgHeight, $imgWidth, $imgDepth)
             |
-            |$xOutput = $allImages
-            |$yOutput = $allIndices
+            |${xOutput.name} = $allImages
+            |${yOutput.name} = $allIndices
         """.trimMargin()
     }
 }

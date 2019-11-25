@@ -45,6 +45,7 @@ class TrainSequentialModelScriptGenerator(
                     DefaultPolymorphicNamedDomainObjectContainer.of(),
                     DefaultPolymorphicNamedDomainObjectContainer.of()
                 ) {
+                    // TODO: Enable eager execution mode
                     val loadedDataset = loadDataset(trainState)
 
                     val model = loadModel(trainState)
