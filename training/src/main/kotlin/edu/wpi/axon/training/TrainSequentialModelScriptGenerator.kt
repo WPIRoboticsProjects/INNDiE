@@ -47,22 +47,11 @@ class TrainSequentialModelScriptGenerator(
                     DefaultPolymorphicNamedDomainObjectContainer.of(),
                     DefaultPolymorphicNamedDomainObjectContainer.of()
                 ) {
-                    val loadedDataset = loadDataset(trainState).let { dataset ->
-                        val scaledTrain = reshapeAndScale(
-                            dataset.train.first,
-                            reshapeArgsFromBatchShape,
-                            255
-                        ) to dataset.train.second
-
-                        val scaledValidation = dataset.validation.map {
-                            reshapeAndScale(it.first, reshapeArgsFromBatchShape, 255) to it.second
-                        }
-
-                        dataset.copy(
-                            train = scaledTrain,
-                            validation = scaledValidation
-                        )
-                    }
+                    val loadedDataset = reshapeAndScaleLoadedDataset(
+                        loadDataset(trainState),
+                        reshapeArgsFromBatchShape,
+                        255
+                    )
 
                     val model = loadModel(trainState)
 

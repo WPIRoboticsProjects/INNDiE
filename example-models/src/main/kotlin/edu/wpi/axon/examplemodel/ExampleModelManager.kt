@@ -57,29 +57,27 @@ interface ExampleModelManager {
 fun downloadAndConfigureExampleModel(
     exampleModel: ExampleModel,
     exampleModelManager: ExampleModelManager
-): IO<Tuple2<Model, File>> {
-    return IO.fx {
-        val file = exampleModelManager.download(exampleModel).bind()
-        val model = LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(file.absolutePath)).bind()
+): IO<Tuple2<Model, File>> = IO.fx {
+    val file = exampleModelManager.download(exampleModel).bind()
+    val model = LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(file.absolutePath)).bind()
 
-        val freezeLayerTransform: (Layer.MetaLayer) -> Layer.MetaLayer = { layer ->
-            exampleModel.freezeLayers[layer.name]?.let {
-                when (val trainableFlag = it.toOption()) {
-                    is Some -> layer.layer.trainable(trainableFlag.t)
-                    is None -> layer.layer.untrainable()
-                }
-            } ?: layer
-        }
-
-        when (model) {
-            is Model.Sequential -> model.copy(
-                layers = model.layers.mapTo(
-                    mutableSetOf(),
-                    freezeLayerTransform
-                )
-            )
-
-            is Model.General -> model.copy(layers = model.layers.mapNodes(freezeLayerTransform))
-        } toT file
+    val freezeLayerTransform: (Layer.MetaLayer) -> Layer.MetaLayer = { layer ->
+        exampleModel.freezeLayers[layer.name]?.let {
+            when (val trainableFlag = it.toOption()) {
+                is Some -> layer.layer.trainable(trainableFlag.t)
+                is None -> layer.layer.untrainable()
+            }
+        } ?: layer
     }
+
+    when (model) {
+        is Model.Sequential -> model.copy(
+            layers = model.layers.mapTo(
+                mutableSetOf(),
+                freezeLayerTransform
+            )
+        )
+
+        is Model.General -> model.copy(layers = model.layers.mapNodes(freezeLayerTransform))
+    } toT file
 }

@@ -135,7 +135,7 @@ class LoadLayersFromHDF5(
                         "First element of InputLayer batch_input_shape was not null: " +
                             it.joinToString()
                     }
-                    it.drop(1)
+                    it
                 }
             )
 
