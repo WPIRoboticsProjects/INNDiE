@@ -40,13 +40,29 @@ class TrainSequentialModelScriptGenerator(
             IO {
                 require(oldModel is Model.Sequential)
                 require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)
+                val reshapeArgsFromBatchShape =
+                    trainState.userNewModel.batchInputShape.map { it ?: -1 }
 
                 val script = ScriptGenerator(
                     DefaultPolymorphicNamedDomainObjectContainer.of(),
                     DefaultPolymorphicNamedDomainObjectContainer.of()
                 ) {
-                    // TODO: Enable eager execution mode
-                    val loadedDataset = loadDataset(trainState)
+                    val loadedDataset = loadDataset(trainState).let { dataset ->
+                        val scaledTrain = reshapeAndScale(
+                            dataset.train.first,
+                            reshapeArgsFromBatchShape,
+                            255
+                        ) to dataset.train.second
+
+                        val scaledValidation = dataset.validation.map {
+                            reshapeAndScale(it.first, reshapeArgsFromBatchShape, 255) to it.second
+                        }
+
+                        dataset.copy(
+                            train = scaledTrain,
+                            validation = scaledValidation
+                        )
+                    }
 
                     val model = loadModel(trainState)
 

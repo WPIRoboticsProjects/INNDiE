@@ -112,8 +112,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                 .shouldBeValid { script ->
                     Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
                         .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
-                    testTrainingScript(path, modelName, newModelName, script.a, tempDir)
-                    print("")
+                    testTrainingScript(path, modelName, newModelName, script.a, tempDir, "rm -rf /home/WPILib_reduced")
                 }
         }
     }
