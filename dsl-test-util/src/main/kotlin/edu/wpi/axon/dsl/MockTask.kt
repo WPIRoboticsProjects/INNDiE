@@ -14,8 +14,9 @@ data class MockTask(override val name: String) : Task {
 
     var latch: CountDownLatch? = null
     var code = ""
+    var configuredCorrectly = true
 
-    override fun isConfiguredCorrectly() = true
+    override fun isConfiguredCorrectly() = configuredCorrectly
 
     // TODO: Calling countDown in here is bad because this method should be stateless
     override fun code() = code.also { latch?.countDown() }

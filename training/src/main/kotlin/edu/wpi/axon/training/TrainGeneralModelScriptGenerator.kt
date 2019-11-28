@@ -3,6 +3,7 @@ package edu.wpi.axon.training
 import arrow.core.NonEmptyList
 import arrow.core.Validated
 import arrow.core.invalidNel
+import arrow.fx.IO
 import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
@@ -35,40 +36,37 @@ class TrainGeneralModelScriptGenerator(
 
     @Suppress("UNUSED_VARIABLE")
     override fun generateScript(): Validated<NonEmptyList<String>, String> =
-        loadLayersFromHDF5.load(File(trainState.userOldModelPath)).map { userOldModel ->
-            require(userOldModel is Model.General)
+        loadLayersFromHDF5.load(File(trainState.userOldModelPath)).flatMap { userOldModel ->
+            IO {
+                require(userOldModel is Model.General)
 
-            val script = ScriptGenerator(
-                DefaultPolymorphicNamedDomainObjectContainer.of(),
-                DefaultPolymorphicNamedDomainObjectContainer.of()
-            ) {
-                val (xTrain, yTrain, xTest, yTest) = loadExampleDataset(trainState)
+                val script = ScriptGenerator(
+                    DefaultPolymorphicNamedDomainObjectContainer.of(),
+                    DefaultPolymorphicNamedDomainObjectContainer.of()
+                ) {
+                    val loadedDataset = loadDataset(trainState)
 
-                // TODO: How does the user configure data preprocessing?
+                    val model = loadModel(trainState)
 
-                val model = loadModel(trainState)
+                    val newModelVar by variables.creating(Variable::class)
+                    val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
+                        modelInput = model
+                        oldModel = userOldModel
+                        newModel = trainState.userNewModel
+                        newModelOutput = newModelVar
+                    }
 
-                val newModelVar by variables.creating(Variable::class)
-                val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
-                    modelInput = model
-                    oldModel = userOldModel
-                    newModel = trainState.userNewModel
-                    newModelOutput = newModelVar
+                    lastTask = compileTrainSave(
+                        trainState,
+                        userOldModel,
+                        newModelVar,
+                        applyLayerDeltaTask,
+                        loadedDataset
+                    )
                 }
 
-                lastTask = compileTrainSave(
-                    trainState,
-                    userOldModel,
-                    newModelVar,
-                    applyLayerDeltaTask,
-                    xTrain,
-                    yTrain,
-                    xTest,
-                    yTest
-                )
+                script.code(trainState.generateDebugComments)
             }
-
-            script.code(trainState.generateDebugComments)
         }.attempt().unsafeRunSync().fold(
             { Throwables.getStackTraceAsString(it).invalidNel() },
             { it }

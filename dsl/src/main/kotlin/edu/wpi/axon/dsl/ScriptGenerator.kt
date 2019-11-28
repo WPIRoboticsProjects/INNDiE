@@ -32,12 +32,19 @@ class ScriptGenerator(
     configure: ScriptGenerator.() -> Unit
 ) : Configurable {
 
-    // TODO: Do something with this (probably make the script implement a method and return this)
-    // var scriptOutput: Variable? = null
+    /**
+     * A version of [lastTask] which represents a DAG that is guaranteed to get generated before
+     * any tasks in [lastTask]. This can be used to generate code which appears after the import
+     * statements but before any code linked to [lastTask].
+     */
+    var pregenerationLastTask: Task? = null
 
     // TODO: Find an intelligent way to derive this instead of needing it to be specified
     // Once CodeGraph verifies there are no islands, we should be able to start from any node and
     // find the last node in the DAG.
+    /**
+     * The last task in the DAG. Nothing should depend on this task.
+     */
     var lastTask: Task by singleAssign()
 
     private val requiredVariables = mutableSetOf<Variable>()
@@ -66,6 +73,21 @@ class ScriptGenerator(
     fun code(generateDebugComments: Boolean = false): ValidatedNel<String, String> {
         if (!isConfiguredCorrectly()) {
             return "$this is configured incorrectly.".invalidNel()
+        }
+
+        // Filter for all tasks that have a dependency on the lastTask, excluding the lastTask
+        // itself
+        val tasksThatDependOnLastTask = tasks.filter { it != lastTask }.filter {
+            lastTask in it.value.dependencies.map { it }
+        }
+
+        // Do this check here instead of in isConfiguredCorrectly so that we know the user is
+        // "happy with" the current task graph
+        if (tasksThatDependOnLastTask.isNotEmpty()) {
+            return """
+                |Nothing should depend on the last task. These tasks depend on the last task:
+                |${tasksThatDependOnLastTask.values.joinWithIndent("\n")}
+            """.trimMargin().invalidNel()
         }
 
         logger.info {
@@ -105,6 +127,15 @@ class ScriptGenerator(
         }
 
         val handledNodes = mutableSetOf<AnyCode>() // The nodes that code gen has run for
+
+        // Add the pregenerationLastTask as a dependency of every task so it is guaranteed to be
+        // generated before any of them
+        pregenerationLastTask?.let {
+            tasks.forEach { _, task ->
+                if (task.name != it.name)
+                    task.dependencies.add(it)
+            }
+        }
 
         @Suppress("UNCHECKED_CAST")
         val graph = CodeGraph(tasks as PolymorphicNamedDomainObjectContainer<AnyCode>).graph

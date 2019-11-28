@@ -1,5 +1,6 @@
 package edu.wpi.axon.aws
 
+import arrow.core.None
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.regions.Region
@@ -19,6 +20,7 @@ internal class EC2TrainingScriptRunnerTest {
         runner.startScript(
             "custom_fashion_mnist.h5",
             "custom_fashion_mnist-trained.h5",
+            None,
             """
             import tensorflow as tf
 

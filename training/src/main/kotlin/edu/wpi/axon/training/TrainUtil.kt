@@ -2,24 +2,30 @@
 
 package edu.wpi.axon.training
 
-import arrow.core.Tuple4
+import arrow.core.None
+import arrow.core.Some
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
+import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
+import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
 import edu.wpi.axon.dsl.task.DownloadModelFromS3Task
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
+import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
+import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.task.UploadModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 
 /**
@@ -30,11 +36,15 @@ import edu.wpi.axon.tfdata.Model
  * @return The loaded model from [LoadModelTask].
  */
 internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
-    val downloadModelFromS3Task = if (trainState.userAuth != null) {
+    val downloadModelFromS3Task = if (trainState.handleS3InScript) {
+        check(trainState.userBucketName != null) {
+            "The script was told to download the model from S3, but no bucket name was specified."
+        }
+
         tasks.run(DownloadModelFromS3Task::class) {
             modelName = trainState.userOldModelPath
-            bucketName = trainState.userAuth.first
-            region = trainState.userAuth.second
+            bucketName = trainState.userBucketName
+            region = trainState.userRegion
         }
     } else null
 
@@ -52,14 +62,37 @@ internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
 }
 
 /**
- * Loads an example dataset into variables.
+ * Loads a dataset in any format.
  *
  * @param trainState The training state.
- * @return A tuple in the format `{xTrain, yTrain, xTest, yTest}`.
+ * @return The loaded dataset.
+ */
+internal fun ScriptGenerator.loadDataset(
+    trainState: TrainState<*>
+): LoadedDataset = when (trainState.userDataset) {
+    is Dataset.ExampleDataset -> loadExampleDataset(trainState)
+
+    is Dataset.Custom -> when {
+        trainState.userDataset.pathInS3.endsWith(".tar") ->
+            loadSuperviselyDataset(trainState)
+
+        else -> error(
+            "Unsupported dataset format: ${trainState.userDataset.pathInS3}"
+        )
+    }
+}
+
+/**
+ * Loads an example dataset.
+ *
+ * @param trainState The training state.
+ * @return The loaded dataset with [LoadedDataset.validation].
  */
 internal fun ScriptGenerator.loadExampleDataset(
     trainState: TrainState<*>
-): Tuple4<Variable, Variable, Variable, Variable> {
+): LoadedDataset {
+    require(trainState.userDataset is Dataset.ExampleDataset)
+
     val xTrain by variables.creating(Variable::class)
     val yTrain by variables.creating(Variable::class)
     val xTest by variables.creating(Variable::class)
@@ -73,7 +106,49 @@ internal fun ScriptGenerator.loadExampleDataset(
         yTestOutput = yTest
     }
 
-    return Tuple4(xTrain, yTrain, xTest, yTest)
+    return LoadedDataset(
+        train = xTrain to yTrain,
+        validation = Some(xTest to yTest),
+        validationSplit = None
+    )
+}
+
+/**
+ * Loads a Supervisely dataset.
+ *
+ * @param trainState The training state.
+ * @return The loaded dataset without [LoadedDataset.validation].
+ */
+internal fun ScriptGenerator.loadSuperviselyDataset(
+    trainState: TrainState<*>
+): LoadedDataset {
+    require(trainState.userDataset is Dataset.Custom)
+
+    // TODO: Run conversion as a separate step so that eager execution is disabled when training
+    // LoadTFRecordOfImagesWithObjects needs eager execution
+    check(pregenerationLastTask == null) {
+        "BUG: pregenerationLastTask was not null and would have been overwritten."
+    }
+    pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+
+    val convertTask = tasks.run(ConvertSuperviselyDatasetToRecord::class) {
+        dataset = trainState.userDataset
+    }
+
+    val xTrain by variables.creating(Variable::class)
+    val yTrain by variables.creating(Variable::class)
+    tasks.run(LoadTFRecordOfImagesWithObjects::class) {
+        dataset = trainState.userDataset
+        xOutput = xTrain
+        yOutput = yTrain
+        dependencies += convertTask
+    }
+
+    return LoadedDataset(
+        train = xTrain to yTrain,
+        validation = None,
+        validationSplit = None
+    )
 }
 
 /**
@@ -108,10 +183,7 @@ internal fun ScriptGenerator.reshapeAndScale(
  * @param oldModel The model on disk the user is starting training with.
  * @param newModel The new model that will be compiled, trained, and saved.
  * @param applyLayerDeltaTask Will be depended on by the [CompileModelTask].
- * @param xTrain The x-axis train data.
- * @param yTrain The y-axis train data.
- * @param xTest The x-axis test data.
- * @param yTest The y-axis test data.
+ * @param loadedDataset The dataset to train on.
  * @return The last task in the sequence of operations.
  */
 internal fun ScriptGenerator.compileTrainSave(
@@ -119,11 +191,11 @@ internal fun ScriptGenerator.compileTrainSave(
     oldModel: Model,
     newModel: Variable,
     applyLayerDeltaTask: Task,
-    xTrain: Variable,
-    yTrain: Variable,
-    xTest: Variable,
-    yTest: Variable
+    loadedDataset: LoadedDataset
 ): Task {
+    val hasValidation = loadedDataset.validation.isDefined() ||
+        loadedDataset.validationSplit.fold({ false }, { it > 0.0 })
+
     val compileModelTask by tasks.running(CompileModelTask::class) {
         modelInput = newModel
         optimizer = trainState.userOptimizer
@@ -134,7 +206,14 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val checkpointCallback by variables.creating(Variable::class)
     tasks.run(CheckpointCallbackTask::class) {
-        filePath = "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+        filePath = if (hasValidation) {
+            // Can only use val_loss if there is validation data, which can take the form of
+            // a validation dataset or a nonzero validation split
+            "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+        } else {
+            "${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
+        }
+        monitor = if (hasValidation) "val_loss" else "loss"
         saveWeightsOnly = true
         verbose = 1
         output = checkpointCallback
@@ -142,6 +221,7 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val earlyStoppingCallback by variables.creating(Variable::class)
     tasks.run(EarlyStoppingTask::class) {
+        monitor = if (hasValidation) "val_loss" else "loss"
         patience = 10
         verbose = 1
         output = earlyStoppingCallback
@@ -149,10 +229,13 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val trainModelTask by tasks.running(TrainTask::class) {
         modelInput = newModel
-        trainInputData = xTrain
-        trainOutputData = yTrain
-        validationInputData = xTest
-        validationOutputData = yTest
+        trainInputData = loadedDataset.train.first
+        trainOutputData = loadedDataset.train.second
+        loadedDataset.validationSplit.map { validationSplit = it }
+        loadedDataset.validation.map {
+            validationInputData = Some(it.first)
+            validationOutputData = Some(it.second)
+        }
         callbacks = setOf(checkpointCallback, earlyStoppingCallback)
         epochs = trainState.userEpochs
         dependencies += compileModelTask
@@ -164,11 +247,15 @@ internal fun ScriptGenerator.compileTrainSave(
         dependencies += trainModelTask
     }
 
-    return if (trainState.userAuth != null) {
+    return if (trainState.handleS3InScript) {
         val uploadModelToS3Task by tasks.running(UploadModelToS3Task::class) {
+            check(trainState.userBucketName != null) {
+                "The script was told to upload the model to S3, but no bucket name was specified."
+            }
+
             modelName = trainState.userNewModelName
-            bucketName = trainState.userAuth.first
-            region = trainState.userAuth.second
+            bucketName = trainState.userBucketName
+            region = trainState.userRegion
             dependencies += saveModelTask
         }
 

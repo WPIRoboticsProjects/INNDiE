@@ -1,5 +1,7 @@
 package edu.wpi.axon.aws
 
+import arrow.core.None
+import arrow.core.Option
 import arrow.fx.IO
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 
@@ -10,12 +12,15 @@ interface TrainingScriptRunner {
      *
      * @param oldModelName The name of the current model (that will be loaded).
      * @param newModelName The name of the new model (that will be trained and saved).
+     * @param datasetPathInS3 The path to the dataset in S3, or [None] if the dataset does not need
+     * to be downloaded first.
      * @param scriptContents The contents of the training script.
      * @return The script id used to query about the script during and after training.
      */
     fun startScript(
         oldModelName: String,
         newModelName: String,
+        datasetPathInS3: Option<String>,
         scriptContents: String
     ): IO<Long>
 
