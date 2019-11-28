@@ -25,8 +25,11 @@ fun <F> MonadError<F, String>.layerGraphIsValid(
         tailRecM(nodeIterator.next()) { layer ->
             hasInputs(layer).flatMap { inputsAreDeclared(layerGraph, layer) }.map {
                 if (nodeIterator.hasNext()) {
+                    // More nodes means we should keep going to check the remaining ones
                     Either.Left(nodeIterator.next())
                 } else {
+                    // If we made it to a point where there are no more nodes, then all the nodes
+                    // must be valid
                     Either.Right(Unit)
                 }
             }
