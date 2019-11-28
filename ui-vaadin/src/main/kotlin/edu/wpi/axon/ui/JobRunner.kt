@@ -1,9 +1,13 @@
 package edu.wpi.axon.ui
 
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
@@ -20,9 +24,9 @@ import software.amazon.awssdk.services.ec2.model.InstanceType
  * @param region The region to connect to, or `null` to autodetect the region.
  */
 class JobRunner(
-    bucketName: String,
+    private val bucketName: String,
     instanceType: InstanceType,
-    region: Region?
+    private val region: Region?
 ) {
 
     private val scriptRunner = EC2TrainingScriptRunner(bucketName, instanceType, region)
@@ -56,6 +60,10 @@ class JobRunner(
         scriptRunner.startScript(
             oldModelName = trainModelScriptGenerator.trainState.userOldModelName,
             newModelName = job.userNewModelName,
+            datasetPathInS3 = when (val dataset = job.userDataset) {
+                is Dataset.ExampleDataset -> None
+                is Dataset.Custom -> Some(dataset.pathInS3)
+            },
             scriptContents = script
         ).bind()
     }.unsafeRunSync()
@@ -71,8 +79,11 @@ class JobRunner(
         userLoss = job.userLoss,
         userMetrics = job.userMetrics,
         userEpochs = job.userEpochs,
+        userValidationSplit = None, // TODO: Add this to Job and pull it from there
         userNewModel = model,
-        userAuth = null,
+        userBucketName = bucketName,
+        userRegion = Option.fromNullable(region?.id()),
+        handleS3InScript = false,
         generateDebugComments = job.generateDebugComments
     )
 }

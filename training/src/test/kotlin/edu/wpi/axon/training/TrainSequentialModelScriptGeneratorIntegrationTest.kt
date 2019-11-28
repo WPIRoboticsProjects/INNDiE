@@ -80,4 +80,40 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             }
         }
     }
+
+    @Test
+    @Tag("needsDockerSupport")
+    fun `test mobilenet with reduced wpilib dataset`(@TempDir tempDir: File) {
+        startKoin {
+            modules(defaultModule())
+        }
+
+        val modelName = "small_model_for_wpilib_reduced_dataset.h5"
+        val newModelName = "small_model_for_wpilib_reduced_dataset-trained.h5"
+        val (model, path) = loadModel(modelName) {}
+        model.shouldBeInstanceOf<Model.Sequential> {
+            TrainSequentialModelScriptGenerator(
+                TrainState(
+                    userOldModelPath = path,
+                    userNewModelName = newModelName,
+                    userDataset = Dataset.Custom("WPILib_reduced.tar", "WPILib reduced"),
+                    userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                    userLoss = Loss.SparseCategoricalCrossentropy,
+                    userMetrics = setOf("accuracy"),
+                    userEpochs = 1,
+                    userNewModel = it.copy(
+                        layers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
+                            // Only train the last layer
+                            if (it.layers.size - index <= 1) layer.layer.trainable()
+                            else layer.layer.trainable(false)
+                        })
+                )
+            ).generateScript()
+                .shouldBeValid { script ->
+                    Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
+                        .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
+                    testTrainingScript(path, modelName, newModelName, script.a, tempDir, "rm -rf /home/WPILib_reduced")
+                }
+        }
+    }
 }

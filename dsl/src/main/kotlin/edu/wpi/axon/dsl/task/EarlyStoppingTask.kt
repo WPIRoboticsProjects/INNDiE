@@ -12,7 +12,7 @@ class EarlyStoppingTask(name: String) : BaseTask(name) {
     /**
      * The quantity to be monitored.
      */
-    var monitor: String = "val_loss"
+    var monitor = "val_loss"
 
     /**
      * The minimum change in the monitored quantity to qualify as an improvement.
@@ -35,7 +35,7 @@ class EarlyStoppingTask(name: String) : BaseTask(name) {
      * increasing; in `auto` mode, the direction is automatically inferred from the name of the
      * monitored quantity.
      */
-    var mode: String = "auto"
+    var mode = "auto"
 
     /**
      * A baseline value for the monitored quantity. Training will stop if the model doesn't show
@@ -61,7 +61,7 @@ class EarlyStoppingTask(name: String) : BaseTask(name) {
     override val outputs: Set<Variable>
         get() = setOf(output)
 
-    override val dependencies: Set<Code<*>> = setOf()
+    override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
         |${output.name} = tf.keras.callbacks.EarlyStopping(

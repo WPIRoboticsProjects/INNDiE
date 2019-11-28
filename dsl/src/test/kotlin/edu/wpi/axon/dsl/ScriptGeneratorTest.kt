@@ -1,12 +1,9 @@
 package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
-import edu.wpi.axon.dsl.task.EmptyBaseTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.testutil.KoinTestFixture
-import io.kotlintest.assertions.arrow.nel.shouldHaveSize
-import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
@@ -58,40 +55,5 @@ internal class ScriptGeneratorTest : KoinTestFixture() {
 
         verify { mockTaskContainer.create("var1", MockTask::class, any()) }
         confirmVerified(mockTaskContainer)
-    }
-
-    @Test
-    fun `generate code with an incorrectly configured task`() {
-        startKoin {
-            modules(module {
-                mockVariableNameGenerator()
-            })
-        }
-
-        val mockVariableContainer = mockk<PolymorphicNamedDomainObjectContainer<Variable>> {
-            every { values } returns emptyList()
-        }
-
-        val mockTaskContainer = mockk<PolymorphicNamedDomainObjectContainer<Task>> {
-            every { create("var1", MockTask::class, any()) } returns configuredIncorrectly()
-            every {
-                create("var2", EmptyBaseTask::class, any())
-            } returns configuredCorrectly()
-            every { values } returns listOf(configuredIncorrectly())
-        }
-
-        val scriptGenerator = ScriptGenerator(mockVariableContainer, mockTaskContainer) {
-            val task1 by tasks.running(MockTask::class)
-        }
-
-        scriptGenerator.code().shouldBeInvalid { (nel) ->
-            nel.shouldHaveSize(1)
-        }
-
-        verify { mockVariableContainer.values }
-        verify { mockTaskContainer.create("var1", MockTask::class, any()) }
-        verify { mockTaskContainer.create("var2", EmptyBaseTask::class, any()) }
-        verify { mockTaskContainer.values }
-        confirmVerified(mockVariableContainer, mockTaskContainer)
     }
 }

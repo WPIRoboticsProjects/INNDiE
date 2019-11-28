@@ -5,19 +5,19 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.code.DatasetToCode
+import edu.wpi.axon.tfdata.code.ExampleDatasetToCode
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
 /**
- * Loads one of the example datasets.
+ * Loads an example dataset.
  */
 class LoadExampleDatasetTask(name: String) : BaseTask(name) {
 
     /**
      * The dataset to load.
      */
-    var dataset: Dataset by singleAssign()
+    var dataset: Dataset.ExampleDataset by singleAssign()
 
     /**
      * The input data for training.
@@ -39,7 +39,7 @@ class LoadExampleDatasetTask(name: String) : BaseTask(name) {
      */
     var yTestOutput: Variable by singleAssign()
 
-    private val datasetToCode: DatasetToCode by inject()
+    private val exampleDatasetToCode: ExampleDatasetToCode by inject()
 
     override val imports: Set<Import> = setOf(
         makeImport("import tensorflow as tf")
@@ -56,7 +56,7 @@ class LoadExampleDatasetTask(name: String) : BaseTask(name) {
         val output = "(${xTrainOutput.name}, ${yTrainOutput.name}), " +
             "(${xTestOutput.name}, ${yTestOutput.name})"
         return """
-            |$output = ${datasetToCode.datasetToCode(dataset)}.load_data()
+            |$output = ${exampleDatasetToCode.datasetToCode(dataset)}.load_data()
         """.trimMargin()
     }
 }

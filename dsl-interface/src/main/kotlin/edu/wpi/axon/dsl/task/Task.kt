@@ -16,6 +16,8 @@ interface Task : Configurable, AnyCode {
      */
     val name: String
 
+    override val dependencies: MutableSet<Code<*>>
+
     /**
      * A toString that requires the task [isConfiguredCorrectly].
      */

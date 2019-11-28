@@ -3,7 +3,7 @@ package edu.wpi.axon.dsl.task
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.code.DatasetToCode
+import edu.wpi.axon.tfdata.code.ExampleDatasetToCode
 import io.kotlintest.shouldBe
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -18,7 +18,7 @@ internal class LoadExampleDatasetTaskTest : KoinTestFixture() {
     @Test
     fun `test code gen`() {
         val mockDataset = mockk<Dataset.ExampleDataset> { every { name } returns "dataset_name" }
-        val mockDatasetToCode = mockk<DatasetToCode> {
+        val mockDatasetToCode = mockk<ExampleDatasetToCode> {
             every { datasetToCode(mockDataset) } returns "dataset_code"
         }
 

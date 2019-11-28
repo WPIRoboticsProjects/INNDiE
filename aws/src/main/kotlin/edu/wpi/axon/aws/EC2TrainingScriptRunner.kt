@@ -1,5 +1,6 @@
 package edu.wpi.axon.aws
 
+import arrow.core.Option
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.dbdata.TrainingScriptProgress
@@ -42,6 +43,7 @@ class EC2TrainingScriptRunner(
     override fun startScript(
         oldModelName: String,
         newModelName: String,
+        datasetPathInS3: Option<String>,
         scriptContents: String
     ): IO<Long> {
         // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
@@ -72,6 +74,13 @@ class EC2TrainingScriptRunner(
                 )
             }.bind()
 
+            val downloadDatasetString = datasetPathInS3.fold(
+                { "" },
+                {
+                    """axon download-dataset "$it" "$bucketName""""
+                }
+            )
+
             val scriptForEC2 = """
                 |#!/bin/bash
                 |exec 1> >(logger -s -t ${'$'}(basename ${'$'}0)) 2>&1
@@ -87,8 +96,9 @@ class EC2TrainingScriptRunner(
                 |systemctl status docker
                 |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.4/axon-0.1.4-py2.py3-none-any.whl
                 |axon download-model-file "$oldModelName" "$bucketName"
+                |$downloadDatasetString
                 |axon download-training-script "$scriptFileName" "$bucketName"
-                |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 $scriptFileName"
+                |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
                 |axon upload-model-file "$newModelName" "$bucketName"
                 |shutdown -h now
                 """.trimMargin()

@@ -1,6 +1,7 @@
 package edu.wpi.axon.tfdata.code
 
 import arrow.core.Either
+import arrow.core.Option
 import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.SerializableEither
 import edu.wpi.axon.tfdata.SerializableTuple2
@@ -30,6 +31,7 @@ fun pythonString(value: Any?): String = when (value) {
     is SerializableTuple2<*, *> -> pythonString(value.toTuple2())
     is Either<*, *> -> value.fold({ pythonString(it) }, { pythonString(it) })
     is SerializableEither<*, *> -> pythonString(value.toEither())
+    is Option<*> -> value.fold({ pythonString(null) }, { pythonString(it) })
 
     is ListAsTuple -> if (value.list.size == 1) {
         "(${value.list.first()},)"

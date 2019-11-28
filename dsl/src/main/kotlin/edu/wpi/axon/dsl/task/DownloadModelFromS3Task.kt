@@ -1,8 +1,11 @@
 package edu.wpi.axon.dsl.task
 
+import arrow.core.None
+import arrow.core.Option
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.KoinComponent
 
@@ -25,7 +28,7 @@ class DownloadModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
     /**
      * The region.
      */
-    var region: String by singleAssign()
+    var region: Option<String> = None
 
     override val imports = setOf(makeImport("import axon.client"))
 
@@ -36,6 +39,6 @@ class DownloadModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
-        |axon.client.impl_download_model_file("$modelName", "$bucketName", "$region")
+        |axon.client.impl_download_model_file("$modelName", "$bucketName", ${pythonString(region)})
     """.trimMargin()
 }

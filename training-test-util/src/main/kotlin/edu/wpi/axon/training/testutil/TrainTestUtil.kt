@@ -6,6 +6,8 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import io.kotlintest.assertions.arrow.either.shouldBeRight
+import io.kotlintest.matchers.file.shouldExist
+import io.kotlintest.matchers.string.shouldNotBeEmpty
 import io.kotlintest.shouldBe
 import java.io.BufferedReader
 import java.io.File
@@ -46,7 +48,8 @@ fun testTrainingScript(
     oldModelName: String,
     newModelName: String,
     script: String,
-    dir: File
+    dir: File,
+    cleanupAfterCommand: String? = null
 ) {
     Paths.get(oldModelPath).toFile().copyTo(Paths.get(dir.absolutePath, oldModelName).toFile())
     Paths.get(dir.absolutePath, "script.py").toFile().writeText(script)
@@ -56,13 +59,12 @@ fun testTrainingScript(
             "docker",
             "run",
             "--rm",
+            "-v",
+            "${dir.absolutePath}:/home",
             "wpilib/axon-ci:latest",
-            "/usr/bin/python3.6",
-            "script.py",
-            "&&",
-            "test",
-            "-f",
-            newModelName
+            cleanupAfterCommand?.let {
+                "/usr/bin/python3.6 /home/script.py && $it"
+            } ?: "/usr/bin/python3.6 /home/script.py"
         ),
         emptyMap(),
         dir
@@ -78,7 +80,9 @@ fun testTrainingScript(
             """.trimMargin()
         }
 
+        stdOut.shouldNotBeEmpty()
         exitCode shouldBe 0
+        Paths.get(dir.absolutePath, newModelName).shouldExist()
     }
 }
 

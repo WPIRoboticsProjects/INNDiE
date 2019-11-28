@@ -67,13 +67,13 @@ internal class BaseTaskTest : KoinTestFixture() {
         imports: Set<Import> = setOf(),
         inputs: Set<Variable> = setOf(),
         outputs: Set<Variable> = setOf(),
-        dependencies: Set<Code<*>> = setOf(),
+        dependencies: MutableSet<Code<*>> = mutableSetOf(),
         code: String = ""
     ): Task = object : BaseTask(name) {
         override val imports: Set<Import> = imports
         override val inputs: Set<Variable> = inputs
         override val outputs: Set<Variable> = outputs
-        override val dependencies: Set<Code<*>> = dependencies
+        override val dependencies: MutableSet<Code<*>> = dependencies
         override fun code() = code
     }
 }

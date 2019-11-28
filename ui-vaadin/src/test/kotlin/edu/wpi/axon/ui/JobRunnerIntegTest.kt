@@ -25,7 +25,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
         val jobRunner = JobRunner(
             "axon-salmon-testbucket2",
-            InstanceType.T3_MEDIUM,
+            InstanceType.T2_MICRO,
             Region.US_EAST_1
         )
 
