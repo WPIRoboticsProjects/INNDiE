@@ -8,7 +8,6 @@ internal class LoadTFRecordOfImagesWithObjectsConfigurationTest :
         {
             LoadTFRecordOfImagesWithObjects("").apply {
                 dataset = Dataset.Custom("a.tar", "a")
-                bucketName = ""
             }
         },
         listOf(
