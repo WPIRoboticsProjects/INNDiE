@@ -98,7 +98,7 @@ class EC2TrainingScriptRunner(
                 |axon download-model-file "$oldModelName" "$bucketName"
                 |$downloadDatasetString
                 |axon download-training-script "$scriptFileName" "$bucketName"
-                |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 $scriptFileName"
+                |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
                 |axon upload-model-file "$newModelName" "$bucketName"
                 |shutdown -h now
                 """.trimMargin()
