@@ -54,7 +54,7 @@ class ScriptGenerator(
         // Don't check isConfiguredCorrectly here because some tests need an unconfigured script
     }
 
-    override fun isConfiguredCorrectly() = lastTask.dependencies.isEmpty()
+    override fun isConfiguredCorrectly() = true
 
     /**
      * Requires that the [Variable] is emitted in the generated code. Any tasks that output to this
@@ -73,6 +73,21 @@ class ScriptGenerator(
     fun code(generateDebugComments: Boolean = false): ValidatedNel<String, String> {
         if (!isConfiguredCorrectly()) {
             return "$this is configured incorrectly.".invalidNel()
+        }
+
+        // Filter for all tasks that have a dependency on the lastTask, excluding the lastTask
+        // itself
+        val tasksThatDependOnLastTask = tasks.filter { it != lastTask }.filter {
+            lastTask in it.value.dependencies.map { it }
+        }
+
+        // Do this check here instead of in isConfiguredCorrectly so that we know the user is
+        // "happy with" the current task graph
+        if (tasksThatDependOnLastTask.isNotEmpty()) {
+            return """
+                |Nothing should depend on the last task. These tasks depend on the last task:
+                |${tasksThatDependOnLastTask.values.joinWithIndent("\n")}
+            """.trimMargin().invalidNel()
         }
 
         logger.info {

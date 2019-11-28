@@ -234,4 +234,47 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
             code.shouldContainInOrder("task1", "task2")
         }
     }
+
+    @Test
+    fun `generate code with an incorrectly configured task`() {
+        startKoin {
+            modules(defaultModule())
+        }
+
+        val scriptGenerator = ScriptGenerator(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
+            val task1 by tasks.running(MockTask::class) {
+                configuredCorrectly = false
+            }
+            lastTask = task1
+        }
+
+        scriptGenerator.code().shouldBeInvalid { (nel) ->
+            nel.shouldHaveSize(1)
+        }
+    }
+
+    @Test
+    fun `task that depends on the lastTask`() {
+        startKoin {
+            modules(defaultModule())
+        }
+
+        val scriptGenerator = ScriptGenerator(
+            DefaultPolymorphicNamedDomainObjectContainer.of(),
+            DefaultPolymorphicNamedDomainObjectContainer.of()
+        ) {
+            val task1 by tasks.running(MockTask::class)
+            val task2 by tasks.running(MockTask::class) {
+                dependencies += task1
+            }
+            lastTask = task1
+        }
+
+        scriptGenerator.code().shouldBeInvalid { (nel) ->
+            nel.shouldHaveSize(1)
+        }
+    }
 }
