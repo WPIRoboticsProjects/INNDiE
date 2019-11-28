@@ -46,35 +46,4 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
         jobRunner.startJob(job)
     }
-
-    @Test
-    @Disabled("Needs AWS supervision.")
-    fun `test starting job for custom network with custom dataset`() {
-        startKoin {
-            modules(defaultModule())
-        }
-
-        val jobRunner = JobRunner(
-            "axon-salmon-testbucket2",
-            InstanceType.T3_MEDIUM,
-            Region.US_EAST_1
-        )
-
-        val newModelName = "mnist_model_applied_to_wpilib_supervisely_dataset-trained.h5"
-        val (_, path) = loadModel("mnist_model_applied_to_wpilib_supervisely_dataset.h5") {}
-        val job = Job(
-            "Job 1",
-            TrainingScriptProgress.NotStarted,
-            path,
-            newModelName,
-            Dataset.Custom("WPILib.tar", "WPIlib"),
-            Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-            Loss.SparseCategoricalCrossentropy,
-            setOf("accuracy"),
-            1,
-            false
-        )
-
-        jobRunner.startJob(job)
-    }
 }
