@@ -3,6 +3,7 @@
 package edu.wpi.axon.tfdata
 
 import arrow.core.Either
+import arrow.core.Option
 import arrow.core.Tuple2
 import com.google.common.graph.Graph
 import com.google.common.graph.GraphBuilder
@@ -21,6 +22,18 @@ import kotlinx.serialization.internal.HashSetSerializer
 import kotlinx.serialization.internal.PairSerializer
 import kotlinx.serialization.internal.SerialClassDescImpl
 import org.octogonapus.ktguava.collections.toImmutableGraph
+
+interface SerializableOption<T> {
+    val value: T?
+    fun toOption(): Option<T> = Option.fromNullable(value)
+}
+
+@Serializable
+data class SerializableOptionB(override val value: Boolean?) : SerializableOption<Boolean> {
+    companion object {
+        fun fromOption(option: Option<Boolean>) = SerializableOptionB(option.orNull())
+    }
+}
 
 interface SerializableEither<L, R> {
     fun toEither(): Either<L, R>

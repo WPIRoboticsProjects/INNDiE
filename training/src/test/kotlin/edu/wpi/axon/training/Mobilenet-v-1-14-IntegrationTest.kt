@@ -11,11 +11,13 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
+import kotlinx.serialization.ImplicitReflectionSerializer
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 
 internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
 
+    @ImplicitReflectionSerializer
     @Test
     fun `test with mobilenet`() {
         startKoin {

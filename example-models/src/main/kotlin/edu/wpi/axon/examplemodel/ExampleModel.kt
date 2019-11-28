@@ -1,5 +1,6 @@
 package edu.wpi.axon.examplemodel
 
+import edu.wpi.axon.tfdata.SerializableOptionB
 import kotlinx.serialization.Serializable
 
 /**
@@ -24,7 +25,8 @@ data class ExampleModel(
      */
     val description: String,
     /**
-     * Which layers to freeze by default.
+     * Which layers to freeze by default. Associated a layer name with an optional trainable
+     * flag.
      */
-    val freezeLayers: List<Pair<Int, Int>>
+    val freezeLayers: Map<String, SerializableOptionB>
 )

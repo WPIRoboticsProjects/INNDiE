@@ -72,6 +72,50 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
     }
 
     @Test
+    fun `change layer trainable flag`() {
+        val input1 = Layer.InputLayer("l1", listOf())
+        val layer2 = Layer.UnknownLayer("l2", setOf(input1.name)).trainable()
+
+        val mockLayerToCode = mockk<LayerToCode> {
+            every { makeNewLayer(input1.layer) } returns "input1".right()
+        }
+
+        startKoin {
+            modules(module {
+                alwaysValidImportValidator()
+                mockVariableNameGenerator()
+                single { mockLayerToCode }
+            })
+        }
+
+        val task = ApplyFunctionalLayerDeltaTask("").apply {
+            modelInput = configuredCorrectly("base_model")
+            oldModel = makeModel(
+                input1 to layer2,
+                input = setOf(input1),
+                output = setOf(layer2)
+            )
+            newModel = makeModel(
+                input1 to layer2.layer.trainable(false),
+                input = setOf(input1),
+                output = setOf(layer2)
+            )
+            newModelOutput = configuredCorrectly("new_model")
+        }
+
+        task.isConfiguredCorrectly().shouldBeTrue()
+        task.code() shouldBe """
+            |var1 = input1
+            |var2 = base_model.get_layer("l2")(var1)
+            |new_model = tf.keras.Model(inputs=[var1], outputs=[var2])
+            |new_model.get_layer("l2").trainable = False
+        """.trimMargin()
+
+        verifyAll { mockLayerToCode.makeNewLayer(input1.layer) }
+        confirmVerified(mockLayerToCode)
+    }
+
+    @Test
     fun `current and new layers both with inputs are fine`() {
         startKoin {
             modules(module {

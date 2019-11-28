@@ -16,6 +16,7 @@ dependencies {
 
     implementation(project(":util"))
     implementation(project(":logging"))
+    implementation(project(":tf-layer-loader"))
 
     implementation(
         group = "org.apache.commons",
