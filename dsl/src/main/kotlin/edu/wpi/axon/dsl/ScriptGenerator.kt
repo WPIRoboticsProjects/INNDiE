@@ -32,14 +32,19 @@ class ScriptGenerator(
     configure: ScriptGenerator.() -> Unit
 ) : Configurable {
 
-    // TODO: Do something with this (probably make the script implement a method and return this)
-    // var scriptOutput: Variable? = null
-
+    /**
+     * A version of [lastTask] which represents a DAG that is guaranteed to get generated before
+     * any tasks in [lastTask]. This can be used to generate code which appears after the import
+     * statements but before any code linked to [lastTask].
+     */
     var pregenerationLastTask: Task? = null
 
     // TODO: Find an intelligent way to derive this instead of needing it to be specified
     // Once CodeGraph verifies there are no islands, we should be able to start from any node and
     // find the last node in the DAG.
+    /**
+     * The last task in the DAG. Nothing should depend on this task.
+     */
     var lastTask: Task by singleAssign()
 
     private val requiredVariables = mutableSetOf<Variable>()
@@ -49,7 +54,7 @@ class ScriptGenerator(
         // Don't check isConfiguredCorrectly here because some tests need an unconfigured script
     }
 
-    override fun isConfiguredCorrectly() = true
+    override fun isConfiguredCorrectly() = lastTask.dependencies.isEmpty()
 
     /**
      * Requires that the [Variable] is emitted in the generated code. Any tasks that output to this
