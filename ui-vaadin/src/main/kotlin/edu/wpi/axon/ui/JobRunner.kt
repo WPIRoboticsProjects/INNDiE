@@ -9,12 +9,9 @@ import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
-import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
-import java.nio.file.Paths
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
