@@ -3,6 +3,7 @@
 package edu.wpi.axon.tflayerloader
 
 import arrow.Kind
+import arrow.core.Either
 import arrow.typeclasses.MonadError
 import com.google.common.graph.Graph
 import edu.wpi.axon.tfdata.layer.Layer
@@ -17,14 +18,26 @@ import edu.wpi.axon.util.breadthFirstSearch
  */
 fun <F> MonadError<F, String>.layerGraphIsValid(
     layerGraph: Graph<Layer.MetaLayer>
-): Kind<F, Unit> =
-    fx.monad {
-        layerNamesAreUnique(layerGraph).bind()
-        layerGraph.nodes().forEach {
-            hasInputs(it).bind()
-            inputsAreDeclared(layerGraph, it).bind()
+): Kind<F, Unit> {
+    val nodeIterator = layerGraph.nodes().iterator()
+    val nodesHaveDeclaredInputs = if (nodeIterator.hasNext()) {
+        // Only check the nodes if there are any, otherwise calling next() will throw
+        tailRecM(nodeIterator.next()) { layer ->
+            hasInputs(layer).flatMap { inputsAreDeclared(layerGraph, layer) }.map {
+                if (nodeIterator.hasNext()) {
+                    Either.Left(nodeIterator.next())
+                } else {
+                    Either.Right(Unit)
+                }
+            }
         }
+    } else {
+        // No nodes means that they are all configured correctly
+        just(Unit)
     }
+
+    return layerNamesAreUnique(layerGraph).flatMap { nodesHaveDeclaredInputs }
+}
 
 /**
  * @param layerGraph The layer graph.

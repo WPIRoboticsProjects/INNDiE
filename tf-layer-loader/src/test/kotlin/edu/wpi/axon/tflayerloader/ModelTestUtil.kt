@@ -2,7 +2,6 @@ package edu.wpi.axon.tflayerloader
 
 import edu.wpi.axon.tfdata.Model
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
-import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
 
@@ -16,9 +15,7 @@ import java.io.File
 internal inline fun <reified T : Model> loadModel(filename: String, noinline block: (T) -> Unit) {
     LoadLayersFromHDF5(DefaultLayersToGraph()).load(
         File(block::class.java.getResource(filename).toURI())
-    ).attempt().unsafeRunSync().shouldBeRight { model ->
-        model.shouldBeInstanceOf(block)
-    }
+    ).unsafeRunSync().apply { shouldBeInstanceOf(block) }
 }
 
 /**
