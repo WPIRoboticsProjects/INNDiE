@@ -25,7 +25,7 @@ data class ExampleModel(
      */
     val description: String,
     /**
-     * Which layers to freeze by default. Associated a layer name with an optional trainable
+     * Which layers to freeze by default. Associates a layer name with an optional trainable
      * flag.
      */
     val freezeLayers: Map<String, SerializableOptionB>

@@ -75,6 +75,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
     fun `change layer trainable flag`() {
         val input1 = Layer.InputLayer("l1", listOf())
         val layer2 = Layer.UnknownLayer("l2", setOf(input1.name)).trainable()
+        val newLayer2 = Layer.UnknownLayer("l2", setOf(input1.name)).trainable(false)
 
         val mockLayerToCode = mockk<LayerToCode> {
             every { makeNewLayer(input1.layer) } returns "input1".right()
@@ -96,9 +97,9 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
                 output = setOf(layer2)
             )
             newModel = makeModel(
-                input1 to layer2.layer.trainable(false),
+                input1 to newLayer2,
                 input = setOf(input1),
-                output = setOf(layer2)
+                output = setOf(newLayer2)
             )
             newModelOutput = configuredCorrectly("new_model")
         }
