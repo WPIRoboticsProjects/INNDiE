@@ -152,6 +152,35 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
 }
 
 /**
+ * Runs the [ReshapeAndScaleTask] on all data in the [dataset].
+ *
+ * @param dataset The dataset to scale.
+ * @param reshapeArgs The reshape args for [ReshapeAndScaleTask.reshapeArgs].
+ * @param scale The scale arg for [ReshapeAndScaleTask.scale].
+ * @return A copy of [dataset] with the new data.
+ */
+internal fun ScriptGenerator.reshapeAndScaleLoadedDataset(
+    dataset: LoadedDataset,
+    reshapeArgs: List<Int>,
+    scale: Int
+): LoadedDataset {
+    val scaledTrain = reshapeAndScale(
+        dataset.train.first,
+        reshapeArgs,
+        scale
+    ) to dataset.train.second
+
+    val scaledValidation = dataset.validation.map {
+        reshapeAndScale(it.first, reshapeArgs, scale) to it.second
+    }
+
+    return dataset.copy(
+        train = scaledTrain,
+        validation = scaledValidation
+    )
+}
+
+/**
  * Runs the [ReshapeAndScaleTask] on the input.
  *
  * @param dataset The dataset for [ReshapeAndScaleTask.input].

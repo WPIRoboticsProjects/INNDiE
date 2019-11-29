@@ -257,9 +257,10 @@ configure(javaProjects) {
             }
         }
 
-        jvmArgs = listOf("-Xss512m")
+        jvmArgs!!.add("-Xss512m")
+        // jvmArgs!!.add("-Djsse.enableSNIExtension=false")
         if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
-            jvmArgs?.addAll(
+            jvmArgs!!.addAll(
                 listOf(
                     "-Djava.awt.headless=true",
                     "-Dtestfx.robot=glass",
@@ -371,7 +372,7 @@ configure(kotlinProjects) {
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xjvm-default=enable", "-progressive")
+            freeCompilerArgs = listOf("-Xjvm-default=enable", "-Xinline-classes", "-progressive")
         }
     }
 

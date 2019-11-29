@@ -2,10 +2,8 @@
 
 package edu.wpi.axon.tflayerloader
 
-import arrow.core.Left
-import arrow.core.None
-import arrow.core.Right
 import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.tfdata.SerializableEitherDLd
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Initializer
 import edu.wpi.axon.tfdata.layer.Layer
@@ -23,10 +21,10 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense",
-                    None,
+                    null,
                     1,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(Left(0.0))
+                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Left(0.0))
                 ).trainable()
             )
         }
@@ -40,10 +38,10 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_2",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).trainable()
             )
         }
@@ -57,10 +55,10 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_3",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).trainable()
             )
         }
@@ -74,10 +72,10 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_4",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).trainable()
             )
         }
@@ -91,7 +89,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_5",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.Identity(1.2)
@@ -108,7 +106,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_6",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.Orthogonal(1.2, 3)
@@ -125,7 +123,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_7",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.RandomNormal(1.0, 0.5, null)
@@ -142,10 +140,10 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_2",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.RandomUniform(Left(-0.1), Left(0.1), null)
+                    kernelInitializer = Initializer.RandomUniform(SerializableEitherDLd.Left(-0.1), SerializableEitherDLd.Left(0.1), null)
                 ).trainable()
             )
         }
@@ -159,12 +157,12 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_3",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.RandomUniform(
-                        Right(listOf(-0.1, -0.2)),
-                        Right(listOf(0.1, 0.2)),
+                        SerializableEitherDLd.Right(listOf(-0.1, -0.2)),
+                        SerializableEitherDLd.Right(listOf(0.1, 0.2)),
                         null
                     )
                 ).trainable()
@@ -180,7 +178,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_4",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.GlorotNormal(null)
@@ -197,7 +195,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_5",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.GlorotUniform(null)
@@ -214,7 +212,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_6",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.TruncatedNormal(1.0, 2.0, null)
@@ -231,7 +229,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_8",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.VarianceScaling(
@@ -253,7 +251,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_9",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.VarianceScaling(
@@ -275,7 +273,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_10",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.VarianceScaling(
@@ -297,7 +295,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_11",
-                    None,
+                    null,
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.VarianceScaling(

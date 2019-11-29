@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":util"))
     implementation(project(":logging"))
     implementation(project(":db-data-test-util"))
+    implementation(project(":example-models"))
 
     implementation(platform(vaadin.bom()))
     implementation(vaadin.core())

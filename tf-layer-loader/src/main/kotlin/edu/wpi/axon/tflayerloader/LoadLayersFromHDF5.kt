@@ -2,18 +2,16 @@
 
 package edu.wpi.axon.tflayerloader
 
-import arrow.core.Either
 import arrow.core.Left
-import arrow.core.None
-import arrow.core.Option
 import arrow.core.Right
-import arrow.core.Tuple2
-import arrow.core.some
 import arrow.fx.IO
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.tfdata.SerializableEitherDLd
+import edu.wpi.axon.tfdata.SerializableEitherITii
+import edu.wpi.axon.tfdata.SerializableTuple2II
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
 import edu.wpi.axon.tfdata.layer.DataFormat
@@ -137,7 +135,7 @@ class LoadLayersFromHDF5(
                         "First element of InputLayer batch_input_shape was not null: " +
                             it.joinToString()
                     }
-                    it.drop(1)
+                    it
                 }
             )
 
@@ -180,7 +178,7 @@ class LoadLayersFromHDF5(
                 name,
                 data.inboundNodes(),
                 json["filters"] as Int,
-                (json["kernel_size"] as JsonArray<Int>).let { Tuple2(it[0], it[1]) },
+                (json["kernel_size"] as JsonArray<Int>).let { SerializableTuple2II(it[0], it[1]) },
                 parseActivation(json)
             )
 
@@ -275,14 +273,16 @@ private fun Any?.initializer(): Initializer {
     val config = this["config"] as JsonObject
     return when (this["class_name"]) {
         "Constant" -> Initializer.Constant(
-            when (val value = config["value"]) {
-                is Number -> Left(value.toDouble())
+            SerializableEitherDLd.fromEither(
+                when (val value = config["value"]) {
+                    is Number -> Left(value.toDouble())
 
-                // This works for list, tuple, and nparray
-                is JsonArray<*> -> Right((value as JsonArray<Number>).map { it.toDouble() })
+                    // This works for list, tuple, and nparray
+                    is JsonArray<*> -> Right((value as JsonArray<Number>).map { it.toDouble() })
 
-                else -> throw IllegalStateException("Unknown Constant initializer value: $value")
-            }
+                    else -> throw IllegalStateException("Unknown Constant initializer value: $value")
+                }
+            )
         )
 
         "Identity" -> Initializer.Identity(config["gain"].double())
@@ -327,11 +327,13 @@ private fun Any?.initializer(): Initializer {
 
 private fun Any?.double() = (this as Number).toDouble()
 
-private fun Any?.randomUniformVal() = when (this) {
-    is Double -> Left(this)
-    is JsonArray<*> -> Right((this as JsonArray<Double>).toList())
-    else -> throw IllegalStateException("Unknown RandomUniform val: $this")
-}
+private fun Any?.randomUniformVal() = SerializableEitherDLd.fromEither(
+    when (this) {
+        is Double -> Left(this)
+        is JsonArray<*> -> Right((this as JsonArray<Double>).toList())
+        else -> throw IllegalStateException("Unknown RandomUniform val: $this")
+    }
+)
 
 private fun Any?.varianceScalingMode() = when (this) {
     "fan_in" -> Initializer.VarianceScaling.Mode.FanIn
@@ -406,23 +408,25 @@ private fun Any?.interpolation(): Interpolation = when (this as? String) {
     else -> throw IllegalArgumentException("Not convertible: $this")
 }
 
-private fun Any?.tuple2OrInt(): Either<Int, Tuple2<Int, Int>> = when {
-    this is Int -> Left(this)
+private fun Any?.tuple2OrInt() = SerializableEitherITii.fromEither(
+    when {
+        this is Int -> Left(this)
 
-    this as? JsonArray<Int> != null -> {
-        require(this.size == 2)
-        Right(Tuple2(this[0], this[1]))
+        this as? JsonArray<Int> != null -> {
+            require(this.size == 2)
+            Right(SerializableTuple2II(this[0], this[1]))
+        }
+
+        else -> throw IllegalArgumentException("Not convertible: $this")
     }
+)
 
-    else -> throw IllegalArgumentException("Not convertible: $this")
-}
-
-private fun Any?.tuple2OrIntOrNull(): Either<Int, Tuple2<Int, Int>>? = when {
+private fun Any?.tuple2OrIntOrNull() = when {
     this is Int -> Left(this)
 
     this as? JsonArray<Int> != null -> {
         require(this.size == 2)
-        Right(Tuple2(this[0], this[1]))
+        Right(SerializableTuple2II(this[0], this[1]))
     }
 
     else -> if (this == null) {
@@ -430,15 +434,15 @@ private fun Any?.tuple2OrIntOrNull(): Either<Int, Tuple2<Int, Int>>? = when {
     } else {
         throw IllegalArgumentException("Not convertible: $this")
     }
-}
+}?.let { SerializableEitherITii.fromEither(it) }
 
 @Suppress("UNCHECKED_CAST")
-private fun JsonObject.inboundNodes(): Option<Set<String>> {
+private fun JsonObject.inboundNodes(): Set<String>? {
     // None is valid for Sequential models
-    val inboundNodes = this["inbound_nodes"] ?: return None
+    val inboundNodes = this["inbound_nodes"] ?: return null
     inboundNodes as JsonArray<JsonArray<JsonArray<Any>>>
     require(inboundNodes.size == 1)
     return inboundNodes[0].mapTo(mutableSetOf()) {
         it[0] as String
-    }.some()
+    }
 }

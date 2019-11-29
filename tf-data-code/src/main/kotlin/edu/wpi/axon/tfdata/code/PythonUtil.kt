@@ -3,6 +3,8 @@ package edu.wpi.axon.tfdata.code
 import arrow.core.Either
 import arrow.core.Option
 import arrow.core.Tuple2
+import edu.wpi.axon.tfdata.SerializableEither
+import edu.wpi.axon.tfdata.SerializableTuple2
 
 data class Unquoted(val value: String)
 data class ListAsList(val list: List<Any?>)
@@ -26,7 +28,9 @@ fun pythonString(value: Any?): String = when (value) {
     is String -> """"$value""""
     is Boolean -> if (value) "True" else "False"
     is Tuple2<*, *> -> "(${pythonString(value.a)}, ${pythonString(value.b)})"
+    is SerializableTuple2<*, *> -> pythonString(value.toTuple2())
     is Either<*, *> -> value.fold({ pythonString(it) }, { pythonString(it) })
+    is SerializableEither<*, *> -> pythonString(value.toEither())
     is Option<*> -> value.fold({ pythonString(null) }, { pythonString(it) })
 
     is ListAsTuple -> if (value.list.size == 1) {

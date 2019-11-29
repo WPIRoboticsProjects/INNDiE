@@ -28,12 +28,13 @@ class GitExampleModelManager : ExampleModelManager {
     /**
      * The URL to download the example models metadata from.
      */
-    var exampleModelMetadataUrl = "https://raw.githubusercontent.com/wpilibsuite/axon-example-models/master/exampleModels.json"
+    var exampleModelMetadataUrl =
+        "https://raw.githubusercontent.com/wpilibsuite/axon-example-models/master/exampleModels.json"
 
     override fun getAllExampleModels(): IO<Set<ExampleModel>> = IO {
         check(exampleModelMetadataFile.exists()) {
             "The example model metadata file (${exampleModelMetadataFile.absolutePath}) is not on " +
-                    "disk. Try updating the cache."
+                "disk. Try updating the cache."
         }
 
         ExampleModelsMetadata.deserialize(exampleModelMetadataFile.readText()).exampleModels
@@ -59,8 +60,13 @@ class GitExampleModelManager : ExampleModelManager {
         }
 
         val file = Paths.get(cacheDir.absolutePath, exampleModel.fileName).toFile()
-        file.createNewFile()
-        FileUtils.copyURLToFile(URL(exampleModel.url), file)
+
+        // Only create and download the file if it was not already in the cache
+        if (!file.exists()) {
+            file.createNewFile()
+            FileUtils.copyURLToFile(URL(exampleModel.url), file)
+        }
+
         file
     }
 }

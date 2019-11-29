@@ -1,7 +1,6 @@
 package edu.wpi.axon.dsl.task
 
 import arrow.core.Either
-import arrow.core.Some
 import arrow.core.extensions.either.monadError.monadError
 import arrow.core.extensions.fx
 import edu.wpi.axon.dsl.Code
@@ -15,6 +14,7 @@ import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tflayerloader.layerGraphIsValid
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
+import org.octogonapus.ktguava.collections.toImmutableList
 
 /**
  * Adds and removes layers on a new model using a starting general model (i.e. not a Sequential
@@ -73,6 +73,9 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
     override fun code(): String {
         val handledLayers = mutableSetOf<Layer.MetaLayer>()
         val layerVariableNames = mutableMapOf<Layer.MetaLayer, String>()
+        // The layers in the oldModel with the MetaLayer part stripped off. Used to compute the
+        // layer ops
+        val oldLayers = oldModel.layers.nodes().map { it.layer }.toImmutableList()
 
         fun StringBuilder.appendLayerCode(layer: Layer.MetaLayer) {
             if (layer !in handledLayers) {
@@ -89,10 +92,12 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                     // Always make a new input layer
                     is Layer.InputLayer -> LayerOperation.MakeNewLayer(layer)
 
-                    else -> if (layer in oldModel.layers.nodes()) {
-                        LayerOperation.CopyLayer(layer)
-                    } else {
-                        LayerOperation.MakeNewLayer(layer)
+                    else -> {
+                        if (layer.layer in oldLayers) {
+                            LayerOperation.CopyLayer(layer)
+                        } else {
+                            LayerOperation.MakeNewLayer(layer)
+                        }
                     }
                 }
 
@@ -152,8 +157,7 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                 is LayerOperation.MakeNewLayer -> makeNewLayer(layer)
             }
 
-            val layerInputs = (layer.inputs as Some).t
-            val layerInputCode = makeLayerInputCode(layerInputs, layerVariableNames)
+            val layerInputCode = makeLayerInputCode(layer.inputs!!, layerVariableNames)
 
             "$newLayerCode($layerInputCode)"
         }

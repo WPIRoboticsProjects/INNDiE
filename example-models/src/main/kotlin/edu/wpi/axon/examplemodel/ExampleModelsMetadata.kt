@@ -13,7 +13,13 @@ data class ExampleModelsMetadata(
     val exampleModels: Set<ExampleModel>
 ) {
 
+    fun serialize(): String = Json(
+        JsonConfiguration.Stable
+    ).stringify(serializer(), this)
+
     companion object {
-        fun deserialize(data: String) = Json(JsonConfiguration.Stable).parse(serializer(), data)
+        fun deserialize(data: String) = Json(
+            JsonConfiguration.Stable
+        ).parse(serializer(), data)
     }
 }

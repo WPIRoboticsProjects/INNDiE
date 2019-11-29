@@ -9,12 +9,9 @@ import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
-import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
-import java.nio.file.Paths
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
@@ -29,7 +26,6 @@ class JobRunner(
     private val region: Region?
 ) {
 
-    private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
     private val scriptRunner = EC2TrainingScriptRunner(bucketName, instanceType, region)
 
     /**
@@ -39,9 +35,7 @@ class JobRunner(
      * @return The script id of the script that was started.
      */
     fun startJob(job: Job): Long = IO.fx {
-        val modelFile = Paths.get(job.userOldModelPath).toFile()
-        val trainModelScriptGenerator = when (
-            val model = loadLayersFromHDF5.load(modelFile).bind()) {
+        val trainModelScriptGenerator = when (val model = job.userModel) {
             is Model.Sequential -> TrainSequentialModelScriptGenerator(toTrainState(job, model))
             is Model.General -> TrainGeneralModelScriptGenerator(toTrainState(job, model))
         }

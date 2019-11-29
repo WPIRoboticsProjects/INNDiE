@@ -3,11 +3,9 @@
 
 package edu.wpi.axon.tflayerloader
 
-import arrow.core.None
-import arrow.core.Right
-import arrow.core.Some
-import arrow.core.Tuple2
 import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.tfdata.SerializableEitherITii
+import edu.wpi.axon.tfdata.SerializableTuple2II
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.DataFormat
 import edu.wpi.axon.tfdata.layer.Layer
@@ -30,50 +28,50 @@ internal class LoadLayersFromHDF5IntegrationTest {
                 setOf(
                     Layer.Conv2D(
                         "conv2d_16",
-                        None,
+                        null,
                         32,
-                        Tuple2(3, 3),
+                        SerializableTuple2II(3, 3),
                         Activation.ReLu
                     ).trainable(),
                     Layer.Conv2D(
                         "conv2d_17",
-                        None,
+                        null,
                         64,
-                        Tuple2(3, 3),
+                        SerializableTuple2II(3, 3),
                         Activation.ReLu
                     ).trainable(),
                     Layer.MaxPooling2D(
                         "max_pooling2d_8",
-                        None,
-                        Right(Tuple2(2, 2)),
-                        Right(Tuple2(2, 2)),
+                        null,
+                        SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+                        SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
                         PoolingPadding.Valid,
                         DataFormat.ChannelsLast
                     ).trainable(),
                     Layer.Dropout(
                         "dropout_19",
-                        None,
+                        null,
                         0.25
                     ).trainable(),
                     Layer.Flatten(
                         "flatten_8",
-                        None,
+                        null,
                         DataFormat.ChannelsLast
                     ).trainable(),
                     Layer.Dense(
                         "dense_22",
-                        None,
+                        null,
                         128,
                         Activation.ReLu
                     ).trainable(),
                     Layer.Dropout(
                         "dropout_20",
-                        None,
+                        null,
                         0.5
                     ).trainable(),
                     Layer.Dense(
                         "dense_23",
-                        None,
+                        null,
                         10,
                         Activation.SoftMax
                     ).trainable()
@@ -87,13 +85,13 @@ internal class LoadLayersFromHDF5IntegrationTest {
         loadModel<Model.General>("mobilenetv2_1.00_224.h5") {
             it.name shouldBe "mobilenetv2_1.00_224"
             it.input.shouldContainExactly(
-                Model.General.InputData("input_1", listOf(224, 224, 3))
+                Model.General.InputData("input_1", listOf(null, 224, 224, 3))
             )
             it.output.shouldContainExactly(Model.General.OutputData("Logits"))
             it.layers.nodes() shouldHaveSize 157
 
             val nodesWithMultipleInputs = it.layers.nodes().filter {
-                it.inputs is Some && (it.inputs as Some).t.size > 1
+                it.inputs?.let { it.size > 1 } ?: false
             }
 
             // Only the block_xx_add layers should have more than one input
@@ -111,15 +109,15 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load non-sequential model 1`() {
         val layers = setOf(
-            Layer.InputLayer("input_2", listOf(3)),
+            Layer.InputLayer("input_2", listOf(null, 3)),
             Layer.Dense(
                 "dense_2",
-                Some(setOf("input_2")),
+                setOf("input_2"),
                 4,
                 Activation.ReLu
             ).trainable(), Layer.Dense(
                 "dense_3",
-                Some(setOf("dense_2")),
+                setOf("dense_2"),
                 5,
                 Activation.SoftMax
             ).trainable()
@@ -127,7 +125,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
 
         loadModel<Model.General>("nonSequentialModel1.h5") {
             it.name shouldBe "model_1"
-            it.input.shouldContainExactly(Model.General.InputData("input_2", listOf(3)))
+            it.input.shouldContainExactly(Model.General.InputData("input_2", listOf(null, 3)))
             it.output.shouldContainExactly(Model.General.OutputData("dense_3"))
             it.layers.nodes() shouldContainExactlyInAnyOrder layers
         }
@@ -140,17 +138,17 @@ internal class LoadLayersFromHDF5IntegrationTest {
             it.input.shouldContainExactly(
                 Model.General.InputData(
                     "input_15",
-                    listOf(null, 5)
+                    listOf(null, null, 5)
                 )
             )
             it.output.shouldContainExactly(Model.General.OutputData("dense_1"))
             it.layers.nodes().shouldContainExactly(
                 // TODO: Add an RNN layer class
-                Layer.InputLayer("input_15", listOf(null, 5)),
-                Layer.UnknownLayer("rnn_12", Some(setOf("input_15"))).trainable(),
+                Layer.InputLayer("input_15", listOf(null, null, 5)),
+                Layer.UnknownLayer("rnn_12", setOf("input_15")).trainable(),
                 Layer.Dense(
                     "dense_1",
-                    Some(setOf("rnn_12")),
+                    setOf("rnn_12"),
                     10,
                     Activation.SoftMax
                 ).trainable()

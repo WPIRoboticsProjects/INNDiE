@@ -1,6 +1,7 @@
 package edu.wpi.axon.dbdata
 
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import kotlinx.serialization.Serializable
@@ -19,6 +20,7 @@ data class Job(
     val userLoss: Loss,
     val userMetrics: Set<String>,
     val userEpochs: Int,
+    val userModel: Model,
     val generateDebugComments: Boolean,
     val id: Int = -1
 ) {

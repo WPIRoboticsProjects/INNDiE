@@ -4,6 +4,7 @@ import com.beust.klaxon.Klaxon
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import org.jetbrains.exposed.dao.IntIdTable
@@ -28,6 +29,7 @@ internal object Jobs : IntIdTable() {
     val userLoss = varchar("userLoss", 255)
     val userMetrics = varchar("userMetrics", 255)
     val userEpochs = integer("userEpochs")
+    val userModel = text("userModel")
     val generateDebugComments = bool("generateDebugComments")
 
     fun toDomain(row: ResultRow): Job {
@@ -42,6 +44,7 @@ internal object Jobs : IntIdTable() {
             userMetrics = klaxon.parseArray<String>(row[userMetrics])!!.toSet(),
             userEpochs = row[userEpochs],
             generateDebugComments = row[generateDebugComments],
+            userModel = Model.deserialize(row[userModel]),
             id = row[id].value
         )
     }
@@ -65,6 +68,7 @@ class JobDb(private val database: Database) {
             row[userLoss] = job.userLoss.serialize()
             row[userMetrics] = klaxon.toJsonString(job.userMetrics)
             row[userEpochs] = job.userEpochs
+            row[userModel] = job.userModel.serialize()
             row[generateDebugComments] = job.generateDebugComments
         }.value
     }

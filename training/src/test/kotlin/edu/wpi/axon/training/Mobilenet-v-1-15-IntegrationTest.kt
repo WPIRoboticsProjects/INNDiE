@@ -2,7 +2,6 @@
 
 package edu.wpi.axon.training
 
-import arrow.core.None
 import edu.wpi.axon.dsl.defaultModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Model
@@ -39,13 +38,13 @@ internal class `Mobilenet-v-1-15-IntegrationTest` : KoinTestFixture() {
 
                 it[1] shouldBe Layer.GlobalAveragePooling2D(
                     "global_average_pooling2d",
-                    None,
+                    null,
                     DataFormat.ChannelsLast
                 ).trainable()
 
                 it[2] shouldBe Layer.Dense(
                     "dense",
-                    None,
+                    null,
                     10,
                     activation = Activation.SoftMax
                 ).trainable()

@@ -3,8 +3,7 @@
 package edu.wpi.axon.tflayerloader
 
 import arrow.Kind
-import arrow.core.None
-import arrow.core.Some
+import arrow.core.Either
 import arrow.typeclasses.MonadError
 import com.google.common.graph.Graph
 import edu.wpi.axon.tfdata.layer.Layer
@@ -19,14 +18,29 @@ import edu.wpi.axon.util.breadthFirstSearch
  */
 fun <F> MonadError<F, String>.layerGraphIsValid(
     layerGraph: Graph<Layer.MetaLayer>
-): Kind<F, Unit> =
-    fx.monad {
-        layerNamesAreUnique(layerGraph).bind()
-        layerGraph.nodes().forEach {
-            hasInputs(it).bind()
-            inputsAreDeclared(layerGraph, it).bind()
+): Kind<F, Unit> {
+    val nodeIterator = layerGraph.nodes().iterator()
+    val nodesHaveDeclaredInputs = if (nodeIterator.hasNext()) {
+        // Only check the nodes if there are any, otherwise calling next() will throw
+        tailRecM(nodeIterator.next()) { layer ->
+            hasInputs(layer).flatMap { inputsAreDeclared(layerGraph, layer) }.map {
+                if (nodeIterator.hasNext()) {
+                    // More nodes means we should keep going to check the remaining ones
+                    Either.Left(nodeIterator.next())
+                } else {
+                    // If we made it to a point where there are no more nodes, then all the nodes
+                    // must be valid
+                    Either.Right(Unit)
+                }
+            }
         }
+    } else {
+        // No nodes means that they are all configured correctly
+        just(Unit)
     }
+
+    return layerNamesAreUnique(layerGraph).flatMap { nodesHaveDeclaredInputs }
+}
 
 /**
  * @param layerGraph The layer graph.
@@ -48,7 +62,7 @@ private fun <F> MonadError<F, String>.layerNamesAreUnique(layerGraph: Graph<Laye
  * @return No error if the layer has inputs.
  */
 private fun <F> MonadError<F, String>.hasInputs(layer: Layer.MetaLayer) =
-    if (layer.inputs is Some || layer.layer is Layer.InputLayer) {
+    if (layer.inputs != null || layer.layer is Layer.InputLayer) {
         just(Unit)
     } else {
         raiseError("The layer does not have inputs: $layer")
@@ -65,18 +79,18 @@ private fun <F> MonadError<F, String>.inputsAreDeclared(
     layerGraph: Graph<Layer.MetaLayer>,
     layer: Layer.MetaLayer
 ): Kind<F, Unit> = when (val inputs = layer.inputs) {
-    is None -> just(Unit)
-    is Some -> {
+    null -> just(Unit)
+    else -> {
         val predecessorLayers =
             layerGraph.breadthFirstSearch(layer, Graph<Layer.MetaLayer>::predecessors)
                 .map { it.name }
 
-        if (inputs.t allIn predecessorLayers) {
+        if (inputs allIn predecessorLayers) {
             just(Unit)
         } else {
             raiseError(
                 "Not all of the layer's inputs are declared previously: " +
-                    (inputs.t subtract predecessorLayers).joinToString()
+                    (inputs subtract predecessorLayers).joinToString()
             )
         }
     }

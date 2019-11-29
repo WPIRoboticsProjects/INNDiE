@@ -1,6 +1,5 @@
 package edu.wpi.axon.tflayerloader
 
-import arrow.core.None
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Constraint
@@ -19,7 +18,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_6",
-                    None,
+                    null,
                     1,
                     Activation.Linear,
                     kernelConstraint = Constraint.MaxNorm(2.0, 0)
@@ -36,7 +35,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_7",
-                    None,
+                    null,
                     1,
                     Activation.Linear,
                     kernelConstraint = Constraint.MinMaxNorm(1.0, 2.0, 3.0, 0)
@@ -53,7 +52,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_9",
-                    None,
+                    null,
                     1,
                     Activation.Linear,
                     kernelConstraint = Constraint.UnitNorm(0)
@@ -70,7 +69,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
             it.layers.shouldContainExactly(
                 Layer.Dense(
                     "dense_8",
-                    None,
+                    null,
                     1,
                     Activation.Linear,
                     kernelConstraint = Constraint.NonNeg

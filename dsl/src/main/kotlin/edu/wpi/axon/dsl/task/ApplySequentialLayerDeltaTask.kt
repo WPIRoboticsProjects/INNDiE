@@ -1,6 +1,5 @@
 package edu.wpi.axon.dsl.task
 
-import arrow.core.None
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
@@ -50,8 +49,8 @@ class ApplySequentialLayerDeltaTask(name: String) : BaseTask(name) {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun isConfiguredCorrectly(): Boolean {
-        return super.isConfiguredCorrectly() && oldLayers.all { it.inputs is None } &&
-            newLayers.all { it.inputs is None }
+        return super.isConfiguredCorrectly() && oldLayers.all { it.inputs == null } &&
+            newLayers.all { it.inputs == null }
     }
 
     override fun code(): String {

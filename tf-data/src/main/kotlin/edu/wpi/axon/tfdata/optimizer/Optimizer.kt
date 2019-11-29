@@ -21,7 +21,7 @@ sealed class Optimizer {
     ).stringify(serializer(), this)
 
     companion object {
-        fun deserialize(data: String): Optimizer = Json(
+        fun deserialize(data: String) = Json(
             JsonConfiguration.Stable
         ).parse(serializer(), data)
     }
