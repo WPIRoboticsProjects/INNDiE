@@ -85,7 +85,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
         loadModel<Model.General>("mobilenetv2_1.00_224.h5") {
             it.name shouldBe "mobilenetv2_1.00_224"
             it.input.shouldContainExactly(
-                Model.General.InputData("input_1", listOf(224, 224, 3))
+                Model.General.InputData("input_1", listOf(null, 224, 224, 3))
             )
             it.output.shouldContainExactly(Model.General.OutputData("Logits"))
             it.layers.nodes() shouldHaveSize 157
@@ -109,7 +109,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
     @Test
     fun `load non-sequential model 1`() {
         val layers = setOf(
-            Layer.InputLayer("input_2", listOf(3)),
+            Layer.InputLayer("input_2", listOf(null, 3)),
             Layer.Dense(
                 "dense_2",
                 setOf("input_2"),
@@ -125,7 +125,7 @@ internal class LoadLayersFromHDF5IntegrationTest {
 
         loadModel<Model.General>("nonSequentialModel1.h5") {
             it.name shouldBe "model_1"
-            it.input.shouldContainExactly(Model.General.InputData("input_2", listOf(3)))
+            it.input.shouldContainExactly(Model.General.InputData("input_2", listOf(null, 3)))
             it.output.shouldContainExactly(Model.General.OutputData("dense_3"))
             it.layers.nodes() shouldContainExactlyInAnyOrder layers
         }
@@ -138,13 +138,13 @@ internal class LoadLayersFromHDF5IntegrationTest {
             it.input.shouldContainExactly(
                 Model.General.InputData(
                     "input_15",
-                    listOf(null, 5)
+                    listOf(null, null, 5)
                 )
             )
             it.output.shouldContainExactly(Model.General.OutputData("dense_1"))
             it.layers.nodes().shouldContainExactly(
                 // TODO: Add an RNN layer class
-                Layer.InputLayer("input_15", listOf(null, 5)),
+                Layer.InputLayer("input_15", listOf(null, null, 5)),
                 Layer.UnknownLayer("rnn_12", setOf("input_15")).trainable(),
                 Layer.Dense(
                     "dense_1",
