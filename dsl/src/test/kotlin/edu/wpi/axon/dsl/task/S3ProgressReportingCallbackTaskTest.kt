@@ -18,7 +18,6 @@ internal class S3ProgressReportingCallbackTaskConfigurationTest :
             S3ProgressReportingCallbackTask("").apply {
                 modelName = RandomStringUtils.randomAlphanumeric(10)
                 datasetName = RandomStringUtils.randomAlphanumeric(10)
-                scriptName = RandomStringUtils.randomAlphanumeric(10)
                 bucketName = RandomStringUtils.randomAlphanumeric(10)
             }
         },
@@ -38,7 +37,6 @@ internal class S3ProgressReportingCallbackTaskTest : KoinTestFixture() {
         val task = S3ProgressReportingCallbackTask("").apply {
             modelName = "m"
             datasetName = "d"
-            scriptName = "s"
             bucketName = "b"
             output = configuredCorrectly("output")
         }
@@ -48,8 +46,8 @@ internal class S3ProgressReportingCallbackTaskTest : KoinTestFixture() {
             |class var1(tf.keras.callbacks.Callback):
             |    def on_epoch_end(self, epoch, logs=None):
             |        axon.client.impl_update_training_progress("m", "d",
-            |                                                  "s", str(epoch + 1),
-            |                                                  "b", None)
+            |                                                  str(epoch + 1), "b",
+|                                                              None)
             |
             |output = var1()
             """.trimMargin()

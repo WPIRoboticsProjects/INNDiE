@@ -20,6 +20,7 @@ import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
+import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
@@ -256,6 +257,18 @@ internal fun ScriptGenerator.compileTrainSave(
         output = earlyStoppingCallback
     }
 
+    val s3ProgressReportingCallback by variables.creating(Variable::class)
+    tasks.run(S3ProgressReportingCallbackTask::class) {
+        modelName = trainState.userNewModelName
+        datasetName = when (val dataset = trainState.userDataset) {
+            is Dataset.ExampleDataset -> dataset.name
+            is Dataset.Custom -> dataset.pathInS3
+        }
+        bucketName = trainState.userBucketName!!
+        region = trainState.userRegion
+        output = s3ProgressReportingCallback
+    }
+
     val trainModelTask by tasks.running(TrainTask::class) {
         modelInput = newModel
         trainInputData = loadedDataset.train.first
@@ -265,7 +278,7 @@ internal fun ScriptGenerator.compileTrainSave(
             validationInputData = Some(it.first)
             validationOutputData = Some(it.second)
         }
-        callbacks = setOf(checkpointCallback, earlyStoppingCallback)
+        callbacks = setOf(checkpointCallback, earlyStoppingCallback, s3ProgressReportingCallback)
         epochs = trainState.userEpochs
         dependencies += compileModelTask
     }
