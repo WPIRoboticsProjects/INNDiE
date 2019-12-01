@@ -39,7 +39,9 @@ sealed class Dataset : Comparable<Dataset> {
 
     @Serializable
     data class Custom(val pathInS3: String, override val displayName: String) : Dataset() {
+
         override val nameForS3ProgressReporting = pathInS3
+
         val baseNameWithExtension = pathInS3.substringAfterLast("/")
         val baseNameWithoutExtension = pathInS3.substringAfterLast("/").substringBeforeLast(".")
     }
