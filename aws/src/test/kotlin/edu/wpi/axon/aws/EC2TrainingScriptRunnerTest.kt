@@ -1,6 +1,6 @@
 package edu.wpi.axon.aws
 
-import arrow.core.None
+import edu.wpi.axon.tfdata.Dataset
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.regions.Region
@@ -18,10 +18,11 @@ internal class EC2TrainingScriptRunnerTest {
         )
 
         runner.startScript(
-            "custom_fashion_mnist.h5",
-            "custom_fashion_mnist-trained.h5",
-            None,
-            """
+            ScriptDataForEC2(
+                "custom_fashion_mnist.h5",
+                "custom_fashion_mnist-trained.h5",
+                Dataset.ExampleDataset.Mnist,
+                """
             import tensorflow as tf
 
             var10 = tf.keras.models.load_model("custom_fashion_mnist.h5")
@@ -90,7 +91,9 @@ internal class EC2TrainingScriptRunnerTest {
             )
 
             var12.save("custom_fashion_mnist-trained.h5")
-            """.trimIndent()
+            """.trimIndent(),
+                1
+            )
         ).unsafeRunSync()
     }
 }
