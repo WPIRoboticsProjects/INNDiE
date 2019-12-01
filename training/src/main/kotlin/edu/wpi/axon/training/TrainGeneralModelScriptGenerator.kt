@@ -45,13 +45,13 @@ class TrainGeneralModelScriptGenerator(
                     DefaultPolymorphicNamedDomainObjectContainer.of()
                 ) {
                     val loadedDataset = loadDataset(trainState).let { dataset ->
-                        if (userOldModel.input.size == 1) {
+                        if (trainState.userNewModel.input.size == 1) {
                             // Only try to transform the dataset if there is one input, similar to
                             // the sequential model case.
 
-                            val oldModelInput = userOldModel.input.first()
-                            require(oldModelInput.type.count { it == null } <= 1)
-                            val reshapeArgsFromInputType = oldModelInput.type.map { it ?: -1 }
+                            val modelInput = trainState.userNewModel.input.first()
+                            require(modelInput.type.count { it == null } <= 1)
+                            val reshapeArgsFromInputType = modelInput.type.map { it ?: -1 }
                             reshapeAndScaleLoadedDataset(dataset, reshapeArgsFromInputType, 255)
                         } else {
                             dataset

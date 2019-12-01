@@ -20,6 +20,7 @@ import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
+import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
@@ -256,16 +257,36 @@ internal fun ScriptGenerator.compileTrainSave(
         output = earlyStoppingCallback
     }
 
+    var s3ProgressReportingCallback: Variable? = null
+    if (trainState.userBucketName != null) {
+        s3ProgressReportingCallback = variables.create(Variable::class)
+        tasks.run(S3ProgressReportingCallbackTask::class) {
+            modelName = trainState.userNewModelName
+            datasetName = trainState.userDataset.nameForS3ProgressReporting
+            bucketName = trainState.userBucketName
+            region = trainState.userRegion
+            output = s3ProgressReportingCallback
+        }
+    }
+
     val trainModelTask by tasks.running(TrainTask::class) {
         modelInput = newModel
         trainInputData = loadedDataset.train.first
         trainOutputData = loadedDataset.train.second
+
+        // Add validation data if it is present
         loadedDataset.validationSplit.map { validationSplit = it }
         loadedDataset.validation.map {
             validationInputData = Some(it.first)
             validationOutputData = Some(it.second)
         }
+
         callbacks = setOf(checkpointCallback, earlyStoppingCallback)
+
+        // Add the s3 progress reporting callback if it is not null. Null when we don't have AWS
+        // data.
+        s3ProgressReportingCallback?.let { callbacks = callbacks + it }
+
         epochs = trainState.userEpochs
         dependencies += compileModelTask
     }

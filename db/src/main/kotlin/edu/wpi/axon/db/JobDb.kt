@@ -24,7 +24,7 @@ internal object Jobs : IntIdTable() {
     val status = varchar("status", 255)
     val userOldModelPath = varchar("userOldModelPath", 255)
     val userNewModelName = varchar("userNewModelName", 255)
-    val userDataset = varchar("dataset", 255)
+    val userDataset = text("dataset")
     val userOptimizer = varchar("userOptimizer", 255)
     val userLoss = varchar("userLoss", 255)
     val userMetrics = varchar("userMetrics", 255)

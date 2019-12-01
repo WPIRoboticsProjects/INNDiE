@@ -6,10 +6,15 @@ import kotlinx.serialization.json.JsonConfiguration
 
 @Serializable
 sealed class Dataset : Comparable<Dataset> {
+
     abstract val displayName: String
+    abstract val nameForS3ProgressReporting: String
 
     @Serializable
     sealed class ExampleDataset(val name: String, override val displayName: String) : Dataset() {
+
+        override val nameForS3ProgressReporting = name
+
         @Serializable
         object BostonHousing : ExampleDataset("boston_housing", "Boston Housing")
 
@@ -34,6 +39,9 @@ sealed class Dataset : Comparable<Dataset> {
 
     @Serializable
     data class Custom(val pathInS3: String, override val displayName: String) : Dataset() {
+
+        override val nameForS3ProgressReporting = pathInS3
+
         val baseNameWithExtension = pathInS3.substringAfterLast("/")
         val baseNameWithoutExtension = pathInS3.substringAfterLast("/").substringBeforeLast(".")
     }

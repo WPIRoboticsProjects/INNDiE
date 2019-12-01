@@ -1,9 +1,9 @@
 package edu.wpi.axon.aws
 
-import arrow.core.Option
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.tfdata.Dataset
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
 import mu.KotlinLogging
@@ -39,23 +39,21 @@ class EC2TrainingScriptRunner(
 
     private val nextScriptId = AtomicLong()
     private val instanceIds = mutableMapOf<Long, String>()
+    private val scriptDataMap = mutableMapOf<Long, ScriptDataForEC2>()
+    // Tracks whether the script entered the InProgress state at least once
+    private val scriptStarted = mutableMapOf<Long, Boolean>()
 
-    override fun startScript(
-        oldModelName: String,
-        newModelName: String,
-        datasetPathInS3: Option<String>,
-        scriptContents: String
-    ): IO<Long> {
+    override fun startScript(scriptDataForEC2: ScriptDataForEC2): IO<Long> {
         // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
         // own working with S3.
-        if (scriptContents.contains("download_model_file") ||
-            scriptContents.contains("upload_model_file")
+        if (scriptDataForEC2.scriptContents.contains("download_model_file") ||
+            scriptDataForEC2.scriptContents.contains("upload_model_file")
         ) {
             return IO.raiseError(
                 IllegalArgumentException(
                     """
                     |Cannot start the script because it interfaces with AWS:
-                    |$scriptContents
+                    |${scriptDataForEC2.scriptContents}
                     |
                     """.trimMargin()
                 )
@@ -70,16 +68,15 @@ class EC2TrainingScriptRunner(
                 s3.putObject(
                     PutObjectRequest.builder().bucket(bucketName)
                         .key("axon-uploaded-training-scripts/$scriptFileName").build(),
-                    RequestBody.fromString(scriptContents)
+                    RequestBody.fromString(scriptDataForEC2.scriptContents)
                 )
             }.bind()
 
-            val downloadDatasetString = datasetPathInS3.fold(
-                { "" },
-                {
-                    """axon download-dataset "$it" "$bucketName""""
-                }
-            )
+            val downloadDatasetString = when (scriptDataForEC2.dataset) {
+                is Dataset.ExampleDataset -> ""
+                is Dataset.Custom ->
+                    """axon download-dataset "${scriptDataForEC2.dataset.pathInS3}" "$bucketName""""
+            }
 
             val scriptForEC2 = """
                 |#!/bin/bash
@@ -95,11 +92,11 @@ class EC2TrainingScriptRunner(
                 |apt install -y docker-ce
                 |systemctl status docker
                 |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.4/axon-0.1.4-py2.py3-none-any.whl
-                |axon download-model-file "$oldModelName" "$bucketName"
+                |axon download-model-file "${scriptDataForEC2.oldModelName}" "$bucketName"
                 |$downloadDatasetString
                 |axon download-training-script "$scriptFileName" "$bucketName"
                 |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
-                |axon upload-model-file "$newModelName" "$bucketName"
+                |axon upload-model-file "${scriptDataForEC2.newModelName}" "$bucketName"
                 |shutdown -h now
                 """.trimMargin()
 
@@ -124,26 +121,64 @@ class EC2TrainingScriptRunner(
                 }.let {
                     val scriptId = nextScriptId.getAndIncrement()
                     instanceIds[scriptId] = it.instances().first().instanceId()
+                    scriptDataMap[scriptId] = scriptDataForEC2
+                    scriptStarted[scriptId] = false
                     scriptId
                 }
             }.bind()
         }
     }
 
-    override fun getTrainingProgress(scriptId: Long): IO<TrainingScriptProgress> = IO.defer {
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override fun getTrainingProgress(scriptId: Long): IO<TrainingScriptProgress> =
         if (scriptId in instanceIds.keys) {
             IO {
                 val status = ec2.describeInstanceStatus {
-                    it.instanceIds(instanceIds[scriptId]!!)
-                }.instanceStatuses().first()
+                    it.instanceIds(
+                        instanceIds[scriptId] ?: error("BUG: scriptId missing from instanceIds")
+                    )
+                }.instanceStatuses().firstOrNull()
 
-                when (status.instanceState().name()) {
-                    // TODO: Make a REST API call here to get the percent complete. The API might not be up yet
-                    InstanceStateName.RUNNING -> TrainingScriptProgress.InProgress(0.0)
+                when (status?.instanceState()?.name()) {
+                    InstanceStateName.RUNNING -> {
+                        scriptStarted[scriptId] = true
+
+                        val scriptDataForEC2 = scriptDataMap[scriptId]
+                            ?: error("BUG: scriptId missing from scriptDataMap")
+
+                        val modelName = scriptDataForEC2.newModelName
+                        val datasetName = scriptDataForEC2.dataset.nameForS3ProgressReporting
+                        val progressFileName =
+                            "axon-training-progress/$modelName/$datasetName/progress.txt"
+
+                        LOGGER.debug { "Getting progress from $progressFileName" }
+
+                        val progressData = IO {
+                            s3.getObject {
+                                it.bucket(bucketName).key(progressFileName)
+                            }
+                        }.redeem({ "0.0" }) {
+                            it.use {
+                                it.readAllBytes().decodeToString()
+                            }
+                        }
+
+                        LOGGER.debug { "Got progress:\n$progressData\n" }
+
+                        progressData.redeem({ TrainingScriptProgress.InProgress(0.0) }) {
+                            TrainingScriptProgress.InProgress(
+                                it.toDouble() / scriptDataForEC2.epochs
+                            )
+                        }.unsafeRunSync()
+                    }
 
                     InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
                     InstanceStateName.STOPPING, InstanceStateName.STOPPED ->
                         TrainingScriptProgress.Completed
+
+                    null -> if (scriptStarted[scriptId]
+                            ?: error("BUG: scriptId missing from scriptStarted")
+                    ) TrainingScriptProgress.Completed else TrainingScriptProgress.NotStarted
 
                     else -> TrainingScriptProgress.NotStarted
                 }
@@ -151,7 +186,6 @@ class EC2TrainingScriptRunner(
         } else {
             IO.raiseError(UnsupportedOperationException("Script id $scriptId not found."))
         }
-    }
 
     private fun String.toBase64() =
         Base64.getEncoder().encodeToString(byteInputStream().readAllBytes())
