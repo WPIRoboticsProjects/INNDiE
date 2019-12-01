@@ -262,10 +262,7 @@ internal fun ScriptGenerator.compileTrainSave(
         s3ProgressReportingCallback = variables.create(Variable::class)
         tasks.run(S3ProgressReportingCallbackTask::class) {
             modelName = trainState.userNewModelName
-            datasetName = when (val dataset = trainState.userDataset) {
-                is Dataset.ExampleDataset -> dataset.name
-                is Dataset.Custom -> dataset.pathInS3
-            }
+            datasetName = trainState.userDataset.nameForS3ProgressReporting
             bucketName = trainState.userBucketName
             region = trainState.userRegion
             output = s3ProgressReportingCallback

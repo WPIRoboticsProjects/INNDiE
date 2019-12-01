@@ -74,6 +74,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 """tf.keras.Input(shape=(224,224,3), batch_size=None, dtype=None, sparse=False)""".right(),
                 null
             ),
+            // Validating the first null is not in the shape for an InputLayer should be handled at
+            // a higher level. This test ensures that this level does not try to handle it.
             Arguments.of(
                 Layer.InputLayer("name", listOf(null, 224, 224, 3), null, null, false),
                 """tf.keras.Input(shape=(None,224,224,3), batch_size=None, dtype=None, sparse=False)""".right(),

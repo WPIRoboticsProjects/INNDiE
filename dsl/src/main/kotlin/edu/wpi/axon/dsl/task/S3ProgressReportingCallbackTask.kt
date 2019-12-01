@@ -9,7 +9,6 @@ import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
-import kotlin.properties.Delegates
 import org.koin.core.inject
 
 /**
@@ -20,17 +19,17 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
     /**
      * The name of the model being trained.
      */
-    var modelName by Delegates.notNull<String>()
+    var modelName by singleAssign<String>()
 
     /**
      * The name of the dataset being used in training.
      */
-    var datasetName by Delegates.notNull<String>()
+    var datasetName by singleAssign<String>()
 
     /**
      * The name of the S3 bucket to upload the progress to.
      */
-    var bucketName by Delegates.notNull<String>()
+    var bucketName by singleAssign<String>()
 
     /**
      * The region.
@@ -58,13 +57,13 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     override fun code(): String {
         val callbackClassName = variableNameGenerator.uniqueVariableName()
+        // Add 1 to epoch because we get the index of the epoch, not the "element"
         return """
         |class $callbackClassName(tf.keras.callbacks.Callback):
         |    def on_epoch_end(self, epoch, logs=None):
-        |       # Add 1 to epoch because we get the index of the epoch, not the "element"
-        |       axon.client.impl_update_training_progress("$modelName", "$datasetName",
-        |                                                 str(epoch + 1), "$bucketName",
-        |                                                 ${pythonString(region)})
+        |        axon.client.impl_update_training_progress("$modelName", "$datasetName",
+        |                                                  str(epoch + 1), "$bucketName",
+        |                                                  ${pythonString(region)})
         |
         |${output.name} = $callbackClassName()
         """.trimMargin()

@@ -45,12 +45,6 @@ dependencies {
         version = property("mysql-connector-java.version") as String
     )
 
-    implementation(
-        group = "org.apache.commons",
-        name = "commons-io",
-        version = property("commons-io.version") as String
-    )
-
     implementation(project(":logging"))
     implementation(project(":util"))
 

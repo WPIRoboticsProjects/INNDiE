@@ -40,12 +40,12 @@ internal class S3ProgressReportingCallbackTaskTest : KoinTestFixture() {
         }
 
         task.code().shouldBe(
-            """|
+            """
             |class var1(tf.keras.callbacks.Callback):
             |    def on_epoch_end(self, epoch, logs=None):
             |        axon.client.impl_update_training_progress("m", "d",
             |                                                  str(epoch + 1), "b",
-|                                                              None)
+            |                                                  None)
             |
             |output = var1()
             """.trimMargin()

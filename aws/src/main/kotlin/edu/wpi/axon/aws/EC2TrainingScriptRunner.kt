@@ -146,13 +146,10 @@ class EC2TrainingScriptRunner(
                         val scriptDataForEC2 = scriptDataMap[scriptId]
                             ?: error("BUG: scriptId missing from scriptDataMap")
 
-                        val datasetName = when (scriptDataForEC2.dataset) {
-                            is Dataset.ExampleDataset -> scriptDataForEC2.dataset.name
-                            is Dataset.Custom -> scriptDataForEC2.dataset.pathInS3
-                        }
-
+                        val modelName = scriptDataForEC2.newModelName
+                        val datasetName = scriptDataForEC2.dataset.nameForS3ProgressReporting
                         val progressFileName =
-                            "axon-training-progress/${scriptDataForEC2.newModelName}/$datasetName/progress.txt"
+                            "axon-training-progress/$modelName/$datasetName/progress.txt"
 
                         LOGGER.debug { "Getting progress from $progressFileName" }
 
