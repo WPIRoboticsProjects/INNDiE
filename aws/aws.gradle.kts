@@ -39,9 +39,16 @@ dependencies {
         version = property("klaxon.version") as String
     )
 
-    implementation(group = "mysql",
+    implementation(
+        group = "mysql",
         name = "mysql-connector-java",
         version = property("mysql-connector-java.version") as String
+    )
+
+    implementation(
+        group = "org.apache.commons",
+        name = "commons-io",
+        version = property("commons-io.version") as String
     )
 
     implementation(project(":logging"))

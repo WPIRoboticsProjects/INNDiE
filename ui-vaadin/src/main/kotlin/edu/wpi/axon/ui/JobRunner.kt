@@ -6,6 +6,7 @@ import arrow.core.Some
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
+import edu.wpi.axon.aws.ScriptDataForEC2
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -55,15 +56,19 @@ class JobRunner(
         ).bind()
 
         scriptRunner.startScript(
-            oldModelName = trainModelScriptGenerator.trainState.userOldModelName,
-            newModelName = job.userNewModelName,
-            datasetPathInS3 = when (val dataset = job.userDataset) {
-                is Dataset.ExampleDataset -> None
-                is Dataset.Custom -> Some(dataset.pathInS3)
-            },
-            scriptContents = script
+            ScriptDataForEC2(
+                oldModelName = trainModelScriptGenerator.trainState.userOldModelName,
+                newModelName = job.userNewModelName,
+                datasetPathInS3 = when (val dataset = job.userDataset) {
+                    is Dataset.ExampleDataset -> None
+                    is Dataset.Custom -> Some(dataset.pathInS3)
+                },
+                scriptContents = script
+            )
         ).bind()
     }.unsafeRunSync()
+
+    fun getProgress(id: Long) = scriptRunner.getTrainingProgress(id)
 
     private fun <T : Model> toTrainState(
         job: Job,

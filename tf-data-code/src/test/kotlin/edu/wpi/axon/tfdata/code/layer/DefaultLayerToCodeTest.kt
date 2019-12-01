@@ -75,6 +75,11 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 null
             ),
             Arguments.of(
+                Layer.InputLayer("name", listOf(null, 224, 224, 3), null, null, false),
+                """tf.keras.Input(shape=(None,224,224,3), batch_size=None, dtype=None, sparse=False)""".right(),
+                null
+            ),
+            Arguments.of(
                 Layer.Dropout("name", setOf("in1"), 0.2),
                 """tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None, name="name")""".right(),
                 null

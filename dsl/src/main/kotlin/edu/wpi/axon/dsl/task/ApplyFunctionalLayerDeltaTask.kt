@@ -67,8 +67,12 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                     layerGraphIsValid(newModel.layers)
                 )
             }
-        }.fold({ false }, { true })
+        }.fold({ false }, { true }) && inputsAreConsistent(oldModel) &&
+            inputsAreConsistent(newModel)
     }
+
+    private fun inputsAreConsistent(model: Model.General) = model.input == model.layers.nodes()
+        .mapNotNullTo(mutableSetOf()) { (it.layer as? Layer.InputLayer)?.toInputData() }
 
     override fun code(): String {
         val handledLayers = mutableSetOf<Layer.MetaLayer>()
@@ -149,7 +153,14 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
         layerOp: LayerOperation,
         layerVariableNames: Map<Layer.MetaLayer, String>
     ) = when (val layer = layerOp.layer.layer) {
-        is Layer.InputLayer -> makeNewLayer(layer)
+        is Layer.InputLayer -> {
+            // The first element should be null (should be null in the HDF5 file) because it's the
+            // "length" of the data. The other elements are the real shape. We need to drop it
+            // before generating the input layer, though, because the input layer requires the shape
+            // of one data element.
+            check(layer.batchInputShape.first() == null)
+            makeNewLayer(layer.copy(batchInputShape = layer.batchInputShape.drop(1)))
+        }
 
         else -> {
             val newLayerCode = when (layerOp) {

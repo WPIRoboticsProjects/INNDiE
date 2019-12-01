@@ -9,8 +9,8 @@ import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
-import org.koin.core.inject
 import kotlin.properties.Delegates
+import org.koin.core.inject
 
 /**
  * Reports training progress to an S3 bucket.

@@ -1,6 +1,5 @@
 package edu.wpi.axon.aws
 
-import arrow.core.Option
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.dbdata.TrainingScriptProgress
@@ -39,23 +38,19 @@ class EC2TrainingScriptRunner(
 
     private val nextScriptId = AtomicLong()
     private val instanceIds = mutableMapOf<Long, String>()
+    private val scriptDataMap = mutableMapOf<Long, ScriptDataForEC2>()
 
-    override fun startScript(
-        oldModelName: String,
-        newModelName: String,
-        datasetPathInS3: Option<String>,
-        scriptContents: String
-    ): IO<Long> {
+    override fun startScript(scriptDataForEC2: ScriptDataForEC2): IO<Long> {
         // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
         // own working with S3.
-        if (scriptContents.contains("download_model_file") ||
-            scriptContents.contains("upload_model_file")
+        if (scriptDataForEC2.scriptContents.contains("download_model_file") ||
+            scriptDataForEC2.scriptContents.contains("upload_model_file")
         ) {
             return IO.raiseError(
                 IllegalArgumentException(
                     """
                     |Cannot start the script because it interfaces with AWS:
-                    |$scriptContents
+                    |${scriptDataForEC2.scriptContents}
                     |
                     """.trimMargin()
                 )
@@ -70,11 +65,11 @@ class EC2TrainingScriptRunner(
                 s3.putObject(
                     PutObjectRequest.builder().bucket(bucketName)
                         .key("axon-uploaded-training-scripts/$scriptFileName").build(),
-                    RequestBody.fromString(scriptContents)
+                    RequestBody.fromString(scriptDataForEC2.scriptContents)
                 )
             }.bind()
 
-            val downloadDatasetString = datasetPathInS3.fold(
+            val downloadDatasetString = scriptDataForEC2.datasetPathInS3.fold(
                 { "" },
                 {
                     """axon download-dataset "$it" "$bucketName""""
@@ -95,11 +90,11 @@ class EC2TrainingScriptRunner(
                 |apt install -y docker-ce
                 |systemctl status docker
                 |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.4/axon-0.1.4-py2.py3-none-any.whl
-                |axon download-model-file "$oldModelName" "$bucketName"
+                |axon download-model-file "${scriptDataForEC2.oldModelName}" "$bucketName"
                 |$downloadDatasetString
                 |axon download-training-script "$scriptFileName" "$bucketName"
                 |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
-                |axon upload-model-file "$newModelName" "$bucketName"
+                |axon upload-model-file "${scriptDataForEC2.newModelName}" "$bucketName"
                 |shutdown -h now
                 """.trimMargin()
 
@@ -130,7 +125,8 @@ class EC2TrainingScriptRunner(
         }
     }
 
-    override fun getTrainingProgress(scriptId: Long): IO<TrainingScriptProgress> = IO.defer {
+    @UseExperimental(ExperimentalStdlibApi::class)
+    override fun getTrainingProgress(scriptId: Long): IO<TrainingScriptProgress> =
         if (scriptId in instanceIds.keys) {
             IO {
                 val status = ec2.describeInstanceStatus {
@@ -151,7 +147,6 @@ class EC2TrainingScriptRunner(
         } else {
             IO.raiseError(UnsupportedOperationException("Script id $scriptId not found."))
         }
-    }
 
     private fun String.toBase64() =
         Base64.getEncoder().encodeToString(byteInputStream().readAllBytes())
