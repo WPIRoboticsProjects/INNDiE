@@ -40,6 +40,8 @@ class EC2TrainingScriptRunner(
     private val nextScriptId = AtomicLong()
     private val instanceIds = mutableMapOf<Long, String>()
     private val scriptDataMap = mutableMapOf<Long, ScriptDataForEC2>()
+    // Tracks whether the script entered the InProgress state at least once
+    private val scriptStarted = mutableMapOf<Long, Boolean>()
 
     override fun startScript(scriptDataForEC2: ScriptDataForEC2): IO<Long> {
         // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
@@ -120,6 +122,7 @@ class EC2TrainingScriptRunner(
                     val scriptId = nextScriptId.getAndIncrement()
                     instanceIds[scriptId] = it.instances().first().instanceId()
                     scriptDataMap[scriptId] = scriptDataForEC2
+                    scriptStarted[scriptId] = false
                     scriptId
                 }
             }.bind()
@@ -138,6 +141,8 @@ class EC2TrainingScriptRunner(
 
                 when (status?.instanceState()?.name()) {
                     InstanceStateName.RUNNING -> {
+                        scriptStarted[scriptId] = true
+
                         val scriptDataForEC2 = scriptDataMap[scriptId]
                             ?: error("BUG: scriptId missing from scriptDataMap")
 
@@ -149,6 +154,8 @@ class EC2TrainingScriptRunner(
                         val progressFileName =
                             "axon-training-progress/${scriptDataForEC2.newModelName}/$datasetName/progress.txt"
 
+                        LOGGER.debug { "Getting progress from $progressFileName" }
+
                         val progressData = IO {
                             s3.getObject {
                                 it.bucket(bucketName).key(progressFileName)
@@ -158,6 +165,8 @@ class EC2TrainingScriptRunner(
                                 it.readAllBytes().decodeToString()
                             }
                         }
+
+                        LOGGER.debug { "Got progress:\n$progressData\n" }
 
                         progressData.redeem({ TrainingScriptProgress.InProgress(0.0) }) {
                             TrainingScriptProgress.InProgress(
@@ -169,6 +178,10 @@ class EC2TrainingScriptRunner(
                     InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
                     InstanceStateName.STOPPING, InstanceStateName.STOPPED ->
                         TrainingScriptProgress.Completed
+
+                    null -> if (scriptStarted[scriptId]
+                            ?: error("BUG: scriptId missing from scriptStarted")
+                    ) TrainingScriptProgress.Completed else TrainingScriptProgress.NotStarted
 
                     else -> TrainingScriptProgress.NotStarted
                 }

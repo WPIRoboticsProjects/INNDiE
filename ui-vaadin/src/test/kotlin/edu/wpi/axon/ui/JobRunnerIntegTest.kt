@@ -13,8 +13,10 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.koin.core.context.startKoin
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.model.InstanceType
@@ -22,8 +24,9 @@ import software.amazon.awssdk.services.ec2.model.InstanceType
 internal class JobRunnerIntegTest : KoinTestFixture() {
 
     @Test
+    @Timeout(value = 6L, unit = TimeUnit.MINUTES)
     @Disabled("Needs AWS supervision.")
-    fun `test starting job for sequential model`() {
+    fun `test starting job and tracking progress`() {
         startKoin {
             modules(defaultModule())
         }
@@ -49,6 +52,26 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             model,
             false
         )
+
+        val id = jobRunner.startJob(job)
+
+        while (true) {
+            val shouldBreak = jobRunner.getProgress(id).attempt().unsafeRunSync().fold(
+                {
+                    it.printStackTrace()
+                    false
+                },
+                {
+                    println(it)
+                    it == TrainingScriptProgress.Completed
+                })
+
+            if (shouldBreak) {
+                break
+            }
+
+            Thread.sleep(2000)
+        }
     }
 
     @Test
