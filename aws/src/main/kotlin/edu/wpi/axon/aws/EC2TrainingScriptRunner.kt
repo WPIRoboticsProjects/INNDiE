@@ -3,6 +3,7 @@ package edu.wpi.axon.aws
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.tfdata.Dataset
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
 import mu.KotlinLogging
@@ -69,12 +70,11 @@ class EC2TrainingScriptRunner(
                 )
             }.bind()
 
-            val downloadDatasetString = scriptDataForEC2.datasetPathInS3.fold(
-                { "" },
-                {
-                    """axon download-dataset "$it" "$bucketName""""
-                }
-            )
+            val downloadDatasetString = when (scriptDataForEC2.dataset) {
+                is Dataset.ExampleDataset -> ""
+                is Dataset.Custom ->
+                    """axon download-dataset "${scriptDataForEC2.dataset.pathInS3}" "$bucketName""""
+            }
 
             val scriptForEC2 = """
                 |#!/bin/bash
@@ -119,6 +119,7 @@ class EC2TrainingScriptRunner(
                 }.let {
                     val scriptId = nextScriptId.getAndIncrement()
                     instanceIds[scriptId] = it.instances().first().instanceId()
+                    scriptDataMap[scriptId] = scriptDataForEC2
                     scriptId
                 }
             }.bind()
@@ -130,12 +131,40 @@ class EC2TrainingScriptRunner(
         if (scriptId in instanceIds.keys) {
             IO {
                 val status = ec2.describeInstanceStatus {
-                    it.instanceIds(instanceIds[scriptId]!!)
-                }.instanceStatuses().first()
+                    it.instanceIds(
+                        instanceIds[scriptId] ?: error("BUG: scriptId missing from instanceIds")
+                    )
+                }.instanceStatuses().firstOrNull()
 
-                when (status.instanceState().name()) {
-                    // TODO: Make a REST API call here to get the percent complete. The API might not be up yet
-                    InstanceStateName.RUNNING -> TrainingScriptProgress.InProgress(0.0)
+                when (status?.instanceState()?.name()) {
+                    InstanceStateName.RUNNING -> {
+                        val scriptDataForEC2 = scriptDataMap[scriptId]
+                            ?: error("BUG: scriptId missing from scriptDataMap")
+
+                        val datasetName = when (scriptDataForEC2.dataset) {
+                            is Dataset.ExampleDataset -> scriptDataForEC2.dataset.name
+                            is Dataset.Custom -> scriptDataForEC2.dataset.pathInS3
+                        }
+
+                        val progressFileName =
+                            "axon-training-progress/${scriptDataForEC2.newModelName}/$datasetName/progress.txt"
+
+                        val progressData = IO {
+                            s3.getObject {
+                                it.bucket(bucketName).key(progressFileName)
+                            }
+                        }.redeem({ "0.0" }) {
+                            it.use {
+                                it.readAllBytes().decodeToString()
+                            }
+                        }
+
+                        progressData.redeem({ TrainingScriptProgress.InProgress(0.0) }) {
+                            TrainingScriptProgress.InProgress(
+                                it.toDouble() / scriptDataForEC2.epochs
+                            )
+                        }.unsafeRunSync()
+                    }
 
                     InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
                     InstanceStateName.STOPPING, InstanceStateName.STOPPED ->

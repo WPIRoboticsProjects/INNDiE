@@ -23,7 +23,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
     @Test
     @Disabled("Needs AWS supervision.")
-    fun `test starting job for mobilenet`() {
+    fun `test starting job for sequential model`() {
         startKoin {
             modules(defaultModule())
         }
@@ -34,14 +34,14 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             Region.US_EAST_1
         )
 
-        val newModelName = "mobilenetv2_1.00_224-trained.h5"
-        val (model, path) = loadModel("mobilenetv2_1.00_224.h5") {}
+        val newModelName = "32_32_1_conv_sequential-trained.h5"
+        val (model, path) = loadModel("32_32_1_conv_sequential.h5") {}
         val job = Job(
             "Job 1",
             TrainingScriptProgress.NotStarted,
             path,
             newModelName,
-            Dataset.ExampleDataset.Mnist,
+            Dataset.ExampleDataset.FashionMnist,
             Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             Loss.SparseCategoricalCrossentropy,
             setOf("accuracy"),
@@ -49,8 +49,6 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             model,
             false
         )
-
-        jobRunner.startJob(job)
     }
 
     @Test

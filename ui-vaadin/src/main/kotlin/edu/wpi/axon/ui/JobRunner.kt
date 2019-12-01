@@ -2,13 +2,11 @@ package edu.wpi.axon.ui
 
 import arrow.core.None
 import arrow.core.Option
-import arrow.core.Some
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.ScriptDataForEC2
 import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
@@ -59,11 +57,9 @@ class JobRunner(
             ScriptDataForEC2(
                 oldModelName = trainModelScriptGenerator.trainState.userOldModelName,
                 newModelName = job.userNewModelName,
-                datasetPathInS3 = when (val dataset = job.userDataset) {
-                    is Dataset.ExampleDataset -> None
-                    is Dataset.Custom -> Some(dataset.pathInS3)
-                },
-                scriptContents = script
+                dataset = job.userDataset,
+                scriptContents = script,
+                epochs = job.userEpochs
             )
         ).bind()
     }.unsafeRunSync()
