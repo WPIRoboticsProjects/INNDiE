@@ -51,3 +51,13 @@ dependencies {
     )
     testImplementation(project(":training-test-util"))
 }
+
+tasks {
+    val integrationTest by registering {
+        group = "vaadin"
+        description = "Will attempt to bring up and stop the vaadin application"
+    }
+    check {
+        dependsOn(integrationTest)
+    }
+}
