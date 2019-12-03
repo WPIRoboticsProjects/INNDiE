@@ -131,9 +131,8 @@ class LoadLayersFromHDF5(
             "InputLayer" -> Layer.InputLayer(
                 name,
                 (json["batch_input_shape"] as JsonArray<Int?>).toList().let {
-                    require(it.first() == null) {
-                        "First element of InputLayer batch_input_shape was not null: " +
-                            it.joinToString()
+                    if (it.first() != null) {
+                        throw IllegalArgumentException("First element of InputLayer batch_input_shape was not null: " + it.joinToString())
                     }
                     it
                 }
@@ -143,7 +142,9 @@ class LoadLayersFromHDF5(
                 name,
                 data.inboundNodes(),
                 (json["axis"] as JsonArray<Int>).let {
-                    require(it.size == 1)
+                    if (it.size != 1) {
+                        throw IllegalArgumentException("Size of array was not 1")
+                    }
                     it.first()
                 },
                 json["momentum"].double(),
