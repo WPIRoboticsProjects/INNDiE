@@ -1,0 +1,23 @@
+.job-form {
+    height: 100%;
+    width: 550px;
+    overflow: auto;
+    background: var(--lumo-base-color);
+    box-shadow: var(--overlay-box-shadow);
+}
+
+@media (max-width: 550px) {
+    .job-form {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+
+        /* Prevent text-fields from overflowing on narrow screens */
+        --vaadin-text-field-default-width: 6em;
+    }
+
+    .job-form-content {
+        margin-top: var(--_vaadin-app-layout-navbar-offset-size);
+    }
+}

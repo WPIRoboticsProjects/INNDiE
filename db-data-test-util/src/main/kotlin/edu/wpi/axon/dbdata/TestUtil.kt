@@ -23,9 +23,16 @@ fun Random.nextDataset(): Dataset {
     }
 }
 
+fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
+    when (nextInt(TrainingScriptProgress::class.sealedSubclasses.count())) {
+        0 -> TrainingScriptProgress.NotStarted
+        1 -> TrainingScriptProgress.InProgress(nextDouble(1.0))
+        else -> TrainingScriptProgress.Completed
+    }
+
 fun Random.nextJob() = Job(
     RandomStringUtils.randomAlphanumeric(10),
-    TrainingScriptProgress.Completed,
+    nextTrainingScriptProgress(),
     RandomStringUtils.randomAlphanumeric(10),
     RandomStringUtils.randomAlphanumeric(10),
     nextDataset(),
