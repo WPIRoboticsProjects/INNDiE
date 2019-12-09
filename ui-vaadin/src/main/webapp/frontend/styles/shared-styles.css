@@ -1,0 +1,4 @@
+body {
+    /* Used by the menu and form overlays */
+    --overlay-box-shadow: 0 0 3px 2px var(--lumo-contrast-10pct);
+}

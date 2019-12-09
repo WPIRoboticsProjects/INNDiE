@@ -16,6 +16,7 @@ import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 
 private val klaxon = Klaxon()
 
@@ -73,6 +74,21 @@ class JobDb(private val database: Database) {
         }.value
     }
 
+    fun update(job: Job): Int? = transaction(database) {
+        Jobs.update({ Jobs.id eq job.id }) {
+            it[name] = job.name
+            it[status] = job.status.serialize()
+            it[userOldModelPath] = job.userOldModelPath
+            it[userNewModelName] = job.userNewModelName
+            it[userDataset] = job.userDataset.serialize()
+            it[userOptimizer] = job.userOptimizer.serialize()
+            it[userLoss] = job.userLoss.serialize()
+            it[userMetrics] = klaxon.toJsonString(job.userMetrics)
+            it[userEpochs] = job.userEpochs
+            it[generateDebugComments] = job.generateDebugComments
+        }
+    }
+
     fun count(): Int = transaction(database) {
         Jobs.selectAll().count()
     }
@@ -81,6 +97,12 @@ class JobDb(private val database: Database) {
         Jobs.selectAll()
             .limit(limit, offset)
             .map { Jobs.toDomain(it) }
+    }
+
+    fun getById(id: Int): Job? = transaction(database) {
+        Jobs.select { Jobs.id eq id }
+            .map { Jobs.toDomain(it) }
+            .firstOrNull()
     }
 
     fun findByName(name: String): Job? = transaction(database) {

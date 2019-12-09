@@ -7,7 +7,7 @@ gretty {
     // https://akhikhl.github.io/gretty-doc/Gretty-configuration.html
     host = "0.0.0.0"
     httpPort = 8080
-    contextPath = "axon"
+    contextPath = ""
 }
 
 node {
@@ -18,6 +18,10 @@ vaadin {
     version = property("vaadin.version") as String
     isProductionMode = false
     isSubmitStatistics = false
+}
+
+repositories {
+    vaadin.addons()
 }
 
 dependencies {
@@ -39,6 +43,8 @@ dependencies {
     implementation(platform(vaadin.bom()))
     implementation(vaadin.core())
     implementation(vaadin.lumoTheme())
+
+    implementation(group = "com.infraleap", name = "animate-css", version = "1.0.1")
 
     implementation("com.github.mvysny.karibudsl:karibu-dsl-v10:0.7.0")
 

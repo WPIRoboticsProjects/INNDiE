@@ -32,6 +32,22 @@ internal class JobDbTest {
     }
 
     @Test
+    fun `update test`(@TempDir tempDir: File) {
+        val db = createDb(tempDir)
+        val id = db.create(Random.nextJob())
+        val job = db.getById(id!!)
+
+        job!!.name = "Test"
+        db.update(job)
+
+        transaction {
+            Jobs.select { Jobs.id eq job.id }
+                .map { Jobs.toDomain(it) }
+                .shouldContainExactly(job)
+        }
+    }
+
+    @Test
     fun `find by name test`(@TempDir tempDir: File) {
         val db = createDb(tempDir)
         val job = Random.nextJob()
