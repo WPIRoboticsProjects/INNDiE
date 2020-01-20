@@ -57,7 +57,7 @@ class S3Manager(
      * @return A local file containing the trained model.
      */
     fun downloadTrainedModel(filename: String): File =
-        downloadToLocalFile("axon-untrained-models/$filename")
+        downloadToLocalFile("axon-trained-models/$filename")
 
     /**
      * Uploads a test data file.
@@ -82,6 +82,12 @@ class S3Manager(
     fun listTestDataFiles(): List<String> =
         listObjectsWithPrefixAndRemovePrefix("axon-test-data/")
 
+    /**
+     * Uploads a local file to S3.
+     *
+     * @param file The local file to upload.
+     * @param path The path in S3 to upload to.
+     */
     private fun uploadLocalFile(file: File, path: String) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName).key(path).build(),
@@ -89,15 +95,31 @@ class S3Manager(
         )
     }
 
+    /**
+     * Downloads a file from S3 into a local file. The name of the local file will be the same as
+     * the name of the file in S3 (the prefix is stripped from the [path]).
+     *
+     * @param path The path in S3 to download from.
+     * @return A local file containing the data from the file in S3.
+     */
     private fun downloadToLocalFile(path: String): File {
         val data = s3.getObject {
             it.bucket(bucketName).key(path)
         }.readAllBytes()
-        val localFile = Files.createTempFile("", "").toFile()
+        val tempDir = Files.createTempDirectory("")
+        val localFile = File(tempDir.toFile(), path.substringAfterLast('/'))
+        check(localFile.createNewFile()) {
+            "File ${localFile.absolutePath} already existed but should not have. Not going to " +
+                "overwrite with new data."
+        }
         localFile.writeBytes(data)
         return localFile
     }
 
+    /**
+     * @return A list of all objects in S3 matching the [prefix], with the [prefix] removed from
+     * their keys.
+     */
     private fun listObjectsWithPrefixAndRemovePrefix(prefix: String) =
         s3.listObjects {
             it.bucket(bucketName).prefix(prefix)
