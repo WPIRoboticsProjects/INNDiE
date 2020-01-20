@@ -6,7 +6,6 @@ import com.vaadin.flow.data.provider.Query
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
-import edu.wpi.axon.dbdata.nextJob
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -14,13 +13,12 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
 import edu.wpi.axon.ui.JobRunner
+import java.io.File
+import java.nio.file.Paths
 import java.util.stream.Stream
-import kotlin.random.Random
 import org.jetbrains.exposed.sql.Database
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.model.InstanceType
-import java.io.File
-import java.nio.file.Paths
 
 object JobService {
     class JobProvider : AbstractBackEndDataProvider<Job, Void>() {
