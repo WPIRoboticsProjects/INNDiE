@@ -65,6 +65,8 @@ class EC2TrainingScriptRunner(
                 s3Manager.uploadTrainingScript(scriptFileName, scriptDataForEC2.scriptContents)
             }.bind()
 
+            // We need to download custom datasets from S3. Example datasets will be downloaded
+            // by the script using Keras.
             val downloadDatasetString = when (scriptDataForEC2.dataset) {
                 is Dataset.ExampleDataset -> ""
                 is Dataset.Custom ->
