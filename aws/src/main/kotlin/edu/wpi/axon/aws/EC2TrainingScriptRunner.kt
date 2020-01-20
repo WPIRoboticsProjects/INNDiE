@@ -91,12 +91,12 @@ class EC2TrainingScriptRunner(
                 |apt-cache policy docker-ce
                 |apt install -y docker-ce
                 |systemctl status docker
-                |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.4/axon-0.1.4-py2.py3-none-any.whl
-                |axon download-model-file "${scriptDataForEC2.oldModelName}" "$bucketName"
+                |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.10/axon-0.1.10-py2.py3-none-any.whl
+                |axon download-untrained-model "${scriptDataForEC2.oldModelName}"
                 |$downloadDatasetString
-                |axon download-training-script "$scriptFileName" "$bucketName"
+                |axon download-training-script "$scriptFileName"
                 |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
-                |axon upload-model-file "${scriptDataForEC2.newModelName}" "$bucketName"
+                |axon upload-trained-model "${scriptDataForEC2.newModelName}"
                 |shutdown -h now
                 """.trimMargin()
 

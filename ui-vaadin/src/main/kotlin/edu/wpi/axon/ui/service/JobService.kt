@@ -51,7 +51,7 @@ object JobService {
     )
 
     private fun loadModel(modelName: String): Pair<Model, String> {
-        val localModelPath = Paths.get("/Users/austinshalit/Desktop/$modelName").toString()
+        val localModelPath = Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName").toString()
         val layers = LoadLayersFromHDF5(DefaultLayersToGraph())
             .load(File(localModelPath))
         val model = layers.attempt().unsafeRunSync()
@@ -61,7 +61,7 @@ object JobService {
 
     init {
         val newModelName = "32_32_1_conv_sequential-trained.h5"
-        val (model, path) = loadModel("32_32_1_conv_sequential.h5") {}
+        val (model, path) = loadModel("32_32_1_conv_sequential.h5")
         jobs.create(
             Job(
                 "Job 1",
