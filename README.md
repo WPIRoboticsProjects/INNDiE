@@ -77,6 +77,9 @@ random alphanumeric characters for uniqueness), Axon manages these directories:
     - Contains trained models
     - These models can be used for testing because they are assumed to contain meaningful weights
     - EC2 uploads trained models here after finishing a training job
+- axon-test-data
+    - Contains test data files that can be used with the test view
+    - Lambda pulls test data files from here
 - axon-training-scripts
     - Contains generated training scripts
     - EC2 pulls training scripts from here
