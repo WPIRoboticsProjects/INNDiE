@@ -75,7 +75,7 @@ class EC2TrainingScriptRunner(
             val downloadDatasetString = when (scriptDataForEC2.dataset) {
                 is Dataset.ExampleDataset -> ""
                 is Dataset.Custom ->
-                    """axon download-dataset "${scriptDataForEC2.dataset.pathInS3}" "$bucketName""""
+                    """axon download-dataset "${scriptDataForEC2.dataset.pathInS3}""""
             }
 
             val scriptForEC2 = """
