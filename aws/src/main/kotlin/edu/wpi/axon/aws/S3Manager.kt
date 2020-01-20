@@ -1,12 +1,11 @@
 package edu.wpi.axon.aws
 
+import java.io.File
+import java.nio.file.Files
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.PutObjectAclRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import java.io.File
-import java.nio.file.Files
 
 /**
  * Manages various calls to S3.
@@ -106,12 +105,16 @@ class S3Manager(
         val data = s3.getObject {
             it.bucket(bucketName).key(path)
         }.readAllBytes()
+
+        // Put the downloaded file in a temp dir to ensure it doesn't overwrite anything
         val tempDir = Files.createTempDirectory("")
+
         val localFile = File(tempDir.toFile(), path.substringAfterLast('/'))
         check(localFile.createNewFile()) {
             "File ${localFile.absolutePath} already existed but should not have. Not going to " +
                 "overwrite with new data."
         }
+
         localFile.writeBytes(data)
         return localFile
     }
