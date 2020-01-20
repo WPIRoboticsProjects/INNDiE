@@ -101,6 +101,13 @@ class JobForm(val viewLogic: JobsViewLogic) : KComposite() {
                             viewLogic.clear()
                         }
                     }
+                    button("Run", Icon(VaadinIcon.PLAY)) {
+                        isIconAfterText = true
+                        setWidthFull()
+                        addClickListener {
+                            viewLogic.runJob(job!!)
+                        }
+                    }
                 }
             }
         }
