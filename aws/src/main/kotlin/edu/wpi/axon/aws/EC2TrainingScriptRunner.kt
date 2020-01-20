@@ -9,14 +9,11 @@ import java.util.concurrent.atomic.AtomicLong
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
-import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.Ec2Client
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
 import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
-import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
 /**
  * A [TrainingScriptRunner] that runs the training script on EC2 and hosts datasets and models on
@@ -34,8 +31,8 @@ class EC2TrainingScriptRunner(
     private val region: Region?
 ) : TrainingScriptRunner, KoinComponent {
 
-    private val s3 by lazy { S3Client.builder().apply { region?.let { region(it) } }.build() }
     private val ec2 by lazy { Ec2Client.builder().apply { region?.let { region(it) } }.build() }
+    private val s3Manager = S3Manager(bucketName, region)
 
     private val nextScriptId = AtomicLong()
     private val instanceIds = mutableMapOf<Long, String>()
@@ -65,11 +62,7 @@ class EC2TrainingScriptRunner(
 
         return IO.fx {
             IO {
-                s3.putObject(
-                    PutObjectRequest.builder().bucket(bucketName)
-                        .key("axon-training-scripts/$scriptFileName").build(),
-                    RequestBody.fromString(scriptDataForEC2.scriptContents)
-                )
+                s3Manager.uploadTrainingScript(scriptFileName, scriptDataForEC2.scriptContents)
             }.bind()
 
             val downloadDatasetString = when (scriptDataForEC2.dataset) {
@@ -148,20 +141,10 @@ class EC2TrainingScriptRunner(
 
                         val modelName = scriptDataForEC2.newModelName
                         val datasetName = scriptDataForEC2.dataset.nameForS3ProgressReporting
-                        val progressFileName =
-                            "axon-training-progress/$modelName/$datasetName/progress.txt"
-
-                        LOGGER.debug { "Getting progress from $progressFileName" }
 
                         val progressData = IO {
-                            s3.getObject {
-                                it.bucket(bucketName).key(progressFileName)
-                            }
-                        }.redeem({ "0.0" }) {
-                            it.use {
-                                it.readAllBytes().decodeToString()
-                            }
-                        }
+                            s3Manager.getTrainingProgress(modelName, datasetName)
+                        }.redeem({ "0.0" }) { it }
 
                         LOGGER.debug { "Got progress:\n$progressData\n" }
 

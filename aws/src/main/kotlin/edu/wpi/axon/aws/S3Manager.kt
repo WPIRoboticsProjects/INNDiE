@@ -82,6 +82,32 @@ class S3Manager(
         listObjectsWithPrefixAndRemovePrefix("axon-test-data/")
 
     /**
+     * Uploads a training script.
+     *
+     * @param scriptFilename The filename to upload the script contents to.
+     * @param scriptContents The contents of the script.
+     */
+    fun uploadTrainingScript(scriptFilename: String, scriptContents: String) {
+        s3.putObject(
+            PutObjectRequest.builder().bucket(bucketName)
+                .key("axon-training-scripts/$scriptFilename").build(),
+            RequestBody.fromString(scriptContents)
+        )
+    }
+
+    /**
+     * Gets the latest training progress data.
+     *
+     * @param modelName The filename of the model being trained.
+     * @param datasetName The filename of the dataset being trained on.
+     * @return The contents of the progress file.
+     */
+    @UseExperimental(ExperimentalStdlibApi::class)
+    fun getTrainingProgress(modelName: String, datasetName: String): String = s3.getObject {
+        it.bucket(bucketName).key("axon-training-progress/$modelName/$datasetName/progress.txt")
+    }.readAllBytes().decodeToString()
+
+    /**
      * Uploads a local file to S3.
      *
      * @param file The local file to upload.
