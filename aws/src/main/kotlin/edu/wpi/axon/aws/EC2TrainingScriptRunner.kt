@@ -43,8 +43,8 @@ class EC2TrainingScriptRunner(
     override fun startScript(scriptDataForEC2: ScriptDataForEC2): IO<Long> {
         // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
         // own working with S3.
-        if (scriptDataForEC2.scriptContents.contains("download_model_file") ||
-            scriptDataForEC2.scriptContents.contains("upload_model_file")
+        if (scriptDataForEC2.scriptContents.contains("download_model") ||
+            scriptDataForEC2.scriptContents.contains("upload_model")
         ) {
             return IO.raiseError(
                 IllegalArgumentException(
