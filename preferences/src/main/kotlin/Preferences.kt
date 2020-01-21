@@ -5,12 +5,10 @@ import kotlinx.serialization.json.JsonConfiguration
 /**
  * The user's preferences.
  *
- * @param region The region to run things in.
  * @param defaultEC2NodeType The default EC2 node type to run training scripts in.
  */
 @Serializable
 data class Preferences(
-    val region: String = "us-east-1",
     val defaultEC2NodeType: String = "t2.micro"
 ) {
 
