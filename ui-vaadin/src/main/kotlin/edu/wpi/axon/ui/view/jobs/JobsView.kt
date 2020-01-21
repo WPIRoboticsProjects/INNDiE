@@ -17,14 +17,21 @@ import com.vaadin.flow.router.HasUrlParameter
 import com.vaadin.flow.router.OptionalParameter
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.router.RouteAlias
+import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.ui.MainLayout
-import edu.wpi.axon.ui.service.JobService
+import edu.wpi.axon.ui.service.JobProvider
 import edu.wpi.axon.ui.view.EntityView
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 
 @Route(value = "jobs", layout = MainLayout::class)
 @RouteAlias(value = "", layout = MainLayout::class)
-class JobsView : KComposite(), HasUrlParameter<String>, EntityView<Job> {
+class JobsView : KComposite(), HasUrlParameter<String>, EntityView<Job>, KoinComponent {
+
+    private val dataProvider by inject<JobProvider>()
+    private val jobDb by inject<JobDb>()
+
     private lateinit var grid: JobGrid
     private lateinit var form: JobForm
 
@@ -49,7 +56,7 @@ class JobsView : KComposite(), HasUrlParameter<String>, EntityView<Job> {
                         }
                     }
                 }
-                grid = jobGrid(JobService.dataProvider) {
+                grid = jobGrid(dataProvider) {
                     asSingleSelect().addValueChangeListener {
                         it.value?.let { job ->
                             viewLogic.edit(job)
@@ -92,8 +99,8 @@ class JobsView : KComposite(), HasUrlParameter<String>, EntityView<Job> {
     }
 
     fun updateJob(job: Job) {
-        JobService.jobs.update(job)
-        JobService.dataProvider.refreshItem(job)
+        jobDb.update(job)
+        dataProvider.refreshItem(job)
     }
 
     override fun setParameter(event: BeforeEvent?, @OptionalParameter parameter: String?) {

@@ -3,7 +3,6 @@ package edu.wpi.axon.aws
 import java.io.File
 import java.nio.file.Files
 import software.amazon.awssdk.core.sync.RequestBody
-import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
@@ -11,14 +10,12 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
  * Manages various calls to S3.
  *
  * @param bucketName The S3 bucket name to use for all S3 API calls.
- * @param region The region to connect to, or `null` to autodetect the region.
  */
 class S3Manager(
-    private val bucketName: String,
-    private val region: Region?
+    private val bucketName: String
 ) {
 
-    private val s3 by lazy { S3Client.builder().apply { region?.let { region(it) } }.build() }
+    private val s3 by lazy { S3Client.builder().build() }
 
     /**
      * Uploads an "untrained" model (one that the user wants to upload to start a job with). Meant
@@ -104,8 +101,46 @@ class S3Manager(
      */
     @UseExperimental(ExperimentalStdlibApi::class)
     fun getTrainingProgress(modelName: String, datasetName: String): String = s3.getObject {
-        it.bucket(bucketName).key("axon-training-progress/$modelName/$datasetName/progress.txt")
+        it.bucket(bucketName).key(createTrainingProgressFilePath(modelName, datasetName))
     }.readAllBytes().decodeToString()
+
+    /**
+     * Resets the latest training progress data.
+     *
+     * @param modelName The filename of the model being trained.
+     * @param datasetName The filename of the dataset being trained on.
+     */
+    fun resetTrainingProgress(modelName: String, datasetName: String) {
+        s3.deleteObject {
+            it.bucket(bucketName).key(createTrainingProgressFilePath(modelName, datasetName))
+        }
+    }
+
+    /**
+     * Downloads the preferences file to a local file. Throws an exception if there is no
+     * preferences file in S3.
+     *
+     * @return A local file containing the preferences.
+     */
+    @UseExperimental(ExperimentalStdlibApi::class)
+    internal fun downloadPreferences(): File {
+        val data = s3.getObject { it.key(preferencesFilename) }.readAllBytes()
+        val file = Files.createTempFile("", "").toFile()
+        file.writeBytes(data)
+        return file
+    }
+
+    /**
+     * Uploads a preferences file to S3.
+     *
+     * @param file The local preferences file to upload.
+     */
+    internal fun uploadPreferences(file: File) {
+        s3.putObject(
+            PutObjectRequest.builder().bucket(bucketName).key(preferencesFilename).build(),
+            RequestBody.fromFile(file)
+        )
+    }
 
     /**
      * Uploads a local file to S3.
@@ -153,4 +188,11 @@ class S3Manager(
         s3.listObjects {
             it.bucket(bucketName).prefix(prefix)
         }.contents().map { it.key().substring(prefix.length) }
+
+    private fun createTrainingProgressFilePath(modelName: String, datasetName: String) =
+        "axon-training-progress/$modelName/$datasetName/progress.txt"
+
+    companion object {
+        private const val preferencesFilename = "axon-preferences.json"
+    }
 }

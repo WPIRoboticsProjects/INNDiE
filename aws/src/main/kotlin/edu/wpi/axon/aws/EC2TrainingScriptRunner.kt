@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicLong
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
-import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.Ec2Client
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
@@ -21,36 +20,33 @@ import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
  * this class will handle all of that. The script should just load and save the model from/to its
  * current directory.
  *
- * @param bucketName The S3 bucket name to use for dataset and models.
  * @param instanceType The type of the EC2 instance to run the training script on.
- * @param region The region to connect to, or `null` to autodetect the region.
  */
 class EC2TrainingScriptRunner(
-    private val bucketName: String,
-    private val instanceType: InstanceType,
-    private val region: Region?
+    bucketName: String,
+    private val instanceType: InstanceType
 ) : TrainingScriptRunner, KoinComponent {
 
-    private val ec2 by lazy { Ec2Client.builder().apply { region?.let { region(it) } }.build() }
-    private val s3Manager = S3Manager(bucketName, region)
+    private val ec2 by lazy { Ec2Client.builder().build() }
+    private val s3Manager = S3Manager(bucketName)
 
     private val nextScriptId = AtomicLong()
     private val instanceIds = mutableMapOf<Long, String>()
-    private val scriptDataMap = mutableMapOf<Long, ScriptDataForEC2>()
+    private val scriptDataMap = mutableMapOf<Long, RunTrainingScriptConfiguration>()
     // Tracks whether the script entered the InProgress state at least once
     private val scriptStarted = mutableMapOf<Long, Boolean>()
 
-    override fun startScript(scriptDataForEC2: ScriptDataForEC2): IO<Long> {
+    override fun startScript(runTrainingScriptConfiguration: RunTrainingScriptConfiguration): IO<Long> {
         // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
         // own working with S3.
-        if (scriptDataForEC2.scriptContents.contains("download_model") ||
-            scriptDataForEC2.scriptContents.contains("upload_model")
+        if (runTrainingScriptConfiguration.scriptContents.contains("download_model") ||
+            runTrainingScriptConfiguration.scriptContents.contains("upload_model")
         ) {
             return IO.raiseError(
                 IllegalArgumentException(
                     """
                     |Cannot start the script because it interfaces with AWS:
-                    |${scriptDataForEC2.scriptContents}
+                    |${runTrainingScriptConfiguration.scriptContents}
                     |
                     """.trimMargin()
                 )
@@ -62,15 +58,15 @@ class EC2TrainingScriptRunner(
 
         return IO.fx {
             IO {
-                s3Manager.uploadTrainingScript(scriptFileName, scriptDataForEC2.scriptContents)
+                s3Manager.uploadTrainingScript(scriptFileName, runTrainingScriptConfiguration.scriptContents)
             }.bind()
 
             // We need to download custom datasets from S3. Example datasets will be downloaded
             // by the script using Keras.
-            val downloadDatasetString = when (scriptDataForEC2.dataset) {
+            val downloadDatasetString = when (runTrainingScriptConfiguration.dataset) {
                 is Dataset.ExampleDataset -> ""
                 is Dataset.Custom ->
-                    """axon download-dataset "${scriptDataForEC2.dataset.pathInS3}""""
+                    """axon download-dataset "${runTrainingScriptConfiguration.dataset.pathInS3}""""
             }
 
             val scriptForEC2 = """
@@ -87,11 +83,11 @@ class EC2TrainingScriptRunner(
                 |apt install -y docker-ce
                 |systemctl status docker
                 |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.10/axon-0.1.10-py2.py3-none-any.whl
-                |axon download-untrained-model "${scriptDataForEC2.oldModelName}"
+                |axon download-untrained-model "${runTrainingScriptConfiguration.oldModelName}"
                 |$downloadDatasetString
                 |axon download-training-script "$scriptFileName"
                 |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
-                |axon upload-trained-model "${scriptDataForEC2.newModelName}"
+                |axon upload-trained-model "${runTrainingScriptConfiguration.newModelName}"
                 |shutdown -h now
                 """.trimMargin()
 
@@ -116,7 +112,7 @@ class EC2TrainingScriptRunner(
                 }.let {
                     val scriptId = nextScriptId.getAndIncrement()
                     instanceIds[scriptId] = it.instances().first().instanceId()
-                    scriptDataMap[scriptId] = scriptDataForEC2
+                    scriptDataMap[scriptId] = runTrainingScriptConfiguration
                     scriptStarted[scriptId] = false
                     scriptId
                 }

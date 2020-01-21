@@ -31,6 +31,7 @@ val dslTestUtilProject = project(":dsl-test-util")
 val exampleModelsProject = project(":example-models")
 val loggingProject = project(":logging")
 val patternMatchProject = project(":pattern-match")
+val preferencesProject = project(":preferences")
 val tasksYolov3Project = project(":tasks-yolov3")
 val testUtilProject = project(":test-util")
 val tfDataProject = project(":tf-data")
@@ -53,6 +54,7 @@ val kotlinProjects = setOf(
     exampleModelsProject,
     loggingProject,
     patternMatchProject,
+    preferencesProject,
     tasksYolov3Project,
     testUtilProject,
     tfDataProject,
@@ -76,6 +78,7 @@ val publishedProjects = setOf(
     exampleModelsProject,
     loggingProject,
     patternMatchProject,
+    preferencesProject,
     tasksYolov3Project,
     tfDataProject,
     tfDataCode,

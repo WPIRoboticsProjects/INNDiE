@@ -6,25 +6,25 @@ import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 
-internal class DownloadModelFromS3TaskConfigurationTest :
-    TaskConfigurationTestFixture<DownloadModelFromS3Task>(
-        { DownloadModelFromS3Task("") },
+internal class UploadTrainedModelToS3TaskConfigurationTest :
+    TaskConfigurationTestFixture<UploadTrainedModelToS3Task>(
+        { UploadTrainedModelToS3Task("") },
         listOf()
     )
 
-internal class DownloadModelFromS3TaskTest : KoinTestFixture() {
+internal class UploadTrainedModelToS3TaskTest : KoinTestFixture() {
 
     @Test
     fun `test code gen`() {
         startKoin { }
 
-        val task = DownloadModelFromS3Task("").apply {
+        val task = UploadTrainedModelToS3Task("").apply {
             modelName = "modelName.h5"
             bucketName = "bucketName"
         }
 
         task.code() shouldBe """
-            |axon.client.impl_download_model_file("modelName.h5", "bucketName", None)
+            |axon.client.impl_upload_model_file("modelName.h5", "bucketName", None)
         """.trimMargin()
     }
 }

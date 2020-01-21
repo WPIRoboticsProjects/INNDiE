@@ -1,12 +1,19 @@
 package edu.wpi.axon.ui.view.jobs
 
 import com.vaadin.flow.component.UI
+import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
-import edu.wpi.axon.ui.service.JobService
+import edu.wpi.axon.ui.JobRunner
 import kotlin.concurrent.thread
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 
-class JobsViewLogic(private val view: JobsView) {
+class JobsViewLogic(private val view: JobsView) : KoinComponent {
+
+    private val jobDb by inject<JobDb>()
+    private val jobRunner by inject<JobRunner>()
+
     fun enter(parameter: String?) {
         when {
             parameter == null || parameter.isEmpty() -> {
@@ -17,7 +24,7 @@ class JobsViewLogic(private val view: JobsView) {
             }
             else -> {
                 parameter.toIntOrNull()?.let {
-                    JobService.jobs.getById(it)?.let { job ->
+                    jobDb.getById(it)?.let { job ->
                         view.selectRow(job)
                     }
                 }
@@ -49,17 +56,17 @@ class JobsViewLogic(private val view: JobsView) {
 
     fun runJob(job: Job) {
         thread(isDaemon = true) {
-            val id = JobService.jobRunner.startJob(job)
+            val id = jobRunner.startJob(job)
 
             while (true) {
-                val shouldBreak = JobService.jobRunner.getProgress(id).attempt().unsafeRunSync().fold(
+                val shouldBreak = jobRunner.getProgress(id).attempt().unsafeRunSync().fold(
                         {
                             view.showError("Could not get Job Status", false)
                             it.printStackTrace()
                             false
                         },
                         {
-                            JobService.jobs.update(job.copy(status = it))
+                            jobDb.update(job.copy(status = it))
                             it == TrainingScriptProgress.Completed
                         })
 

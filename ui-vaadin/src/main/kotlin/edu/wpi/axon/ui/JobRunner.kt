@@ -1,31 +1,25 @@
 package edu.wpi.axon.ui
 
 import arrow.core.None
-import arrow.core.Option
 import arrow.fx.IO
 import arrow.fx.extensions.fx
-import edu.wpi.axon.aws.EC2TrainingScriptRunner
-import edu.wpi.axon.aws.ScriptDataForEC2
+import edu.wpi.axon.aws.RunTrainingScriptConfiguration
+import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.ec2.model.InstanceType
 
 /**
- * @param bucketName The S3 bucket name to use for dataset and models.
- * @param instanceType The type of the EC2 instance to run the training script on.
- * @param region The region to connect to, or `null` to autodetect the region.
+ * @param bucketName The S3 bucket name to use for dataset and models or `null` if AWS will not
+ * be used.
+ * @param scriptRunner The [TrainingScriptRunner] to run the script with.
  */
 class JobRunner(
-    private val bucketName: String,
-    instanceType: InstanceType,
-    private val region: Region?
+    private val bucketName: String?,
+    private val scriptRunner: TrainingScriptRunner
 ) {
-
-    private val scriptRunner = EC2TrainingScriptRunner(bucketName, instanceType, region)
 
     /**
      * Generates the code for a job and starts it on EC2.
@@ -54,7 +48,7 @@ class JobRunner(
         ).bind()
 
         scriptRunner.startScript(
-            ScriptDataForEC2(
+            RunTrainingScriptConfiguration(
                 oldModelName = trainModelScriptGenerator.trainState.userOldModelName,
                 newModelName = job.userNewModelName,
                 dataset = job.userDataset,
@@ -80,7 +74,6 @@ class JobRunner(
         userValidationSplit = None, // TODO: Add this to Job and pull it from there
         userNewModel = model,
         userBucketName = bucketName,
-        userRegion = Option.fromNullable(region?.id()),
         handleS3InScript = false,
         generateDebugComments = job.generateDebugComments
     )

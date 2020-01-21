@@ -3,6 +3,8 @@ package edu.wpi.axon.ui
 import arrow.core.Tuple3
 import arrow.fx.IO
 import arrow.fx.extensions.fx
+import edu.wpi.axon.aws.EC2TrainingScriptRunner
+import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultModule
@@ -18,10 +20,11 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.core.context.startKoin
-import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
 internal class JobRunnerIntegTest : KoinTestFixture() {
+
+    private val bucketName = findAxonS3Bucket()!!
 
     @Test
     @Timeout(value = 6L, unit = TimeUnit.MINUTES)
@@ -32,9 +35,8 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         }
 
         val jobRunner = JobRunner(
-            "axon-salmon-testbucket2",
-            InstanceType.T2_MICRO,
-            Region.US_EAST_1
+            bucketName,
+            EC2TrainingScriptRunner(bucketName, InstanceType.T2_MICRO)
         )
 
         val newModelName = "32_32_1_conv_sequential-trained.h5"
@@ -82,9 +84,8 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         }
 
         val jobRunner = JobRunner(
-            "axon-salmon-testbucket2",
-            InstanceType.T2_MICRO,
-            Region.US_EAST_1
+            bucketName,
+            EC2TrainingScriptRunner(bucketName, InstanceType.T2_MICRO)
         )
 
         val exampleModelManager = GitExampleModelManager()

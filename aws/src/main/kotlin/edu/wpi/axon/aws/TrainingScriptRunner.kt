@@ -8,10 +8,10 @@ interface TrainingScriptRunner {
     /**
      * Start running a training script.
      *
-     * @param scriptDataForEC2 The data needed to start the script.
+     * @param runTrainingScriptConfiguration The data needed to start the script.
      * @return The script id used to query about the script during and after training.
      */
-    fun startScript(scriptDataForEC2: ScriptDataForEC2): IO<Long>
+    fun startScript(runTrainingScriptConfiguration: RunTrainingScriptConfiguration): IO<Long>
 
     /**
      * Queries for the current progress state of the script.
