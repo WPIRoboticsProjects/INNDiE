@@ -1,7 +1,7 @@
-import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Path
 import kotlin.properties.Delegates
+import mu.KotlinLogging
 
 /**
  * Manages the preferences data lifecycle. Stores preferences in a local file.

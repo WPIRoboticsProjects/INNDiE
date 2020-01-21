@@ -6,7 +6,6 @@ import arrow.core.Either
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.S3PreferencesManager
 import edu.wpi.axon.aws.axonBucketName
-import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
@@ -37,7 +36,7 @@ class WebAppListener : ServletContextListener {
         LOGGER.info { "Starting web app." }
 
         // Find the S3 bucket that Axon is going to work out of
-        val bucketName: String? = null //findAxonS3Bucket()
+        val bucketName: String? = null // findAxonS3Bucket()
 
         val preferencesManager: PreferencesManager =
             if (bucketName != null) {
