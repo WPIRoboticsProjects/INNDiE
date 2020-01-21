@@ -1,5 +1,6 @@
 package edu.wpi.axon.ui
 
+import LocalPreferencesManager
 import PreferencesManager
 import arrow.core.Either
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
@@ -36,16 +37,22 @@ class WebAppListener : ServletContextListener {
         LOGGER.info { "Starting web app." }
 
         // Find the S3 bucket that Axon is going to work out of
-        val bucketName = findAxonS3Bucket()
+        val bucketName: String? = null //findAxonS3Bucket()
 
         val preferencesManager: PreferencesManager =
             if (bucketName != null) {
                 // We are using AWS
-                val preferencesManager = S3PreferencesManager(bucketName)
-                preferencesManager.initialize()
-                preferencesManager
+                S3PreferencesManager(bucketName).apply { initialize() }
             } else {
-                TODO("Support running outside of AWS. Create a local preferences manager.")
+                // We are not using AWS
+                LocalPreferencesManager(
+                    Paths.get(
+                        System.getProperty("user.home"),
+                        ".wpilib",
+                        "Axon",
+                        "preferences.json"
+                    )
+                ).apply { initialize() }
             }
 
         // TODO: Don't hardcode an in-memory db

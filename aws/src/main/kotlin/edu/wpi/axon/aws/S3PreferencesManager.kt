@@ -20,10 +20,6 @@ class S3PreferencesManager(bucketName: String) : PreferencesManager {
     private var preferencesFile by singleAssign<File>()
     private var workingPreferences by Delegates.notNull<Preferences>()
 
-    /**
-     * This must be called before using [put] or [get]. This method initializes the local files
-     * needed for preferences.
-     */
     override fun initialize() {
         // Download the preferences file or create a new empty one
         try {
@@ -35,11 +31,6 @@ class S3PreferencesManager(bucketName: String) : PreferencesManager {
         }
     }
 
-    /**
-     * Update the preferences.
-     *
-     * @param preferences The new preferences.
-     */
     override fun put(preferences: Preferences) {
         workingPreferences = preferences
         thread(isDaemon = true) {
@@ -48,10 +39,5 @@ class S3PreferencesManager(bucketName: String) : PreferencesManager {
         }
     }
 
-    /**
-     * Get the most recent preferences.
-     *
-     * @return The most recent preferences.
-     */
     override fun get(): Preferences = workingPreferences
 }
