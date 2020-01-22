@@ -1,4 +1,4 @@
-package edu.wpi.axon.preferences
+package edu.wpi.axon.aws.preferences
 
 import java.io.File
 import java.nio.file.Path
@@ -6,7 +6,7 @@ import kotlin.properties.Delegates
 import mu.KotlinLogging
 
 /**
- * Manages the preferences data lifecycle. Stores preferences in a local file.
+ * Manages the edu.wpi.axon.aws.preferences data lifecycle. Stores edu.wpi.axon.aws.preferences in a local file.
  */
 class LocalPreferencesManager(
     private val preferencesFilePath: Path
@@ -19,11 +19,11 @@ class LocalPreferencesManager(
         if (file.exists()) {
             if (file.readText().isEmpty()) {
                 file.writeText(Preferences().serialize())
-                LOGGER.info { "Created a new preferences file at $preferencesFilePath" }
+                LOGGER.info { "Created a new edu.wpi.axon.aws.preferences file at $preferencesFilePath" }
             }
         } else {
             check(file.createNewFile()) {
-                "Failed to create a new preferences file at $preferencesFilePath"
+                "Failed to create a new edu.wpi.axon.aws.preferences file at $preferencesFilePath"
             }
         }
     }

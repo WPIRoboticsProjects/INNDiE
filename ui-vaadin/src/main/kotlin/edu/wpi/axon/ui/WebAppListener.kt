@@ -8,8 +8,8 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultModule
-import edu.wpi.axon.preferences.LocalPreferencesManager
-import edu.wpi.axon.preferences.PreferencesManager
+import edu.wpi.axon.aws.preferences.LocalPreferencesManager
+import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -49,7 +49,7 @@ class WebAppListener : ServletContextListener {
                                 System.getProperty("user.home"),
                                 ".wpilib",
                                 "Axon",
-                                "preferences.json"
+                                "edu.wpi.axon.aws.preferences.json"
                         )
                 ).apply { initialize() }
             }
@@ -70,7 +70,7 @@ class WebAppListener : ServletContextListener {
         val jobRunner = JobRunner(
             bucketName,
             if (bucketName != null) {
-                // TODO: Get the instance type from the preferences
+                // TODO: Get the instance type from the edu.wpi.axon.aws.preferences
                 EC2TrainingScriptRunner(bucketName, InstanceType.T2_MICRO)
             } else {
                 TODO("Support running outside of AWS. Create a local training script runner")

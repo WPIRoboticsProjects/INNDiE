@@ -117,10 +117,10 @@ class S3Manager(
     }
 
     /**
-     * Downloads the preferences file to a local file. Throws an exception if there is no
-     * preferences file in S3.
+     * Downloads the edu.wpi.axon.aws.preferences file to a local file. Throws an exception if there is no
+     * edu.wpi.axon.aws.preferences file in S3.
      *
-     * @return A local file containing the preferences.
+     * @return A local file containing the edu.wpi.axon.aws.preferences.
      */
     @UseExperimental(ExperimentalStdlibApi::class)
     internal fun downloadPreferences(): File {
@@ -131,9 +131,9 @@ class S3Manager(
     }
 
     /**
-     * Uploads a preferences file to S3.
+     * Uploads a edu.wpi.axon.aws.preferences file to S3.
      *
-     * @param file The local preferences file to upload.
+     * @param file The local edu.wpi.axon.aws.preferences file to upload.
      */
     internal fun uploadPreferences(file: File) {
         s3.putObject(
@@ -193,6 +193,6 @@ class S3Manager(
         "axon-training-progress/$modelName/$datasetName/progress.txt"
 
     companion object {
-        private const val preferencesFilename = "axon-preferences.json"
+        private const val preferencesFilename = "axon-edu.wpi.axon.aws.preferences.json"
     }
 }
