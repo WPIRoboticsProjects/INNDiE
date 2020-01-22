@@ -1,7 +1,7 @@
 package edu.wpi.axon.aws
 
-import Preferences
-import PreferencesManager
+import edu.wpi.axon.preferences.Preferences
+import edu.wpi.axon.preferences.PreferencesManager
 import edu.wpi.axon.util.singleAssign
 import java.io.File
 import java.nio.file.Files

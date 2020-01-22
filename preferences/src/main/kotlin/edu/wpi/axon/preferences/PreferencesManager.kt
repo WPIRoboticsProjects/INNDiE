@@ -1,4 +1,4 @@
-
+package edu.wpi.axon.preferences
 
 /**
  * Manages the preferences data lifecycle.
