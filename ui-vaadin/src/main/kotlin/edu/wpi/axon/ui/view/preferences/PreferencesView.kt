@@ -12,7 +12,7 @@ import org.koin.core.KoinComponent
 import org.koin.core.inject
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
-@Route(value = "", layout = MainLayout::class)
+@Route(layout = MainLayout::class)
 @PageTitle("Preferences")
 class PreferencesView : KComposite(), KoinComponent {
     private val preferencesManager by inject<PreferencesManager>()
@@ -21,9 +21,10 @@ class PreferencesView : KComposite(), KoinComponent {
         verticalLayout {
             formLayout {
                 comboBox<InstanceType>("Training Instance Type") {
-                    isAllowCustomValue = true
-                    placeholder = InstanceType.T2_MICRO.toString()
+                    setItems(InstanceType.knownValues().stream().sorted())
+                    isPreventInvalidInput = true
                     isRequired = true
+                    placeholder = InstanceType.T2_MICRO.toString()
                 }
             }
         }

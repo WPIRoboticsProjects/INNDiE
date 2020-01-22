@@ -4,12 +4,13 @@ import arrow.core.Either
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.S3PreferencesManager
 import edu.wpi.axon.aws.axonBucketName
+import edu.wpi.axon.aws.findAxonS3Bucket
+import edu.wpi.axon.aws.preferences.LocalPreferencesManager
+import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultModule
-import edu.wpi.axon.aws.preferences.LocalPreferencesManager
-import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -36,7 +37,7 @@ class WebAppListener : ServletContextListener {
         LOGGER.info { "Starting web app." }
 
         // Find the S3 bucket that Axon is going to work out of
-        val bucketName: String? = null // findAxonS3Bucket()
+        val bucketName: String? = findAxonS3Bucket()
 
         val preferencesManager: PreferencesManager =
             if (bucketName != null) {
@@ -115,7 +116,7 @@ class WebAppListener : ServletContextListener {
 
     private fun loadModel(modelName: String): Pair<Model, String> {
         val localModelPath =
-            Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
+            Paths.get("/Users/AustinShalit/git/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
                 .toString()
         val layers = LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(localModelPath))
         val model = layers.attempt().unsafeRunSync()

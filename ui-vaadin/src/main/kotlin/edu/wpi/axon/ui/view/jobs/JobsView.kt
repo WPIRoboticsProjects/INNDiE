@@ -25,7 +25,7 @@ import edu.wpi.axon.ui.view.EntityView
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
-@Route(value = "jobs", layout = MainLayout::class)
+@Route(layout = MainLayout::class)
 @RouteAlias(value = "", layout = MainLayout::class)
 class JobsView : KComposite(), HasUrlParameter<String>, EntityView<Job>, KoinComponent {
 
