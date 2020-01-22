@@ -27,9 +27,9 @@ import java.io.File
 /**
  * Loads TensorFlow layers from an HDF5 file.
  */
-class LoadLayersFromHDF5(
+internal class LoadLayersFromHDF5(
     private val layersToGraph: LayersToGraph
-) {
+) : ModelLoader {
 
     /**
      * Load layers from the [file].
@@ -37,7 +37,7 @@ class LoadLayersFromHDF5(
      * @param file The file to load from.
      * @return The layers in the file.
      */
-    fun load(file: File): IO<Model> = IO {
+    override fun load(file: File): IO<Model> = IO {
         HdfFile(file).use {
             val config = it.getAttribute("model_config").data as String
             val data = Parser.default().parse(config.byteInputStream()) as JsonObject

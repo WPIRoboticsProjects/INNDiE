@@ -12,8 +12,7 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
-import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
+import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import java.io.File
 
 /**
@@ -32,17 +31,18 @@ class TrainGeneralModelScriptGenerator(
         }
     }
 
-    private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
+    private val modelLoaderFactory = ModelLoaderFactory()
 
     @Suppress("UNUSED_VARIABLE")
-    override fun generateScript(): Validated<NonEmptyList<String>, String> =
-        loadLayersFromHDF5.load(File(trainState.userOldModelPath)).flatMap { userOldModel ->
+    override fun generateScript(): Validated<NonEmptyList<String>, String> {
+        val modelLoader = modelLoaderFactory.createModeLoader(trainState.userOldModelPath)
+        return modelLoader.load(File(trainState.userOldModelPath)).flatMap { userOldModel ->
             IO {
                 require(userOldModel is Model.General)
 
                 val script = ScriptGenerator(
-                    DefaultPolymorphicNamedDomainObjectContainer.of(),
-                    DefaultPolymorphicNamedDomainObjectContainer.of()
+                        DefaultPolymorphicNamedDomainObjectContainer.of(),
+                        DefaultPolymorphicNamedDomainObjectContainer.of()
                 ) {
                     val loadedDataset = loadDataset(trainState).let { dataset ->
                         if (trainState.userNewModel.input.size == 1) {
@@ -69,18 +69,19 @@ class TrainGeneralModelScriptGenerator(
                     }
 
                     lastTask = compileTrainSave(
-                        trainState,
-                        userOldModel,
-                        newModelVar,
-                        applyLayerDeltaTask,
-                        loadedDataset
+                            trainState,
+                            userOldModel,
+                            newModelVar,
+                            applyLayerDeltaTask,
+                            loadedDataset
                     )
                 }
 
                 script.code(trainState.generateDebugComments)
             }
         }.attempt().unsafeRunSync().fold(
-            { Throwables.getStackTraceAsString(it).invalidNel() },
-            { it }
+                { Throwables.getStackTraceAsString(it).invalidNel() },
+                { it }
         )
+    }
 }
