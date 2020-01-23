@@ -2,7 +2,7 @@
 
 package edu.wpi.axon.training
 
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -19,7 +19,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
     @Test
     fun `test with custom model with an add`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val modelName = "network_with_add.h5"

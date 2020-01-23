@@ -9,7 +9,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
@@ -25,7 +25,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `keep all 1 layers`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable()
@@ -46,7 +46,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `keep all 2 layers`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable()
@@ -71,7 +71,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `remove one layer`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
@@ -91,7 +91,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `remove two layers`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
@@ -114,7 +114,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @SuppressWarnings("MaxLineLength")
     fun `add one layer`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
@@ -133,7 +133,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `add two layers`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
@@ -159,7 +159,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `add an unknown layer`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
@@ -175,7 +175,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `add layer with an unknown activation function`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
@@ -198,7 +198,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `remove the first layer and replace the second`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val layer1 = Layer.UnknownLayer("unknown_3", null).trainable()
@@ -228,7 +228,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `copy an unknown layer`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val layer1 = Layer.UnknownLayer("unknown_1", null).trainable()
@@ -248,7 +248,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `copy a layer with an unknown activation function`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val layer1 = Layer.Dense(
@@ -274,7 +274,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `copy a layer that is only different in the trainable flag`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val baseLayer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu)
@@ -294,7 +294,7 @@ internal class ApplySequentialLayerDeltaTaskIntegrationTest : KoinTestFixture() 
     @Test
     fun `add a non-Sequential layer`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {

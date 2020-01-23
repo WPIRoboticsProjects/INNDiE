@@ -2,7 +2,7 @@
 
 package edu.wpi.axon.training
 
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -19,7 +19,7 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
     @Test
     fun `test with mobilenet`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         // TODO: Use a dataset that works with this model so we can actually run the training script

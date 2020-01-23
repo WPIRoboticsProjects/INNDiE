@@ -22,7 +22,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `code dependencies should be called`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val codeLatch = CountDownLatch(2)
@@ -48,7 +48,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `tasks are not run multiple times`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val codeLatch = CountDownLatch(3)
@@ -74,7 +74,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `two tasks that depend on the same task does not duplicate code gen`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task1CodeLatch = CountDownLatch(2)
@@ -100,7 +100,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `two tasks that depend on the same task linked by a variable does not duplicate code gen`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task1CodeLatch = CountDownLatch(2)
@@ -132,7 +132,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `a task with invalid imports makes the script invalid`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val badImport = Import.ModuleOnly("spaces in name")
@@ -155,7 +155,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `a required variable as an input does not cause a task to be generated`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val scriptGenerator = ScriptGenerator(
@@ -180,7 +180,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `a required variable as an output causes a task to be generated`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val scriptGenerator = ScriptGenerator(
@@ -209,7 +209,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `a pregeneration task runs before a normal task`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val scriptGenerator = ScriptGenerator(
@@ -238,7 +238,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `generate code with an incorrectly configured task`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val scriptGenerator = ScriptGenerator(
@@ -259,7 +259,7 @@ internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
     @Test
     fun `task that depends on the lastTask`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val scriptGenerator = ScriptGenerator(

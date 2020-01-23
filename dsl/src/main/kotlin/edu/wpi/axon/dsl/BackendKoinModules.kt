@@ -16,7 +16,7 @@ import edu.wpi.axon.tfdata.code.optimizer.DefaultOptimizerToCode
 import edu.wpi.axon.tfdata.code.optimizer.OptimizerToCode
 import org.koin.dsl.module
 
-fun defaultModule() = module {
+fun defaultBackendModule() = module {
     single<VariableNameValidator> { PythonVariableNameValidator() }
     single<PathValidator> { DefaultPathValidator() }
     single<ImportValidator> { DefaultImportValidator() }

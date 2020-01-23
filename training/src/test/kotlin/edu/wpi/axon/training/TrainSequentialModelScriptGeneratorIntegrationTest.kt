@@ -2,7 +2,7 @@
 
 package edu.wpi.axon.training
 
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -25,7 +25,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
     @Test
     fun `test with bad model`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val localModelPath =
@@ -52,7 +52,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
     @Tag("needsDockerSupport")
     fun `test with fashion mnist`(@TempDir tempDir: File) {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val modelName = "custom_fashion_mnist.h5"
@@ -85,7 +85,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
     @Tag("needsDockerSupport")
     fun `test mobilenet with reduced wpilib dataset`(@TempDir tempDir: File) {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val modelName = "small_model_for_wpilib_reduced_dataset.h5"

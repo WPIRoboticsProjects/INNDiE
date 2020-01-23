@@ -3,13 +3,10 @@ package edu.wpi.axon.ui
 import arrow.core.Tuple3
 import arrow.fx.IO
 import arrow.fx.extensions.fx
-import edu.wpi.axon.aws.EC2TrainingScriptRunner
-import edu.wpi.axon.aws.TrainingScriptRunner
-import edu.wpi.axon.aws.axonBucketName
-import edu.wpi.axon.aws.findAxonS3Bucket
+import defaultFrontendModule
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.examplemodel.downloadAndConfigureExampleModel
 import edu.wpi.axon.testutil.KoinTestFixture
@@ -22,33 +19,15 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.core.context.startKoin
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
-import software.amazon.awssdk.services.ec2.model.InstanceType
 
 internal class JobRunnerIntegTest : KoinTestFixture() {
-
-    private val bucketName = findAxonS3Bucket()!!
 
     @Test
     @Timeout(value = 6L, unit = TimeUnit.MINUTES)
     @Disabled("Needs AWS supervision.")
     fun `test starting job and tracking progress`() {
         startKoin {
-            modules(defaultModule())
-            module {
-                single<TrainingScriptRunner> {
-                    val boundBucketName = get<String?>(named(axonBucketName))
-                    if (boundBucketName != null) {
-                        EC2TrainingScriptRunner(
-                                boundBucketName,
-                                InstanceType.T2_MICRO
-                        )
-                    } else {
-                        TODO("Support running outside of AWS. Create a local training script runner")
-                    }
-                }
-            }
+            modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
 
         val jobRunner = JobRunner()
@@ -94,20 +73,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
     @Disabled("Needs AWS supervision.")
     fun `test starting job with example model`() {
         startKoin {
-            modules(defaultModule())
-            module {
-                single<TrainingScriptRunner> {
-                    val boundBucketName = get<String?>(named(axonBucketName))
-                    if (boundBucketName != null) {
-                        EC2TrainingScriptRunner(
-                                boundBucketName,
-                                InstanceType.T2_MICRO
-                        )
-                    } else {
-                        TODO("Support running outside of AWS. Create a local training script runner")
-                    }
-                }
-            }
+            modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
 
         val jobRunner = JobRunner()

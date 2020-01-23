@@ -1,7 +1,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
@@ -14,7 +14,7 @@ internal class CompileModelTaskIntegrationTest : KoinTestFixture() {
     @Test
     fun `compile a categorical model with adam and an accuracy metric`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val task = CompileModelTask("task").apply {

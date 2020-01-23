@@ -2,7 +2,7 @@
 
 package edu.wpi.axon.training
 
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -24,7 +24,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
     @Tag("needsDockerSupport")
     fun `test with sequential`(@TempDir tempDir: File) {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val modelName = "32_32_1_conv_sequential.h5"
@@ -52,7 +52,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
     @Tag("needsDockerSupport")
     fun `test with general`(@TempDir tempDir: File) {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val modelName = "32_32_1_conv_general.h5"
