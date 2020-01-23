@@ -8,8 +8,7 @@ import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
-import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
+import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import java.io.File
 import org.octogonapus.ktguava.collections.mapNodes
 
@@ -54,12 +53,13 @@ interface ExampleModelManager {
  * @param exampleModelManager The manager to download with.
  * @return The configured model.
  */
+@Suppress("UnstableApiUsage")
 fun downloadAndConfigureExampleModel(
     exampleModel: ExampleModel,
     exampleModelManager: ExampleModelManager
 ): IO<Tuple2<Model, File>> = IO.fx {
     val file = exampleModelManager.download(exampleModel).bind()
-    val model = LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(file.absolutePath)).bind()
+    val model = ModelLoaderFactory().createModeLoader(file.name).load(File(file.absolutePath)).bind()
 
     val freezeLayerTransform: (Layer.MetaLayer) -> Layer.MetaLayer = { layer ->
         exampleModel.freezeLayers[layer.name]?.let {
