@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.ec2.model.InstanceType
  */
 @Serializable
 data class Preferences(
-    val defaultEC2NodeType: InstanceType = InstanceType.T2_MICRO
+    var defaultEC2NodeType: InstanceType = InstanceType.T2_MICRO
 ) {
 
     fun serialize(): String = Json(
