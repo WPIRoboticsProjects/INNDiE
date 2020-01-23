@@ -10,12 +10,12 @@ internal class ModelLoaderFactoryTest {
 
     @Test
     fun `test h5 file`() {
-        assertTrue(factory.createModeLoader("a.h5") is LoadLayersFromHDF5)
+        assertTrue(factory.createModeLoader("a.h5") is HDF5ModelLoader)
     }
 
     @Test
     fun `test hdf5 file`() {
-        assertTrue(factory.createModeLoader("a.hdf5") is LoadLayersFromHDF5)
+        assertTrue(factory.createModeLoader("a.hdf5") is HDF5ModelLoader)
     }
 
     @Test

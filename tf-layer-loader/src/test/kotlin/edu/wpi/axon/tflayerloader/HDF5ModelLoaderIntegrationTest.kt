@@ -17,7 +17,7 @@ import io.kotlintest.matchers.collections.shouldHaveSize
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
 
-internal class LoadLayersFromHDF5IntegrationTest {
+internal class HDF5ModelLoaderIntegrationTest {
 
     @Test
     fun `load from test file 1`() {

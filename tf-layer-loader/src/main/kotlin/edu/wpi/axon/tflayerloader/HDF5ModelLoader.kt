@@ -27,7 +27,7 @@ import java.io.File
 /**
  * Loads TensorFlow layers from an HDF5 file.
  */
-internal class LoadLayersFromHDF5(
+internal class HDF5ModelLoader(
     private val layersToGraph: LayersToGraph
 ) : ModelLoader {
 
