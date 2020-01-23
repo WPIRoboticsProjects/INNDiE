@@ -10,7 +10,7 @@ import kotlin.properties.Delegates
 import software.amazon.awssdk.core.exception.SdkClientException
 
 /**
- * Manages the edu.wpi.axon.aws.preferences data lifecycle. Stores edu.wpi.axon.aws.preferences in S3.
+ * Manages the preferences data lifecycle. Stores preferences in S3.
  *
  * @param bucketName The S3 bucket name to use for all S3 API calls.
  */
@@ -21,7 +21,7 @@ class S3PreferencesManager(bucketName: String) : PreferencesManager {
     private var workingPreferences by Delegates.notNull<Preferences>()
 
     override fun initialize() {
-        // Download the edu.wpi.axon.aws.preferences file or create a new empty one
+        // Download the preferences file or create a new empty one
         try {
             preferencesFile = s3Manager.downloadPreferences()
             workingPreferences = Preferences.deserialize(preferencesFile.readText())

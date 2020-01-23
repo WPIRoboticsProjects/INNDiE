@@ -7,6 +7,7 @@ import edu.wpi.axon.aws.RunTrainingScriptConfiguration
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
@@ -15,12 +16,8 @@ import org.koin.core.KoinComponent
 import org.koin.core.inject
 import org.koin.core.qualifier.named
 
-/**
- * @param bucketName The S3 bucket name to use for dataset and models or `null` if AWS will not
- * be used.
- * @param scriptRunner The [TrainingScriptRunner] to run the script with.
- */
 class JobRunner : KoinComponent {
+
     private val bucketName: String? by inject(named(axonBucketName))
     private val scriptRunner: TrainingScriptRunner by inject()
 
@@ -62,6 +59,25 @@ class JobRunner : KoinComponent {
     }.unsafeRunSync()
 
     fun getProgress(id: Long) = scriptRunner.getTrainingProgress(id)
+
+    fun waitForCompleted(id: Long, progressUpdate: (TrainingScriptProgress) -> Unit) {
+        while (true) {
+            val shouldBreak = getProgress(id).attempt().unsafeRunSync().fold({
+                // TODO: More intelligent progress reporting than this. We shouldn't have to catch an exception each
+                // time
+                false
+            }, {
+                progressUpdate(it)
+                it == TrainingScriptProgress.Completed
+            })
+
+            if (shouldBreak) {
+                break
+            }
+
+            Thread.sleep(2000)
+        }
+    }
 
     private fun <T : Model> toTrainState(
         job: Job,

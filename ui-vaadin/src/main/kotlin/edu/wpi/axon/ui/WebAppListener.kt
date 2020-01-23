@@ -16,8 +16,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
-import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
+import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import edu.wpi.axon.ui.service.JobProvider
 import java.io.File
 import java.nio.file.Paths
@@ -46,12 +45,12 @@ class WebAppListener : ServletContextListener {
             } else {
                 // We are not using AWS
                 LocalPreferencesManager(
-                        Paths.get(
-                                System.getProperty("user.home"),
-                                ".wpilib",
-                                "Axon",
-                                "edu.wpi.axon.aws.preferences.json"
-                        )
+                    Paths.get(
+                        System.getProperty("user.home"),
+                        ".wpilib",
+                        "Axon",
+                        "preferences.json"
+                    )
                 ).apply { initialize() }
             }
 
@@ -74,9 +73,12 @@ class WebAppListener : ServletContextListener {
                     single { jobDb }
                     single { preferencesManager }
                     factory<TrainingScriptRunner> {
-                        val bucketName = get<String?>(named(axonBucketName))
-                        if (bucketName != null) {
-                            EC2TrainingScriptRunner(bucketName, get<PreferencesManager>().get().defaultEC2NodeType)
+                        val boundBucketName = get<String?>(named(axonBucketName))
+                        if (boundBucketName != null) {
+                            EC2TrainingScriptRunner(
+                                boundBucketName,
+                                get<PreferencesManager>().get().defaultEC2NodeType
+                            )
                         } else {
                             TODO("Support running outside of AWS. Create a local training script runner")
                         }
@@ -110,9 +112,9 @@ class WebAppListener : ServletContextListener {
 
     private fun loadModel(modelName: String): Pair<Model, String> {
         val localModelPath =
-            Paths.get("/Users/AustinShalit/git/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
+            Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
                 .toString()
-        val layers = LoadLayersFromHDF5(DefaultLayersToGraph()).load(File(localModelPath))
+        val layers = ModelLoaderFactory().createModeLoader(localModelPath).load(File(localModelPath))
         val model = layers.attempt().unsafeRunSync()
         check(model is Either.Right)
         return model.b to localModelPath

@@ -6,7 +6,7 @@ import kotlinx.serialization.json.JsonConfiguration
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
 /**
- * The user's edu.wpi.axon.aws.preferences.
+ * The user's preferences.
  *
  * @param defaultEC2NodeType The default EC2 node type to run training scripts in.
  */

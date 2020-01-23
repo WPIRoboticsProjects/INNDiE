@@ -25,7 +25,6 @@ import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobRunner
 import kotlin.concurrent.thread
@@ -55,8 +54,8 @@ class JobEditorForm : KComposite(), KoinComponent {
                 setSizeUndefined()
                 formLayout {
                     responsiveSteps = listOf(
-                            FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
-                            FormLayout.ResponsiveStep("550px", 1, FormLayout.ResponsiveStep.LabelsPosition.ASIDE)
+                        FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+                        FormLayout.ResponsiveStep("550px", 1, FormLayout.ResponsiveStep.LabelsPosition.ASIDE)
                     )
                     formItem("Name") {
                         textField {
@@ -118,18 +117,8 @@ class JobEditorForm : KComposite(), KoinComponent {
                             thread(isDaemon = true) {
                                 val jobRunner = JobRunner()
                                 val id = jobRunner.startJob(job!!)
-                                while (true) {
-                                    val shouldBreak = jobRunner.getProgress(id).attempt().unsafeRunSync().fold({
-                                        it.printStackTrace()
-                                        false
-                                    }, {
-                                        jobDb.update(job!!.copy(status = it))
-                                        it == TrainingScriptProgress.Completed
-                                    })
-                                    if (shouldBreak) {
-                                        break
-                                    }
-                                    Thread.sleep(2000)
+                                jobRunner.waitForCompleted(id) {
+                                    jobDb.update(job!!.copy(status = it))
                                 }
                             }
                         }
@@ -145,4 +134,5 @@ class JobEditorForm : KComposite(), KoinComponent {
 }
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).jobEditorForm(block: (@VaadinDsl JobEditorForm).() -> Unit = {}): JobEditorForm = init(JobEditorForm(), block)
+fun (@VaadinDsl HasComponents).jobEditorForm(block: (@VaadinDsl JobEditorForm).() -> Unit = {}): JobEditorForm =
+    init(JobEditorForm(), block)
