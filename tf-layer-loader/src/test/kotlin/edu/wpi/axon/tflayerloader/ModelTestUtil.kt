@@ -13,7 +13,7 @@ import java.io.File
  * @param block Will be run with the loaded model.
  */
 internal inline fun <reified T : Model> loadModel(filename: String, noinline block: (T) -> Unit) {
-    LoadLayersFromHDF5(DefaultLayersToGraph()).load(
+    HDF5ModelLoader(DefaultLayersToGraph()).load(
         File(block::class.java.getResource(filename).toURI())
     ).unsafeRunSync().apply { shouldBeInstanceOf(block) }
 }
@@ -25,7 +25,7 @@ internal inline fun <reified T : Model> loadModel(filename: String, noinline blo
  * @param stub Used to get the class to get a resource from. Do not use this parameter.
  */
 fun loadModelFails(filename: String, stub: () -> Unit = {}) {
-    LoadLayersFromHDF5(DefaultLayersToGraph()).load(
+    HDF5ModelLoader(DefaultLayersToGraph()).load(
         File(stub::class.java.getResource(filename).toURI())
     ).attempt().unsafeRunSync().shouldBeLeft()
 }

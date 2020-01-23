@@ -12,8 +12,7 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplySequentialLayerDeltaTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
-import edu.wpi.axon.tflayerloader.LoadLayersFromHDF5
+import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import java.io.File
 
 /**
@@ -33,24 +32,25 @@ class TrainSequentialModelScriptGenerator(
         }
     }
 
-    private val loadLayersFromHDF5 = LoadLayersFromHDF5(DefaultLayersToGraph())
+    private val modelLoaderFactory = ModelLoaderFactory()
 
-    override fun generateScript(): Validated<NonEmptyList<String>, String> =
-        loadLayersFromHDF5.load(File(trainState.userOldModelPath)).flatMap { oldModel ->
+    override fun generateScript(): Validated<NonEmptyList<String>, String> {
+        val modelLoader = modelLoaderFactory.createModeLoader(trainState.userOldModelPath)
+        return modelLoader.load(File(trainState.userOldModelPath)).flatMap { oldModel ->
             IO {
                 require(oldModel is Model.Sequential)
                 require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)
                 val reshapeArgsFromBatchShape =
-                    trainState.userNewModel.batchInputShape.map { it ?: -1 }
+                        trainState.userNewModel.batchInputShape.map { it ?: -1 }
 
                 val script = ScriptGenerator(
-                    DefaultPolymorphicNamedDomainObjectContainer.of(),
-                    DefaultPolymorphicNamedDomainObjectContainer.of()
+                        DefaultPolymorphicNamedDomainObjectContainer.of(),
+                        DefaultPolymorphicNamedDomainObjectContainer.of()
                 ) {
                     val loadedDataset = reshapeAndScaleLoadedDataset(
-                        loadDataset(trainState),
-                        reshapeArgsFromBatchShape,
-                        255
+                            loadDataset(trainState),
+                            reshapeArgsFromBatchShape,
+                            255
                     )
 
                     val model = loadModel(trainState)
@@ -64,18 +64,19 @@ class TrainSequentialModelScriptGenerator(
                     }
 
                     lastTask = compileTrainSave(
-                        trainState,
-                        oldModel,
-                        newModel,
-                        applyLayerDeltaTask,
-                        loadedDataset
+                            trainState,
+                            oldModel,
+                            newModel,
+                            applyLayerDeltaTask,
+                            loadedDataset
                     )
                 }
 
                 script.code(trainState.generateDebugComments)
             }
         }.attempt().unsafeRunSync().fold(
-            { Throwables.getStackTraceAsString(it).invalidNel() },
-            { it }
+                { Throwables.getStackTraceAsString(it).invalidNel() },
+                { it }
         )
+    }
 }
