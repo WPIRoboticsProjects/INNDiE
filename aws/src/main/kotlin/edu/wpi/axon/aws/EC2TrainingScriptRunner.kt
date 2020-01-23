@@ -58,7 +58,18 @@ class EC2TrainingScriptRunner(
 
         return IO.fx {
             IO {
-                s3Manager.uploadTrainingScript(scriptFileName, runTrainingScriptConfiguration.scriptContents)
+                s3Manager.uploadTrainingScript(
+                    scriptFileName,
+                    runTrainingScriptConfiguration.scriptContents
+                )
+            }.bind()
+
+            // Reset the training progress so the script doesn't start in the completed state
+            IO {
+                s3Manager.resetTrainingProgress(
+                    runTrainingScriptConfiguration.newModelName,
+                    runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
+                )
             }.bind()
 
             // We need to download custom datasets from S3. Example datasets will be downloaded
@@ -134,11 +145,12 @@ class EC2TrainingScriptRunner(
                     InstanceStateName.RUNNING -> {
                         scriptStarted[scriptId] = true
 
-                        val scriptDataForEC2 = scriptDataMap[scriptId]
+                        val runTrainingScriptConfiguration = scriptDataMap[scriptId]
                             ?: error("BUG: scriptId missing from scriptDataMap")
 
-                        val modelName = scriptDataForEC2.newModelName
-                        val datasetName = scriptDataForEC2.dataset.nameForS3ProgressReporting
+                        val modelName = runTrainingScriptConfiguration.newModelName
+                        val datasetName =
+                            runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
 
                         val progressData = IO {
                             s3Manager.getTrainingProgress(modelName, datasetName)
@@ -148,7 +160,7 @@ class EC2TrainingScriptRunner(
 
                         progressData.redeem({ TrainingScriptProgress.InProgress(0.0) }) {
                             TrainingScriptProgress.InProgress(
-                                it.toDouble() / scriptDataForEC2.epochs
+                                it.toDouble() / runTrainingScriptConfiguration.epochs
                             )
                         }.unsafeRunSync()
                     }

@@ -4,6 +4,8 @@ import arrow.core.Tuple3
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import defaultFrontendModule
+import edu.wpi.axon.aws.S3Manager
+import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
@@ -19,6 +21,8 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.core.context.startKoin
+import org.koin.core.get
+import org.koin.core.qualifier.named
 
 internal class JobRunnerIntegTest : KoinTestFixture() {
 
@@ -29,8 +33,6 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         startKoin {
             modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
-
-        val jobRunner = JobRunner()
 
         val newModelName = "32_32_1_conv_sequential-trained.h5"
         val (model, path) = loadModel("32_32_1_conv_sequential.h5") {}
@@ -48,35 +50,19 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             false
         )
 
+        val jobRunner = JobRunner()
         val id = jobRunner.startJob(job)
-
-        while (true) {
-            val shouldBreak = jobRunner.getProgress(id).attempt().unsafeRunSync().fold(
-                {
-                    it.printStackTrace()
-                    false
-                },
-                {
-                    println(it)
-                    it == TrainingScriptProgress.Completed
-                })
-
-            if (shouldBreak) {
-                break
-            }
-
-            Thread.sleep(2000)
-        }
+        jobRunner.waitForCompleted(id) { println(it) }
     }
 
+    // TODO: This model doesn't work with the default dataset resizing, we need to configure that
     @Test
+    @Timeout(value = 6L, unit = TimeUnit.MINUTES)
     @Disabled("Needs AWS supervision.")
     fun `test starting job with example model`() {
         startKoin {
             modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
-
-        val jobRunner = JobRunner()
 
         val exampleModelManager = GitExampleModelManager()
         val (exampleModel, model, file) = IO.fx {
@@ -93,6 +79,9 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
             Tuple3(exampleModel, model, file)
         }.unsafeRunSync()
+
+        // Need to upload the example model so that EC2 can pull it back down
+        S3Manager(get(named(axonBucketName))).uploadUntrainedModel(file)
 
         val userNewModelName =
             exampleModel.fileName.substringBeforeLast(".") +
@@ -113,6 +102,8 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             false
         )
 
-        jobRunner.startJob(job)
+        val jobRunner = JobRunner()
+        val id = jobRunner.startJob(job)
+        jobRunner.waitForCompleted(id) { println(it) }
     }
 }

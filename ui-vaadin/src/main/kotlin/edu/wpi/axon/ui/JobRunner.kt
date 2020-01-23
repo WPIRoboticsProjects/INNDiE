@@ -75,7 +75,7 @@ class JobRunner : KoinComponent {
                 break
             }
 
-            Thread.sleep(2000)
+            Thread.sleep(5000)
         }
     }
 
