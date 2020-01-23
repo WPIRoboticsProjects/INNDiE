@@ -5,21 +5,24 @@ import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
 import edu.wpi.axon.aws.TrainingScriptRunner
+import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
+import org.koin.core.KoinComponent
+import org.koin.core.inject
+import org.koin.core.qualifier.named
 
 /**
  * @param bucketName The S3 bucket name to use for dataset and models or `null` if AWS will not
  * be used.
  * @param scriptRunner The [TrainingScriptRunner] to run the script with.
  */
-class JobRunner(
-    private val bucketName: String?,
-    private val scriptRunner: TrainingScriptRunner
-) {
+class JobRunner : KoinComponent {
+    private val bucketName: String? by inject(named(axonBucketName))
+    private val scriptRunner: TrainingScriptRunner by inject()
 
     /**
      * Generates the code for a job and starts it on EC2.

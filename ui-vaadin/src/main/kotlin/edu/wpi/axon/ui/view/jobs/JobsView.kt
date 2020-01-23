@@ -2,7 +2,6 @@ package edu.wpi.axon.ui.view.jobs
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.button
-import com.github.mvysny.karibudsl.v10.dialog
 import com.github.mvysny.karibudsl.v10.horizontalLayout
 import com.github.mvysny.karibudsl.v10.isExpand
 import com.github.mvysny.karibudsl.v10.navigateToView

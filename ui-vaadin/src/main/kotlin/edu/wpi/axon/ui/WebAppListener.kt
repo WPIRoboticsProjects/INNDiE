@@ -3,6 +3,7 @@ package edu.wpi.axon.ui
 import arrow.core.Either
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.S3PreferencesManager
+import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
@@ -28,7 +29,6 @@ import org.jetbrains.exposed.sql.Database
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import software.amazon.awssdk.services.ec2.model.InstanceType
 
 @WebListener
 class WebAppListener : ServletContextListener {
@@ -65,28 +65,22 @@ class WebAppListener : ServletContextListener {
 
         val dataProvider = JobProvider(jobDb)
 
-        // It knows bucketName is not null because of the check above, but I know we will need this
-        // check in the future.
-        @Suppress("SENSELESS_COMPARISON")
-        val jobRunner = JobRunner(
-            bucketName,
-            if (bucketName != null) {
-                // TODO: Get the instance type from the edu.wpi.axon.aws.preferences
-                EC2TrainingScriptRunner(bucketName, InstanceType.T2_MICRO)
-            } else {
-                TODO("Support running outside of AWS. Create a local training script runner")
-            }
-        )
-
         startKoin {
             modules(listOf(
                 defaultModule(),
                 module {
                     single(named(axonBucketName)) { bucketName }
                     single { dataProvider }
-                    single { jobRunner }
                     single { jobDb }
                     single { preferencesManager }
+                    factory<TrainingScriptRunner> {
+                        val bucketName = get<String?>(named(axonBucketName))
+                        if (bucketName != null) {
+                            EC2TrainingScriptRunner(bucketName, get<PreferencesManager>().get().defaultEC2NodeType)
+                        } else {
+                            TODO("Support running outside of AWS. Create a local training script runner")
+                        }
+                    }
                 }
             ))
         }

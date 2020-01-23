@@ -7,7 +7,6 @@ import com.github.mvysny.karibudsl.v10.bind
 import com.github.mvysny.karibudsl.v10.button
 import com.github.mvysny.karibudsl.v10.checkBox
 import com.github.mvysny.karibudsl.v10.comboBox
-import com.github.mvysny.karibudsl.v10.dialog
 import com.github.mvysny.karibudsl.v10.div
 import com.github.mvysny.karibudsl.v10.formItem
 import com.github.mvysny.karibudsl.v10.formLayout
@@ -26,7 +25,10 @@ import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.ui.JobRunner
+import kotlin.concurrent.thread
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
@@ -113,7 +115,23 @@ class JobEditorForm : KComposite(), KoinComponent {
                         isIconAfterText = true
                         setWidthFull()
                         onLeftClick {
-
+                            thread(isDaemon = true) {
+                                val jobRunner = JobRunner()
+                                val id = jobRunner.startJob(job!!)
+                                while (true) {
+                                    val shouldBreak = jobRunner.getProgress(id).attempt().unsafeRunSync().fold({
+                                        it.printStackTrace()
+                                        false
+                                    }, {
+                                        jobDb.update(job!!.copy(status = it))
+                                        it == TrainingScriptProgress.Completed
+                                    })
+                                    if (shouldBreak) {
+                                        break
+                                    }
+                                    Thread.sleep(2000)
+                                }
+                            }
                         }
                     }
                 }

@@ -1,34 +1,34 @@
-//package edu.wpi.axon.ui.view.jobs
+// package edu.wpi.axon.ui.view.jobs
 //
-//import com.github.mvysny.karibudsl.v10.KComposite
-//import com.github.mvysny.karibudsl.v10.VaadinDsl
-//import com.github.mvysny.karibudsl.v10.beanValidationBinder
-//import com.github.mvysny.karibudsl.v10.bind
-//import com.github.mvysny.karibudsl.v10.button
-//import com.github.mvysny.karibudsl.v10.checkBox
-//import com.github.mvysny.karibudsl.v10.comboBox
-//import com.github.mvysny.karibudsl.v10.div
-//import com.github.mvysny.karibudsl.v10.formItem
-//import com.github.mvysny.karibudsl.v10.formLayout
-//import com.github.mvysny.karibudsl.v10.init
-//import com.github.mvysny.karibudsl.v10.numberField
-//import com.github.mvysny.karibudsl.v10.setPrimary
-//import com.github.mvysny.karibudsl.v10.textField
-//import com.github.mvysny.karibudsl.v10.toInt
-//import com.github.mvysny.karibudsl.v10.verticalLayout
-//import com.vaadin.flow.component.HasComponents
-//import com.vaadin.flow.component.Key
-//import com.vaadin.flow.component.button.Button
-//import com.vaadin.flow.component.button.ButtonVariant
-//import com.vaadin.flow.component.dependency.StyleSheet
-//import com.vaadin.flow.component.formlayout.FormLayout
-//import com.vaadin.flow.component.icon.Icon
-//import com.vaadin.flow.component.icon.VaadinIcon
-//import edu.wpi.axon.dbdata.Job
-//import edu.wpi.axon.tfdata.Dataset
+// import com.github.mvysny.karibudsl.v10.KComposite
+// import com.github.mvysny.karibudsl.v10.VaadinDsl
+// import com.github.mvysny.karibudsl.v10.beanValidationBinder
+// import com.github.mvysny.karibudsl.v10.bind
+// import com.github.mvysny.karibudsl.v10.button
+// import com.github.mvysny.karibudsl.v10.checkBox
+// import com.github.mvysny.karibudsl.v10.comboBox
+// import com.github.mvysny.karibudsl.v10.div
+// import com.github.mvysny.karibudsl.v10.formItem
+// import com.github.mvysny.karibudsl.v10.formLayout
+// import com.github.mvysny.karibudsl.v10.init
+// import com.github.mvysny.karibudsl.v10.numberField
+// import com.github.mvysny.karibudsl.v10.setPrimary
+// import com.github.mvysny.karibudsl.v10.textField
+// import com.github.mvysny.karibudsl.v10.toInt
+// import com.github.mvysny.karibudsl.v10.verticalLayout
+// import com.vaadin.flow.component.HasComponents
+// import com.vaadin.flow.component.Key
+// import com.vaadin.flow.component.button.Button
+// import com.vaadin.flow.component.button.ButtonVariant
+// import com.vaadin.flow.component.dependency.StyleSheet
+// import com.vaadin.flow.component.formlayout.FormLayout
+// import com.vaadin.flow.component.icon.Icon
+// import com.vaadin.flow.component.icon.VaadinIcon
+// import edu.wpi.axon.dbdata.Job
+// import edu.wpi.axon.tfdata.Dataset
 //
-//@StyleSheet("styles/job-form.css")
-//class JobForm(val viewLogic: JobsViewLogic) : KComposite() {
+// @StyleSheet("styles/job-form.css")
+// class JobForm(val viewLogic: JobsViewLogic) : KComposite() {
 //    private lateinit var deleteButton: Button
 //
 //    private val binder = beanValidationBinder<Job>()
@@ -123,7 +123,7 @@
 //        this.job = job
 //        deleteButton.isVisible = true
 //    }
-//}
+// }
 //
-//@VaadinDsl
-//fun (@VaadinDsl HasComponents).jobForm(viewLogic: JobsViewLogic, block: (@VaadinDsl JobForm).() -> Unit = {}): JobForm = init(JobForm(viewLogic), block)
+// @VaadinDsl
+// fun (@VaadinDsl HasComponents).jobForm(viewLogic: JobsViewLogic, block: (@VaadinDsl JobForm).() -> Unit = {}): JobForm = init(JobForm(viewLogic), block)
