@@ -10,7 +10,7 @@ import org.koin.core.KoinComponent
  * Downloads a model from S3. This only performs a side-effect, so there are no [inputs] nor
  * [outputs].
  */
-class DownloadModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
+class DownloadUntrainedModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
 
     /**
      * The name of the model in S3. The model will be put in this file on disk.
@@ -31,6 +31,6 @@ class DownloadModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
-        |axon.client.impl_download_model_file("$modelName", "$bucketName", None)
+        |axon.client.impl_download_untrained_model("$modelName", "$bucketName", None)
     """.trimMargin()
 }

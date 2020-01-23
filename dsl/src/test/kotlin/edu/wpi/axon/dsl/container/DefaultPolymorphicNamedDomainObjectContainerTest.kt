@@ -71,6 +71,12 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
 
     @Test
     fun `cannot create a variable from an abstract class`() {
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator(varName to true) }
+            })
+        }
+
         val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
 
         abstract class AbstractVariable(name: String) : Variable(name)
@@ -81,16 +87,13 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
     }
 
     @Test
-    fun `cannot create a variable from a companion object`() {
-        val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
-
-        assertThrows<IllegalArgumentException> {
-            container.create(varName, TestVariable.Companion::class)
-        }
-    }
-
-    @Test
     fun `cannot create a variable without a matching constructor`() {
+        startKoin {
+            modules(module {
+                single { mockVariableNameValidator(varName to true) }
+            })
+        }
+
         val container = DefaultPolymorphicNamedDomainObjectContainer.of<Variable>()
 
         assertThrows<IllegalArgumentException> {
@@ -116,9 +119,7 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
     class TestVariable(
         name: String,
         @Suppress("UNUSED_PARAMETER") anotherParameter: Int
-    ) : Variable(name) {
-        companion object : Variable("companionName")
-    }
+    ) : Variable(name)
 
     data class MockTask(override val name: String) : BaseTask(name) {
         override val imports: Set<Import>

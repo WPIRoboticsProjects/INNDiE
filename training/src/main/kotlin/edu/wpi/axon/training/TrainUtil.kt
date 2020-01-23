@@ -13,7 +13,7 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
-import edu.wpi.axon.dsl.task.DownloadModelFromS3Task
+import edu.wpi.axon.dsl.task.DownloadUntrainedModelFromS3Task
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
@@ -42,7 +42,7 @@ internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
             "The script was told to download the model from S3, but no bucket name was specified."
         }
 
-        tasks.run(DownloadModelFromS3Task::class) {
+        tasks.run(DownloadUntrainedModelFromS3Task::class) {
             modelName = trainState.userOldModelPath
             bucketName = trainState.userBucketName
         }
