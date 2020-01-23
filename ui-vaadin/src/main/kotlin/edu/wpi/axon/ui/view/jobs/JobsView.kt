@@ -4,7 +4,9 @@ import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.button
 import com.github.mvysny.karibudsl.v10.horizontalLayout
 import com.github.mvysny.karibudsl.v10.isExpand
+import com.github.mvysny.karibudsl.v10.navigateToView
 import com.github.mvysny.karibudsl.v10.onLeftClick
+import com.github.mvysny.karibudsl.v10.refresh
 import com.github.mvysny.karibudsl.v10.textField
 import com.github.mvysny.karibudsl.v10.verticalAlignSelf
 import com.github.mvysny.karibudsl.v10.verticalLayout
@@ -12,23 +14,33 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
+import com.vaadin.flow.router.AfterNavigationEvent
+import com.vaadin.flow.router.AfterNavigationObserver
 import com.vaadin.flow.router.BeforeEvent
 import com.vaadin.flow.router.HasUrlParameter
 import com.vaadin.flow.router.OptionalParameter
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.router.RouteAlias
+import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.ui.MainLayout
-import edu.wpi.axon.ui.service.JobService
+import edu.wpi.axon.ui.service.JobProvider
 import edu.wpi.axon.ui.view.EntityView
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 
-@Route(value = "jobs", layout = MainLayout::class)
+@Route(layout = MainLayout::class)
 @RouteAlias(value = "", layout = MainLayout::class)
-class JobsView : KComposite(), HasUrlParameter<String>, EntityView<Job> {
-    private lateinit var grid: JobGrid
-    private lateinit var form: JobForm
+class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, EntityView<Job>, KoinComponent {
 
-    private val viewLogic = JobsViewLogic(this)
+    private val dataProvider by inject<JobProvider>()
+    private val jobDb by inject<JobDb>()
+
+    override val entityName: String
+        get() = Job::class.java.simpleName
+
+    private lateinit var grid: JobGrid
+    private lateinit var form: JobEditorForm
 
     private val root = ui {
         horizontalLayout {
@@ -45,61 +57,29 @@ class JobsView : KComposite(), HasUrlParameter<String>, EntityView<Job> {
                     button("New job", Icon(VaadinIcon.PLUS_CIRCLE)) {
                         addThemeVariants(ButtonVariant.LUMO_PRIMARY)
                         onLeftClick {
-                            viewLogic.newJob()
+                            navigateTo(-1)
                         }
                     }
                 }
-                grid = jobGrid(JobService.dataProvider) {
+                grid = jobGrid(dataProvider) {
                     asSingleSelect().addValueChangeListener {
-                        it.value?.let { job ->
-                            viewLogic.edit(job)
-                        }
+                        navigateTo(it.value?.id)
                     }
                 }
             }
-            form = jobForm(viewLogic)
+            form = jobEditorForm()
         }
     }
 
-    init {
-        viewLogic.clear()
+    override fun setParameter(event: BeforeEvent?, @OptionalParameter jobId: Int?) {
+        form.job = jobId?.let { jobDb.getById(it) }
     }
 
-    fun createJob() {
-        showEditor()
-        form.createJob()
+    override fun afterNavigation(event: AfterNavigationEvent) {
+        grid.refresh()
     }
 
-    fun editJob(job: Job) {
-        showEditor()
-        form.editJob(job)
+    companion object {
+        fun navigateTo(jobId: Int? = null) = navigateToView(JobsView::class, jobId)
     }
-
-    fun showEditor() {
-        form.isVisible = true
-    }
-
-    fun hideEditor() {
-        form.isVisible = false
-    }
-
-    fun clearSelection() {
-        grid.selectionModel.deselectAll()
-    }
-
-    fun selectRow(job: Job) {
-        grid.selectionModel.select(job)
-    }
-
-    fun updateJob(job: Job) {
-        JobService.jobs.update(job)
-        JobService.dataProvider.refreshItem(job)
-    }
-
-    override fun setParameter(event: BeforeEvent?, @OptionalParameter parameter: String?) {
-        viewLogic.enter(parameter)
-    }
-
-    override val entityName: String
-        get() = Job::class.java.simpleName
 }

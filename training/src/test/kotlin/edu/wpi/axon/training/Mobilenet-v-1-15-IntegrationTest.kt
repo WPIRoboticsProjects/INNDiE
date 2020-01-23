@@ -2,7 +2,7 @@
 
 package edu.wpi.axon.training
 
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Activation
@@ -20,7 +20,7 @@ internal class `Mobilenet-v-1-15-IntegrationTest` : KoinTestFixture() {
     @Test
     fun `test with mobilenet`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val modelName = "mobilenet_tf_1_15_0.h5"

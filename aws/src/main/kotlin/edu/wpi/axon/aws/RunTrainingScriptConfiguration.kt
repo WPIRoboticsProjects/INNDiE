@@ -4,6 +4,8 @@ import arrow.core.None
 import edu.wpi.axon.tfdata.Dataset
 
 /**
+ * The configuration data needed to run a training script.
+ *
  * @param oldModelName The name of the current model (that will be loaded).
  * @param newModelName The name of the new model (that will be trained and saved).
  * @param dataset The path to the dataset in S3, or [None] if the dataset does not need
@@ -11,7 +13,7 @@ import edu.wpi.axon.tfdata.Dataset
  * @param scriptContents The contents of the training script.
  * @param epochs The number of epochs the model will be trained for.
  */
-data class ScriptDataForEC2(
+data class RunTrainingScriptConfiguration(
     val oldModelName: String,
     val newModelName: String,
     val dataset: Dataset,

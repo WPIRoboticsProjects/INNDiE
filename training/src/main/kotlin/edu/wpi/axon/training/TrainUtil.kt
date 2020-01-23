@@ -13,7 +13,7 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
-import edu.wpi.axon.dsl.task.DownloadModelFromS3Task
+import edu.wpi.axon.dsl.task.DownloadUntrainedModelFromS3Task
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
@@ -24,7 +24,7 @@ import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
-import edu.wpi.axon.dsl.task.UploadModelToS3Task
+import edu.wpi.axon.dsl.task.UploadTrainedModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -42,10 +42,9 @@ internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
             "The script was told to download the model from S3, but no bucket name was specified."
         }
 
-        tasks.run(DownloadModelFromS3Task::class) {
+        tasks.run(DownloadUntrainedModelFromS3Task::class) {
             modelName = trainState.userOldModelPath
             bucketName = trainState.userBucketName
-            region = trainState.userRegion
         }
     } else null
 
@@ -264,7 +263,6 @@ internal fun ScriptGenerator.compileTrainSave(
             modelName = trainState.userNewModelName
             datasetName = trainState.userDataset.nameForS3ProgressReporting
             bucketName = trainState.userBucketName
-            region = trainState.userRegion
             output = s3ProgressReportingCallback
         }
     }
@@ -298,14 +296,13 @@ internal fun ScriptGenerator.compileTrainSave(
     }
 
     return if (trainState.handleS3InScript) {
-        val uploadModelToS3Task by tasks.running(UploadModelToS3Task::class) {
+        val uploadModelToS3Task by tasks.running(UploadTrainedModelToS3Task::class) {
             check(trainState.userBucketName != null) {
                 "The script was told to upload the model to S3, but no bucket name was specified."
             }
 
             modelName = trainState.userNewModelName
             bucketName = trainState.userBucketName
-            region = trainState.userRegion
             dependencies += saveModelTask
         }
 

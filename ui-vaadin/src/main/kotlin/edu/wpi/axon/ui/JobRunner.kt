@@ -1,31 +1,25 @@
 package edu.wpi.axon.ui
 
 import arrow.core.None
-import arrow.core.Option
 import arrow.fx.IO
 import arrow.fx.extensions.fx
-import edu.wpi.axon.aws.EC2TrainingScriptRunner
-import edu.wpi.axon.aws.ScriptDataForEC2
+import edu.wpi.axon.aws.RunTrainingScriptConfiguration
+import edu.wpi.axon.aws.TrainingScriptRunner
+import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.ec2.model.InstanceType
+import org.koin.core.KoinComponent
+import org.koin.core.inject
+import org.koin.core.qualifier.named
 
-/**
- * @param bucketName The S3 bucket name to use for dataset and models.
- * @param instanceType The type of the EC2 instance to run the training script on.
- * @param region The region to connect to, or `null` to autodetect the region.
- */
-class JobRunner(
-    private val bucketName: String,
-    instanceType: InstanceType,
-    private val region: Region?
-) {
+class JobRunner : KoinComponent {
 
-    private val scriptRunner = EC2TrainingScriptRunner(bucketName, instanceType, region)
+    private val bucketName: String? by inject(named(axonBucketName))
+    private val scriptRunner: TrainingScriptRunner by inject()
 
     /**
      * Generates the code for a job and starts it on EC2.
@@ -54,7 +48,7 @@ class JobRunner(
         ).bind()
 
         scriptRunner.startScript(
-            ScriptDataForEC2(
+            RunTrainingScriptConfiguration(
                 oldModelName = trainModelScriptGenerator.trainState.userOldModelName,
                 newModelName = job.userNewModelName,
                 dataset = job.userDataset,
@@ -65,6 +59,25 @@ class JobRunner(
     }.unsafeRunSync()
 
     fun getProgress(id: Long) = scriptRunner.getTrainingProgress(id)
+
+    fun waitForCompleted(id: Long, progressUpdate: (TrainingScriptProgress) -> Unit) {
+        while (true) {
+            val shouldBreak = getProgress(id).attempt().unsafeRunSync().fold({
+                // TODO: More intelligent progress reporting than this. We shouldn't have to catch an exception each
+                // time
+                false
+            }, {
+                progressUpdate(it)
+                it == TrainingScriptProgress.Completed
+            })
+
+            if (shouldBreak) {
+                break
+            }
+
+            Thread.sleep(5000)
+        }
+    }
 
     private fun <T : Model> toTrainState(
         job: Job,
@@ -80,7 +93,6 @@ class JobRunner(
         userValidationSplit = None, // TODO: Add this to Job and pull it from there
         userNewModel = model,
         userBucketName = bucketName,
-        userRegion = Option.fromNullable(region?.id()),
         handleS3InScript = false,
         generateDebugComments = job.generateDebugComments
     )

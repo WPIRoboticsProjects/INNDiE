@@ -2,7 +2,6 @@ package edu.wpi.axon.aws.db
 
 import arrow.fx.IO
 import arrow.fx.extensions.fx
-import com.amazonaws.regions.Regions
 import com.amazonaws.services.rds.AmazonRDSClient
 import com.amazonaws.services.rds.model.CreateDBClusterRequest
 import com.amazonaws.services.rds.model.DBCluster
@@ -11,8 +10,6 @@ import com.amazonaws.services.rds.model.ScalingConfiguration
 import com.amazonaws.services.rds.model.VpcSecurityGroupMembership
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
-import org.koin.core.inject
-import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.Ec2Client
 import software.amazon.awssdk.services.ec2.model.IpPermission
 import software.amazon.awssdk.services.ec2.model.IpRange
@@ -23,10 +20,8 @@ import software.amazon.awssdk.services.ec2.model.Ipv6Range
  */
 class RDSJobDBConfigurator : KoinComponent {
 
-    private val regions: Regions by inject()
-    private val region: Region by inject()
-    private val ec2Client by lazy { Ec2Client.builder().region(region).build() }
-    private val rdsClient by lazy { AmazonRDSClient.builder().withRegion(regions).build() }
+    private val ec2Client by lazy { Ec2Client.builder().build() }
+    private val rdsClient by lazy { AmazonRDSClient.builder().build() }
 
     private fun ensureDBCluster(): IO<DBCluster> = IO {
         val clusters = rdsClient.describeDBClusters(

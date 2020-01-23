@@ -1,18 +1,15 @@
 package edu.wpi.axon.dsl.task
 
-import arrow.core.None
-import arrow.core.Option
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.KoinComponent
 
 /**
  * Uploads a model to S3. This only performs a side-effect, so there are no [inputs] nor [outputs].
  */
-class UploadModelToS3Task(name: String) : BaseTask(name), KoinComponent {
+class UploadTrainedModelToS3Task(name: String) : BaseTask(name), KoinComponent {
 
     /**
      * The name of the model on disk.
@@ -24,11 +21,6 @@ class UploadModelToS3Task(name: String) : BaseTask(name), KoinComponent {
      */
     var bucketName: String by singleAssign()
 
-    /**
-     * The region.
-     */
-    var region: Option<String> = None
-
     override val imports = setOf(makeImport("import axon.client"))
 
     override val inputs: Set<Variable> = emptySet()
@@ -38,6 +30,6 @@ class UploadModelToS3Task(name: String) : BaseTask(name), KoinComponent {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
-        |axon.client.impl_upload_model_file("$modelName", "$bucketName", ${pythonString(region)})
+        |axon.client.impl_upload_trained_model("$modelName", "$bucketName", None)
     """.trimMargin()
 }

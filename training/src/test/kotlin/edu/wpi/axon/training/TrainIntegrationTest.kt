@@ -1,6 +1,6 @@
 package edu.wpi.axon.training
 
-import edu.wpi.axon.dsl.defaultModule
+import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -20,7 +20,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
     @Test
     fun `test general model`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val (model, path) = loadModel("network_with_add.h5") {}
@@ -43,7 +43,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
     @Test
     fun `test sequential model`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         val (model, path) = loadModel("custom_fashion_mnist.h5") {}
@@ -66,7 +66,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
     @Test
     fun `test loading invalid model`() {
         startKoin {
-            modules(defaultModule())
+            modules(defaultBackendModule())
         }
 
         TrainGeneralModelScriptGenerator(

@@ -1,11 +1,8 @@
 package edu.wpi.axon.dsl.task
 
-import arrow.core.None
-import arrow.core.Option
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.KoinComponent
 
@@ -13,7 +10,7 @@ import org.koin.core.KoinComponent
  * Downloads a model from S3. This only performs a side-effect, so there are no [inputs] nor
  * [outputs].
  */
-class DownloadModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
+class DownloadUntrainedModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
 
     /**
      * The name of the model in S3. The model will be put in this file on disk.
@@ -25,11 +22,6 @@ class DownloadModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
      */
     var bucketName: String by singleAssign()
 
-    /**
-     * The region.
-     */
-    var region: Option<String> = None
-
     override val imports = setOf(makeImport("import axon.client"))
 
     override val inputs: Set<Variable> = emptySet()
@@ -39,6 +31,6 @@ class DownloadModelFromS3Task(name: String) : BaseTask(name), KoinComponent {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
-        |axon.client.impl_download_model_file("$modelName", "$bucketName", ${pythonString(region)})
+        |axon.client.impl_download_untrained_model("$modelName", "$bucketName", None)
     """.trimMargin()
 }

@@ -21,8 +21,6 @@ import java.nio.file.Paths
  * @param userNewModel The new model.
  * @param userBucketName The name of the S3 bucket Axon uses as a cache, or `null` if AWS will not
  * be used.
- * @param userRegion The region to connect to AWS with, or `null` to use the region from the
- * environment.
  * @param handleS3InScript Whether to download/upload the model from/to S3 inside the generated
  * script. This causes the script to make calls to S3 ON ITS OWN. This parameter should not be
  * confused with using EC2TrainingScriptRunner, which handles S3 independently of the script (i.e.,
@@ -40,7 +38,6 @@ data class TrainState<T : Model>(
     val userNewModel: T,
     val userValidationSplit: Option<Double> = None,
     val userBucketName: String? = null,
-    val userRegion: Option<String> = None,
     val handleS3InScript: Boolean = false,
     val generateDebugComments: Boolean = false
 ) {

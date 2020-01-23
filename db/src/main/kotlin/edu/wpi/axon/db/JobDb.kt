@@ -114,4 +114,6 @@ class JobDb(private val database: Database) {
     fun remove(id: Int): Int? = transaction(database) {
         Jobs.deleteWhere { Jobs.id eq id }
     }
+
+    fun remove(job: Job): Int? = remove(job.id)
 }
