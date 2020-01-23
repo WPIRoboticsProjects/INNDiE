@@ -4,6 +4,8 @@ import arrow.core.Tuple3
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
+import edu.wpi.axon.aws.TrainingScriptRunner
+import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
@@ -20,6 +22,8 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
 internal class JobRunnerIntegTest : KoinTestFixture() {
@@ -32,12 +36,22 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
     fun `test starting job and tracking progress`() {
         startKoin {
             modules(defaultModule())
+            module {
+                single<TrainingScriptRunner> {
+                    val boundBucketName = get<String?>(named(axonBucketName))
+                    if (boundBucketName != null) {
+                        EC2TrainingScriptRunner(
+                                boundBucketName,
+                                InstanceType.T2_MICRO
+                        )
+                    } else {
+                        TODO("Support running outside of AWS. Create a local training script runner")
+                    }
+                }
+            }
         }
 
-        val jobRunner = JobRunner(
-            bucketName,
-            EC2TrainingScriptRunner(bucketName, InstanceType.T2_MICRO)
-        )
+        val jobRunner = JobRunner()
 
         val newModelName = "32_32_1_conv_sequential-trained.h5"
         val (model, path) = loadModel("32_32_1_conv_sequential.h5") {}
@@ -81,12 +95,22 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
     fun `test starting job with example model`() {
         startKoin {
             modules(defaultModule())
+            module {
+                single<TrainingScriptRunner> {
+                    val boundBucketName = get<String?>(named(axonBucketName))
+                    if (boundBucketName != null) {
+                        EC2TrainingScriptRunner(
+                                boundBucketName,
+                                InstanceType.T2_MICRO
+                        )
+                    } else {
+                        TODO("Support running outside of AWS. Create a local training script runner")
+                    }
+                }
+            }
         }
 
-        val jobRunner = JobRunner(
-            bucketName,
-            EC2TrainingScriptRunner(bucketName, InstanceType.T2_MICRO)
-        )
+        val jobRunner = JobRunner()
 
         val exampleModelManager = GitExampleModelManager()
         val (exampleModel, model, file) = IO.fx {
