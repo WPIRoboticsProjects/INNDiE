@@ -1,5 +1,7 @@
 package edu.wpi.axon.ui
 
+import arrow.core.None
+import arrow.core.Option
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.testutil.KoinTestFixture
@@ -31,7 +33,7 @@ internal class JobRunnerTest : KoinTestFixture() {
 
         startKoin {
             modules(module {
-                single<String?>(named(axonBucketName)) { null }
+                single<Option<String>>(named(axonBucketName)) { None }
                 single { mockTrainingScriptRunner }
             })
         }
@@ -60,7 +62,7 @@ internal class JobRunnerTest : KoinTestFixture() {
 
         startKoin {
             modules(module {
-                single<String?>(named(axonBucketName)) { null }
+                single<Option<String>>(named(axonBucketName)) { None }
                 single { mockTrainingScriptRunner }
             })
         }

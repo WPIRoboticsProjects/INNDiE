@@ -1,5 +1,7 @@
 package edu.wpi.axon.dsl.task
 
+import arrow.core.Option
+import arrow.core.Some
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
@@ -45,18 +47,19 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
     /**
      * The name of the S3 bucket to upload the progress to.
      */
-    private val bucketName: String by inject(named(axonBucketName))
+    private val bucketName: Option<String> by inject(named(axonBucketName))
 
     private val variableNameGenerator: UniqueVariableNameGenerator by inject()
 
     override fun code(): String {
+        require(bucketName is Some)
         val callbackClassName = variableNameGenerator.uniqueVariableName()
         // Add 1 to epoch because we get the index of the epoch, not the "element"
         return """
         |class $callbackClassName(tf.keras.callbacks.Callback):
         |    def on_epoch_end(self, epoch, logs=None):
         |        axon.client.impl_update_training_progress("$modelName", "$datasetName",
-        |                                                  str(epoch + 1), "$bucketName",
+        |                                                  str(epoch + 1), "${(bucketName as Some<String>).t}",
         |                                                  None)
         |
         |${output.name} = $callbackClassName()
