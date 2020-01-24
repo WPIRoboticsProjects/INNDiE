@@ -6,6 +6,8 @@ import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.examplemodel.ExampleModelManager
+import edu.wpi.axon.examplemodel.GitExampleModelManager
 import java.nio.file.Paths
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
@@ -52,4 +54,6 @@ fun defaultFrontendModule() = module {
             TODO("Support running outside of AWS. Create a local training script runner")
         }
     }
+
+    single<ExampleModelManager> { GitExampleModelManager() }
 }
