@@ -31,7 +31,8 @@ import org.koin.core.inject
 
 @Route(layout = MainLayout::class)
 @RouteAlias(value = "", layout = MainLayout::class)
-class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, EntityView<Job>, KoinComponent {
+class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, EntityView<Job>,
+    KoinComponent {
 
     private val dataProvider by inject<JobProvider>()
     private val jobDb by inject<JobDb>()

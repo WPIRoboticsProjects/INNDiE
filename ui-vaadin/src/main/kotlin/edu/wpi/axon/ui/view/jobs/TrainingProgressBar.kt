@@ -10,19 +10,44 @@ class TrainingProgressBar(value: TrainingScriptProgress? = null) : ProgressBar()
     }
 
     fun setValue(value: TrainingScriptProgress) {
-        when (value) {
-            is TrainingScriptProgress.NotStarted -> {
-                setValue(max)
-                addThemeVariants(ProgressBarVariant.LUMO_CONTRAST)
+        setValue(
+            when (value) {
+                TrainingScriptProgress.NotStarted -> {
+                    isIndeterminate = false
+                    themeName = ""
+                    min
+                }
+
+                TrainingScriptProgress.Creating -> {
+                    isIndeterminate = true
+                    themeName = ProgressBarVariant.LUMO_CONTRAST.variantName
+                    min
+                }
+
+                TrainingScriptProgress.Initializing -> {
+                    isIndeterminate = true
+                    themeName = ""
+                    max
+                }
+
+                is TrainingScriptProgress.InProgress -> {
+                    isIndeterminate = false
+                    themeName = ""
+                    value.percentComplete
+                }
+
+                TrainingScriptProgress.Completed -> {
+                    isIndeterminate = false
+                    themeName = ProgressBarVariant.LUMO_SUCCESS.variantName
+                    max
+                }
+
+                TrainingScriptProgress.Error -> {
+                    isIndeterminate = false
+                    themeName = ProgressBarVariant.LUMO_ERROR.variantName
+                    max
+                }
             }
-            is TrainingScriptProgress.InProgress -> {
-                setValue(value.percentComplete)
-                removeThemeVariants(ProgressBarVariant.LUMO_SUCCESS)
-            }
-            TrainingScriptProgress.Completed -> {
-                setValue(max)
-                addThemeVariants(ProgressBarVariant.LUMO_SUCCESS)
-            }
-        }
+        )
     }
 }

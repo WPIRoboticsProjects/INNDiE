@@ -17,6 +17,18 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
     object NotStarted : TrainingScriptProgress()
 
     /**
+     * The machine that is going to run the training script is being provisioned.
+     */
+    @Serializable
+    object Creating : TrainingScriptProgress()
+
+    /**
+     * The machine that is going to run the training script is initializing the environment.
+     */
+    @Serializable
+    object Initializing : TrainingScriptProgress()
+
+    /**
      * The training is in progress.
      *
      * @param percentComplete The percent of epochs that have been completed.
@@ -29,6 +41,12 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
      */
     @Serializable
     object Completed : TrainingScriptProgress()
+
+    /**
+     * The training script encountered an error.
+     */
+    @Serializable
+    object Error : TrainingScriptProgress()
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable

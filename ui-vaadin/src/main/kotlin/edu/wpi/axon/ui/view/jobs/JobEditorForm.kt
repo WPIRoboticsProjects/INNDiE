@@ -25,6 +25,7 @@ import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobRunner
 import kotlin.concurrent.thread
@@ -54,8 +55,16 @@ class JobEditorForm : KComposite(), KoinComponent {
                 setSizeUndefined()
                 formLayout {
                     responsiveSteps = listOf(
-                        FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
-                        FormLayout.ResponsiveStep("550px", 1, FormLayout.ResponsiveStep.LabelsPosition.ASIDE)
+                        FormLayout.ResponsiveStep(
+                            "0",
+                            1,
+                            FormLayout.ResponsiveStep.LabelsPosition.TOP
+                        ),
+                        FormLayout.ResponsiveStep(
+                            "550px",
+                            1,
+                            FormLayout.ResponsiveStep.LabelsPosition.ASIDE
+                        )
                     )
                     formItem("Name") {
                         textField {
@@ -92,7 +101,9 @@ class JobEditorForm : KComposite(), KoinComponent {
                         addThemeVariants(ButtonVariant.LUMO_SUCCESS)
                         isIconAfterText = true
                         setWidthFull()
-                        binder.addStatusChangeListener { isEnabled = binder.hasChanges() && !it.hasValidationErrors() }
+                        binder.addStatusChangeListener {
+                            isEnabled = binder.hasChanges() && !it.hasValidationErrors()
+                        }
                         onLeftClick {
                             val job = job!!
                             if (binder.validate().isOk && binder.writeBeanIfValid(job)) {
@@ -116,10 +127,14 @@ class JobEditorForm : KComposite(), KoinComponent {
                         onLeftClick {
                             thread(isDaemon = true) {
                                 val jobRunner = JobRunner()
-                                val id = jobRunner.startJob(job!!)
-                                jobRunner.waitForCompleted(id) {
-                                    jobDb.update(job!!.copy(status = it))
-                                }
+                                jobRunner.startJob(job!!).flatMap { id ->
+                                    jobDb.update(job!!.copy(status = TrainingScriptProgress.Creating))
+                                    jobRunner.waitForChange(id).flatMap {
+                                        jobRunner.waitForCompleted(id) {
+                                            jobDb.update(job!!.copy(status = it))
+                                        }
+                                    }
+                                }.unsafeRunSync() // TODO: Handle errors here
                             }
                         }
                     }

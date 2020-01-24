@@ -51,8 +51,9 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         )
 
         val jobRunner = JobRunner()
-        val id = jobRunner.startJob(job)
-        jobRunner.waitForCompleted(id) { println(it) }
+        jobRunner.startJob(job).flatMap { id ->
+            jobRunner.waitForCompleted(id) { println(it) }
+        }.unsafeRunSync()
     }
 
     // TODO: This model doesn't work with the default dataset resizing, we need to configure that
@@ -103,7 +104,8 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         )
 
         val jobRunner = JobRunner()
-        val id = jobRunner.startJob(job)
-        jobRunner.waitForCompleted(id) { println(it) }
+        jobRunner.startJob(job).flatMap { id ->
+            jobRunner.waitForCompleted(id) { println(it) }
+        }.unsafeRunSync()
     }
 }
