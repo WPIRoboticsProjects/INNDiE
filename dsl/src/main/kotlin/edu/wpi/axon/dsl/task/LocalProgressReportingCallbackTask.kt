@@ -49,7 +49,7 @@ class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
         return """
         |class $callbackClassName(tf.keras.callbacks.Callback):
         |    def __init__(self):
-        |        super.__init__()
+        |        super()
         |        try:
         |            os.makedirs(Path("$progressFilePath").parent)
         |        except OSError as err:
@@ -66,6 +66,6 @@ class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     companion object {
         fun createProgressFilePath(modelName: String, datasetName: String) =
-            "/tmp/$modelName/$datasetName/progress.txt"
+            "/tmp/progress_reporting/$modelName/$datasetName/progress.txt"
     }
 }

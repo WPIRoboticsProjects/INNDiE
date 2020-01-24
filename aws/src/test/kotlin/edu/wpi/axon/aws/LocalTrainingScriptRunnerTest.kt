@@ -4,8 +4,10 @@ import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.training.ModelPath
 import java.io.File
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.api.io.TempDir
 
@@ -14,6 +16,7 @@ internal class LocalTrainingScriptRunnerTest {
     private val runner = LocalTrainingScriptRunner()
 
     @Test
+    @Timeout(value = 1L, unit = TimeUnit.MINUTES)
     @Tag("needsTensorFlowSupport")
     fun `test running mnist training script`(@TempDir tempDir: File) {
         val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
@@ -104,6 +107,7 @@ internal class LocalTrainingScriptRunnerTest {
             } else if (progress == TrainingScriptProgress.Error) {
                 fail { "Progress was: $progress" }
             }
+            Thread.sleep(1000)
         }
     }
 }

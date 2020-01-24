@@ -28,13 +28,13 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "32_32_1_conv_sequential-trained.h5"
+        val newModelName = "/tmp/32_32_1_conv_sequential-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.S3(path),
-                    userNewModelPath = ModelPath.S3(newModelName),
+                    userOldModelPath = ModelPath.Local(path),
+                    userNewModelPath = ModelPath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -56,13 +56,13 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "32_32_1_conv_general.h5"
-        val newModelName = "32_32_1_conv_general-trained.h5"
+        val newModelName = "/tmp/32_32_1_conv_general-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.S3(path),
-                    userNewModelPath = ModelPath.S3(newModelName),
+                    userOldModelPath = ModelPath.Local(path),
+                    userNewModelPath = ModelPath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,

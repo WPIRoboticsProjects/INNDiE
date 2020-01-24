@@ -30,8 +30,8 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.S3(path),
-                    userNewModelPath = ModelPath.S3(newModelName),
+                    userOldModelPath = ModelPath.Local(path),
+                    userNewModelPath = ModelPath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,

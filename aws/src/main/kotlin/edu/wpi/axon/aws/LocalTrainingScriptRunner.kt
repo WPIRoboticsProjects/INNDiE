@@ -3,6 +3,7 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.training.ModelPath
 import edu.wpi.axon.util.runCommand
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicLong
@@ -79,9 +80,18 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         require(scriptId in scriptProgressMap.keys)
 
         return if (scriptThreadMap[scriptId]!!.isAlive) {
-            // Training thread is still running.
-            // TODO: Measure the actual progress here
-            TrainingScriptProgress.InProgress(0.0)
+            // Training thread is still running. Try to read the progress file.
+            val config = scriptDataMap[scriptId]!!
+            val modelName = config.newModelName.filename
+            val datasetName = config.dataset.nameForS3ProgressReporting
+            val progressFile = File("/tmp/progress_reporting/$modelName/$datasetName/progress.txt")
+            if (progressFile.exists()) {
+                TrainingScriptProgress.InProgress(
+                    progressFile.readText().toDouble() / config.epochs
+                )
+            } else {
+                TrainingScriptProgress.InProgress(0.0)
+            }
         } else {
             // Training thread died. Either it finished and wrote Completed to scriptProgressMap
             // or exploded and didn't write Completed.
