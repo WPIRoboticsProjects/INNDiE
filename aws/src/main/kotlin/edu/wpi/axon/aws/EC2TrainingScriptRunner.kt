@@ -9,6 +9,7 @@ import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
 import software.amazon.awssdk.services.ec2.Ec2Client
+import software.amazon.awssdk.services.ec2.model.Ec2Exception
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
 import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
@@ -134,11 +135,15 @@ class EC2TrainingScriptRunner(
         val newModelName = runTrainingScriptConfiguration.newModelName
         val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
 
-        val status = ec2.describeInstanceStatus {
-            it.instanceIds(
-                instanceIds[scriptId] ?: error("BUG: scriptId missing from instanceIds")
-            )
-        }.instanceStatuses().firstOrNull()?.instanceState()?.name()
+        val status = try {
+            ec2.describeInstanceStatus {
+                it.instanceIds(
+                    instanceIds[scriptId] ?: error("BUG: scriptId missing from instanceIds")
+                )
+            }.instanceStatuses().firstOrNull()?.instanceState()?.name()
+        } catch (ex: Ec2Exception) {
+            null
+        }
 
         val heartbeat = s3Manager.getHeartbeat(newModelName, datasetName)
         val progress = s3Manager.getTrainingProgress(newModelName, datasetName)
