@@ -7,7 +7,6 @@ import com.github.mvysny.karibudsl.v10.bind
 import com.github.mvysny.karibudsl.v10.button
 import com.github.mvysny.karibudsl.v10.checkBox
 import com.github.mvysny.karibudsl.v10.comboBox
-import com.github.mvysny.karibudsl.v10.dialog
 import com.github.mvysny.karibudsl.v10.div
 import com.github.mvysny.karibudsl.v10.formItem
 import com.github.mvysny.karibudsl.v10.formLayout
@@ -19,18 +18,15 @@ import com.github.mvysny.karibudsl.v10.textField
 import com.github.mvysny.karibudsl.v10.toInt
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.component.HasComponents
-import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.page.Push
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobRunner
-import edu.wpi.axon.ui.view.HasNotifications
 import kotlin.concurrent.thread
 import org.koin.core.KoinComponent
 import org.koin.core.inject

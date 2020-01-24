@@ -2,12 +2,14 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
+import java.lang.NumberFormatException
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
 import software.amazon.awssdk.services.ec2.Ec2Client
+import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
 import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
 
@@ -28,6 +30,7 @@ class EC2TrainingScriptRunner(
     private val s3Manager = S3Manager(bucketName)
 
     private val nextScriptId = AtomicLong()
+    private val instanceIds = mutableMapOf<Long, String>()
     private val scriptDataMap = mutableMapOf<Long, RunTrainingScriptConfiguration>()
 
     override fun startScript(
@@ -86,6 +89,7 @@ class EC2TrainingScriptRunner(
             |systemctl status docker
             |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.11/axon-0.1.11-py2.py3-none-any.whl
             |axon create-heartbeat "$newModelName" "$datasetName"
+            |axon update-training-progress "$newModelName" "$datasetName" "initializing"
             |axon download-untrained-model "${runTrainingScriptConfiguration.oldModelName}"
             |$downloadDatasetString
             |axon download-training-script "$scriptFileName"
@@ -104,7 +108,7 @@ class EC2TrainingScriptRunner(
             """.trimMargin()
         }
 
-        ec2.runInstances {
+        val runInstancesResponse = ec2.runInstances {
             it.imageId("ami-04b9e92b5572fa0d1")
                 .instanceType(instanceType)
                 .maxCount(1)
@@ -116,34 +120,35 @@ class EC2TrainingScriptRunner(
         }
 
         val scriptId = nextScriptId.getAndIncrement()
+        instanceIds[scriptId] = runInstancesResponse.instances().first().instanceId()
         scriptDataMap[scriptId] = runTrainingScriptConfiguration
         return scriptId
     }
 
     @UseExperimental(ExperimentalStdlibApi::class)
     override fun getTrainingProgress(scriptId: Long): TrainingScriptProgress {
+        require(scriptId in instanceIds.keys)
         require(scriptId in scriptDataMap.keys)
 
         val runTrainingScriptConfiguration = scriptDataMap[scriptId]!!
         val newModelName = runTrainingScriptConfiguration.newModelName
         val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
 
+        val status = ec2.describeInstanceStatus {
+            it.instanceIds(
+                instanceIds[scriptId] ?: error("BUG: scriptId missing from instanceIds")
+            )
+        }.instanceStatuses().firstOrNull()?.instanceState()?.name()
+
         val heartbeat = s3Manager.getHeartbeat(newModelName, datasetName)
-        return when (val progress = s3Manager.getTrainingProgress(newModelName, datasetName)) {
-            "not started" -> TrainingScriptProgress.NotStarted
-            "initializing" -> TrainingScriptProgress.Initializing
-            "completed" -> TrainingScriptProgress.Completed
-            else -> if (heartbeat == "1") {
-                TrainingScriptProgress.InProgress(
-                    progress.toDouble() / runTrainingScriptConfiguration.epochs
-                )
-            } else {
-                LOGGER.warn {
-                    "Training progress error. heartbeat=$heartbeat, progress=$progress"
-                }
-                TrainingScriptProgress.Error
-            }
-        }
+        val progress = s3Manager.getTrainingProgress(newModelName, datasetName)
+
+        return computeTrainingScriptProgress(
+            heartbeat,
+            progress,
+            status,
+            runTrainingScriptConfiguration.epochs
+        )
     }
 
     private fun String.toBase64() =
@@ -151,5 +156,69 @@ class EC2TrainingScriptRunner(
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
+
+        internal fun computeTrainingScriptProgress(
+            heartbeat: String,
+            progress: String,
+            status: InstanceStateName?,
+            epochs: Int
+        ): TrainingScriptProgress {
+            val progressAssumingEverythingIsFine = computeProgressAssumingEverythingIsFine(
+                heartbeat,
+                progress,
+                status,
+                epochs
+            )
+
+            return when (heartbeat) {
+                "0" -> when (progress) {
+                    "not started", "completed" -> progressAssumingEverythingIsFine
+                    else -> TrainingScriptProgress.Error
+                }
+
+                "1" -> when (progress) {
+                    "initializing" -> progressAssumingEverythingIsFine
+                    "not started" -> TrainingScriptProgress.Error
+
+                    else -> when (status) {
+                        InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
+                        InstanceStateName.STOPPING, InstanceStateName.STOPPED, null ->
+                            TrainingScriptProgress.Error
+
+                        else -> progressAssumingEverythingIsFine
+                    }
+                }
+
+                else -> TrainingScriptProgress.Error
+            }
+        }
+
+        private fun computeProgressAssumingEverythingIsFine(
+            heartbeat: String,
+            progress: String,
+            status: InstanceStateName?,
+            epochs: Int
+        ) = when (progress) {
+            "not started" -> when (status) {
+                InstanceStateName.RUNNING -> TrainingScriptProgress.Initializing
+                else -> TrainingScriptProgress.NotStarted
+            }
+
+            "initializing" -> TrainingScriptProgress.Initializing
+            "completed" -> TrainingScriptProgress.Completed
+
+            else -> if (heartbeat == "1") {
+                try {
+                    TrainingScriptProgress.InProgress(progress.toDouble() / epochs)
+                } catch (ex: NumberFormatException) {
+                    TrainingScriptProgress.Error
+                }
+            } else {
+                LOGGER.warn {
+                    "Training progress error. heartbeat=$heartbeat, progress=$progress"
+                }
+                TrainingScriptProgress.Error
+            }
+        }
     }
 }
