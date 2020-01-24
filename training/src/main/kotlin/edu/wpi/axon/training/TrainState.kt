@@ -6,13 +6,12 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import java.nio.file.Paths
 
 /**
  * All configuration data needed to generate a training script.
  *
  * @param userOldModelPath The path to the model to load.
- * @param userNewModelName The name of the model to save to.
+ * @param userNewModelPath The name of the model to save to.
  * @param userDataset The dataset to train on.
  * @param userOptimizer The [Optimizer] to use.
  * @param userLoss The [Loss] function to use.
@@ -24,8 +23,8 @@ import java.nio.file.Paths
  * @param generateDebugComments Whether to put debug comments in the output.
  */
 data class TrainState<T : Model>(
-    val userOldModelPath: String,
-    val userNewModelName: String,
+    val userOldModelPath: ModelPath,
+    val userNewModelPath: ModelPath,
     val userDataset: Dataset,
     val userOptimizer: Optimizer,
     val userLoss: Loss,
@@ -35,11 +34,4 @@ data class TrainState<T : Model>(
     val userValidationSplit: Option<Double> = None,
     val userBucketName: String? = null,
     val generateDebugComments: Boolean = false
-) {
-
-    /**
-     * The filename (with extension) of the old model.
-     */
-    val userOldModelName: String
-        get() = Paths.get(userOldModelPath).fileName.toString()
-}
+)

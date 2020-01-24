@@ -1,16 +1,13 @@
 package edu.wpi.axon.training.testutil
 
-import arrow.core.Tuple3
-import arrow.fx.IO
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
+import edu.wpi.axon.util.runCommand
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.matchers.string.shouldNotBeEmpty
 import io.kotlintest.shouldBe
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
 import java.nio.file.Paths
 import mu.KotlinLogging
 
@@ -81,40 +78,5 @@ fun testTrainingScript(
         stdOut.shouldNotBeEmpty()
         exitCode shouldBe 0
         Paths.get(dir.absolutePath, newModelName).shouldExist()
-    }
-}
-
-/**
- * Runs a command as a process.
- *
- * @param command The command and its arguments.
- * @param env Any extra env vars.
- * @param dir The working directory of the process.
- * @return The exit code, std out, and std err.
- */
-@Suppress("BlockingMethodInNonBlockingContext")
-fun runCommand(
-    command: List<String>,
-    env: Map<String, String>,
-    dir: File
-): IO<Tuple3<Int, String, String>> = IO {
-    val proc = ProcessBuilder(command)
-        .directory(dir)
-        .also {
-            val builderEnv = it.environment()
-            env.forEach { (key, value) ->
-                builderEnv[key] = value
-            }
-        }.start()
-
-    BufferedReader(InputStreamReader(proc.inputStream)).useLines { procStdOut ->
-        BufferedReader(InputStreamReader(proc.errorStream)).useLines { procStdErr ->
-            val exitCode = proc.waitFor()
-            Tuple3(
-                exitCode,
-                procStdOut.joinToString("\n"),
-                procStdErr.joinToString("\n")
-            )
-        }
     }
 }

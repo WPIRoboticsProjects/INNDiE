@@ -9,7 +9,7 @@ import org.koin.core.context.startKoin
 
 internal class SaveModelTaskConfigurationTest :
     TaskConfigurationTestFixture<SaveModelTask>(
-        { SaveModelTask("").apply { modelFileName = "" } },
+        { SaveModelTask("").apply { modelPath = "" } },
         listOf(
             SaveModelTask::modelInput
         )
@@ -23,10 +23,16 @@ internal class SaveModelTaskTest : KoinTestFixture() {
 
         val task = SaveModelTask("").apply {
             modelInput = configuredCorrectly("modelInput")
-            modelFileName = "modelName.h5"
+            modelPath = "test/modelName.h5"
         }
 
         task.code() shouldBe """
+            |try:
+            |    os.makedirs(Path("modelName.h5").parent)
+            |except OSError as err:
+            |    if err.errno != errno.EEXIST:
+            |        raise
+            |
             |modelInput.save("modelName.h5")
         """.trimMargin()
     }

@@ -251,6 +251,10 @@ configure(javaProjects) {
             if (!project.hasProperty("hasDockerSupport")) {
                 excludeTags("needsDockerSupport")
             }
+
+            if (!project.hasProperty("hasTensorFlowSupport")) {
+                excludeTags("needsTensorFlowSupport")
+            }
         }
 
         jvmArgs!!.add("-Xss512m")

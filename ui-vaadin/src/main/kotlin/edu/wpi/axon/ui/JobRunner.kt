@@ -53,7 +53,7 @@ class JobRunner : KoinComponent {
 
         scriptRunner.startScript(
             RunTrainingScriptConfiguration(
-                oldModelName = trainModelScriptGenerator.trainState.userOldModelName,
+                oldModelName = job.userOldModelPath,
                 newModelName = job.userNewModelName,
                 dataset = job.userDataset,
                 scriptContents = script,
@@ -107,7 +107,7 @@ class JobRunner : KoinComponent {
         model: T
     ) = TrainState(
         userOldModelPath = job.userOldModelPath,
-        userNewModelName = job.userNewModelName,
+        userNewModelPath = job.userNewModelName,
         userDataset = job.userDataset,
         userOptimizer = job.userOptimizer,
         userLoss = job.userLoss,

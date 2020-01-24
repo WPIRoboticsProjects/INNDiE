@@ -4,6 +4,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelPath
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -15,8 +16,8 @@ import kotlinx.serialization.json.JsonConfiguration
 data class Job(
     var name: String,
     var status: TrainingScriptProgress,
-    var userOldModelPath: String,
-    var userNewModelName: String,
+    var userOldModelPath: ModelPath,
+    var userNewModelName: ModelPath,
     var userDataset: Dataset,
     var userOptimizer: Optimizer,
     var userLoss: Loss,

@@ -26,17 +26,17 @@ class TrainSequentialModelScriptGenerator(
 ) : TrainModelScriptGenerator<Model.Sequential> {
 
     init {
-        require(trainState.userOldModelName != trainState.userNewModelName) {
-            "The old model name (${trainState.userOldModelName}) cannot equal the new model " +
-                "name (${trainState.userNewModelName})."
+        require(trainState.userOldModelPath.filename != trainState.userNewModelPath.filename) {
+            "The old model name (${trainState.userOldModelPath}) cannot equal the new model " +
+                "name (${trainState.userNewModelPath})."
         }
     }
 
     private val modelLoaderFactory = ModelLoaderFactory()
 
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
-        val modelLoader = modelLoaderFactory.createModeLoader(trainState.userOldModelPath)
-        return modelLoader.load(File(trainState.userOldModelPath)).flatMap { oldModel ->
+        val modelLoader = modelLoaderFactory.createModeLoader(trainState.userOldModelPath.path)
+        return modelLoader.load(File(trainState.userOldModelPath.path)).flatMap { oldModel ->
             IO {
                 require(oldModel is Model.Sequential)
                 require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)

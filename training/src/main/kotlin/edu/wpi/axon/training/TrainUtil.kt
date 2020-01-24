@@ -36,7 +36,7 @@ import edu.wpi.axon.tfdata.Model
 internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
     val model = variables.create(Variable::class)
     val loadModelTask = tasks.run(LoadModelTask::class) {
-        modelPath = trainState.userOldModelName
+        modelPath = trainState.userOldModelPath.path
         modelOutput = model
     }
 
@@ -237,15 +237,16 @@ internal fun ScriptGenerator.compileTrainSave(
         output = earlyStoppingCallback
     }
 
-    var s3ProgressReportingCallback: Variable? = null
+    val progressReportingCallback: Variable = variables.create(Variable::class)
     if (trainState.userBucketName != null) {
-        s3ProgressReportingCallback = variables.create(Variable::class)
         tasks.run(S3ProgressReportingCallbackTask::class) {
-            modelName = trainState.userNewModelName
+            modelName = trainState.userNewModelPath.filename
             datasetName = trainState.userDataset.nameForS3ProgressReporting
             bucketName = trainState.userBucketName
-            output = s3ProgressReportingCallback
+            output = progressReportingCallback
         }
+    } else {
+        TODO("Implement a progress callback that uses a local file.")
     }
 
     val trainModelTask by tasks.running(TrainTask::class) {
@@ -260,11 +261,7 @@ internal fun ScriptGenerator.compileTrainSave(
             validationOutputData = Some(it.second)
         }
 
-        callbacks = setOf(checkpointCallback, earlyStoppingCallback)
-
-        // Add the s3 progress reporting callback if it is not null. Null when we don't have AWS
-        // data.
-        s3ProgressReportingCallback?.let { callbacks = callbacks + it }
+        callbacks = setOf(checkpointCallback, earlyStoppingCallback, progressReportingCallback)
 
         epochs = trainState.userEpochs
         dependencies += compileModelTask
@@ -272,7 +269,7 @@ internal fun ScriptGenerator.compileTrainSave(
 
     return tasks.run(SaveModelTask::class) {
         modelInput = newModel
-        modelFileName = trainState.userNewModelName
+        modelPath = trainState.userNewModelPath.path
         dependencies += trainModelTask
     }
 }

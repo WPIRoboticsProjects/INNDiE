@@ -2,6 +2,7 @@ package edu.wpi.axon.aws
 
 import arrow.core.None
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.training.ModelPath
 
 /**
  * The configuration data needed to run a training script.
@@ -14,8 +15,8 @@ import edu.wpi.axon.tfdata.Dataset
  * @param epochs The number of epochs the model will be trained for.
  */
 data class RunTrainingScriptConfiguration(
-    val oldModelName: String,
-    val newModelName: String,
+    val oldModelName: ModelPath,
+    val newModelName: ModelPath,
     val dataset: Dataset,
     val scriptContents: String,
     val epochs: Int

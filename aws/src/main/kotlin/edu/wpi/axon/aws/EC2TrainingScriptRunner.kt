@@ -2,6 +2,7 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.training.ModelPath
 import java.lang.NumberFormatException
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
@@ -38,10 +39,13 @@ class EC2TrainingScriptRunner(
     override fun startScript(
         runTrainingScriptConfiguration: RunTrainingScriptConfiguration
     ): Long {
+        require(runTrainingScriptConfiguration.oldModelName is ModelPath.S3)
+        require(runTrainingScriptConfiguration.newModelName is ModelPath.S3)
+
         // The file name for the generated script
         val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
-        val newModelName = runTrainingScriptConfiguration.newModelName
+        val newModelName = runTrainingScriptConfiguration.newModelName.filename
         val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
 
         s3Manager.uploadTrainingScript(
@@ -120,7 +124,7 @@ class EC2TrainingScriptRunner(
         require(scriptId in scriptDataMap.keys)
 
         val runTrainingScriptConfiguration = scriptDataMap[scriptId]!!
-        val newModelName = runTrainingScriptConfiguration.newModelName
+        val newModelName = runTrainingScriptConfiguration.newModelName.filename
         val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
 
         val status = try {

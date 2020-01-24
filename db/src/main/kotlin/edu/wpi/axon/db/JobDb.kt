@@ -7,6 +7,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelPath
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
@@ -37,8 +38,8 @@ internal object Jobs : IntIdTable() {
         return Job(
             name = row[name],
             status = TrainingScriptProgress.deserialize(row[status]),
-            userOldModelPath = row[userOldModelPath],
-            userNewModelName = row[userNewModelName],
+            userOldModelPath = ModelPath.deserialize(row[userOldModelPath]),
+            userNewModelName = ModelPath.deserialize(row[userNewModelName]),
             userDataset = Dataset.deserialize(row[userDataset]),
             userOptimizer = Optimizer.deserialize(row[userOptimizer]),
             userLoss = Loss.deserialize(row[userLoss]),
@@ -81,8 +82,8 @@ class JobDb(private val database: Database) {
             Jobs.insertAndGetId { row ->
                 row[name] = job.name
                 row[status] = job.status.serialize()
-                row[userOldModelPath] = job.userOldModelPath
-                row[userNewModelName] = job.userNewModelName
+                row[userOldModelPath] = job.userOldModelPath.serialize()
+                row[userNewModelName] = job.userNewModelName.serialize()
                 row[userDataset] = job.userDataset.serialize()
                 row[userOptimizer] = job.userOptimizer.serialize()
                 row[userLoss] = job.userLoss.serialize()
@@ -104,8 +105,8 @@ class JobDb(private val database: Database) {
             Jobs.update({ Jobs.id eq job.id }) {
                 it[name] = job.name
                 it[status] = job.status.serialize()
-                it[userOldModelPath] = job.userOldModelPath
-                it[userNewModelName] = job.userNewModelName
+                it[userOldModelPath] = job.userOldModelPath.serialize()
+                it[userNewModelName] = job.userNewModelName.serialize()
                 it[userDataset] = job.userDataset.serialize()
                 it[userOptimizer] = job.userOptimizer.serialize()
                 it[userLoss] = job.userLoss.serialize()

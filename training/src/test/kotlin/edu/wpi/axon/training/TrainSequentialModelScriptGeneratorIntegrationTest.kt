@@ -32,8 +32,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             Paths.get(this::class.java.getResource("badModel1.h5").toURI()).toString()
         TrainSequentialModelScriptGenerator(
             TrainState(
-                userOldModelPath = localModelPath,
-                userNewModelName = "badModel1-trained.h5",
+                userOldModelPath = ModelPath.S3(localModelPath),
+                userNewModelPath = ModelPath.S3("badModel1-trained.h5"),
                 userDataset = Dataset.ExampleDataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -61,8 +61,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = path,
-                    userNewModelName = newModelName,
+                    userOldModelPath = ModelPath.S3(path),
+                    userNewModelPath = ModelPath.S3(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -94,8 +94,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = path,
-                    userNewModelName = newModelName,
+                    userOldModelPath = ModelPath.S3(path),
+                    userNewModelPath = ModelPath.S3(newModelName),
                     userDataset = Dataset.Custom("WPILib_reduced.tar", "WPILib reduced"),
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,

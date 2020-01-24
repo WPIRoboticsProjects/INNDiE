@@ -7,6 +7,7 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelPath
 import kotlin.random.Random
 import org.apache.commons.lang3.RandomStringUtils
 
@@ -33,8 +34,8 @@ fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
 fun Random.nextJob() = Job(
         name = RandomStringUtils.randomAlphanumeric(10),
         status = nextTrainingScriptProgress(),
-        userOldModelPath = RandomStringUtils.randomAlphanumeric(10),
-        userNewModelName = RandomStringUtils.randomAlphanumeric(10),
+        userOldModelPath = ModelPath.S3(RandomStringUtils.randomAlphanumeric(10)),
+        userNewModelName = ModelPath.S3(RandomStringUtils.randomAlphanumeric(10)),
         userDataset = nextDataset(),
         userOptimizer = Optimizer.Adam(
                 nextDouble(),

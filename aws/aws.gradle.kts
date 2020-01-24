@@ -21,6 +21,7 @@ dependencies {
 
     api(project(":tf-data"))
     api(project(":db-data"))
+    api(project(":training"))
 
     api(
         group = "software.amazon.awssdk",
