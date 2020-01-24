@@ -28,12 +28,12 @@ internal class SaveModelTaskTest : KoinTestFixture() {
 
         task.code() shouldBe """
             |try:
-            |    os.makedirs(Path("modelName.h5").parent)
+            |    os.makedirs(Path("test/modelName.h5").parent)
             |except OSError as err:
             |    if err.errno != errno.EEXIST:
             |        raise
             |
-            |modelInput.save("modelName.h5")
+            |modelInput.save("test/modelName.h5")
         """.trimMargin()
     }
 }
