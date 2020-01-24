@@ -92,6 +92,6 @@ internal class EC2TrainingScriptRunnerTest {
             """.trimIndent(),
                 1
             )
-        ).unsafeRunSync()
+        )
     }
 }

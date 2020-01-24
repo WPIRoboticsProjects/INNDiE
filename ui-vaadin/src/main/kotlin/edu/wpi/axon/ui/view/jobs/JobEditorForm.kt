@@ -54,8 +54,16 @@ class JobEditorForm : KComposite(), KoinComponent {
                 setSizeUndefined()
                 formLayout {
                     responsiveSteps = listOf(
-                        FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
-                        FormLayout.ResponsiveStep("550px", 1, FormLayout.ResponsiveStep.LabelsPosition.ASIDE)
+                        FormLayout.ResponsiveStep(
+                            "0",
+                            1,
+                            FormLayout.ResponsiveStep.LabelsPosition.TOP
+                        ),
+                        FormLayout.ResponsiveStep(
+                            "550px",
+                            1,
+                            FormLayout.ResponsiveStep.LabelsPosition.ASIDE
+                        )
                     )
                     formItem("Name") {
                         textField {
@@ -92,7 +100,9 @@ class JobEditorForm : KComposite(), KoinComponent {
                         addThemeVariants(ButtonVariant.LUMO_SUCCESS)
                         isIconAfterText = true
                         setWidthFull()
-                        binder.addStatusChangeListener { isEnabled = binder.hasChanges() && !it.hasValidationErrors() }
+                        binder.addStatusChangeListener {
+                            isEnabled = binder.hasChanges() && !it.hasValidationErrors()
+                        }
                         onLeftClick {
                             val job = job!!
                             if (binder.validate().isOk && binder.writeBeanIfValid(job)) {
@@ -116,10 +126,11 @@ class JobEditorForm : KComposite(), KoinComponent {
                         onLeftClick {
                             thread(isDaemon = true) {
                                 val jobRunner = JobRunner()
-                                val id = jobRunner.startJob(job!!)
-                                jobRunner.waitForCompleted(id) {
-                                    jobDb.update(job!!.copy(status = it))
-                                }
+                                jobRunner.startJob(job!!).flatMap { id ->
+                                    jobRunner.waitForCompleted(id) {
+                                        jobDb.update(job!!.copy(status = it))
+                                    }
+                                }.unsafeRunSync() // TODO: Handle errors here
                             }
                         }
                     }

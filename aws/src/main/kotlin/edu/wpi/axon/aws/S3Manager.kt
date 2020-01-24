@@ -105,16 +105,71 @@ class S3Manager(
     }.readAllBytes().decodeToString()
 
     /**
-     * Resets the latest training progress data.
+     * Sets the training progress data.
+     *
+     * @param modelName The filename of the model being trained.
+     * @param datasetName The filename of the dataset being trained on.
+     * @param data The data to write to the progress file.
+     */
+    fun setTrainingProgress(modelName: String, datasetName: String, data: String) {
+        s3.putObject(
+            PutObjectRequest.builder().bucket(bucketName).key(
+                createTrainingProgressFilePath(
+                    modelName,
+                    datasetName
+                )
+            ).build(),
+            RequestBody.fromString(data)
+        )
+    }
+
+    /**
+     * Creates a heartbeat that Axon uses to check if the training script is running properly.
      *
      * @param modelName The filename of the model being trained.
      * @param datasetName The filename of the dataset being trained on.
      */
-    fun resetTrainingProgress(modelName: String, datasetName: String) {
-        s3.deleteObject {
-            it.bucket(bucketName).key(createTrainingProgressFilePath(modelName, datasetName))
-        }
+    fun createHeartbeat(modelName: String, datasetName: String) {
+        s3.putObject(
+            PutObjectRequest.builder().bucket(bucketName).key(
+                createHeartbeatFilePath(
+                    modelName,
+                    datasetName
+                )
+            ).build(),
+            RequestBody.fromString("1")
+        )
     }
+
+    /**
+     * Removes a heartbeat that Axon uses to check if the training script is running properly.
+     *
+     * @param modelName The filename of the model being trained.
+     * @param datasetName The filename of the dataset being trained on.
+     */
+    fun removeHeartbeat(modelName: String, datasetName: String) {
+        s3.putObject(
+            PutObjectRequest.builder().bucket(bucketName).key(
+                createHeartbeatFilePath(
+                    modelName,
+                    datasetName
+                )
+            ).build(),
+            RequestBody.fromString("0")
+        )
+    }
+
+    /**
+     * Gets the latest heartbeat.
+     *
+     * @param modelName The filename of the model being trained.
+     * @param datasetName The filename of the dataset being trained on.
+     * @return The contents of the heartbeat file.
+     */
+    @UseExperimental(ExperimentalStdlibApi::class)
+    fun getHeartbeat(modelName: String, datasetName: String) = s3.getObject {
+        it.bucket(bucketName).key(createHeartbeatFilePath(modelName, datasetName))
+    }.readAllBytes().decodeToString()
 
     /**
      * Downloads the preferences file to a local file. Throws an exception if there is no
@@ -189,8 +244,14 @@ class S3Manager(
             it.bucket(bucketName).prefix(prefix)
         }.contents().map { it.key().substring(prefix.length) }
 
+    private fun createTrainingProgressPrefix(modelName: String, datasetName: String) =
+        "axon-training-progress/$modelName/$datasetName"
+
     private fun createTrainingProgressFilePath(modelName: String, datasetName: String) =
-        "axon-training-progress/$modelName/$datasetName/progress.txt"
+        "${createTrainingProgressPrefix(modelName, datasetName)}/progress.txt"
+
+    private fun createHeartbeatFilePath(modelName: String, datasetName: String) =
+        "${createTrainingProgressPrefix(modelName, datasetName)}/heartbeat.txt"
 
     companion object {
         private const val preferencesFilename = "axon-preferences.json"

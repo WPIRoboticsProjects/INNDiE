@@ -1,5 +1,6 @@
 package edu.wpi.axon.ui
 
+import arrow.core.Either
 import arrow.core.None
 import arrow.fx.IO
 import arrow.fx.extensions.fx
@@ -12,6 +13,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
+import kotlinx.coroutines.delay
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import org.koin.core.qualifier.named
@@ -27,11 +29,13 @@ class JobRunner : KoinComponent {
      * @param job The [Job] to run.
      * @return The script id of the script that was started.
      */
-    fun startJob(job: Job): Long = IO.fx {
-        val trainModelScriptGenerator = when (val model = job.userModel) {
-            is Model.Sequential -> TrainSequentialModelScriptGenerator(toTrainState(job, model))
-            is Model.General -> TrainGeneralModelScriptGenerator(toTrainState(job, model))
-        }
+    fun startJob(job: Job): IO<Long> = IO.fx {
+        val trainModelScriptGenerator = IO {
+            when (val model = job.userModel) {
+                is Model.Sequential -> TrainSequentialModelScriptGenerator(toTrainState(job, model))
+                is Model.General -> TrainGeneralModelScriptGenerator(toTrainState(job, model))
+            }
+        }.bind()
 
         val script = trainModelScriptGenerator.generateScript().fold(
             {
@@ -55,29 +59,21 @@ class JobRunner : KoinComponent {
                 scriptContents = script,
                 epochs = job.userEpochs
             )
-        ).bind()
-    }.unsafeRunSync()
-
-    fun getProgress(id: Long) = scriptRunner.getTrainingProgress(id)
-
-    fun waitForCompleted(id: Long, progressUpdate: (TrainingScriptProgress) -> Unit) {
-        while (true) {
-            val shouldBreak = getProgress(id).attempt().unsafeRunSync().fold({
-                // TODO: More intelligent progress reporting than this. We shouldn't have to catch an exception each
-                // time
-                false
-            }, {
-                progressUpdate(it)
-                it == TrainingScriptProgress.Completed
-            })
-
-            if (shouldBreak) {
-                break
-            }
-
-            Thread.sleep(5000)
-        }
+        )
     }
+
+    fun waitForCompleted(id: Long, progressUpdate: (TrainingScriptProgress) -> Unit): IO<Unit> =
+        IO.tailRecM(scriptRunner.getTrainingProgress(id)) {
+            IO {
+                progressUpdate(it)
+                if (it == TrainingScriptProgress.Completed || it == TrainingScriptProgress.Error) {
+                    Either.Right(Unit)
+                } else {
+                    delay(5000)
+                    Either.Left(scriptRunner.getTrainingProgress(id))
+                }
+            }
+        }
 
     private fun <T : Model> toTrainState(
         job: Job,
