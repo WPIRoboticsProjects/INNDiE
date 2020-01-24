@@ -7,12 +7,12 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import java.util.concurrent.TimeUnit
 
 internal class JobRunnerTest : KoinTestFixture() {
 
