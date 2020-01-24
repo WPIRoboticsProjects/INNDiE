@@ -30,6 +30,7 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.ui.JobRunner
 import kotlin.concurrent.thread
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -132,14 +133,16 @@ class JobEditorForm : KComposite(), KoinComponent {
                         onLeftClick {
                             thread(isDaemon = true) {
                                 val jobRunner = JobRunner()
-                                jobRunner.startJob(job!!).flatMap { id ->
-                                    jobDb.update(job!!.copy(status = TrainingScriptProgress.Creating))
-                                    jobRunner.waitForChange(id).flatMap {
-                                        jobRunner.waitForCompleted(id) {
-                                            jobDb.update(job!!.copy(status = it))
+                                job.map { job ->
+                                    jobRunner.startJob(job).flatMap { id ->
+                                        jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
+                                        jobRunner.waitForChange(id).flatMap {
+                                            jobRunner.waitForCompleted(id) {
+                                                jobDb.update(job.copy(status = it))
+                                            }
                                         }
-                                    }
-                                }.unsafeRunSync() // TODO: Handle errors here
+                                    }.unsafeRunSync() // TODO: Handle errors here
+                                }
                             }
                         }
                     }
