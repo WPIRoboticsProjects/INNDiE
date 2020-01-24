@@ -1,5 +1,8 @@
 package edu.wpi.axon.ui.view.jobs
 
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.VaadinDsl
 import com.github.mvysny.karibudsl.v10.beanValidationBinder
@@ -27,24 +30,25 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.ui.JobRunner
 import kotlin.concurrent.thread
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
 @StyleSheet("styles/job-form.css")
 class JobEditorForm : KComposite(), KoinComponent {
-    private val jobDb by inject<JobDb>()
 
+    private val jobDb by inject<JobDb>()
+    private lateinit var form: FormLayout
     private val binder = beanValidationBinder<Job>()
 
-    var job: Job? = null
+    var job: Option<Job> = None
         set(value) {
             field = value
-            isVisible = value != null
-            value?.let {
-                binder.readBean(value)
+            isVisible = value is Some
+            value.map {
+                binder.readBean(it)
             }
+            form.isEnabled = value.fold({ false }, { it.status == TrainingScriptProgress.NotStarted })
         }
 
     private val root = ui {
@@ -53,7 +57,7 @@ class JobEditorForm : KComposite(), KoinComponent {
             verticalLayout {
                 className = "job-form-content"
                 setSizeUndefined()
-                formLayout {
+                form = formLayout {
                     responsiveSteps = listOf(
                         FormLayout.ResponsiveStep(
                             "0",
@@ -105,10 +109,11 @@ class JobEditorForm : KComposite(), KoinComponent {
                             isEnabled = binder.hasChanges() && !it.hasValidationErrors()
                         }
                         onLeftClick {
-                            val job = job!!
-                            if (binder.validate().isOk && binder.writeBeanIfValid(job)) {
-                                jobDb.update(job)
-                                JobsView.navigateTo()
+                            job.map {
+                                if (binder.validate().isOk && binder.writeBeanIfValid(it)) {
+                                    jobDb.update(it)
+                                    JobsView.navigateTo()
+                                }
                             }
                         }
                     }
@@ -117,8 +122,10 @@ class JobEditorForm : KComposite(), KoinComponent {
                         isIconAfterText = true
                         setWidthFull()
                         onLeftClick {
-                            jobDb.remove(job!!)
-                            JobsView.navigateTo()
+                            job.map {
+                                jobDb.remove(it)
+                                JobsView.navigateTo()
+                            }
                         }
                     }
                     button("Run", Icon(VaadinIcon.PLAY)) {

@@ -1,5 +1,7 @@
 package edu.wpi.axon.ui.view.jobs
 
+import arrow.core.Option
+import arrow.core.Some
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.button
 import com.github.mvysny.karibudsl.v10.horizontalLayout
@@ -10,6 +12,7 @@ import com.github.mvysny.karibudsl.v10.refresh
 import com.github.mvysny.karibudsl.v10.textField
 import com.github.mvysny.karibudsl.v10.verticalAlignSelf
 import com.github.mvysny.karibudsl.v10.verticalLayout
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
@@ -72,8 +75,19 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
         }
     }
 
+    init {
+        val ui = UI.getCurrent()
+        jobDb.subscribe { jobFromDb ->
+            form.job.map { currentJob ->
+                if (currentJob.id == jobFromDb.id) {
+                    ui.access { form.job = Some(jobFromDb) }
+                }
+            }
+        }
+    }
+
     override fun setParameter(event: BeforeEvent?, @OptionalParameter jobId: Int?) {
-        form.job = jobId?.let { jobDb.getById(it) }
+        form.job = Option.fromNullable(jobId?.let { jobDb.getById(it) })
     }
 
     override fun afterNavigation(event: AfterNavigationEvent) {
