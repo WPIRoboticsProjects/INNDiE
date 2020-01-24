@@ -62,6 +62,14 @@ class JobRunner : KoinComponent {
         )
     }
 
+    /**
+     * Waits until the [TrainingScriptProgress] state is either completed or error.
+     *
+     * @param id The script id.
+     * @param progressUpdate A callback that is given the current [TrainingScriptProgress] state
+     * every time it is polled.
+     * @return An [IO] for continuation.
+     */
     fun waitForCompleted(id: Long, progressUpdate: (TrainingScriptProgress) -> Unit): IO<Unit> =
         IO.tailRecM(scriptRunner.getTrainingProgress(id)) {
             IO {
@@ -71,6 +79,25 @@ class JobRunner : KoinComponent {
                 } else {
                     delay(5000)
                     Either.Left(scriptRunner.getTrainingProgress(id))
+                }
+            }
+        }
+
+    /**
+     * Waits until the [TrainingScriptProgress] state changes.
+     *
+     * @param id The script id.
+     * @return An [IO] for continuation.
+     */
+    fun waitForChange(id: Long): IO<Unit> =
+        IO.tailRecM(scriptRunner.getTrainingProgress(id)) {
+            IO {
+                delay(5000)
+                val newState = scriptRunner.getTrainingProgress(id)
+                if (it != newState) {
+                    Either.Right(Unit)
+                } else {
+                    Either.Left(newState)
                 }
             }
         }
