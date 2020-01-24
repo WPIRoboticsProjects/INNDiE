@@ -34,7 +34,7 @@ import org.koin.core.inject
 class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, EntityView<Job>,
     KoinComponent {
 
-    private val dataProvider by inject<JobProvider>()
+    private val dataProvider = JobProvider()
     private val jobDb by inject<JobDb>()
 
     override val entityName: String

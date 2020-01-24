@@ -6,7 +6,6 @@ import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.ui.service.JobProvider
 import java.nio.file.Paths
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
@@ -23,8 +22,6 @@ fun defaultFrontendModule() = module {
             )
         )
     }
-
-    single { JobProvider(get()) }
 
     single {
         val boundBucketName = get<String?>(named(axonBucketName))

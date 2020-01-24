@@ -15,6 +15,7 @@ import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.applayout.AppLayout
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
+import com.vaadin.flow.component.page.Push
 import com.vaadin.flow.router.RouterLink
 import com.vaadin.flow.server.PWA
 import com.vaadin.flow.theme.Theme
@@ -27,6 +28,7 @@ import kotlin.reflect.KClass
 /**
  * The main layout of the application.
  */
+@Push
 @Theme(value = Lumo::class)
 @PWA(name = "Axon", shortName = "axon")
 class MainLayout : AppLayout() {

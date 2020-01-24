@@ -3,7 +3,6 @@ package edu.wpi.axon.db
 import edu.wpi.axon.dbdata.nextJob
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.nulls.shouldBeNull
-import io.kotlintest.matchers.nulls.shouldNotBeNull
 import io.kotlintest.shouldBe
 import java.io.File
 import java.nio.file.Paths
@@ -21,23 +20,21 @@ internal class JobDbTest {
         val db = createDb(tempDir)
         val job = Random.nextJob()
 
-        val id = db.create(job)
-        id.shouldNotBeNull()
+        val newJob = db.create(job)
 
         transaction {
             Jobs.select { Jobs.name eq job.name }
                 .map { Jobs.toDomain(it) }
-                .shouldContainExactly(job.copy(id = id))
+                .shouldContainExactly(newJob)
         }
     }
 
     @Test
     fun `update test`(@TempDir tempDir: File) {
         val db = createDb(tempDir)
-        val id = db.create(Random.nextJob())
-        val job = db.getById(id!!)
+        val job = db.create(Random.nextJob())
 
-        job!!.name = "Test"
+        job.name = "Test"
         db.update(job)
 
         transaction {
@@ -52,9 +49,9 @@ internal class JobDbTest {
         val db = createDb(tempDir)
         val job = Random.nextJob()
 
-        val id = db.create(job)!!
+        val newJob = db.create(job)
 
-        db.findByName(job.name).shouldBe(job.copy(id = id))
+        db.findByName(job.name).shouldBe(newJob)
     }
 
     @Test
@@ -73,9 +70,9 @@ internal class JobDbTest {
         val db = createDb(tempDir)
         val job = Random.nextJob()
 
-        val id = db.create(job)!!
+        val newJob = db.create(job)
 
-        db.remove(id).shouldBe(id)
+        db.remove(newJob)
         db.findByName(job.name).shouldBeNull()
     }
 

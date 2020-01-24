@@ -31,38 +31,38 @@ fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
     }
 
 fun Random.nextJob() = Job(
-    RandomStringUtils.randomAlphanumeric(10),
-    nextTrainingScriptProgress(),
-    RandomStringUtils.randomAlphanumeric(10),
-    RandomStringUtils.randomAlphanumeric(10),
-    nextDataset(),
-    Optimizer.Adam(
-        nextDouble(),
-        nextDouble(),
-        nextDouble(),
-        nextDouble(),
-        nextBoolean()
-    ),
-    Loss.SparseCategoricalCrossentropy,
-    setOf(
-        RandomStringUtils.randomAlphanumeric(10),
-        RandomStringUtils.randomAlphanumeric(10)
-    ),
-    nextInt(),
-    Model.Sequential(
-        RandomStringUtils.randomAlphanumeric(10),
-        (1..3).map { nextInt(128) },
-        setOf(
-            Layer.Dense(RandomStringUtils.randomAlphanumeric(10), null, 10).trainable(),
-            Layer.Conv2D(
+        name = RandomStringUtils.randomAlphanumeric(10),
+        status = nextTrainingScriptProgress(),
+        userOldModelPath = RandomStringUtils.randomAlphanumeric(10),
+        userNewModelName = RandomStringUtils.randomAlphanumeric(10),
+        userDataset = nextDataset(),
+        userOptimizer = Optimizer.Adam(
+                nextDouble(),
+                nextDouble(),
+                nextDouble(),
+                nextDouble(),
+                nextBoolean()
+        ),
+        userLoss = Loss.SparseCategoricalCrossentropy,
+        userMetrics = setOf(
                 RandomStringUtils.randomAlphanumeric(10),
-                null,
-                9,
-                SerializableTuple2II(3, 3),
-                Activation.SoftMax
-            ).trainable(),
-            Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
-        )
-    ),
-    nextBoolean()
+                RandomStringUtils.randomAlphanumeric(10)
+        ),
+        userEpochs = nextInt(),
+        userModel = Model.Sequential(
+                RandomStringUtils.randomAlphanumeric(10),
+                (1..3).map { nextInt(128) },
+                setOf(
+                        Layer.Dense(RandomStringUtils.randomAlphanumeric(10), null, 10).trainable(),
+                        Layer.Conv2D(
+                                RandomStringUtils.randomAlphanumeric(10),
+                                null,
+                                9,
+                                SerializableTuple2II(3, 3),
+                                Activation.SoftMax
+                        ).trainable(),
+                        Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
+                )
+        ),
+        generateDebugComments = nextBoolean()
 )

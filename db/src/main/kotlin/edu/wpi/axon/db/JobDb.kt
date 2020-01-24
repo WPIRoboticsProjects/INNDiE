@@ -51,42 +51,62 @@ internal object Jobs : IntIdTable() {
     }
 }
 
+typealias JobCallback = (Job) -> Unit
+
 class JobDb(private val database: Database) {
+
+    private val observers = mutableListOf<JobCallback>()
+
     init {
         transaction(database) {
             SchemaUtils.create(Jobs)
         }
     }
 
-    fun create(job: Job): Int? = transaction(database) {
-        Jobs.insertAndGetId { row ->
-            row[name] = job.name
-            row[status] = job.status.serialize()
-            row[userOldModelPath] = job.userOldModelPath
-            row[userNewModelName] = job.userNewModelName
-            row[userDataset] = job.userDataset.serialize()
-            row[userOptimizer] = job.userOptimizer.serialize()
-            row[userLoss] = job.userLoss.serialize()
-            row[userMetrics] = klaxon.toJsonString(job.userMetrics)
-            row[userEpochs] = job.userEpochs
-            row[userModel] = job.userModel.serialize()
-            row[generateDebugComments] = job.generateDebugComments
-        }.value
+    fun subscribe(onUpdate: JobCallback) {
+        observers.add(onUpdate)
     }
 
-    fun update(job: Job): Int? = transaction(database) {
-        Jobs.update({ Jobs.id eq job.id }) {
-            it[name] = job.name
-            it[status] = job.status.serialize()
-            it[userOldModelPath] = job.userOldModelPath
-            it[userNewModelName] = job.userNewModelName
-            it[userDataset] = job.userDataset.serialize()
-            it[userOptimizer] = job.userOptimizer.serialize()
-            it[userLoss] = job.userLoss.serialize()
-            it[userMetrics] = klaxon.toJsonString(job.userMetrics)
-            it[userEpochs] = job.userEpochs
-            it[generateDebugComments] = job.generateDebugComments
+    fun create(job: Job): Job {
+        val newId = transaction(database) {
+            Jobs.insertAndGetId { row ->
+                row[name] = job.name
+                row[status] = job.status.serialize()
+                row[userOldModelPath] = job.userOldModelPath
+                row[userNewModelName] = job.userNewModelName
+                row[userDataset] = job.userDataset.serialize()
+                row[userOptimizer] = job.userOptimizer.serialize()
+                row[userLoss] = job.userLoss.serialize()
+                row[userMetrics] = klaxon.toJsonString(job.userMetrics)
+                row[userEpochs] = job.userEpochs
+                row[userModel] = job.userModel.serialize()
+                row[generateDebugComments] = job.generateDebugComments
+            }.value
         }
+
+        val newJob = job.copy(id = newId)
+        observers.forEach { it(newJob) }
+
+        return newJob
+    }
+
+    fun update(job: Job) {
+        transaction(database) {
+            Jobs.update({ Jobs.id eq job.id }) {
+                it[name] = job.name
+                it[status] = job.status.serialize()
+                it[userOldModelPath] = job.userOldModelPath
+                it[userNewModelName] = job.userNewModelName
+                it[userDataset] = job.userDataset.serialize()
+                it[userOptimizer] = job.userOptimizer.serialize()
+                it[userLoss] = job.userLoss.serialize()
+                it[userMetrics] = klaxon.toJsonString(job.userMetrics)
+                it[userEpochs] = job.userEpochs
+                it[generateDebugComments] = job.generateDebugComments
+            }
+        }
+
+        observers.forEach { it(job) }
     }
 
     fun count(): Int = transaction(database) {
@@ -111,9 +131,11 @@ class JobDb(private val database: Database) {
             .firstOrNull()
     }
 
-    fun remove(id: Int): Int? = transaction(database) {
-        Jobs.deleteWhere { Jobs.id eq id }
-    }
+    fun remove(job: Job) {
+        transaction(database) {
+            Jobs.deleteWhere { Jobs.id eq job.id }
+        }
 
-    fun remove(job: Job): Int? = remove(job.id)
+        observers.forEach { it(job) }
+    }
 }
