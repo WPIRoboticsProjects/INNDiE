@@ -67,7 +67,8 @@ class WebAppListener : ServletContextListener, KoinComponent {
             val localModelPath =
                 Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
                     .toString()
-            val layers = ModelLoaderFactory().createModeLoader(localModelPath).load(File(localModelPath))
+            val layers =
+                ModelLoaderFactory().createModeLoader(localModelPath).load(File(localModelPath))
             val model = layers.attempt().unsafeRunSync()
             check(model is Either.Right)
             return model.b to localModelPath

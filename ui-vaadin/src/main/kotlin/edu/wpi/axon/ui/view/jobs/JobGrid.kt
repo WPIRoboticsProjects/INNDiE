@@ -35,8 +35,11 @@ class JobGrid : Grid<Job>() {
 }
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).jobGrid(dataProvider: DataProvider<Job, *>? = null, block: (@VaadinDsl JobGrid).() -> Unit = {}) =
-        init(JobGrid()) {
-            if (dataProvider != null) this.dataProvider = dataProvider
-            block()
-        }
+fun (@VaadinDsl HasComponents).jobGrid(
+    dataProvider: DataProvider<Job, *>? = null,
+    block: (@VaadinDsl JobGrid).() -> Unit = {}
+) =
+    init(JobGrid()) {
+        if (dataProvider != null) this.dataProvider = dataProvider
+        block()
+    }

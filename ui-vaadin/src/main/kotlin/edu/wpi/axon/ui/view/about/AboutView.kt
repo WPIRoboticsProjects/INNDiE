@@ -29,7 +29,11 @@ class AboutView : KComposite() {
                 alignItems = FlexComponent.Alignment.CENTER
 
                 icon(VaadinIcon.INFO_CIRCLE)
-                text(" This Application is using Vaadin version ${VaadinCoreShrinkWrap::class.java.getAnnotation(NpmPackage::class.java).version}")
+                text(
+                    " This Application is using Vaadin version ${VaadinCoreShrinkWrap::class.java.getAnnotation(
+                        NpmPackage::class.java
+                    ).version}"
+                )
             }
         }
     }
