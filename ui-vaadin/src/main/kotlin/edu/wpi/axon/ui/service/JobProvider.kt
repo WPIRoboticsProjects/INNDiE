@@ -16,9 +16,9 @@ class JobProvider : AbstractBackEndDataProvider<Job, Void>(), KoinComponent, Has
 
     init {
         val ui = UI.getCurrent()
-        jobs.subscribe {
+        jobs.subscribe { _, jobFromDb ->
             ui.access {
-                refreshItem(it)
+                refreshItem(jobFromDb)
             }
         }
     }

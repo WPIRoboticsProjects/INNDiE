@@ -51,7 +51,16 @@ internal object Jobs : IntIdTable() {
     }
 }
 
-typealias JobCallback = (Job) -> Unit
+/**
+ * The operations that you can do with a Job and the DB.
+ */
+sealed class JobDbOp {
+    object Create : JobDbOp()
+    object Update : JobDbOp()
+    object Remove : JobDbOp()
+}
+
+typealias JobCallback = (JobDbOp, Job) -> Unit
 
 class JobDb(private val database: Database) {
 
@@ -85,7 +94,7 @@ class JobDb(private val database: Database) {
         }
 
         val newJob = job.copy(id = newId)
-        observers.forEach { it(newJob) }
+        observers.forEach { it(JobDbOp.Create, newJob) }
 
         return newJob
     }
@@ -106,7 +115,7 @@ class JobDb(private val database: Database) {
             }
         }
 
-        observers.forEach { it(job) }
+        observers.forEach { it(JobDbOp.Update, job) }
     }
 
     fun count(): Int = transaction(database) {
@@ -136,6 +145,6 @@ class JobDb(private val database: Database) {
             Jobs.deleteWhere { Jobs.id eq job.id }
         }
 
-        observers.forEach { it(job) }
+        observers.forEach { it(JobDbOp.Remove, job) }
     }
 }

@@ -45,10 +45,8 @@ class JobEditorForm : KComposite(), KoinComponent {
         set(value) {
             field = value
             isVisible = value is Some
-            value.map {
-                binder.readBean(it)
-            }
             form.isEnabled = value.fold({ false }, { it.status == TrainingScriptProgress.NotStarted })
+            value.map { binder.readBean(it) }
         }
 
     private val root = ui {
@@ -73,7 +71,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                     formItem("Name") {
                         textField {
                             setWidthFull()
-                            bind(binder).asRequired().bind(Job::name)
+                            bind(binder).asRequired()
                         }
                     }
                     formItem("Dataset") {

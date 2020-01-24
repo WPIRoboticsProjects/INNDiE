@@ -1,5 +1,6 @@
 package edu.wpi.axon.ui.view.jobs
 
+import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import com.github.mvysny.karibudsl.v10.KComposite
@@ -25,6 +26,7 @@ import com.vaadin.flow.router.OptionalParameter
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.router.RouteAlias
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.db.JobDbOp
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.ui.MainLayout
 import edu.wpi.axon.ui.service.JobProvider
@@ -77,10 +79,12 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
 
     init {
         val ui = UI.getCurrent()
-        jobDb.subscribe { jobFromDb ->
+        jobDb.subscribe { op, jobFromDb ->
             form.job.map { currentJob ->
                 if (currentJob.id == jobFromDb.id) {
-                    ui.access { form.job = Some(jobFromDb) }
+                    ui.access {
+                        form.job = if (op == JobDbOp.Remove) None else Some(jobFromDb)
+                    }
                 }
             }
         }
