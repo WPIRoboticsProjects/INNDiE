@@ -116,7 +116,6 @@ class JobRunner : KoinComponent {
         userValidationSplit = None, // TODO: Add this to Job and pull it from there
         userNewModel = model,
         userBucketName = bucketName,
-        handleS3InScript = false,
         generateDebugComments = job.generateDebugComments
     )
 }

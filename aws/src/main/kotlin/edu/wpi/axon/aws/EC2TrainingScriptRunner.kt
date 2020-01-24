@@ -20,11 +20,12 @@ import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
  * this class will handle all of that. The script should just load and save the model from/to its
  * current directory.
  *
+ * @param bucketName The name of the S3 bucket to use.
  * @param instanceType The type of the EC2 instance to run the training script on.
  */
 class EC2TrainingScriptRunner(
     bucketName: String,
-    private val instanceType: InstanceType // TODO: Move this to [startScript]
+    private val instanceType: InstanceType
 ) : TrainingScriptRunner, KoinComponent {
 
     private val ec2 by lazy { Ec2Client.builder().build() }
@@ -37,19 +38,6 @@ class EC2TrainingScriptRunner(
     override fun startScript(
         runTrainingScriptConfiguration: RunTrainingScriptConfiguration
     ): Long {
-        // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
-        // own working with S3.
-        require(
-            !runTrainingScriptConfiguration.scriptContents.contains("download_model") &&
-                !runTrainingScriptConfiguration.scriptContents.contains("upload_model")
-        ) {
-            """
-            |Cannot start the script because it interfaces with AWS:
-            |${runTrainingScriptConfiguration.scriptContents}
-            |
-            """.trimMargin()
-        }
-
         // The file name for the generated script
         val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
