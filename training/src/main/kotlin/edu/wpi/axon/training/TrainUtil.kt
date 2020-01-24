@@ -18,6 +18,7 @@ import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
+import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
@@ -238,15 +239,18 @@ internal fun ScriptGenerator.compileTrainSave(
     }
 
     val progressReportingCallback: Variable = variables.create(Variable::class)
-    if (trainState.userBucketName != null) {
+    if (trainState.usesAWS) {
         tasks.run(S3ProgressReportingCallbackTask::class) {
             modelName = trainState.userNewModelPath.filename
             datasetName = trainState.userDataset.nameForS3ProgressReporting
-            bucketName = trainState.userBucketName
             output = progressReportingCallback
         }
     } else {
-        TODO("Implement a progress callback that uses a local file.")
+        tasks.run(LocalProgressReportingCallbackTask::class) {
+            modelName = trainState.userNewModelPath.filename
+            datasetName = trainState.userDataset.nameForS3ProgressReporting
+            output = progressReportingCallback
+        }
     }
 
     val trainModelTask by tasks.running(TrainTask::class) {

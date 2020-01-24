@@ -1,9 +1,9 @@
 package edu.wpi.axon.ui
 
 import edu.wpi.axon.aws.TrainingScriptRunner
-import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.axon.util.axonBucketName
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll

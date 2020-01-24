@@ -5,7 +5,6 @@ import arrow.fx.IO
 import arrow.fx.extensions.fx
 import defaultFrontendModule
 import edu.wpi.axon.aws.S3Manager
-import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
@@ -17,6 +16,7 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelPath
 import edu.wpi.axon.training.testutil.loadModel
+import edu.wpi.axon.util.axonBucketName
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test

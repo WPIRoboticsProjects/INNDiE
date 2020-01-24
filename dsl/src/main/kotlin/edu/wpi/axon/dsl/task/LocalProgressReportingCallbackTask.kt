@@ -5,15 +5,13 @@ import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
-import org.koin.core.qualifier.named
 
 /**
- * Reports training progress to an S3 bucket.
+ * Reports training progress to a local file.
  */
-class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
+class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     /**
      * The name of the model being trained.
@@ -31,8 +29,7 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
     var output: Variable by singleAssign()
 
     override val imports: Set<Import> = setOf(
-        makeImport("import tensorflow as tf"),
-        makeImport("import axon.client")
+        makeImport("import tensorflow as tf")
     )
 
     override val inputs: Set<Variable> = setOf()
@@ -42,24 +39,33 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
-    /**
-     * The name of the S3 bucket to upload the progress to.
-     */
-    private val bucketName: String by inject(named(axonBucketName))
-
     private val variableNameGenerator: UniqueVariableNameGenerator by inject()
 
     override fun code(): String {
         val callbackClassName = variableNameGenerator.uniqueVariableName()
+        val progressFilePath = createProgressFilePath(modelName, datasetName)
+
         // Add 1 to epoch because we get the index of the epoch, not the "element"
         return """
         |class $callbackClassName(tf.keras.callbacks.Callback):
+        |    def __init__(self):
+        |        super.__init__()
+        |        try:
+        |            os.makedirs(Path("$progressFilePath").parent)
+        |        except OSError as err:
+        |            if err.errno != errno.EEXIST:
+        |                raise
+        |
         |    def on_epoch_end(self, epoch, logs=None):
-        |        axon.client.impl_update_training_progress("$modelName", "$datasetName",
-        |                                                  str(epoch + 1), "$bucketName",
-        |                                                  None)
+        |        with open("$progressFilePath", "w") as f:
+        |            f.write(str(epoch + 1))
         |
         |${output.name} = $callbackClassName()
         """.trimMargin()
+    }
+
+    companion object {
+        fun createProgressFilePath(modelName: String, datasetName: String) =
+            "/tmp/$modelName/$datasetName/progress.txt"
     }
 }

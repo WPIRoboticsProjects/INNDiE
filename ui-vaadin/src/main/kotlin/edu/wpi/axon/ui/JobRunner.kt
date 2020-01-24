@@ -6,7 +6,6 @@ import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
 import edu.wpi.axon.aws.TrainingScriptRunner
-import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
@@ -16,11 +15,9 @@ import edu.wpi.axon.training.TrainState
 import kotlinx.coroutines.delay
 import org.koin.core.KoinComponent
 import org.koin.core.inject
-import org.koin.core.qualifier.named
 
 class JobRunner : KoinComponent {
 
-    private val bucketName: String? by inject(named(axonBucketName))
     private val scriptRunner: TrainingScriptRunner by inject()
 
     /**
@@ -115,7 +112,6 @@ class JobRunner : KoinComponent {
         userEpochs = job.userEpochs,
         userValidationSplit = None, // TODO: Add this to Job and pull it from there
         userNewModel = model,
-        userBucketName = bucketName,
         generateDebugComments = job.generateDebugComments
     )
 }

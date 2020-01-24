@@ -18,8 +18,6 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
  * @param userMetrics Any metrics.
  * @param userEpochs The number of epochs.
  * @param userNewModel The new model.
- * @param userBucketName The name of the S3 bucket Axon uses as a cache, or `null` if AWS will not
- * be used.
  * @param generateDebugComments Whether to put debug comments in the output.
  */
 data class TrainState<T : Model>(
@@ -32,6 +30,19 @@ data class TrainState<T : Model>(
     val userEpochs: Int,
     val userNewModel: T,
     val userValidationSplit: Option<Double> = None,
-    val userBucketName: String? = null,
     val generateDebugComments: Boolean = false
-)
+) {
+
+    // Just need to check one because of the [require] below
+    val usesAWS = userOldModelPath is ModelPath.S3
+
+    init {
+        require(
+            (userOldModelPath is ModelPath.S3 && userNewModelPath is ModelPath.S3) ||
+                (userOldModelPath is ModelPath.Local && userNewModelPath is ModelPath.Local)
+        ) {
+            "Both the old and new model paths must be of the same type (either both are S3 or " +
+                "Local)."
+        }
+    }
+}

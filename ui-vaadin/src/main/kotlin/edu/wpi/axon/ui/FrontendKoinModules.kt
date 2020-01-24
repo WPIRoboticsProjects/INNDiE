@@ -1,11 +1,11 @@
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.S3PreferencesManager
 import edu.wpi.axon.aws.TrainingScriptRunner
-import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.util.axonBucketName
 import java.nio.file.Paths
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
