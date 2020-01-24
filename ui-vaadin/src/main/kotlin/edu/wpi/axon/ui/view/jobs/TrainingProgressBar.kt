@@ -11,7 +11,7 @@ class TrainingProgressBar(value: TrainingScriptProgress? = null) : ProgressBar()
 
     fun setValue(value: TrainingScriptProgress) {
         setValue(when (value) {
-            is TrainingScriptProgress.NotStarted -> {
+            TrainingScriptProgress.NotStarted -> {
                 isIndeterminate = false
                 themeName = ""
                 min
@@ -35,6 +35,11 @@ class TrainingProgressBar(value: TrainingScriptProgress? = null) : ProgressBar()
                 isIndeterminate = false
                 themeName = ProgressBarVariant.LUMO_ERROR.variantName
                 max
+            }
+            TrainingScriptProgress.Creating -> {
+                isIndeterminate = true
+                themeName = ProgressBarVariant.LUMO_CONTRAST.variantName
+                min
             }
         })
     }

@@ -128,7 +128,7 @@ internal class EC2TrainingScriptRunnerTest {
         fun progressTestSource() = listOf(
             Arguments.of(
                 "0", "not started", InstanceStateName.PENDING, 1,
-                TrainingScriptProgress.NotStarted
+                TrainingScriptProgress.Creating
             ),
             Arguments.of(
                 "0", "not started", InstanceStateName.RUNNING, 1,

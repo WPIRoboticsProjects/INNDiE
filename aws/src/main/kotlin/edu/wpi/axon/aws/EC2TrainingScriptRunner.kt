@@ -137,9 +137,7 @@ class EC2TrainingScriptRunner(
 
         val status = try {
             ec2.describeInstanceStatus {
-                it.instanceIds(
-                    instanceIds[scriptId] ?: error("BUG: scriptId missing from instanceIds")
-                )
+                it.instanceIds(instanceIds[scriptId]!!)
             }.instanceStatuses().firstOrNull()?.instanceState()?.name()
         } catch (ex: Ec2Exception) {
             null
@@ -205,6 +203,7 @@ class EC2TrainingScriptRunner(
             epochs: Int
         ) = when (progress) {
             "not started" -> when (status) {
+                InstanceStateName.PENDING -> TrainingScriptProgress.Creating
                 InstanceStateName.RUNNING -> TrainingScriptProgress.Initializing
                 else -> TrainingScriptProgress.NotStarted
             }

@@ -17,6 +17,12 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
     object NotStarted : TrainingScriptProgress()
 
     /**
+     * The machine that is going to run the training script is being provisioned.
+     */
+    @Serializable
+    object Creating : TrainingScriptProgress()
+
+    /**
      * The machine that is going to run the training script is initializing the environment.
      */
     @Serializable
