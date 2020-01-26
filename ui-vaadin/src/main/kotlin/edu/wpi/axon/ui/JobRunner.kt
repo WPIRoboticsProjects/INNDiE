@@ -84,17 +84,17 @@ class JobRunner : KoinComponent {
      * Waits until the [TrainingScriptProgress] state changes.
      *
      * @param id The script id.
+     * @param previousState The state to watch for a change from.
      * @return An [IO] for continuation.
      */
-    fun waitForChange(id: Long): IO<Unit> =
+    fun waitForChange(id: Long, previousState: TrainingScriptProgress): IO<Unit> =
         IO.tailRecM(scriptRunner.getTrainingProgress(id)) {
             IO {
-                delay(5000)
-                val newState = scriptRunner.getTrainingProgress(id)
-                if (it != newState) {
+                if (it != previousState) {
                     Either.Right(Unit)
                 } else {
-                    Either.Left(newState)
+                    delay(5000)
+                    Either.Left(scriptRunner.getTrainingProgress(id))
                 }
             }
         }

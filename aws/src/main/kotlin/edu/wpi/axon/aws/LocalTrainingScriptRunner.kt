@@ -30,6 +30,18 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         scriptFile.createNewFile()
         scriptFile.writeText(runTrainingScriptConfiguration.scriptContents)
 
+        val modelName = runTrainingScriptConfiguration.newModelName.filename
+        val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
+        val progressFile = File(createProgressFilePath(modelName, datasetName))
+        if (!progressFile.exists()) {
+            // Ensure the progress file exists so that we can ensure it has no progress in it
+            check(progressFile.createNewFile()) {
+                "Failed to create the progress file at: ${progressFile.absolutePath}"
+            }
+        }
+        // Clear the progress file if there was a previous run
+        progressFile.writeText("0.0")
+
         val scriptId = nextScriptId.getAndIncrement()
         scriptDataMap[scriptId] = runTrainingScriptConfiguration
         scriptProgressMap[scriptId] = TrainingScriptProgress.NotStarted
@@ -84,7 +96,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
             val config = scriptDataMap[scriptId]!!
             val modelName = config.newModelName.filename
             val datasetName = config.dataset.nameForS3ProgressReporting
-            val progressFile = File("/tmp/progress_reporting/$modelName/$datasetName/progress.txt")
+            val progressFile = File(createProgressFilePath(modelName, datasetName))
             if (progressFile.exists()) {
                 TrainingScriptProgress.InProgress(
                     progressFile.readText().toDouble() / config.epochs
@@ -101,6 +113,9 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
             }
         }
     }
+
+    private fun createProgressFilePath(modelName: String, datasetName: String) =
+        "/tmp/progress_reporting/$modelName/$datasetName/progress.txt"
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
