@@ -9,9 +9,7 @@ import edu.wpi.axon.util.axonBucketName
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
-import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Timeout
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -19,37 +17,6 @@ import org.koin.dsl.module
 internal class JobRunnerTest : KoinTestFixture() {
 
     @Test
-    @Timeout(value = 1L, unit = TimeUnit.MINUTES) // This test will timeout if it fails
-    fun `test waitForChange`() {
-        val id = 1L
-
-        val mockTrainingScriptRunner = mockk<TrainingScriptRunner> {
-            every { getTrainingProgress(id) }.returnsMany(
-                TrainingScriptProgress.NotStarted,
-                TrainingScriptProgress.NotStarted,
-                TrainingScriptProgress.Creating
-            )
-        }
-
-        startKoin {
-            modules(module {
-                single<Option<String>>(named(axonBucketName)) { None }
-                single { mockTrainingScriptRunner }
-            })
-        }
-
-        val jobRunner = JobRunner()
-        jobRunner.waitForChange(id, TrainingScriptProgress.NotStarted).unsafeRunSync()
-
-        verifyAll {
-            mockTrainingScriptRunner.getTrainingProgress(id)
-            mockTrainingScriptRunner.getTrainingProgress(id)
-            mockTrainingScriptRunner.getTrainingProgress(id)
-        }
-    }
-
-    @Test
-    @Timeout(value = 1L, unit = TimeUnit.MINUTES) // This test will timeout if it fails
     fun `test waitForCompleted`() {
         val id = 1L
 
@@ -68,7 +35,7 @@ internal class JobRunnerTest : KoinTestFixture() {
             })
         }
 
-        val jobRunner = JobRunner()
+        val jobRunner = JobRunner(1)
         jobRunner.waitForCompleted(id) {}.unsafeRunSync()
 
         verifyAll {

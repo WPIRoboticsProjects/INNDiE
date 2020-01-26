@@ -28,6 +28,7 @@ import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
+import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
@@ -36,6 +37,7 @@ import edu.wpi.axon.ui.JobRunner
 import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
+import org.koin.core.get
 import org.koin.core.inject
 
 @StyleSheet("styles/job-form.css")
@@ -160,7 +162,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                 IO.fx {
                     jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
 
-                    val jobRunner = JobRunner()
+                    val jobRunner = JobRunner(get<PreferencesManager>().get().statusPollingDelay)
                     val id = jobRunner.startJob(job).bind()
                     LOGGER.info { "Started job with id: $id" }
 
