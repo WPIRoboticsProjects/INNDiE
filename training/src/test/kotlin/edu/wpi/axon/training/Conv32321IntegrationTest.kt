@@ -33,7 +33,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
+                    userOldModelPath = ModelPath.Local("./$modelName"),
                     userNewModelPath = ModelPath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
@@ -61,7 +61,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
+                    userOldModelPath = ModelPath.Local("./$modelName"),
                     userNewModelPath = ModelPath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),

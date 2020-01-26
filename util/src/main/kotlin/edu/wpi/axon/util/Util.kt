@@ -5,6 +5,7 @@ import arrow.fx.IO
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import mu.KotlinLogging
 
 infix fun <E> Iterable<E>.anyIn(other: Iterable<E>) = any { it in other }
 
@@ -26,6 +27,7 @@ fun runCommand(
     env: Map<String, String>,
     dir: File?
 ): IO<Tuple3<Int, String, String>> = IO {
+    LOGGER.debug { "Running command: ${command.joinToString { "\"$it\"" }}" }
     val proc = ProcessBuilder(command)
         .directory(dir)
         .also {
@@ -46,3 +48,5 @@ fun runCommand(
         }
     }
 }
+
+private val LOGGER = KotlinLogging.logger { }

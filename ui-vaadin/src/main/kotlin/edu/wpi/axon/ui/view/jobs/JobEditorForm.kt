@@ -130,6 +130,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                     button("Run", Icon(VaadinIcon.PLAY)) {
                         isIconAfterText = true
                         setWidthFull()
+                        // TODO: Don't let the user run the job if it needs to use AWS but there isn't a bucket name
                         onLeftClick {
                             thread(isDaemon = true) {
                                 val jobRunner = JobRunner()

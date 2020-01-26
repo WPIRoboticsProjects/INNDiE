@@ -14,6 +14,7 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import java.io.File
+import mu.KotlinLogging
 
 /**
  * Trains a [Model.Sequential].
@@ -35,22 +36,26 @@ class TrainSequentialModelScriptGenerator(
     private val modelLoaderFactory = ModelLoaderFactory()
 
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
+        LOGGER.info {
+            "Generating script with trainState:\n$trainState"
+        }
+
         val modelLoader = modelLoaderFactory.createModeLoader(trainState.userOldModelPath.path)
         return modelLoader.load(File(trainState.userOldModelPath.path)).flatMap { oldModel ->
             IO {
                 require(oldModel is Model.Sequential)
                 require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)
                 val reshapeArgsFromBatchShape =
-                        trainState.userNewModel.batchInputShape.map { it ?: -1 }
+                    trainState.userNewModel.batchInputShape.map { it ?: -1 }
 
                 val script = ScriptGenerator(
-                        DefaultPolymorphicNamedDomainObjectContainer.of(),
-                        DefaultPolymorphicNamedDomainObjectContainer.of()
+                    DefaultPolymorphicNamedDomainObjectContainer.of(),
+                    DefaultPolymorphicNamedDomainObjectContainer.of()
                 ) {
                     val loadedDataset = reshapeAndScaleLoadedDataset(
-                            loadDataset(trainState),
-                            reshapeArgsFromBatchShape,
-                            255
+                        loadDataset(trainState),
+                        reshapeArgsFromBatchShape,
+                        255
                     )
 
                     val model = loadModel(trainState)
@@ -64,19 +69,23 @@ class TrainSequentialModelScriptGenerator(
                     }
 
                     lastTask = compileTrainSave(
-                            trainState,
-                            oldModel,
-                            newModel,
-                            applyLayerDeltaTask,
-                            loadedDataset
+                        trainState,
+                        oldModel,
+                        newModel,
+                        applyLayerDeltaTask,
+                        loadedDataset
                     )
                 }
 
                 script.code(trainState.generateDebugComments)
             }
         }.attempt().unsafeRunSync().fold(
-                { Throwables.getStackTraceAsString(it).invalidNel() },
-                { it }
+            { Throwables.getStackTraceAsString(it).invalidNel() },
+            { it }
         )
+    }
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
     }
 }

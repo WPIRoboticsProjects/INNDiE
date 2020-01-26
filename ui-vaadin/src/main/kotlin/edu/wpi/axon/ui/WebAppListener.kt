@@ -1,7 +1,6 @@
 package edu.wpi.axon.ui
 
 import arrow.core.Either
-import defaultFrontendModule
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
@@ -41,10 +40,25 @@ class WebAppListener : ServletContextListener, KoinComponent {
         val (model, path) = loadModel("32_32_1_conv_sequential.h5")
         get<JobDb>().create(
             Job(
-                "Job 1",
+                "AWS Job",
                 TrainingScriptProgress.NotStarted,
                 ModelPath.S3(path),
                 ModelPath.S3(newModelName),
+                Dataset.ExampleDataset.FashionMnist,
+                Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                Loss.SparseCategoricalCrossentropy,
+                setOf("accuracy"),
+                1,
+                model,
+                false
+            )
+        )
+        get<JobDb>().create(
+            Job(
+                "Local Job",
+                TrainingScriptProgress.NotStarted,
+                ModelPath.Local(path),
+                ModelPath.Local(newModelName),
                 Dataset.ExampleDataset.FashionMnist,
                 Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 Loss.SparseCategoricalCrossentropy,

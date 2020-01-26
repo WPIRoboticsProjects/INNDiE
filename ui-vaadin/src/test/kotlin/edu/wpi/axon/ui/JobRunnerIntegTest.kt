@@ -3,7 +3,6 @@ package edu.wpi.axon.ui
 import arrow.core.Tuple3
 import arrow.fx.IO
 import arrow.fx.extensions.fx
-import defaultFrontendModule
 import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress

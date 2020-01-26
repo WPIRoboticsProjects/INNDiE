@@ -14,6 +14,7 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import java.io.File
+import mu.KotlinLogging
 
 /**
  * Trains a [Model.General].
@@ -35,14 +36,18 @@ class TrainGeneralModelScriptGenerator(
 
     @Suppress("UNUSED_VARIABLE")
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
+        LOGGER.info {
+            "Generating script with trainState:\n$trainState"
+        }
+
         val modelLoader = modelLoaderFactory.createModeLoader(trainState.userOldModelPath.path)
         return modelLoader.load(File(trainState.userOldModelPath.path)).flatMap { userOldModel ->
             IO {
                 require(userOldModel is Model.General)
 
                 val script = ScriptGenerator(
-                        DefaultPolymorphicNamedDomainObjectContainer.of(),
-                        DefaultPolymorphicNamedDomainObjectContainer.of()
+                    DefaultPolymorphicNamedDomainObjectContainer.of(),
+                    DefaultPolymorphicNamedDomainObjectContainer.of()
                 ) {
                     val loadedDataset = loadDataset(trainState).let { dataset ->
                         if (trainState.userNewModel.input.size == 1) {
@@ -69,19 +74,23 @@ class TrainGeneralModelScriptGenerator(
                     }
 
                     lastTask = compileTrainSave(
-                            trainState,
-                            userOldModel,
-                            newModelVar,
-                            applyLayerDeltaTask,
-                            loadedDataset
+                        trainState,
+                        userOldModel,
+                        newModelVar,
+                        applyLayerDeltaTask,
+                        loadedDataset
                     )
                 }
 
                 script.code(trainState.generateDebugComments)
             }
         }.attempt().unsafeRunSync().fold(
-                { Throwables.getStackTraceAsString(it).invalidNel() },
-                { it }
+            { Throwables.getStackTraceAsString(it).invalidNel() },
+            { it }
         )
+    }
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
     }
 }
