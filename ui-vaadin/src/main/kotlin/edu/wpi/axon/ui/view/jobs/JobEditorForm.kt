@@ -72,7 +72,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                     formItem("Name") {
                         textField {
                             setWidthFull()
-                            bind(binder).asRequired()
+                            bind(binder).asRequired().bind(Job::name)
                         }
                     }
                     formItem("Dataset") {
