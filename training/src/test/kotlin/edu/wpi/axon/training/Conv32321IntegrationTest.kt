@@ -33,7 +33,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local("./$modelName"),
+                    userOldModelPath = ModelPath.Local(path),
                     userNewModelPath = ModelPath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
@@ -43,7 +43,8 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userNewModel = it
                 )
             ).generateScript().shouldBeValid { (script) ->
-                testTrainingScript(path, modelName, newModelName, script, tempDir)
+                // Patch the script because it's not meant to run in a container
+                testTrainingScript(path, modelName, newModelName, script.replace(path, modelName), tempDir)
             }
         }
     }
@@ -61,7 +62,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local("./$modelName"),
+                    userOldModelPath = ModelPath.Local(path),
                     userNewModelPath = ModelPath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
@@ -71,7 +72,8 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userNewModel = it
                 )
             ).generateScript().shouldBeValid { (script) ->
-                testTrainingScript(path, modelName, newModelName, script, tempDir)
+                // Patch the script because it's not meant to run in a container
+                testTrainingScript(path, modelName, newModelName, script.replace(path, modelName), tempDir)
             }
         }
     }
