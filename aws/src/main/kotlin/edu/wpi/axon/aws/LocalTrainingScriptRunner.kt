@@ -45,14 +45,11 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
 
         val modelName = config.newModelName.filename
         val datasetName = config.dataset.progressReportingName
-        val progressFile = File(createProgressFilePath(modelName, datasetName))
-        if (!progressFile.exists()) {
-            // Ensure the progress file exists so that we can ensure it has no progress in it
-            check(progressFile.createNewFile()) {
-                "Failed to create the progress file at: ${progressFile.absolutePath}"
-            }
-        }
+
         // Clear the progress file if there was a previous run
+        val progressFile = File(createProgressFilePath(modelName, datasetName))
+        progressFile.parentFile.mkdirs()
+        progressFile.createNewFile()
         progressFile.writeText("0.0")
 
         val scriptId = nextScriptId.getAndIncrement()
