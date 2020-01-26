@@ -3,6 +3,7 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.createProgressFilePath
 import edu.wpi.axon.util.runCommand
 import java.io.File
 import java.nio.file.Files
@@ -125,9 +126,6 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
             }
         }
     }
-
-    private fun createProgressFilePath(modelName: String, datasetName: String) =
-        "/tmp/progress_reporting/$modelName/$datasetName/progress.txt"
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }

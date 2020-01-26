@@ -49,4 +49,12 @@ fun runCommand(
     }
 }
 
+/**
+ * @param modelName The name of the model being trained.
+ * @param datasetName The name of the dataset being trained on.
+ * @return The path to the progress reporting file used when Axon is running locally.
+ */
+fun createProgressFilePath(modelName: String, datasetName: String) =
+    "/tmp/progress_reporting/$modelName/$datasetName/progress.txt"
+
 private val LOGGER = KotlinLogging.logger { }

@@ -5,6 +5,7 @@ import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.util.createProgressFilePath
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
@@ -29,7 +30,10 @@ class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
     var output: Variable by singleAssign()
 
     override val imports: Set<Import> = setOf(
-        makeImport("import tensorflow as tf")
+        makeImport("import tensorflow as tf"),
+        makeImport("import os"),
+        makeImport("from pathlib import Path"),
+        makeImport("import errno")
     )
 
     override val inputs: Set<Variable> = setOf()
@@ -62,10 +66,5 @@ class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
         |
         |${output.name} = $callbackClassName()
         """.trimMargin()
-    }
-
-    companion object {
-        fun createProgressFilePath(modelName: String, datasetName: String) =
-            "/tmp/progress_reporting/$modelName/$datasetName/progress.txt"
     }
 }

@@ -6,6 +6,7 @@ import arrow.core.Some
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.LocalTrainingScriptRunner
 import edu.wpi.axon.aws.S3PreferencesManager
+import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
@@ -16,7 +17,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 fun defaultFrontendModule() = module {
-    single<Option<String>>(named(axonBucketName)) { None }
+    single(named(axonBucketName)) { findAxonS3Bucket() }
 
     single {
         JobDb(
