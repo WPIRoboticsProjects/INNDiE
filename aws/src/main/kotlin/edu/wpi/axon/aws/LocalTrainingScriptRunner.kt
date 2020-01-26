@@ -105,10 +105,12 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         return if (scriptThreadMap[scriptId]!!.isAlive) {
             // Training thread is still running. Try to read the progress file.
             when (scriptProgressMap[scriptId]!!) {
+                // These statuses are reasonable
                 is TrainingScriptProgress.Initializing -> TrainingScriptProgress.Initializing
                 is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
                 is TrainingScriptProgress.Error -> TrainingScriptProgress.Error
                 else -> {
+                    // Otherwise it must be InProgress
                     val config = scriptDataMap[scriptId]!!
                     val modelName = config.newModelName.filename
                     val datasetName = config.dataset.progressReportingName
