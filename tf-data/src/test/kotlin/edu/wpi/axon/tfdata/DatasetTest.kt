@@ -14,8 +14,8 @@ internal class DatasetTest {
     }
 
     @ParameterizedTest
-    @MethodSource("exampleDatasetSource")
-    fun `test serialization`(dataset: Dataset.ExampleDataset, expected: String) {
+    @MethodSource("datasetSerializationSource")
+    fun `test serialization`(dataset: Dataset.ExampleDataset) {
         Dataset.deserialize(dataset.serialize()).shouldBe(dataset)
     }
 
@@ -31,6 +31,18 @@ internal class DatasetTest {
             Arguments.of(Dataset.ExampleDataset.IMDB, "imdb"),
             Arguments.of(Dataset.ExampleDataset.Mnist, "mnist"),
             Arguments.of(Dataset.ExampleDataset.Reuters, "reuters")
+        )
+
+        @JvmStatic
+        @Suppress("unused")
+        fun datasetSerializationSource() = listOf(
+            Arguments.of(Dataset.ExampleDataset.BostonHousing),
+            Arguments.of(Dataset.ExampleDataset.Cifar10),
+            Arguments.of(Dataset.ExampleDataset.Cifar100),
+            Arguments.of(Dataset.ExampleDataset.FashionMnist),
+            Arguments.of(Dataset.ExampleDataset.IMDB),
+            Arguments.of(Dataset.ExampleDataset.Mnist),
+            Arguments.of(Dataset.ExampleDataset.Reuters)
         )
     }
 }

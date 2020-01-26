@@ -59,7 +59,7 @@ fun downloadAndConfigureExampleModel(
     exampleModelManager: ExampleModelManager
 ): IO<Tuple2<Model, File>> = IO.fx {
     val file = exampleModelManager.download(exampleModel).bind()
-    val model = ModelLoaderFactory().createModeLoader(file.name).load(File(file.absolutePath)).bind()
+    val model = ModelLoaderFactory().createModelLoader(file.name).load(File(file.absolutePath)).bind()
 
     val freezeLayerTransform: (Layer.MetaLayer) -> Layer.MetaLayer = { layer ->
         exampleModel.freezeLayers[layer.name]?.let {

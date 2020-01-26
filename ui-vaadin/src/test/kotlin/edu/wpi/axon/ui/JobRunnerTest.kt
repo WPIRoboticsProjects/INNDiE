@@ -1,9 +1,11 @@
 package edu.wpi.axon.ui
 
+import arrow.core.None
+import arrow.core.Option
 import edu.wpi.axon.aws.TrainingScriptRunner
-import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.axon.util.axonBucketName
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
@@ -31,15 +33,16 @@ internal class JobRunnerTest : KoinTestFixture() {
 
         startKoin {
             modules(module {
-                single<String?>(named(axonBucketName)) { null }
+                single<Option<String>>(named(axonBucketName)) { None }
                 single { mockTrainingScriptRunner }
             })
         }
 
         val jobRunner = JobRunner()
-        jobRunner.waitForChange(id).unsafeRunSync()
+        jobRunner.waitForChange(id, TrainingScriptProgress.NotStarted).unsafeRunSync()
 
         verifyAll {
+            mockTrainingScriptRunner.getTrainingProgress(id)
             mockTrainingScriptRunner.getTrainingProgress(id)
             mockTrainingScriptRunner.getTrainingProgress(id)
         }
@@ -60,7 +63,7 @@ internal class JobRunnerTest : KoinTestFixture() {
 
         startKoin {
             modules(module {
-                single<String?>(named(axonBucketName)) { null }
+                single<Option<String>>(named(axonBucketName)) { None }
                 single { mockTrainingScriptRunner }
             })
         }

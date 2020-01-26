@@ -36,7 +36,7 @@ class ConvertSuperviselyDatasetToRecord(name: String) : BaseTask(name) {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun isConfiguredCorrectly() =
-        dataset.pathInS3.endsWith(".tar") && super.isConfiguredCorrectly()
+        dataset.path.path.endsWith(".tar") && super.isConfiguredCorrectly()
 
     private val variableNameGenerator: UniqueVariableNameGenerator by inject()
 

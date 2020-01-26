@@ -10,7 +10,8 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.training.testutil.testTrainingScript
-import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
+import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.axonBucketName
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
@@ -19,50 +20,34 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 
 internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixture() {
-
-    @Test
-    fun `test with bad model`() {
-        startKoin {
-            modules(defaultBackendModule())
-        }
-
-        val localModelPath =
-            Paths.get(this::class.java.getResource("badModel1.h5").toURI()).toString()
-        TrainSequentialModelScriptGenerator(
-            TrainState(
-                userOldModelPath = localModelPath,
-                userNewModelName = "badModel1-trained.h5",
-                userDataset = Dataset.ExampleDataset.Mnist,
-                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 50,
-                userNewModel = Model.Sequential(
-                    "",
-                    emptyList(),
-                    emptySet()
-                )
-            )
-        ).generateScript().shouldBeInvalid()
-    }
 
     @Test
     @Tag("needsDockerSupport")
     fun `test with fashion mnist`(@TempDir tempDir: File) {
         startKoin {
-            modules(defaultBackendModule())
+            modules(
+                listOf(
+                    defaultBackendModule(),
+                    module {
+                        single(named(axonBucketName)) { "dummy-bucket-name" }
+                    }
+                )
+            )
         }
 
         val modelName = "custom_fashion_mnist.h5"
+        // Use the current directory because this runs in a new container
         val newModelName = "custom_fashion_mnist-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = path,
-                    userNewModelName = newModelName,
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -74,9 +59,17 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                             if (it.layers.size - index <= 3) layer.layer.trainable()
                             else layer.layer.trainable(false)
                         })
-                )
+                ),
+                it
             ).generateScript().shouldBeValid { script ->
-                testTrainingScript(path, modelName, newModelName, script.a, tempDir)
+                testTrainingScript(
+                    path,
+                    modelName,
+                    newModelName,
+                    // Patch the script because it's not meant to run in a container
+                    script.a.replace(path, modelName),
+                    tempDir
+                )
             }
         }
     }
@@ -89,14 +82,18 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
         }
 
         val modelName = "small_model_for_wpilib_reduced_dataset.h5"
+        // Use the current directory because this runs in a new container
         val newModelName = "small_model_for_wpilib_reduced_dataset-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = path,
-                    userNewModelName = newModelName,
-                    userDataset = Dataset.Custom("WPILib_reduced.tar", "WPILib reduced"),
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
+                    userDataset = Dataset.Custom(
+                        FilePath.Local("WPILib_reduced.tar"),
+                        "WPILib reduced"
+                    ),
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),
@@ -107,13 +104,21 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                             if (it.layers.size - index <= 1) layer.layer.trainable()
                             else layer.layer.trainable(false)
                         })
+                ),
+                it
+            ).generateScript().shouldBeValid { script ->
+                Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
+                    .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
+                testTrainingScript(
+                    path,
+                    modelName,
+                    newModelName,
+                    // Patch the script because it's not meant to run in a container
+                    script.a.replace(path, modelName),
+                    tempDir,
+                    "rm -rf /home/WPILib_reduced"
                 )
-            ).generateScript()
-                .shouldBeValid { script ->
-                    Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
-                        .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
-                    testTrainingScript(path, modelName, newModelName, script.a, tempDir, "rm -rf /home/WPILib_reduced")
-                }
+            }
         }
     }
 }

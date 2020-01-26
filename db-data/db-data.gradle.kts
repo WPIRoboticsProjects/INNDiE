@@ -2,6 +2,7 @@ description = "Data descriptions used in the database."
 
 dependencies {
     api(project(":tf-data"))
+    api(project(":training"))
 
     implementation(project(":util"))
 

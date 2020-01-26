@@ -4,10 +4,12 @@ import edu.wpi.axon.dsl.TaskConfigurationTestFixture
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.mockVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.axon.util.axonBucketName
 import io.kotlintest.shouldBe
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.Test
 import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 internal class S3ProgressReportingCallbackTaskConfigurationTest :
@@ -16,7 +18,6 @@ internal class S3ProgressReportingCallbackTaskConfigurationTest :
             S3ProgressReportingCallbackTask("").apply {
                 modelName = RandomStringUtils.randomAlphanumeric(10)
                 datasetName = RandomStringUtils.randomAlphanumeric(10)
-                bucketName = RandomStringUtils.randomAlphanumeric(10)
             }
         },
         listOf(
@@ -29,13 +30,15 @@ internal class S3ProgressReportingCallbackTaskTest : KoinTestFixture() {
     @Test
     fun `test code gen`() {
         startKoin {
-            modules(module { mockVariableNameGenerator() })
+            modules(module {
+                single(named(axonBucketName)) { "b" }
+                mockVariableNameGenerator()
+            })
         }
 
         val task = S3ProgressReportingCallbackTask("").apply {
             modelName = "m"
             datasetName = "d"
-            bucketName = "b"
             output = configuredCorrectly("output")
         }
 

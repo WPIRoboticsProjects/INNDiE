@@ -7,10 +7,10 @@ interface TrainingScriptRunner {
     /**
      * Start running a training script.
      *
-     * @param runTrainingScriptConfiguration The data needed to start the script.
+     * @param config The data needed to start the script.
      * @return The script id used to query about the script during and after training.
      */
-    fun startScript(runTrainingScriptConfiguration: RunTrainingScriptConfiguration): Long
+    fun startScript(config: RunTrainingScriptConfiguration): Long
 
     /**
      * Queries for the current progress state of the script.

@@ -5,7 +5,6 @@ import com.github.mvysny.kaributesting.v10.MockVaadin
 import com.github.mvysny.kaributesting.v10.Routes
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.html.H1
-import defaultFrontendModule
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import org.junit.jupiter.api.BeforeAll

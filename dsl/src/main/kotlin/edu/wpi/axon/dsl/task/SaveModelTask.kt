@@ -17,12 +17,16 @@ class SaveModelTask(name: String) : BaseTask(name) {
     var modelInput: Variable by singleAssign()
 
     /**
-     * The filename to save the model as.
+     * The path to save the model to, ending in the filename of the model. Any parent directories
+     * that do not already exist will be created.
      */
-    var modelFileName: String by singleAssign()
+    var modelPath: String by singleAssign()
 
     override val imports: Set<Import> = setOf(
-        makeImport("import tensorflow as tf")
+        makeImport("import tensorflow as tf"),
+        makeImport("import os"),
+        makeImport("import errno"),
+        makeImport("from pathlib import Path")
     )
 
     override val inputs: Set<Variable>
@@ -33,6 +37,12 @@ class SaveModelTask(name: String) : BaseTask(name) {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
-        |${modelInput.name}.save("$modelFileName")
+        |try:
+        |    os.makedirs(Path("$modelPath").parent)
+        |except OSError as err:
+        |    if err.errno != errno.EEXIST:
+        |        raise
+        |
+        |${modelInput.name}.save("$modelPath")
     """.trimMargin()
 }

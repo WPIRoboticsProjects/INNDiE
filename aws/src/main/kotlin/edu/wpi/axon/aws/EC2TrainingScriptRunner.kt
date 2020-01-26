@@ -2,6 +2,7 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.util.FilePath
 import java.lang.NumberFormatException
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
@@ -10,6 +11,7 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
 import software.amazon.awssdk.services.ec2.Ec2Client
 import software.amazon.awssdk.services.ec2.model.Ec2Exception
+import software.amazon.awssdk.services.ec2.model.Filter
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
 import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
@@ -20,11 +22,12 @@ import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
  * this class will handle all of that. The script should just load and save the model from/to its
  * current directory.
  *
+ * @param bucketName The name of the S3 bucket to use.
  * @param instanceType The type of the EC2 instance to run the training script on.
  */
 class EC2TrainingScriptRunner(
     bucketName: String,
-    private val instanceType: InstanceType // TODO: Move this to [startScript]
+    private val instanceType: InstanceType
 ) : TrainingScriptRunner, KoinComponent {
 
     private val ec2 by lazy { Ec2Client.builder().build() }
@@ -35,30 +38,32 @@ class EC2TrainingScriptRunner(
     private val scriptDataMap = mutableMapOf<Long, RunTrainingScriptConfiguration>()
 
     override fun startScript(
-        runTrainingScriptConfiguration: RunTrainingScriptConfiguration
+        config: RunTrainingScriptConfiguration
     ): Long {
-        // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
-        // own working with S3.
-        require(
-            !runTrainingScriptConfiguration.scriptContents.contains("download_model") &&
-                !runTrainingScriptConfiguration.scriptContents.contains("upload_model")
-        ) {
-            """
-            |Cannot start the script because it interfaces with AWS:
-            |${runTrainingScriptConfiguration.scriptContents}
-            |
-            """.trimMargin()
+        require(config.oldModelName is FilePath.S3) {
+            "Must start from a model in S3. Got: ${config.oldModelName}"
+        }
+        require(config.newModelName is FilePath.S3) {
+            "Must export to a model in S3. Got: ${config.newModelName}"
+        }
+        require(config.epochs > 0) {
+            "Must train for at least one epoch. Got ${config.epochs} epochs."
+        }
+        when (config.dataset) {
+            is Dataset.Custom -> require(config.dataset.path is FilePath.S3) {
+                "Custom datasets must be in S3. Got non-local dataset: ${config.dataset}"
+            }
         }
 
         // The file name for the generated script
         val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
-        val newModelName = runTrainingScriptConfiguration.newModelName
-        val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
+        val newModelName = config.newModelName.filename
+        val datasetName = config.dataset.progressReportingName
 
         s3Manager.uploadTrainingScript(
             scriptFileName,
-            runTrainingScriptConfiguration.scriptContents
+            config.scriptContents
         )
 
         // Reset the training progress so the script doesn't start in the completed state
@@ -69,10 +74,10 @@ class EC2TrainingScriptRunner(
 
         // We need to download custom datasets from S3. Example datasets will be downloaded
         // by the script using Keras.
-        val downloadDatasetString = when (runTrainingScriptConfiguration.dataset) {
+        val downloadDatasetString = when (config.dataset) {
             is Dataset.ExampleDataset -> ""
             is Dataset.Custom ->
-                """axon download-dataset "${runTrainingScriptConfiguration.dataset.pathInS3}""""
+                """axon download-dataset "${config.dataset.path.path}""""
         }
 
         val scriptForEC2 = """
@@ -91,7 +96,7 @@ class EC2TrainingScriptRunner(
             |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.11/axon-0.1.11-py2.py3-none-any.whl
             |axon create-heartbeat "$newModelName" "$datasetName"
             |axon update-training-progress "$newModelName" "$datasetName" "initializing"
-            |axon download-untrained-model "${runTrainingScriptConfiguration.oldModelName}"
+            |axon download-untrained-model "${config.oldModelName.path}"
             |$downloadDatasetString
             |axon download-training-script "$scriptFileName"
             |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
@@ -122,7 +127,7 @@ class EC2TrainingScriptRunner(
 
         val scriptId = nextScriptId.getAndIncrement()
         instanceIds[scriptId] = runInstancesResponse.instances().first().instanceId()
-        scriptDataMap[scriptId] = runTrainingScriptConfiguration
+        scriptDataMap[scriptId] = config
         return scriptId
     }
 
@@ -132,14 +137,24 @@ class EC2TrainingScriptRunner(
         require(scriptId in scriptDataMap.keys)
 
         val runTrainingScriptConfiguration = scriptDataMap[scriptId]!!
-        val newModelName = runTrainingScriptConfiguration.newModelName
-        val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
+        val newModelName = runTrainingScriptConfiguration.newModelName.filename
+        val datasetName = runTrainingScriptConfiguration.dataset.progressReportingName
 
         val status = try {
             ec2.describeInstanceStatus {
                 it.instanceIds(instanceIds[scriptId]!!)
+                    .includeAllInstances(true)
+                    .filters(
+                        Filter.builder().name("instance-state-name").values(
+                            "pending",
+                            "running",
+                            "shutting-down",
+                            "stopping"
+                        ).build()
+                    )
             }.instanceStatuses().firstOrNull()?.instanceState()?.name()
         } catch (ex: Ec2Exception) {
+            LOGGER.warn(ex) { "Failed to get instance status." }
             null
         }
 
@@ -166,12 +181,28 @@ class EC2TrainingScriptRunner(
             status: InstanceStateName?,
             epochs: Int
         ): TrainingScriptProgress {
+            LOGGER.debug {
+                """
+                |Heartbeat: $heartbeat
+                |Progress: $progress
+                |Instance status: $status
+                """.trimMargin()
+            }
+
             val progressAssumingEverythingIsFine = computeProgressAssumingEverythingIsFine(
                 heartbeat,
                 progress,
                 status,
                 epochs
             )
+
+            if ((status == InstanceStateName.SHUTTING_DOWN ||
+                    status == InstanceStateName.TERMINATED ||
+                    status == InstanceStateName.STOPPING) &&
+                (heartbeat != "0" || progress != "completed")
+            ) {
+                return TrainingScriptProgress.Error
+            }
 
             return when (heartbeat) {
                 "0" -> when (progress) {
@@ -185,8 +216,7 @@ class EC2TrainingScriptRunner(
 
                     else -> when (status) {
                         InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
-                        InstanceStateName.STOPPING, InstanceStateName.STOPPED, null ->
-                            TrainingScriptProgress.Error
+                        InstanceStateName.STOPPING -> TrainingScriptProgress.Error
 
                         else -> progressAssumingEverythingIsFine
                     }
@@ -205,7 +235,7 @@ class EC2TrainingScriptRunner(
             "not started" -> when (status) {
                 InstanceStateName.PENDING -> TrainingScriptProgress.Creating
                 InstanceStateName.RUNNING -> TrainingScriptProgress.Initializing
-                else -> TrainingScriptProgress.NotStarted
+                else -> TrainingScriptProgress.Creating
             }
 
             "initializing" -> TrainingScriptProgress.Initializing

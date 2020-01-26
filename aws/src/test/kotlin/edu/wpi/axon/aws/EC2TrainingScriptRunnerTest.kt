@@ -2,6 +2,8 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.util.FilePath
+import io.kotlintest.shouldThrow
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -19,83 +21,143 @@ internal class EC2TrainingScriptRunnerTest {
     )
 
     @Test
+    fun `test running with local old model`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startScript(
+                RunTrainingScriptConfiguration(
+                    FilePath.Local("a"),
+                    FilePath.S3("b"),
+                    Dataset.ExampleDataset.FashionMnist,
+                    "",
+                    1
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `test running with local new model`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startScript(
+                RunTrainingScriptConfiguration(
+                    FilePath.S3("a"),
+                    FilePath.Local("b"),
+                    Dataset.ExampleDataset.FashionMnist,
+                    "",
+                    1
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `test running with zero epochs`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startScript(
+                RunTrainingScriptConfiguration(
+                    FilePath.S3("a"),
+                    FilePath.S3("b"),
+                    Dataset.ExampleDataset.FashionMnist,
+                    "",
+                    0
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `test running with local dataset`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startScript(
+                RunTrainingScriptConfiguration(
+                    FilePath.S3("a"),
+                    FilePath.S3("b"),
+                    Dataset.Custom(FilePath.Local("d"), "d"),
+                    "",
+                    1
+                )
+            )
+        }
+    }
+
+    @Test
     @Disabled("Needs EC2 supervision.")
     fun `test running mnist training script`() {
         runner.startScript(
             RunTrainingScriptConfiguration(
-                "custom_fashion_mnist.h5",
-                "custom_fashion_mnist-trained.h5",
+                FilePath.S3("custom_fashion_mnist.h5"),
+                FilePath.S3("custom_fashion_mnist-trained.h5"),
                 Dataset.ExampleDataset.Mnist,
                 """
-            import tensorflow as tf
+                import tensorflow as tf
 
-            var10 = tf.keras.models.load_model("custom_fashion_mnist.h5")
+                var10 = tf.keras.models.load_model("custom_fashion_mnist.h5")
 
-            var12 = tf.keras.Sequential([
-                var10.get_layer("conv2d_4"),
-                var10.get_layer("conv2d_5"),
-                var10.get_layer("max_pooling2d_2"),
-                var10.get_layer("dropout_4"),
-                var10.get_layer("flatten_2"),
-                var10.get_layer("dense_4"),
-                var10.get_layer("dropout_5"),
-                var10.get_layer("dense_5")
-            ])
-            var12.get_layer("conv2d_4").trainable = False
-            var12.get_layer("conv2d_5").trainable = False
-            var12.get_layer("max_pooling2d_2").trainable = False
-            var12.get_layer("dropout_4").trainable = False
-            var12.get_layer("flatten_2").trainable = False
-            var12.get_layer("dense_4").trainable = True
-            var12.get_layer("dropout_5").trainable = True
-            var12.get_layer("dense_5").trainable = True
+                var12 = tf.keras.Sequential([
+                    var10.get_layer("conv2d_4"),
+                    var10.get_layer("conv2d_5"),
+                    var10.get_layer("max_pooling2d_2"),
+                    var10.get_layer("dropout_4"),
+                    var10.get_layer("flatten_2"),
+                    var10.get_layer("dense_4"),
+                    var10.get_layer("dropout_5"),
+                    var10.get_layer("dense_5")
+                ])
+                var12.get_layer("conv2d_4").trainable = False
+                var12.get_layer("conv2d_5").trainable = False
+                var12.get_layer("max_pooling2d_2").trainable = False
+                var12.get_layer("dropout_4").trainable = False
+                var12.get_layer("flatten_2").trainable = False
+                var12.get_layer("dense_4").trainable = True
+                var12.get_layer("dropout_5").trainable = True
+                var12.get_layer("dense_5").trainable = True
 
-            var12.compile(
-                optimizer=tf.keras.optimizers.Adam(0.001, 0.9, 0.999, 1.0E-7, False),
-                loss=tf.keras.losses.sparse_categorical_crossentropy,
-                metrics=["accuracy"]
-            )
+                var12.compile(
+                    optimizer=tf.keras.optimizers.Adam(0.001, 0.9, 0.999, 1.0E-7, False),
+                    loss=tf.keras.losses.sparse_categorical_crossentropy,
+                    metrics=["accuracy"]
+                )
 
-            var15 = tf.keras.callbacks.ModelCheckpoint(
-                "sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
-                monitor="val_loss",
-                verbose=1,
-                save_best_only=False,
-                save_weights_only=True,
-                mode="auto",
-                save_freq="epoch",
-                load_weights_on_restart=False
-            )
+                var15 = tf.keras.callbacks.ModelCheckpoint(
+                    "sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
+                    monitor="val_loss",
+                    verbose=1,
+                    save_best_only=False,
+                    save_weights_only=True,
+                    mode="auto",
+                    save_freq="epoch",
+                    load_weights_on_restart=False
+                )
 
-            var17 = tf.keras.callbacks.EarlyStopping(
-                monitor="val_loss",
-                min_delta=0,
-                patience=10,
-                verbose=1,
-                mode="auto",
-                baseline=None,
-                restore_best_weights=False
-            )
+                var17 = tf.keras.callbacks.EarlyStopping(
+                    monitor="val_loss",
+                    min_delta=0,
+                    patience=10,
+                    verbose=1,
+                    mode="auto",
+                    baseline=None,
+                    restore_best_weights=False
+                )
 
-            (var1, var2), (var3, var4) = tf.keras.datasets.mnist.load_data()
+                (var1, var2), (var3, var4) = tf.keras.datasets.mnist.load_data()
 
-            var6 = var1.reshape(-1, 28, 28, 1) / 255
+                var6 = var1.reshape(-1, 28, 28, 1) / 255
 
-            var8 = var3.reshape(-1, 28, 28, 1) / 255
+                var8 = var3.reshape(-1, 28, 28, 1) / 255
 
-            var12.fit(
-                var6,
-                var2,
-                batch_size=None,
-                epochs=1,
-                verbose=2,
-                callbacks=[var15, var17],
-                validation_data=(var8, var4),
-                shuffle=True
-            )
+                var12.fit(
+                    var6,
+                    var2,
+                    batch_size=None,
+                    epochs=1,
+                    verbose=2,
+                    callbacks=[var15, var17],
+                    validation_data=(var8, var4),
+                    shuffle=True
+                )
 
-            var12.save("custom_fashion_mnist-trained.h5")
-            """.trimIndent(),
+                var12.save("custom_fashion_mnist-trained.h5")
+                """.trimIndent(),
                 1
             )
         )
@@ -126,6 +188,7 @@ internal class EC2TrainingScriptRunnerTest {
         @JvmStatic
         @Suppress("unused")
         fun progressTestSource() = listOf(
+            Arguments.of("0", "not started", null, 1, TrainingScriptProgress.Creating),
             Arguments.of(
                 "0", "not started", InstanceStateName.PENDING, 1,
                 TrainingScriptProgress.Creating
@@ -134,7 +197,32 @@ internal class EC2TrainingScriptRunnerTest {
                 "0", "not started", InstanceStateName.RUNNING, 1,
                 TrainingScriptProgress.Initializing
             ),
-            Arguments.of("0", "not started", null, 1, TrainingScriptProgress.NotStarted),
+            Arguments.of(
+                "1",
+                "initializing",
+                InstanceStateName.RUNNING,
+                1,
+                TrainingScriptProgress.Initializing
+            ),
+            Arguments.of(
+                "1",
+                "1.0",
+                InstanceStateName.RUNNING,
+                1,
+                TrainingScriptProgress.InProgress(1.0)
+            ),
+            Arguments.of("0", "completed", null, 1, TrainingScriptProgress.Completed),
+            Arguments.of(
+                "0",
+                "completed",
+                InstanceStateName.STOPPING,
+                1,
+                TrainingScriptProgress.Completed
+            ),
+            Arguments.of(
+                "0", "not started", InstanceStateName.SHUTTING_DOWN, 1,
+                TrainingScriptProgress.Error
+            ),
             Arguments.of(
                 "1",
                 "not started",
@@ -150,22 +238,6 @@ internal class EC2TrainingScriptRunnerTest {
                 TrainingScriptProgress.Error
             ),
             Arguments.of("1", "not started", null, 1, TrainingScriptProgress.Error),
-            Arguments.of(
-                "0",
-                "completed",
-                InstanceStateName.STOPPING,
-                1,
-                TrainingScriptProgress.Completed
-            ),
-            Arguments.of("0", "completed", null, 1, TrainingScriptProgress.Completed),
-            Arguments.of("1", "completed", null, 1, TrainingScriptProgress.Error),
-            Arguments.of(
-                "1",
-                "1.0",
-                InstanceStateName.RUNNING,
-                1,
-                TrainingScriptProgress.InProgress(1.0)
-            ),
             Arguments.of("1", "1.0", InstanceStateName.STOPPING, 1, TrainingScriptProgress.Error),
             Arguments.of("1", "1.0", InstanceStateName.TERMINATED, 1, TrainingScriptProgress.Error),
             Arguments.of(
@@ -178,9 +250,9 @@ internal class EC2TrainingScriptRunnerTest {
             Arguments.of(
                 "1",
                 "initializing",
-                InstanceStateName.RUNNING,
+                InstanceStateName.SHUTTING_DOWN,
                 1,
-                TrainingScriptProgress.Initializing
+                TrainingScriptProgress.Error
             ),
             Arguments.of(
                 "2",

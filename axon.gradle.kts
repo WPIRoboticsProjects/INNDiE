@@ -197,7 +197,7 @@ configure(javaProjects) {
         // )
 
         // TODO: Go back to the old dependencies once 4.x.x is out
-        // https://github.com/wpilibsuite/Axon/issues/84
+        //  https://github.com/wpilibsuite/Axon/issues/84
         testImplementation(
             files(
                 "$rootDir/libraries/kotlintest-runner-junit5-jvm-4.0.2631-SNAPSHOT.jar",
@@ -250,6 +250,10 @@ configure(javaProjects) {
 
             if (!project.hasProperty("hasDockerSupport")) {
                 excludeTags("needsDockerSupport")
+            }
+
+            if (!project.hasProperty("hasTensorFlowSupport")) {
+                excludeTags("needsTensorFlowSupport")
             }
         }
 

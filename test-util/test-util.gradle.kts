@@ -35,7 +35,7 @@ dependencies {
     // )
 
     // TODO: Go back to the old dependencies once 4.x.x is out
-    // https://github.com/wpilibsuite/Axon/issues/84
+    //  https://github.com/wpilibsuite/Axon/issues/84
     api(fileTree("$rootDir/libraries") {
         include("*.jar")
         exclude {

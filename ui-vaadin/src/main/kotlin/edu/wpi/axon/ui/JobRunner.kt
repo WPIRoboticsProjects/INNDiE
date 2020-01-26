@@ -2,25 +2,31 @@ package edu.wpi.axon.ui
 
 import arrow.core.Either
 import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
+import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.aws.TrainingScriptRunner
-import edu.wpi.axon.aws.axonBucketName
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
+import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.axonBucketName
+import java.io.File
 import kotlinx.coroutines.delay
 import org.koin.core.KoinComponent
+import org.koin.core.get
 import org.koin.core.inject
 import org.koin.core.qualifier.named
 
 class JobRunner : KoinComponent {
 
-    private val bucketName: String? by inject(named(axonBucketName))
     private val scriptRunner: TrainingScriptRunner by inject()
 
     /**
@@ -30,12 +36,35 @@ class JobRunner : KoinComponent {
      * @return The script id of the script that was started.
      */
     fun startJob(job: Job): IO<Long> = IO.fx {
-        val trainModelScriptGenerator = IO {
-            when (val model = job.userModel) {
-                is Model.Sequential -> TrainSequentialModelScriptGenerator(toTrainState(job, model))
-                is Model.General -> TrainGeneralModelScriptGenerator(toTrainState(job, model))
+        // TODO: Loading the old model will need to be done earlier by another part of Axon. This
+        //  code is temporary.
+        // If the model to start training from is in S3, we need to download it
+        val localOldModel = when (job.userOldModelPath) {
+            is FilePath.S3 -> {
+                val bucketName: Option<String> = get(named(axonBucketName))
+                check(bucketName is Some)
+
+                val s3Manager = S3Manager(bucketName.t)
+                s3Manager.downloadUntrainedModel(job.userOldModelPath.path)
             }
-        }.bind()
+
+            is FilePath.Local -> File(job.userOldModelPath.path)
+        }
+
+        val oldModel = ModelLoaderFactory().createModelLoader(localOldModel.name)
+            .load(localOldModel)
+            .bind()
+
+        val trainModelScriptGenerator = when (job.userNewModel) {
+            is Model.Sequential -> {
+                require(oldModel is Model.Sequential)
+                TrainSequentialModelScriptGenerator(toTrainState(job), oldModel)
+            }
+            is Model.General -> {
+                require(oldModel is Model.General)
+                TrainGeneralModelScriptGenerator(toTrainState(job), oldModel)
+            }
+        }
 
         val script = trainModelScriptGenerator.generateScript().fold(
             {
@@ -53,7 +82,7 @@ class JobRunner : KoinComponent {
 
         scriptRunner.startScript(
             RunTrainingScriptConfiguration(
-                oldModelName = trainModelScriptGenerator.trainState.userOldModelName,
+                oldModelName = job.userOldModelPath,
                 newModelName = job.userNewModelName,
                 dataset = job.userDataset,
                 scriptContents = script,
@@ -87,36 +116,34 @@ class JobRunner : KoinComponent {
      * Waits until the [TrainingScriptProgress] state changes.
      *
      * @param id The script id.
-     * @return An [IO] for continuation.
+     * @param previousState The state to watch for a change from.
+     * @return The new [TrainingScriptProgress].
      */
-    fun waitForChange(id: Long): IO<Unit> =
-        IO.tailRecM(scriptRunner.getTrainingProgress(id)) {
-            IO {
+    fun waitForChange(
+        id: Long,
+        previousState: TrainingScriptProgress
+    ): IO<TrainingScriptProgress> = IO.tailRecM(scriptRunner.getTrainingProgress(id)) {
+        IO {
+            if (it != previousState) {
+                Either.Right(it)
+            } else {
                 delay(5000)
-                val newState = scriptRunner.getTrainingProgress(id)
-                if (it != newState) {
-                    Either.Right(Unit)
-                } else {
-                    Either.Left(newState)
-                }
+                Either.Left(scriptRunner.getTrainingProgress(id))
             }
         }
+    }
 
-    private fun <T : Model> toTrainState(
-        job: Job,
-        model: T
-    ) = TrainState(
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Model> toTrainState(job: Job): TrainState<T> = TrainState(
         userOldModelPath = job.userOldModelPath,
-        userNewModelName = job.userNewModelName,
+        userNewModelPath = job.userNewModelName,
         userDataset = job.userDataset,
         userOptimizer = job.userOptimizer,
         userLoss = job.userLoss,
         userMetrics = job.userMetrics,
         userEpochs = job.userEpochs,
         userValidationSplit = None, // TODO: Add this to Job and pull it from there
-        userNewModel = model,
-        userBucketName = bucketName,
-        handleS3InScript = false,
+        userNewModel = job.userNewModel as T,
         generateDebugComments = job.generateDebugComments
     )
 }

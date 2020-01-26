@@ -1,7 +1,6 @@
 package edu.wpi.axon.ui
 
 import arrow.core.Either
-import defaultFrontendModule
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
@@ -11,6 +10,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
+import edu.wpi.axon.util.FilePath
 import java.io.File
 import java.nio.file.Paths
 import javax.servlet.ServletContextEvent
@@ -36,14 +36,32 @@ class WebAppListener : ServletContextListener, KoinComponent {
             )
         }
 
+        val modelName = "32_32_1_conv_sequential.h5"
         val newModelName = "32_32_1_conv_sequential-trained.h5"
-        val (model, path) = loadModel("32_32_1_conv_sequential.h5")
+        val (model, path) = loadModel(modelName)
+
         get<JobDb>().create(
             Job(
-                "Job 1",
+                "AWS Job",
                 TrainingScriptProgress.NotStarted,
-                path,
-                newModelName,
+                FilePath.S3(modelName),
+                FilePath.S3(newModelName),
+                Dataset.ExampleDataset.FashionMnist,
+                Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                Loss.SparseCategoricalCrossentropy,
+                setOf("accuracy"),
+                1,
+                model,
+                false
+            )
+        )
+
+        get<JobDb>().create(
+            Job(
+                "Local Job",
+                TrainingScriptProgress.NotStarted,
+                FilePath.Local(path),
+                FilePath.Local(newModelName),
                 Dataset.ExampleDataset.FashionMnist,
                 Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 Loss.SparseCategoricalCrossentropy,
@@ -65,10 +83,10 @@ class WebAppListener : ServletContextListener, KoinComponent {
         // TODO: Encapsulate this somewhere better
         fun loadModel(modelName: String): Pair<Model, String> {
             val localModelPath =
-                Paths.get("/Users/austinshalit/git/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
+                Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
                     .toString()
             val layers =
-                ModelLoaderFactory().createModeLoader(localModelPath).load(File(localModelPath))
+                ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
             val model = layers.attempt().unsafeRunSync()
             check(model is Either.Right)
             return model.b to localModelPath

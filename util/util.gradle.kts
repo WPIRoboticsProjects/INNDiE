@@ -5,6 +5,7 @@ fun DependencyHandler.arrow(name: String) =
 
 dependencies {
     api(arrow("arrow-core-data"))
+    api(arrow("arrow-fx"))
 
     api(
         group = "org.octogonapus",

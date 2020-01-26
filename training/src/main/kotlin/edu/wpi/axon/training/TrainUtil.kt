@@ -13,49 +13,32 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
-import edu.wpi.axon.dsl.task.DownloadUntrainedModelFromS3Task
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
+import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
-import edu.wpi.axon.dsl.task.UploadTrainedModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 
 /**
- * Loads a model in to a variable using. Downloads the model from S3 first if credentials were
- * provided.
+ * Loads a model in to a variable using. Assumes the model is on disk.
  *
  * @param trainState The training state.
  * @return The loaded model from [LoadModelTask].
  */
 internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
-    val downloadModelFromS3Task = if (trainState.handleS3InScript) {
-        check(trainState.userBucketName != null) {
-            "The script was told to download the model from S3, but no bucket name was specified."
-        }
-
-        tasks.run(DownloadUntrainedModelFromS3Task::class) {
-            modelName = trainState.userOldModelPath
-            bucketName = trainState.userBucketName
-        }
-    } else null
-
     val model = variables.create(Variable::class)
     val loadModelTask = tasks.run(LoadModelTask::class) {
-        modelPath = trainState.userOldModelName
+        modelPath = trainState.userOldModelPath.path
         modelOutput = model
-
-        if (downloadModelFromS3Task != null) {
-            dependencies += downloadModelFromS3Task
-        }
     }
 
     return model
@@ -73,12 +56,8 @@ internal fun ScriptGenerator.loadDataset(
     is Dataset.ExampleDataset -> loadExampleDataset(trainState)
 
     is Dataset.Custom -> when {
-        trainState.userDataset.pathInS3.endsWith(".tar") ->
-            loadSuperviselyDataset(trainState)
-
-        else -> error(
-            "Unsupported dataset format: ${trainState.userDataset.pathInS3}"
-        )
+        trainState.userDataset.path.path.endsWith(".tar") -> loadSuperviselyDataset(trainState)
+        else -> error("Unsupported dataset format: ${trainState.userDataset}")
     }
 }
 
@@ -125,7 +104,7 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
     require(trainState.userDataset is Dataset.Custom)
 
     // TODO: Run conversion as a separate step so that eager execution is disabled when training
-    // LoadTFRecordOfImagesWithObjects needs eager execution
+    //  LoadTFRecordOfImagesWithObjects needs eager execution
     check(pregenerationLastTask == null) {
         "BUG: pregenerationLastTask was not null and would have been overwritten."
     }
@@ -205,8 +184,7 @@ internal fun ScriptGenerator.reshapeAndScale(
 }
 
 /**
- * Compiles, trains (with callbacks), and saves a model. Also uploads the model to S3 if credentials
- * were provided.
+ * Compiles, trains (with callbacks), and saves a model.
  *
  * @param trainState The training state.
  * @param oldModel The model on disk the user is starting training with.
@@ -256,14 +234,18 @@ internal fun ScriptGenerator.compileTrainSave(
         output = earlyStoppingCallback
     }
 
-    var s3ProgressReportingCallback: Variable? = null
-    if (trainState.userBucketName != null) {
-        s3ProgressReportingCallback = variables.create(Variable::class)
+    val progressReportingCallback: Variable = variables.create(Variable::class)
+    if (trainState.usesAWS) {
         tasks.run(S3ProgressReportingCallbackTask::class) {
-            modelName = trainState.userNewModelName
-            datasetName = trainState.userDataset.nameForS3ProgressReporting
-            bucketName = trainState.userBucketName
-            output = s3ProgressReportingCallback
+            modelName = trainState.userNewModelPath.filename
+            datasetName = trainState.userDataset.progressReportingName
+            output = progressReportingCallback
+        }
+    } else {
+        tasks.run(LocalProgressReportingCallbackTask::class) {
+            modelName = trainState.userNewModelPath.filename
+            datasetName = trainState.userDataset.progressReportingName
+            output = progressReportingCallback
         }
     }
 
@@ -279,35 +261,15 @@ internal fun ScriptGenerator.compileTrainSave(
             validationOutputData = Some(it.second)
         }
 
-        callbacks = setOf(checkpointCallback, earlyStoppingCallback)
-
-        // Add the s3 progress reporting callback if it is not null. Null when we don't have AWS
-        // data.
-        s3ProgressReportingCallback?.let { callbacks = callbacks + it }
+        callbacks = setOf(checkpointCallback, earlyStoppingCallback, progressReportingCallback)
 
         epochs = trainState.userEpochs
         dependencies += compileModelTask
     }
 
-    val saveModelTask by tasks.running(SaveModelTask::class) {
+    return tasks.run(SaveModelTask::class) {
         modelInput = newModel
-        modelFileName = trainState.userNewModelName
+        modelPath = trainState.userNewModelPath.path
         dependencies += trainModelTask
-    }
-
-    return if (trainState.handleS3InScript) {
-        val uploadModelToS3Task by tasks.running(UploadTrainedModelToS3Task::class) {
-            check(trainState.userBucketName != null) {
-                "The script was told to upload the model to S3, but no bucket name was specified."
-            }
-
-            modelName = trainState.userNewModelName
-            bucketName = trainState.userBucketName
-            dependencies += saveModelTask
-        }
-
-        uploadModelToS3Task
-    } else {
-        saveModelTask
     }
 }
