@@ -22,7 +22,7 @@ private val LOGGER = KotlinLogging.logger("training-test-util")
  */
 fun loadModel(modelName: String, stub: () -> Unit): Pair<Model, String> {
     val localModelPath = Paths.get(stub::class.java.getResource(modelName).toURI()).toString()
-    val layers = ModelLoaderFactory().createModeLoader(localModelPath).load(File(localModelPath))
+    val layers = ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
     val model = layers.attempt().unsafeRunSync()
     model.shouldBeRight()
     return model.b as Model to localModelPath

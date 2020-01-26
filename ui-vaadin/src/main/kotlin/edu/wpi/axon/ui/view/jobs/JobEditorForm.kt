@@ -3,6 +3,8 @@ package edu.wpi.axon.ui.view.jobs
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import arrow.fx.IO
+import arrow.fx.extensions.fx
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.VaadinDsl
 import com.github.mvysny.karibudsl.v10.beanValidationBinder
@@ -32,6 +34,7 @@ import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobRunner
 import kotlin.concurrent.thread
+import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
@@ -134,21 +137,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                         // TODO: Don't let the user run the job if it needs to use AWS but there
                         //  isn't a bucket name
                         onLeftClick {
-                            thread(isDaemon = true) {
-                                val jobRunner = JobRunner()
-                                job.map { job ->
-                                    jobRunner.startJob(job).flatMap { id ->
-                                        val newJob =
-                                            job.copy(status = TrainingScriptProgress.Creating)
-                                        jobDb.update(newJob)
-                                        jobRunner.waitForChange(id, newJob.status).flatMap {
-                                            jobRunner.waitForCompleted(id) {
-                                                jobDb.update(newJob.copy(status = it))
-                                            }
-                                        }
-                                    }.unsafeRunSync() // TODO: Handle errors here
-                                }
-                            }
+                            thread(isDaemon = true) { runJob() }
                         }
                     }
                 }
@@ -158,6 +147,35 @@ class JobEditorForm : KComposite(), KoinComponent {
 
     init {
         isVisible = false
+    }
+
+    private fun runJob() {
+        job.fold(
+            {
+                LOGGER.warn {
+                    "Could not run the Job because it is None."
+                }
+            },
+            { job ->
+                IO.fx {
+                    jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
+
+                    val jobRunner = JobRunner()
+                    val id = jobRunner.startJob(job).bind()
+                    LOGGER.info { "Started job with id: $id" }
+
+                    Thread.sleep(5000)
+
+                    jobRunner.waitForCompleted(id) {
+                        jobDb.update(job.copy(status = it))
+                    }.bind()
+                }.unsafeRunSync() // TODO: Handle errors here
+            }
+        )
+    }
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
     }
 }
 

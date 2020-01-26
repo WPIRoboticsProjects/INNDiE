@@ -27,26 +27,27 @@ import org.koin.core.qualifier.named
 internal class JobRunnerIntegTest : KoinTestFixture() {
 
     @Test
-    @Timeout(value = 6L, unit = TimeUnit.MINUTES)
+    @Timeout(value = 15L, unit = TimeUnit.MINUTES)
     @Disabled("Needs AWS supervision.")
     fun `test starting job and tracking progress`() {
         startKoin {
             modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
 
+        val oldModelName = "32_32_1_conv_sequential.h5"
         val newModelName = "32_32_1_conv_sequential-trained.h5"
-        val (model, path) = loadModel("32_32_1_conv_sequential.h5") {}
+        val (oldModel, _) = loadModel(oldModelName) {}
         val job = Job(
             "Job 1",
             TrainingScriptProgress.NotStarted,
-            FilePath.S3(path),
+            FilePath.S3(oldModelName),
             FilePath.S3(newModelName),
             Dataset.ExampleDataset.FashionMnist,
             Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             Loss.SparseCategoricalCrossentropy,
             setOf("accuracy"),
             1,
-            model,
+            oldModel,
             false
         )
 
@@ -58,7 +59,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
     // TODO: This model doesn't work with the default dataset resizing, we need to configure that
     @Test
-    @Timeout(value = 6L, unit = TimeUnit.MINUTES)
+    @Timeout(value = 15L, unit = TimeUnit.MINUTES)
     @Disabled("Needs AWS supervision.")
     fun `test starting job with example model`() {
         startKoin {
@@ -92,7 +93,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         val job = Job(
             "Job 1",
             TrainingScriptProgress.NotStarted,
-            FilePath.S3(file.absolutePath),
+            FilePath.S3(file.name),
             FilePath.S3(userNewModelName),
             Dataset.ExampleDataset.Mnist,
             Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),

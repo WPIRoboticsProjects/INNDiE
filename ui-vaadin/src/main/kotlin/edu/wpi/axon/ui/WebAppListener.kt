@@ -36,13 +36,15 @@ class WebAppListener : ServletContextListener, KoinComponent {
             )
         }
 
+        val modelName = "32_32_1_conv_sequential.h5"
         val newModelName = "32_32_1_conv_sequential-trained.h5"
-        val (model, path) = loadModel("32_32_1_conv_sequential.h5")
+        val (model, path) = loadModel(modelName)
+
         get<JobDb>().create(
             Job(
                 "AWS Job",
                 TrainingScriptProgress.NotStarted,
-                FilePath.S3(path),
+                FilePath.S3(modelName),
                 FilePath.S3(newModelName),
                 Dataset.ExampleDataset.FashionMnist,
                 Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
@@ -53,6 +55,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
                 false
             )
         )
+
         get<JobDb>().create(
             Job(
                 "Local Job",
@@ -83,7 +86,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
                 Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
                     .toString()
             val layers =
-                ModelLoaderFactory().createModeLoader(localModelPath).load(File(localModelPath))
+                ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
             val model = layers.attempt().unsafeRunSync()
             check(model is Either.Right)
             return model.b to localModelPath

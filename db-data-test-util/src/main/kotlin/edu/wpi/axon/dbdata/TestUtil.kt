@@ -50,7 +50,7 @@ fun Random.nextJob() = Job(
         RandomStringUtils.randomAlphanumeric(10)
     ),
     userEpochs = nextInt(),
-    userModel = Model.Sequential(
+    userNewModel = Model.Sequential(
         RandomStringUtils.randomAlphanumeric(10),
         (1..3).map { nextInt(128) },
         setOf(

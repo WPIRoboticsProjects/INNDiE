@@ -42,7 +42,8 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userMetrics = setOf("accuracy"),
                     userEpochs = 1,
                     userNewModel = it
-                )
+                ),
+                it
             ).generateScript().shouldBeValid { (script) ->
                 // Patch the script because it's not meant to run in a container
                 testTrainingScript(path, modelName, newModelName, script.replace(path, modelName), tempDir)
@@ -71,7 +72,8 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userMetrics = setOf("accuracy"),
                     userEpochs = 1,
                     userNewModel = it
-                )
+                ),
+                it
             ).generateScript().shouldBeValid { (script) ->
                 // Patch the script because it's not meant to run in a container
                 testTrainingScript(path, modelName, newModelName, script.replace(path, modelName), tempDir)

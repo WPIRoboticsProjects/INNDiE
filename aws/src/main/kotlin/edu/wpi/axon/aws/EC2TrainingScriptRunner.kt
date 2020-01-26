@@ -11,6 +11,7 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
 import software.amazon.awssdk.services.ec2.Ec2Client
 import software.amazon.awssdk.services.ec2.model.Ec2Exception
+import software.amazon.awssdk.services.ec2.model.Filter
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
 import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
@@ -142,8 +143,18 @@ class EC2TrainingScriptRunner(
         val status = try {
             ec2.describeInstanceStatus {
                 it.instanceIds(instanceIds[scriptId]!!)
+                    .includeAllInstances(true)
+                    .filters(
+                        Filter.builder().name("instance-state-name").values(
+                            "pending",
+                            "running",
+                            "shutting-down",
+                            "stopping"
+                        ).build()
+                    )
             }.instanceStatuses().firstOrNull()?.instanceState()?.name()
         } catch (ex: Ec2Exception) {
+            LOGGER.warn(ex) { "Failed to get instance status." }
             null
         }
 
@@ -170,12 +181,28 @@ class EC2TrainingScriptRunner(
             status: InstanceStateName?,
             epochs: Int
         ): TrainingScriptProgress {
+            LOGGER.debug {
+                """
+                |Heartbeat: $heartbeat
+                |Progress: $progress
+                |Instance status: $status
+                """.trimMargin()
+            }
+
             val progressAssumingEverythingIsFine = computeProgressAssumingEverythingIsFine(
                 heartbeat,
                 progress,
                 status,
                 epochs
             )
+
+            if ((status == InstanceStateName.SHUTTING_DOWN ||
+                    status == InstanceStateName.TERMINATED ||
+                    status == InstanceStateName.STOPPING) &&
+                (heartbeat != "0" || progress != "completed")
+            ) {
+                return TrainingScriptProgress.Error
+            }
 
             return when (heartbeat) {
                 "0" -> when (progress) {
@@ -189,8 +216,7 @@ class EC2TrainingScriptRunner(
 
                     else -> when (status) {
                         InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
-                        InstanceStateName.STOPPING, InstanceStateName.STOPPED, null ->
-                            TrainingScriptProgress.Error
+                        InstanceStateName.STOPPING -> TrainingScriptProgress.Error
 
                         else -> progressAssumingEverythingIsFine
                     }
@@ -209,7 +235,7 @@ class EC2TrainingScriptRunner(
             "not started" -> when (status) {
                 InstanceStateName.PENDING -> TrainingScriptProgress.Creating
                 InstanceStateName.RUNNING -> TrainingScriptProgress.Initializing
-                else -> TrainingScriptProgress.NotStarted
+                else -> TrainingScriptProgress.Creating
             }
 
             "initializing" -> TrainingScriptProgress.Initializing

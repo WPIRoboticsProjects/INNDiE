@@ -39,7 +39,8 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
                     userMetrics = setOf("accuracy"),
                     userEpochs = 50,
                     userNewModel = it
-                )
+                ),
+                it
             ).generateScript().shouldBeValid()
         }
     }

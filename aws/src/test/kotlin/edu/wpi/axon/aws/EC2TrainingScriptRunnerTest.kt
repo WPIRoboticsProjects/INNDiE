@@ -188,6 +188,7 @@ internal class EC2TrainingScriptRunnerTest {
         @JvmStatic
         @Suppress("unused")
         fun progressTestSource() = listOf(
+            Arguments.of("0", "not started", null, 1, TrainingScriptProgress.Creating),
             Arguments.of(
                 "0", "not started", InstanceStateName.PENDING, 1,
                 TrainingScriptProgress.Creating
@@ -196,7 +197,32 @@ internal class EC2TrainingScriptRunnerTest {
                 "0", "not started", InstanceStateName.RUNNING, 1,
                 TrainingScriptProgress.Initializing
             ),
-            Arguments.of("0", "not started", null, 1, TrainingScriptProgress.NotStarted),
+            Arguments.of(
+                "1",
+                "initializing",
+                InstanceStateName.RUNNING,
+                1,
+                TrainingScriptProgress.Initializing
+            ),
+            Arguments.of(
+                "1",
+                "1.0",
+                InstanceStateName.RUNNING,
+                1,
+                TrainingScriptProgress.InProgress(1.0)
+            ),
+            Arguments.of("0", "completed", null, 1, TrainingScriptProgress.Completed),
+            Arguments.of(
+                "0",
+                "completed",
+                InstanceStateName.STOPPING,
+                1,
+                TrainingScriptProgress.Completed
+            ),
+            Arguments.of(
+                "0", "not started", InstanceStateName.SHUTTING_DOWN, 1,
+                TrainingScriptProgress.Error
+            ),
             Arguments.of(
                 "1",
                 "not started",
@@ -212,22 +238,6 @@ internal class EC2TrainingScriptRunnerTest {
                 TrainingScriptProgress.Error
             ),
             Arguments.of("1", "not started", null, 1, TrainingScriptProgress.Error),
-            Arguments.of(
-                "0",
-                "completed",
-                InstanceStateName.STOPPING,
-                1,
-                TrainingScriptProgress.Completed
-            ),
-            Arguments.of("0", "completed", null, 1, TrainingScriptProgress.Completed),
-            Arguments.of("1", "completed", null, 1, TrainingScriptProgress.Error),
-            Arguments.of(
-                "1",
-                "1.0",
-                InstanceStateName.RUNNING,
-                1,
-                TrainingScriptProgress.InProgress(1.0)
-            ),
             Arguments.of("1", "1.0", InstanceStateName.STOPPING, 1, TrainingScriptProgress.Error),
             Arguments.of("1", "1.0", InstanceStateName.TERMINATED, 1, TrainingScriptProgress.Error),
             Arguments.of(
@@ -240,9 +250,9 @@ internal class EC2TrainingScriptRunnerTest {
             Arguments.of(
                 "1",
                 "initializing",
-                InstanceStateName.RUNNING,
+                InstanceStateName.SHUTTING_DOWN,
                 1,
-                TrainingScriptProgress.Initializing
+                TrainingScriptProgress.Error
             ),
             Arguments.of(
                 "2",

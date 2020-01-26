@@ -37,7 +37,8 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userMetrics = setOf("accuracy"),
                     userEpochs = 50,
                     userNewModel = it
-                )
+                ),
+                it
             ).generateScript().shouldBeValid()
         }
     }

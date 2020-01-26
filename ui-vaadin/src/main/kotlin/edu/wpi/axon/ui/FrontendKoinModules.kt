@@ -17,7 +17,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 fun defaultFrontendModule() = module {
-    single(named(axonBucketName)) { findAxonS3Bucket() }
+    single(qualifier = named(axonBucketName), createdAtStart = true) { findAxonS3Bucket() }
 
     single {
         JobDb(

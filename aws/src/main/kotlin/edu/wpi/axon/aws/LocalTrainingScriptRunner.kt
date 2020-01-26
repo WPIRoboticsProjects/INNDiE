@@ -6,6 +6,7 @@ import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.createProgressFilePath
 import edu.wpi.axon.util.runCommand
 import java.io.File
+import java.lang.NumberFormatException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicLong
@@ -54,7 +55,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
 
         val scriptId = nextScriptId.getAndIncrement()
         scriptDataMap[scriptId] = config
-        scriptProgressMap[scriptId] = TrainingScriptProgress.NotStarted
+        scriptProgressMap[scriptId] = TrainingScriptProgress.Creating
 
         scriptThreadMap[scriptId] = thread {
             scriptProgressMap[scriptId] = TrainingScriptProgress.Initializing
@@ -103,21 +104,34 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
 
         return if (scriptThreadMap[scriptId]!!.isAlive) {
             // Training thread is still running. Try to read the progress file.
-            val config = scriptDataMap[scriptId]!!
-            val modelName = config.newModelName.filename
-            val datasetName = config.dataset.progressReportingName
-            val progressFile = File(createProgressFilePath(modelName, datasetName))
-            if (progressFile.exists()) {
-                TrainingScriptProgress.InProgress(
-                    progressFile.readText().toDouble() / config.epochs
-                )
-            } else {
-                TrainingScriptProgress.InProgress(0.0)
+            when (scriptProgressMap[scriptId]!!) {
+                is TrainingScriptProgress.Initializing -> TrainingScriptProgress.Initializing
+                is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
+                is TrainingScriptProgress.Error -> TrainingScriptProgress.Error
+                else -> {
+                    val config = scriptDataMap[scriptId]!!
+                    val modelName = config.newModelName.filename
+                    val datasetName = config.dataset.progressReportingName
+                    val progressFile = File(createProgressFilePath(modelName, datasetName))
+                    if (progressFile.exists()) {
+                        try {
+                            TrainingScriptProgress.InProgress(
+                                progressFile.readText().toDouble() / config.epochs
+                            )
+                        } catch (ex: NumberFormatException) {
+                            TrainingScriptProgress.Error
+                        }
+                    } else {
+                        TrainingScriptProgress.InProgress(0.0)
+                    }
+                }
             }
         } else {
-            // Training thread died. Either it finished and wrote Completed to scriptProgressMap
-            // or exploded and didn't write Completed.
+            // Training thread died or is not started yet. If it dies, either it finished and wrote
+            // Completed to scriptProgressMap or exploded and didn't write Completed. If it is not
+            // started yet, then the status will still be Creating.
             when (scriptProgressMap[scriptId]!!) {
+                is TrainingScriptProgress.Creating -> TrainingScriptProgress.Creating
                 is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
                 else -> TrainingScriptProgress.Error
             }

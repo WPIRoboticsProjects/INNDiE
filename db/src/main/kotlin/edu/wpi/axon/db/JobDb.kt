@@ -46,7 +46,7 @@ internal object Jobs : IntIdTable() {
             userMetrics = klaxon.parseArray<String>(row[userMetrics])!!.toSet(),
             userEpochs = row[userEpochs],
             generateDebugComments = row[generateDebugComments],
-            userModel = Model.deserialize(row[userModel]),
+            userNewModel = Model.deserialize(row[userModel]),
             id = row[id].value
         )
     }
@@ -89,7 +89,7 @@ class JobDb(private val database: Database) {
                 row[userLoss] = job.userLoss.serialize()
                 row[userMetrics] = klaxon.toJsonString(job.userMetrics)
                 row[userEpochs] = job.userEpochs
-                row[userModel] = job.userModel.serialize()
+                row[userModel] = job.userNewModel.serialize()
                 row[generateDebugComments] = job.generateDebugComments
             }.value
         }

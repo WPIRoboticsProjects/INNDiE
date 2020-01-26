@@ -36,7 +36,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userMetrics = setOf("accuracy"),
                     userEpochs = 50,
                     userNewModel = it
-                )
+                ),
+                it
             ).generateScript().shouldBeValid()
         }
     }
@@ -59,7 +60,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userMetrics = setOf("accuracy"),
                     userEpochs = 50,
                     userNewModel = it
-                )
+                ),
+                it
             ).generateScript().shouldBeValid()
         }
     }
@@ -82,7 +84,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userMetrics = setOf("accuracy"),
                 userEpochs = 50,
                 userNewModel = mockk()
-            )
+            ),
+            mockk()
         ).generateScript().shouldBeInvalid()
     }
 }

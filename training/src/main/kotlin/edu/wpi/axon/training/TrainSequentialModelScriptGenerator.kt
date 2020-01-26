@@ -12,8 +12,6 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplySequentialLayerDeltaTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tflayerloader.ModelLoaderFactory
-import java.io.File
 import mu.KotlinLogging
 
 /**
@@ -23,7 +21,8 @@ import mu.KotlinLogging
  */
 @Suppress("UNUSED_VARIABLE")
 class TrainSequentialModelScriptGenerator(
-    override val trainState: TrainState<Model.Sequential>
+    override val trainState: TrainState<Model.Sequential>,
+    private val oldModel: Model.Sequential
 ) : TrainModelScriptGenerator<Model.Sequential> {
 
     init {
@@ -33,52 +32,46 @@ class TrainSequentialModelScriptGenerator(
         }
     }
 
-    private val modelLoaderFactory = ModelLoaderFactory()
-
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
         LOGGER.info {
             "Generating script with trainState:\n$trainState"
         }
 
-        val modelLoader = modelLoaderFactory.createModeLoader(trainState.userOldModelPath.path)
-        return modelLoader.load(File(trainState.userOldModelPath.path)).flatMap { oldModel ->
-            IO {
-                require(oldModel is Model.Sequential)
-                require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)
-                val reshapeArgsFromBatchShape =
-                    trainState.userNewModel.batchInputShape.map { it ?: -1 }
+        return IO {
+            require(trainState.userNewModel.batchInputShape.count { it == null } <= 1)
+            val reshapeArgsFromBatchShape =
+                trainState.userNewModel.batchInputShape.map { it ?: -1 }
 
-                val script = ScriptGenerator(
-                    DefaultPolymorphicNamedDomainObjectContainer.of(),
-                    DefaultPolymorphicNamedDomainObjectContainer.of()
-                ) {
-                    val loadedDataset = reshapeAndScaleLoadedDataset(
-                        loadDataset(trainState),
-                        reshapeArgsFromBatchShape,
-                        255
-                    )
+            val script = ScriptGenerator(
+                DefaultPolymorphicNamedDomainObjectContainer.of(),
+                DefaultPolymorphicNamedDomainObjectContainer.of()
+            ) {
+                val loadedDataset = reshapeAndScaleLoadedDataset(
+                    loadDataset(trainState),
+                    reshapeArgsFromBatchShape,
+                    255
+                )
 
-                    val model = loadModel(trainState)
+                val model = loadModel(trainState)
 
-                    val newModel by variables.creating(Variable::class)
-                    val applyLayerDeltaTask by tasks.running(ApplySequentialLayerDeltaTask::class) {
-                        modelInput = model
-                        oldLayers = oldModel.layers
-                        newLayers = trainState.userNewModel.layers
-                        newModelOutput = newModel
-                    }
-
-                    lastTask = compileTrainSave(
-                        trainState,
-                        oldModel,
-                        newModel,
-                        applyLayerDeltaTask,
-                        loadedDataset
-                    )
+                val newModel by variables.creating(Variable::class)
+                val applyLayerDeltaTask by tasks.running(ApplySequentialLayerDeltaTask::class) {
+                    modelInput = model
+                    oldLayers = oldModel.layers
+                    newLayers = trainState.userNewModel.layers
+                    newModelOutput = newModel
                 }
 
-                script.code(trainState.generateDebugComments)
+                lastTask = compileTrainSave(
+                    trainState,
+                    oldModel,
+                    newModel,
+                    applyLayerDeltaTask,
+                    loadedDataset
+                )
             }
+
+            script.code(trainState.generateDebugComments)
         }.attempt().unsafeRunSync().fold(
             { Throwables.getStackTraceAsString(it).invalidNel() },
             { it }

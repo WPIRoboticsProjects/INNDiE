@@ -12,8 +12,6 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tflayerloader.ModelLoaderFactory
-import java.io.File
 import mu.KotlinLogging
 
 /**
@@ -22,7 +20,8 @@ import mu.KotlinLogging
  * @param trainState The train state to pull all the configuration data from.
  */
 class TrainGeneralModelScriptGenerator(
-    override val trainState: TrainState<Model.General>
+    override val trainState: TrainState<Model.General>,
+    private val oldModel: Model.General
 ) : TrainModelScriptGenerator<Model.General> {
 
     init {
@@ -32,58 +31,51 @@ class TrainGeneralModelScriptGenerator(
         }
     }
 
-    private val modelLoaderFactory = ModelLoaderFactory()
-
     @Suppress("UNUSED_VARIABLE")
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
         LOGGER.info {
             "Generating script with trainState:\n$trainState"
         }
 
-        val modelLoader = modelLoaderFactory.createModeLoader(trainState.userOldModelPath.path)
-        return modelLoader.load(File(trainState.userOldModelPath.path)).flatMap { userOldModel ->
-            IO {
-                require(userOldModel is Model.General)
+        return IO {
+            val script = ScriptGenerator(
+                DefaultPolymorphicNamedDomainObjectContainer.of(),
+                DefaultPolymorphicNamedDomainObjectContainer.of()
+            ) {
+                val loadedDataset = loadDataset(trainState).let { dataset ->
+                    if (trainState.userNewModel.input.size == 1) {
+                        // Only try to transform the dataset if there is one input, similar to
+                        // the sequential model case.
 
-                val script = ScriptGenerator(
-                    DefaultPolymorphicNamedDomainObjectContainer.of(),
-                    DefaultPolymorphicNamedDomainObjectContainer.of()
-                ) {
-                    val loadedDataset = loadDataset(trainState).let { dataset ->
-                        if (trainState.userNewModel.input.size == 1) {
-                            // Only try to transform the dataset if there is one input, similar to
-                            // the sequential model case.
-
-                            val modelInput = trainState.userNewModel.input.first()
-                            require(modelInput.type.count { it == null } <= 1)
-                            val reshapeArgsFromInputType = modelInput.type.map { it ?: -1 }
-                            reshapeAndScaleLoadedDataset(dataset, reshapeArgsFromInputType, 255)
-                        } else {
-                            dataset
-                        }
+                        val modelInput = trainState.userNewModel.input.first()
+                        require(modelInput.type.count { it == null } <= 1)
+                        val reshapeArgsFromInputType = modelInput.type.map { it ?: -1 }
+                        reshapeAndScaleLoadedDataset(dataset, reshapeArgsFromInputType, 255)
+                    } else {
+                        dataset
                     }
-
-                    val model = loadModel(trainState)
-
-                    val newModelVar by variables.creating(Variable::class)
-                    val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
-                        modelInput = model
-                        oldModel = userOldModel
-                        newModel = trainState.userNewModel
-                        newModelOutput = newModelVar
-                    }
-
-                    lastTask = compileTrainSave(
-                        trainState,
-                        userOldModel,
-                        newModelVar,
-                        applyLayerDeltaTask,
-                        loadedDataset
-                    )
                 }
 
-                script.code(trainState.generateDebugComments)
+                val model = loadModel(trainState)
+
+                val newModelVar by variables.creating(Variable::class)
+                val applyLayerDeltaTask by tasks.running(ApplyFunctionalLayerDeltaTask::class) {
+                    modelInput = model
+                    oldModel = this@TrainGeneralModelScriptGenerator.oldModel
+                    newModel = trainState.userNewModel
+                    newModelOutput = newModelVar
+                }
+
+                lastTask = compileTrainSave(
+                    trainState,
+                    oldModel,
+                    newModelVar,
+                    applyLayerDeltaTask,
+                    loadedDataset
+                )
             }
+
+            script.code(trainState.generateDebugComments)
         }.attempt().unsafeRunSync().fold(
             { Throwables.getStackTraceAsString(it).invalidNel() },
             { it }

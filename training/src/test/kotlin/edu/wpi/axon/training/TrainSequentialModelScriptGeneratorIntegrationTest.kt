@@ -12,7 +12,6 @@ import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.training.testutil.testTrainingScript
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
-import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
@@ -25,32 +24,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixture() {
-
-    @Test
-    fun `test with bad model`() {
-        startKoin {
-            modules(defaultBackendModule())
-        }
-
-        val localModelPath =
-            Paths.get(this::class.java.getResource("badModel1.h5").toURI()).toString()
-        TrainSequentialModelScriptGenerator(
-            TrainState(
-                userOldModelPath = FilePath.Local(localModelPath),
-                userNewModelPath = FilePath.Local("/tmp/badModel1-trained.h5"),
-                userDataset = Dataset.ExampleDataset.Mnist,
-                userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 50,
-                userNewModel = Model.Sequential(
-                    "",
-                    emptyList(),
-                    emptySet()
-                )
-            )
-        ).generateScript().shouldBeInvalid()
-    }
 
     @Test
     @Tag("needsDockerSupport")
@@ -86,7 +59,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                             if (it.layers.size - index <= 3) layer.layer.trainable()
                             else layer.layer.trainable(false)
                         })
-                )
+                ),
+                it
             ).generateScript().shouldBeValid { script ->
                 testTrainingScript(
                     path,
@@ -130,7 +104,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                             if (it.layers.size - index <= 1) layer.layer.trainable()
                             else layer.layer.trainable(false)
                         })
-                )
+                ),
+                it
             ).generateScript().shouldBeValid { script ->
                 Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
                     .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
