@@ -18,7 +18,7 @@ infix fun <E> Iterable<E>.notAllIn(other: Iterable<E>) = !all { it in other }
  *
  * @param command The command and its arguments.
  * @param env Any extra env vars.
- * @param dir The working directory of the process.
+ * @param dir The working directory of the process, or `null` to use the parent process' current directory.
  * @return The exit code, std out, and std err.
  */
 @Suppress("BlockingMethodInNonBlockingContext")
