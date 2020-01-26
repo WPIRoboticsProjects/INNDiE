@@ -9,6 +9,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
+import edu.wpi.axon.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
@@ -30,8 +31,8 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
-                    userNewModelPath = ModelPath.Local(newModelName),
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,

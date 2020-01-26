@@ -2,7 +2,7 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.training.ModelPath
+import edu.wpi.axon.util.FilePath
 import java.lang.NumberFormatException
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
@@ -37,20 +37,32 @@ class EC2TrainingScriptRunner(
     private val scriptDataMap = mutableMapOf<Long, RunTrainingScriptConfiguration>()
 
     override fun startScript(
-        runTrainingScriptConfiguration: RunTrainingScriptConfiguration
+        config: RunTrainingScriptConfiguration
     ): Long {
-        require(runTrainingScriptConfiguration.oldModelName is ModelPath.S3)
-        require(runTrainingScriptConfiguration.newModelName is ModelPath.S3)
+        require(config.oldModelName is FilePath.S3) {
+            "Must start from a model in S3. Got: ${config.oldModelName}"
+        }
+        require(config.newModelName is FilePath.S3) {
+            "Must export to a model in S3. Got: ${config.newModelName}"
+        }
+        require(config.epochs > 0) {
+            "Must train for at least one epoch. Got ${config.epochs} epochs."
+        }
+        when (config.dataset) {
+            is Dataset.Custom -> require(config.dataset.path is FilePath.S3) {
+                "Custom datasets must be in S3. Got non-local dataset: ${config.dataset}"
+            }
+        }
 
         // The file name for the generated script
         val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
-        val newModelName = runTrainingScriptConfiguration.newModelName.filename
-        val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
+        val newModelName = config.newModelName.filename
+        val datasetName = config.dataset.progressReportingName
 
         s3Manager.uploadTrainingScript(
             scriptFileName,
-            runTrainingScriptConfiguration.scriptContents
+            config.scriptContents
         )
 
         // Reset the training progress so the script doesn't start in the completed state
@@ -61,10 +73,10 @@ class EC2TrainingScriptRunner(
 
         // We need to download custom datasets from S3. Example datasets will be downloaded
         // by the script using Keras.
-        val downloadDatasetString = when (runTrainingScriptConfiguration.dataset) {
+        val downloadDatasetString = when (config.dataset) {
             is Dataset.ExampleDataset -> ""
             is Dataset.Custom ->
-                """axon download-dataset "${runTrainingScriptConfiguration.dataset.pathInS3}""""
+                """axon download-dataset "${config.dataset.path.path}""""
         }
 
         val scriptForEC2 = """
@@ -83,7 +95,7 @@ class EC2TrainingScriptRunner(
             |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.11/axon-0.1.11-py2.py3-none-any.whl
             |axon create-heartbeat "$newModelName" "$datasetName"
             |axon update-training-progress "$newModelName" "$datasetName" "initializing"
-            |axon download-untrained-model "${runTrainingScriptConfiguration.oldModelName}"
+            |axon download-untrained-model "${config.oldModelName.path}"
             |$downloadDatasetString
             |axon download-training-script "$scriptFileName"
             |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
@@ -114,7 +126,7 @@ class EC2TrainingScriptRunner(
 
         val scriptId = nextScriptId.getAndIncrement()
         instanceIds[scriptId] = runInstancesResponse.instances().first().instanceId()
-        scriptDataMap[scriptId] = runTrainingScriptConfiguration
+        scriptDataMap[scriptId] = config
         return scriptId
     }
 
@@ -125,7 +137,7 @@ class EC2TrainingScriptRunner(
 
         val runTrainingScriptConfiguration = scriptDataMap[scriptId]!!
         val newModelName = runTrainingScriptConfiguration.newModelName.filename
-        val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
+        val datasetName = runTrainingScriptConfiguration.dataset.progressReportingName
 
         val status = try {
             ec2.describeInstanceStatus {

@@ -56,12 +56,8 @@ internal fun ScriptGenerator.loadDataset(
     is Dataset.ExampleDataset -> loadExampleDataset(trainState)
 
     is Dataset.Custom -> when {
-        trainState.userDataset.pathInS3.endsWith(".tar") ->
-            loadSuperviselyDataset(trainState)
-
-        else -> error(
-            "Unsupported dataset format: ${trainState.userDataset.pathInS3}"
-        )
+        trainState.userDataset.path.path.endsWith(".tar") -> loadSuperviselyDataset(trainState)
+        else -> error("Unsupported dataset format: ${trainState.userDataset}")
     }
 }
 
@@ -108,7 +104,7 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
     require(trainState.userDataset is Dataset.Custom)
 
     // TODO: Run conversion as a separate step so that eager execution is disabled when training
-    // LoadTFRecordOfImagesWithObjects needs eager execution
+    //  LoadTFRecordOfImagesWithObjects needs eager execution
     check(pregenerationLastTask == null) {
         "BUG: pregenerationLastTask was not null and would have been overwritten."
     }
@@ -242,13 +238,13 @@ internal fun ScriptGenerator.compileTrainSave(
     if (trainState.usesAWS) {
         tasks.run(S3ProgressReportingCallbackTask::class) {
             modelName = trainState.userNewModelPath.filename
-            datasetName = trainState.userDataset.nameForS3ProgressReporting
+            datasetName = trainState.userDataset.progressReportingName
             output = progressReportingCallback
         }
     } else {
         tasks.run(LocalProgressReportingCallbackTask::class) {
             modelName = trainState.userNewModelPath.filename
-            datasetName = trainState.userDataset.nameForS3ProgressReporting
+            datasetName = trainState.userDataset.progressReportingName
             output = progressReportingCallback
         }
     }

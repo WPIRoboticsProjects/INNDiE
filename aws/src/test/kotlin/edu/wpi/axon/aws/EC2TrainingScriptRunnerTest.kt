@@ -2,7 +2,8 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.training.ModelPath
+import edu.wpi.axon.util.FilePath
+import io.kotlintest.shouldThrow
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -20,12 +21,72 @@ internal class EC2TrainingScriptRunnerTest {
     )
 
     @Test
+    fun `test running with local old model`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startScript(
+                RunTrainingScriptConfiguration(
+                    FilePath.Local("a"),
+                    FilePath.S3("b"),
+                    Dataset.ExampleDataset.FashionMnist,
+                    "",
+                    1
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `test running with local new model`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startScript(
+                RunTrainingScriptConfiguration(
+                    FilePath.S3("a"),
+                    FilePath.Local("b"),
+                    Dataset.ExampleDataset.FashionMnist,
+                    "",
+                    1
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `test running with zero epochs`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startScript(
+                RunTrainingScriptConfiguration(
+                    FilePath.S3("a"),
+                    FilePath.S3("b"),
+                    Dataset.ExampleDataset.FashionMnist,
+                    "",
+                    0
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `test running with local dataset`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startScript(
+                RunTrainingScriptConfiguration(
+                    FilePath.S3("a"),
+                    FilePath.S3("b"),
+                    Dataset.Custom(FilePath.Local("d"), "d"),
+                    "",
+                    1
+                )
+            )
+        }
+    }
+
+    @Test
     @Disabled("Needs EC2 supervision.")
     fun `test running mnist training script`() {
         runner.startScript(
             RunTrainingScriptConfiguration(
-                ModelPath.S3("custom_fashion_mnist.h5"),
-                ModelPath.S3("custom_fashion_mnist-trained.h5"),
+                FilePath.S3("custom_fashion_mnist.h5"),
+                FilePath.S3("custom_fashion_mnist-trained.h5"),
                 Dataset.ExampleDataset.Mnist,
                 """
                 import tensorflow as tf

@@ -10,6 +10,7 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.training.testutil.testTrainingScript
+import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
@@ -35,8 +36,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             Paths.get(this::class.java.getResource("badModel1.h5").toURI()).toString()
         TrainSequentialModelScriptGenerator(
             TrainState(
-                userOldModelPath = ModelPath.Local(localModelPath),
-                userNewModelPath = ModelPath.Local("/tmp/badModel1-trained.h5"),
+                userOldModelPath = FilePath.Local(localModelPath),
+                userNewModelPath = FilePath.Local("/tmp/badModel1-trained.h5"),
                 userDataset = Dataset.ExampleDataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -72,8 +73,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
-                    userNewModelPath = ModelPath.Local(newModelName),
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -113,9 +114,12 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
-                    userNewModelPath = ModelPath.Local(newModelName),
-                    userDataset = Dataset.Custom("WPILib_reduced.tar", "WPILib reduced"),
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
+                    userDataset = Dataset.Custom(
+                        FilePath.Local("WPILib_reduced.tar"),
+                        "WPILib reduced"
+                    ),
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),
@@ -127,20 +131,19 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                             else layer.layer.trainable(false)
                         })
                 )
-            ).generateScript()
-                .shouldBeValid { script ->
-                    Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
-                        .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
-                    testTrainingScript(
-                        path,
-                        modelName,
-                        newModelName,
-                        // Patch the script because it's not meant to run in a container
-                        script.a.replace(path, modelName),
-                        tempDir,
-                        "rm -rf /home/WPILib_reduced"
-                    )
-                }
+            ).generateScript().shouldBeValid { script ->
+                Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
+                    .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
+                testTrainingScript(
+                    path,
+                    modelName,
+                    newModelName,
+                    // Patch the script because it's not meant to run in a container
+                    script.a.replace(path, modelName),
+                    tempDir,
+                    "rm -rf /home/WPILib_reduced"
+                )
+            }
         }
     }
 }

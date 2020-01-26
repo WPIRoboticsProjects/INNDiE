@@ -6,6 +6,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.util.FilePath
 
 /**
  * All configuration data needed to generate a training script.
@@ -21,8 +22,8 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
  * @param generateDebugComments Whether to put debug comments in the output.
  */
 data class TrainState<T : Model>(
-    val userOldModelPath: ModelPath,
-    val userNewModelPath: ModelPath,
+    val userOldModelPath: FilePath,
+    val userNewModelPath: FilePath,
     val userDataset: Dataset,
     val userOptimizer: Optimizer,
     val userLoss: Loss,
@@ -34,15 +35,25 @@ data class TrainState<T : Model>(
 ) {
 
     // Just need to check one because of the [require] below
-    val usesAWS = userOldModelPath is ModelPath.S3
+    val usesAWS = userOldModelPath is FilePath.S3
 
     init {
-        require(
-            (userOldModelPath is ModelPath.S3 && userNewModelPath is ModelPath.S3) ||
-                (userOldModelPath is ModelPath.Local && userNewModelPath is ModelPath.Local)
-        ) {
-            "Both the old and new model paths must be of the same type (either both are S3 or " +
-                "Local)."
+        val s3Check = when (userDataset) {
+            is Dataset.ExampleDataset -> allS3OrLocal(userOldModelPath, userNewModelPath)
+            is Dataset.Custom -> allS3OrLocal(
+                userOldModelPath,
+                userNewModelPath,
+                userDataset.path
+            )
         }
+
+        require(s3Check) {
+            "All FilePath instances must be of the same type."
+        }
+    }
+
+    private fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
+        is FilePath.S3 -> data.all { it is FilePath.S3 }
+        is FilePath.Local -> data.all { it is FilePath.Local }
     }
 }

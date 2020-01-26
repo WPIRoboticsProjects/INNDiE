@@ -10,7 +10,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
-import edu.wpi.axon.training.ModelPath
+import edu.wpi.axon.util.FilePath
 import java.io.File
 import java.nio.file.Paths
 import javax.servlet.ServletContextEvent
@@ -42,8 +42,8 @@ class WebAppListener : ServletContextListener, KoinComponent {
             Job(
                 "AWS Job",
                 TrainingScriptProgress.NotStarted,
-                ModelPath.S3(path),
-                ModelPath.S3(newModelName),
+                FilePath.S3(path),
+                FilePath.S3(newModelName),
                 Dataset.ExampleDataset.FashionMnist,
                 Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 Loss.SparseCategoricalCrossentropy,
@@ -57,8 +57,8 @@ class WebAppListener : ServletContextListener, KoinComponent {
             Job(
                 "Local Job",
                 TrainingScriptProgress.NotStarted,
-                ModelPath.Local(path),
-                ModelPath.Local(newModelName),
+                FilePath.Local(path),
+                FilePath.Local(newModelName),
                 Dataset.ExampleDataset.FashionMnist,
                 Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 Loss.SparseCategoricalCrossentropy,

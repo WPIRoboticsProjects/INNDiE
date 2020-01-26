@@ -10,6 +10,7 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.training.testutil.testTrainingScript
+import edu.wpi.axon.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
@@ -33,8 +34,8 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
-                    userNewModelPath = ModelPath.Local(newModelName),
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -62,8 +63,8 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
-                    userNewModelPath = ModelPath.Local(newModelName),
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,

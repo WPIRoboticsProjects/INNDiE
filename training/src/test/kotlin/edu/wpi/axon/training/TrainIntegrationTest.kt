@@ -7,6 +7,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
+import edu.wpi.axon.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
@@ -27,8 +28,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
-                    userNewModelPath = ModelPath.Local("/tmp/network_with_add-trained.h5"),
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local("/tmp/network_with_add-trained.h5"),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -50,8 +51,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
-                    userOldModelPath = ModelPath.Local(path),
-                    userNewModelPath = ModelPath.Local("/tmp/custom_fashion_mnist-trained.h5"),
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local("/tmp/custom_fashion_mnist-trained.h5"),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -71,10 +72,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
 
         TrainGeneralModelScriptGenerator(
             TrainState(
-                userOldModelPath = ModelPath.Local(Paths.get(
+                userOldModelPath = FilePath.Local(Paths.get(
                     this::class.java.getResource("badModel1.h5").toURI()
                 ).toString()),
-                userNewModelPath = ModelPath.Local("/tmp/badModel1-trained.h5"),
+                userNewModelPath = FilePath.Local("/tmp/badModel1-trained.h5"),
                 userDataset = Dataset.ExampleDataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,

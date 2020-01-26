@@ -7,7 +7,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.training.ModelPath
+import edu.wpi.axon.util.FilePath
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
@@ -38,8 +38,8 @@ internal object Jobs : IntIdTable() {
         return Job(
             name = row[name],
             status = TrainingScriptProgress.deserialize(row[status]),
-            userOldModelPath = ModelPath.deserialize(row[userOldModelPath]),
-            userNewModelName = ModelPath.deserialize(row[userNewModelName]),
+            userOldModelPath = FilePath.deserialize(row[userOldModelPath]),
+            userNewModelName = FilePath.deserialize(row[userNewModelName]),
             userDataset = Dataset.deserialize(row[userDataset]),
             userOptimizer = Optimizer.deserialize(row[userOptimizer]),
             userLoss = Loss.deserialize(row[userLoss]),

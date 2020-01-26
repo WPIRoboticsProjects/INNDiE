@@ -40,9 +40,9 @@ class ScriptGenerator(
     var pregenerationLastTask: Task? = null
 
     // TODO: Find an intelligent way to derive this instead of needing it to be specified
-    // Once CodeGraph verifies there are no islands, we should be able to start from any node and
-    // find the last node in the DAG. We will also have to check that there is only one node with an
-    // out-degree of 0, that node will be the last node.
+    //  Once CodeGraph verifies there are no islands, we should be able to start from any node and
+    //  find the last node in the DAG. We will also have to check that there is only one node with an
+    //  out-degree of 0, that node will be the last node.
     /**
      * The last task in the DAG. Nothing should depend on this task.
      */

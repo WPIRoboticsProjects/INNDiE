@@ -1,7 +1,8 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.dbdata.TrainingScriptProgress
-import edu.wpi.axon.training.ModelPath
+import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.runCommand
 import java.io.File
 import java.nio.file.Files
@@ -21,17 +22,28 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
     private val scriptProgressMap = mutableMapOf<Long, TrainingScriptProgress>()
     private val scriptThreadMap = mutableMapOf<Long, Thread>()
 
-    override fun startScript(runTrainingScriptConfiguration: RunTrainingScriptConfiguration): Long {
-        require(runTrainingScriptConfiguration.oldModelName is ModelPath.Local)
-        require(runTrainingScriptConfiguration.newModelName is ModelPath.Local)
-        // TODO: Ensure the dataset is local as well
+    override fun startScript(config: RunTrainingScriptConfiguration): Long {
+        require(config.oldModelName is FilePath.Local) {
+            "Must start from a local model. Got: ${config.oldModelName}"
+        }
+        require(config.newModelName is FilePath.Local) {
+            "Must export to a local model. Got: ${config.newModelName}"
+        }
+        require(config.epochs > 0) {
+            "Must train for at least one epoch. Got ${config.epochs} epochs."
+        }
+        when (config.dataset) {
+            is Dataset.Custom -> require(config.dataset.path is FilePath.Local) {
+                "Custom datasets must be local. Got non-local dataset: ${config.dataset}"
+            }
+        }
 
         val scriptFile = Files.createTempFile("", ".py").toFile()
         scriptFile.createNewFile()
-        scriptFile.writeText(runTrainingScriptConfiguration.scriptContents)
+        scriptFile.writeText(config.scriptContents)
 
-        val modelName = runTrainingScriptConfiguration.newModelName.filename
-        val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
+        val modelName = config.newModelName.filename
+        val datasetName = config.dataset.progressReportingName
         val progressFile = File(createProgressFilePath(modelName, datasetName))
         if (!progressFile.exists()) {
             // Ensure the progress file exists so that we can ensure it has no progress in it
@@ -43,7 +55,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         progressFile.writeText("0.0")
 
         val scriptId = nextScriptId.getAndIncrement()
-        scriptDataMap[scriptId] = runTrainingScriptConfiguration
+        scriptDataMap[scriptId] = config
         scriptProgressMap[scriptId] = TrainingScriptProgress.NotStarted
 
         scriptThreadMap[scriptId] = thread {
@@ -73,7 +85,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
                     }
 
                     val newModelFile =
-                        Paths.get(runTrainingScriptConfiguration.newModelName.path).toFile()
+                        Paths.get(config.newModelName.path).toFile()
                     if (newModelFile.exists()) {
                         scriptProgressMap[scriptId] = TrainingScriptProgress.Completed
                     } else {
@@ -95,7 +107,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
             // Training thread is still running. Try to read the progress file.
             val config = scriptDataMap[scriptId]!!
             val modelName = config.newModelName.filename
-            val datasetName = config.dataset.nameForS3ProgressReporting
+            val datasetName = config.dataset.progressReportingName
             val progressFile = File(createProgressFilePath(modelName, datasetName))
             if (progressFile.exists()) {
                 TrainingScriptProgress.InProgress(

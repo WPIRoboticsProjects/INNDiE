@@ -132,7 +132,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                         isIconAfterText = true
                         setWidthFull()
                         // TODO: Don't let the user run the job if it needs to use AWS but there
-                        // isn't a bucket name
+                        //  isn't a bucket name
                         onLeftClick {
                             thread(isDaemon = true) {
                                 val jobRunner = JobRunner()
@@ -162,5 +162,6 @@ class JobEditorForm : KComposite(), KoinComponent {
 }
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).jobEditorForm(block: (@VaadinDsl JobEditorForm).() -> Unit = {}): JobEditorForm =
-    init(JobEditorForm(), block)
+fun (@VaadinDsl HasComponents).jobEditorForm(
+    block: (@VaadinDsl JobEditorForm).() -> Unit = {}
+): JobEditorForm = init(JobEditorForm(), block)

@@ -13,8 +13,8 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.training.ModelPath
 import edu.wpi.axon.training.testutil.loadModel
+import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Disabled
@@ -39,8 +39,8 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         val job = Job(
             "Job 1",
             TrainingScriptProgress.NotStarted,
-            ModelPath.S3(path),
-            ModelPath.S3(newModelName),
+            FilePath.S3(path),
+            FilePath.S3(newModelName),
             Dataset.ExampleDataset.FashionMnist,
             Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             Loss.SparseCategoricalCrossentropy,
@@ -92,8 +92,8 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         val job = Job(
             "Job 1",
             TrainingScriptProgress.NotStarted,
-            ModelPath.S3(file.absolutePath),
-            ModelPath.S3(userNewModelName),
+            FilePath.S3(file.absolutePath),
+            FilePath.S3(userNewModelName),
             Dataset.ExampleDataset.Mnist,
             Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             Loss.SparseCategoricalCrossentropy,
