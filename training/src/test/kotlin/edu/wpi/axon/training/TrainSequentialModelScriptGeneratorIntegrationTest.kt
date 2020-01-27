@@ -26,7 +26,7 @@ import org.koin.dsl.module
 internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixture() {
 
     @Test
-    @Tag("needsDockerSupport")
+    @Tag("needsTensorFlowSupport")
     fun `test with fashion mnist`(@TempDir tempDir: File) {
         startKoin {
             modules(
@@ -40,8 +40,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
         }
 
         val modelName = "custom_fashion_mnist.h5"
-        // Use the current directory because this runs in a new container
-        val newModelName = "custom_fashion_mnist-trained.h5"
+        val newModelName = "$tempDir/custom_fashion_mnist-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
@@ -61,29 +60,21 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                         })
                 ),
                 it
-            ).generateScript().shouldBeValid { script ->
-                testTrainingScript(
-                    path,
-                    modelName,
-                    newModelName,
-                    // Patch the script because it's not meant to run in a container
-                    script.a.replace(path, modelName),
-                    tempDir
-                )
+            ).generateScript().shouldBeValid { (script) ->
+                testTrainingScript(tempDir, script, newModelName)
             }
         }
     }
 
     @Test
-    @Tag("needsDockerSupport")
+    @Tag("needsTensorFlowSupport")
     fun `test mobilenet with reduced wpilib dataset`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
 
         val modelName = "small_model_for_wpilib_reduced_dataset.h5"
-        // Use the current directory because this runs in a new container
-        val newModelName = "small_model_for_wpilib_reduced_dataset-trained.h5"
+        val newModelName = "$tempDir/small_model_for_wpilib_reduced_dataset-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
@@ -106,18 +97,10 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                         })
                 ),
                 it
-            ).generateScript().shouldBeValid { script ->
+            ).generateScript().shouldBeValid { (script) ->
                 Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
                     .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
-                testTrainingScript(
-                    path,
-                    modelName,
-                    newModelName,
-                    // Patch the script because it's not meant to run in a container
-                    script.a.replace(path, modelName),
-                    tempDir,
-                    "rm -rf /home/WPILib_reduced"
-                )
+                testTrainingScript(tempDir, script, newModelName)
             }
         }
     }

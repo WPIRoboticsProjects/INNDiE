@@ -22,14 +22,14 @@ import org.koin.core.context.startKoin
 internal class Conv32321IntegrationTest : KoinTestFixture() {
 
     @Test
-    @Tag("needsDockerSupport")
+    @Tag("needsTensorFlowSupport")
     fun `test with sequential`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
 
         val modelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "32_32_1_conv_sequential-trained.h5"
+        val newModelName = "$tempDir/32_32_1_conv_sequential-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
@@ -45,21 +45,20 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
-                // Patch the script because it's not meant to run in a container
-                testTrainingScript(path, modelName, newModelName, script.replace(path, modelName), tempDir)
+                testTrainingScript(tempDir, script, newModelName)
             }
         }
     }
 
     @Test
-    @Tag("needsDockerSupport")
+    @Tag("needsTensorFlowSupport")
     fun `test with general`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
 
         val modelName = "32_32_1_conv_general.h5"
-        val newModelName = "32_32_1_conv_general-trained.h5"
+        val newModelName = "$tempDir/32_32_1_conv_general-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
@@ -75,8 +74,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
-                // Patch the script because it's not meant to run in a container
-                testTrainingScript(path, modelName, newModelName, script.replace(path, modelName), tempDir)
+                testTrainingScript(tempDir, script, newModelName)
             }
         }
     }
