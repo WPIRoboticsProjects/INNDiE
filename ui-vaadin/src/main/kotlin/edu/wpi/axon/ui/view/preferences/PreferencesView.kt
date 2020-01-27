@@ -5,6 +5,7 @@ import com.github.mvysny.karibudsl.v10.beanValidationBinder
 import com.github.mvysny.karibudsl.v10.bind
 import com.github.mvysny.karibudsl.v10.button
 import com.github.mvysny.karibudsl.v10.comboBox
+import com.github.mvysny.karibudsl.v10.isExpand
 import com.github.mvysny.karibudsl.v10.numberField
 import com.github.mvysny.karibudsl.v10.onLeftClick
 import com.github.mvysny.karibudsl.v10.toLong
@@ -38,7 +39,7 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
                 }
 
                 numberField("Status Polling Delay (ms)") {
-                    // TODO: This element isn't wide enough for the label
+                    width = "12em"
                     isPreventInvalidInput = true
                     bind(binder)
                         .asRequired()
