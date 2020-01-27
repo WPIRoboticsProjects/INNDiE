@@ -170,7 +170,11 @@ class EC2TrainingScriptRunner(
     }
 
     override fun cancelScript(scriptId: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        require(scriptId in instanceIds.keys)
+
+        ec2.terminateInstances {
+            it.instanceIds(instanceIds[scriptId]!!)
+        }
     }
 
     private fun String.toBase64() =

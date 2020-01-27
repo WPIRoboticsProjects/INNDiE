@@ -164,6 +164,7 @@ internal class LocalTrainingScriptRunnerTest {
 
         while (true) {
             val progress = runner.getTrainingProgress(id)
+            println(progress)
             if (progress == TrainingScriptProgress.Completed) {
                 break
             } else if (progress == TrainingScriptProgress.Error) {
