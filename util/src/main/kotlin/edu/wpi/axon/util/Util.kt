@@ -57,4 +57,9 @@ fun runCommand(
 fun createProgressFilePath(modelName: String, datasetName: String) =
     "/tmp/progress_reporting/$modelName/$datasetName/progress.txt"
 
+fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
+    is FilePath.S3 -> data.all { it is FilePath.S3 }
+    is FilePath.Local -> data.all { it is FilePath.Local }
+}
+
 private val LOGGER = KotlinLogging.logger { }

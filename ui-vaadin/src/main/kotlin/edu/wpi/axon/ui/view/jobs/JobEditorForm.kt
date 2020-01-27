@@ -34,11 +34,13 @@ import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobRunner
+import edu.wpi.axon.util.axonBucketName
 import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
+import org.koin.core.qualifier.named
 
 @StyleSheet("styles/job-form.css")
 class JobEditorForm : KComposite(), KoinComponent {
@@ -136,8 +138,35 @@ class JobEditorForm : KComposite(), KoinComponent {
                     button("Run", Icon(VaadinIcon.PLAY)) {
                         isIconAfterText = true
                         setWidthFull()
-                        // TODO: Don't let the user run the job if it needs to use AWS but there
-                        //  isn't a bucket name
+                        binder.addStatusChangeListener {
+                            LOGGER.debug {
+                                """
+                                    job: $job
+                                """.trimIndent()
+                            }
+
+                            job.map {
+                                // The user can run the job either if:
+                                //  1. They have AWS configured and the Job uses AWS
+                                //  2. They don't have AWS configured and the Job doesn't use AWS
+                                //  3. TODO: Support for when they have AWS configured and the Job
+                                //      doesn't use AWS
+                                isEnabled = it.usesAWS.fold(
+                                    {
+                                        // The Job is configured incorrectly, don't let it run
+                                        false
+                                    },
+                                    {
+                                        // The Job is configured correctly, just need to check if
+                                        // the user has AWS configured or not. Only supporting
+                                        // (1) and (2) for now.
+                                        it.xor(
+                                            get<Option<String>>(named(axonBucketName)) is Some
+                                        ).not()
+                                    }
+                                ) ?: false // Nothing to run if there is no job bound
+                            }
+                        }
                         onLeftClick {
                             thread(isDaemon = true) { runJob() }
                         }

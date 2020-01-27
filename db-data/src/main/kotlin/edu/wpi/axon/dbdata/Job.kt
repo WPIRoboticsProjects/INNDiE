@@ -1,10 +1,14 @@
 package edu.wpi.axon.dbdata
 
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.allS3OrLocal
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -37,6 +41,30 @@ data class Job(
     var generateDebugComments: Boolean,
     var id: Int = -1
 ) {
+
+    /**
+     * Whether the Job uses AWS for anything. Is [None] if the Job configuration is incorrect
+     * (mixing AWS and local). Is [Some] if the configuration is correct.
+     */
+    val usesAWS: Option<Boolean>
+        get() {
+            val s3Check = when (val dataset = userDataset) {
+                is Dataset.ExampleDataset -> allS3OrLocal(userOldModelPath, userNewModelName)
+                is Dataset.Custom -> allS3OrLocal(
+                    userOldModelPath,
+                    userNewModelName,
+                    dataset.path
+                )
+            }
+
+            return if (s3Check) {
+                // Just need to check one because of the check above
+                Some(userOldModelPath is FilePath.S3)
+            } else {
+                // If the check failed then the configuration is wrong
+                None
+            }
+        }
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable
