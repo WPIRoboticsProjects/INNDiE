@@ -140,6 +140,11 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         }
     }
 
+    override fun cancelScript(scriptId: Long) {
+        scriptThreadMap[scriptId]?.interrupt()
+        scriptProgressMap[scriptId] = TrainingScriptProgress.Error
+    }
+
     companion object {
         private val LOGGER = KotlinLogging.logger { }
     }

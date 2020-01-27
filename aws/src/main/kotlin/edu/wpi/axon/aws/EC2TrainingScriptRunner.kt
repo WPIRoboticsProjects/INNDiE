@@ -169,6 +169,10 @@ class EC2TrainingScriptRunner(
         )
     }
 
+    override fun cancelScript(scriptId: Long) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     private fun String.toBase64() =
         Base64.getEncoder().encodeToString(byteInputStream().readAllBytes())
 

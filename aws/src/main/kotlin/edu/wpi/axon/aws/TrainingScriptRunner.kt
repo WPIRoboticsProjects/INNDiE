@@ -19,4 +19,12 @@ interface TrainingScriptRunner {
      * @return The current progress state of the script.
      */
     fun getTrainingProgress(scriptId: Long): TrainingScriptProgress
+
+    /**
+     * Cancels the script. If the script is currently running, it is interrupted. If the script is
+     * not running, this method does nothing.
+     *
+     * @param scriptId The id of the script, from [startScript].
+     */
+    fun cancelScript(scriptId: Long)
 }

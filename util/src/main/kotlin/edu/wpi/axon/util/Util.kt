@@ -39,7 +39,14 @@ fun runCommand(
 
     BufferedReader(InputStreamReader(proc.inputStream)).useLines { procStdOut ->
         BufferedReader(InputStreamReader(proc.errorStream)).useLines { procStdErr ->
-            val exitCode = proc.waitFor()
+            val exitCode = try {
+                proc.waitFor()
+            } catch (ex: InterruptedException) {
+                // An interruption means that the caller wants the command to be stopped immediately
+                proc.destroyForcibly()
+                throw RuntimeException("Forcibly destroyed the runCommand process.", ex)
+            }
+
             Tuple3(
                 exitCode,
                 procStdOut.joinToString("\n"),
