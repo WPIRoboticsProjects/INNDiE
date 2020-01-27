@@ -33,6 +33,7 @@ internal class EC2TrainingScriptRunnerTest {
                     FilePath.S3("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
+                    1,
                     1
                 )
             )
@@ -48,6 +49,7 @@ internal class EC2TrainingScriptRunnerTest {
                     FilePath.Local("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
+                    1,
                     1
                 )
             )
@@ -63,7 +65,8 @@ internal class EC2TrainingScriptRunnerTest {
                     FilePath.S3("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
-                    0
+                    0,
+                    1
                 )
             )
         }
@@ -78,6 +81,7 @@ internal class EC2TrainingScriptRunnerTest {
                     FilePath.S3("b"),
                     Dataset.Custom(FilePath.Local("d"), "d"),
                     "",
+                    1,
                     1
                 )
             )
@@ -88,7 +92,8 @@ internal class EC2TrainingScriptRunnerTest {
     @Timeout(value = 15, unit = TimeUnit.MINUTES)
     @Disabled("Needs EC2 supervision.")
     fun `test running mnist training script`() {
-        val id = runner.startScript(
+        val id = 1
+        runner.startScript(
             RunTrainingScriptConfiguration(
                 FilePath.S3("custom_fashion_mnist.h5"),
                 FilePath.S3("custom_fashion_mnist-trained.h5"),
@@ -163,7 +168,8 @@ internal class EC2TrainingScriptRunnerTest {
 
                 var12.save("custom_fashion_mnist-trained.h5")
                 """.trimIndent(),
-                1
+                1,
+                id
             )
         )
 
@@ -183,7 +189,8 @@ internal class EC2TrainingScriptRunnerTest {
     @Timeout(value = 15, unit = TimeUnit.MINUTES)
     @Disabled("Needs EC2 supervision.")
     fun `test terminating mnist training script`() {
-        val id = runner.startScript(
+        val id = 1
+        runner.startScript(
             RunTrainingScriptConfiguration(
                 FilePath.S3("custom_fashion_mnist.h5"),
                 FilePath.S3("custom_fashion_mnist-trained.h5"),
@@ -258,7 +265,8 @@ internal class EC2TrainingScriptRunnerTest {
 
                 var12.save("custom_fashion_mnist-trained.h5")
                 """.trimIndent(),
-                1
+                1,
+                id
             )
         )
 

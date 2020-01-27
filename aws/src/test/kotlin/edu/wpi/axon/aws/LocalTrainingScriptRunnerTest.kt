@@ -26,6 +26,7 @@ internal class LocalTrainingScriptRunnerTest {
                     FilePath.Local("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
+                    1,
                     1
                 )
             )
@@ -41,6 +42,7 @@ internal class LocalTrainingScriptRunnerTest {
                     FilePath.S3("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
+                    1,
                     1
                 )
             )
@@ -56,7 +58,8 @@ internal class LocalTrainingScriptRunnerTest {
                     FilePath.Local("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
-                    0
+                    0,
+                    1
                 )
             )
         }
@@ -71,6 +74,7 @@ internal class LocalTrainingScriptRunnerTest {
                     FilePath.Local("b"),
                     Dataset.Custom(FilePath.S3("d"), "d"),
                     "",
+                    1,
                     1
                 )
             )
@@ -83,7 +87,8 @@ internal class LocalTrainingScriptRunnerTest {
     fun `test running mnist training script`(@TempDir tempDir: File) {
         val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
         val newModelPath = "${tempDir.absolutePath}/custom_fashion_mnist-trained.h5"
-        val id = runner.startScript(
+        val id = 1
+        runner.startScript(
             RunTrainingScriptConfiguration(
                 FilePath.Local(oldModelPath),
                 FilePath.Local(newModelPath),
@@ -158,7 +163,8 @@ internal class LocalTrainingScriptRunnerTest {
 
                 var12.save("$newModelPath")
                 """.trimIndent(),
-                1
+                1,
+                id
             )
         )
 
@@ -180,7 +186,8 @@ internal class LocalTrainingScriptRunnerTest {
     fun `test cancelling mnist training script`(@TempDir tempDir: File) {
         val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
         val newModelPath = "${tempDir.absolutePath}/custom_fashion_mnist-trained.h5"
-        val id = runner.startScript(
+        val id = 1
+        runner.startScript(
             RunTrainingScriptConfiguration(
                 FilePath.Local(oldModelPath),
                 FilePath.Local(newModelPath),
@@ -255,7 +262,8 @@ internal class LocalTrainingScriptRunnerTest {
 
                 var12.save("$newModelPath")
                 """.trimIndent(),
-                1
+                1,
+                id
             )
         )
 
