@@ -104,7 +104,7 @@ class EC2TrainingScriptRunner(
             |shutdown -h now
             """.trimMargin()
 
-        LOGGER.info {
+        LOGGER.debug {
             """
             |Sending script to EC2:
             |$scriptForEC2
@@ -150,7 +150,7 @@ class EC2TrainingScriptRunner(
                     )
             }.instanceStatuses().firstOrNull()?.instanceState()?.name()
         } catch (ex: Ec2Exception) {
-            LOGGER.warn(ex) { "Failed to get instance status." }
+            LOGGER.debug(ex) { "Failed to get instance status." }
             null
         }
 

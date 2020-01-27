@@ -63,11 +63,11 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
                 null
             ).attempt().unsafeRunSync().fold(
                 {
-                    LOGGER.warn(it) { "Training script failed." }
+                    LOGGER.debug(it) { "Training script failed." }
                     scriptProgressMap[config.id] = TrainingScriptProgress.Error
                 },
                 { (exitCode, stdOut, stdErr) ->
-                    LOGGER.info {
+                    LOGGER.debug {
                         """
                         |Training script completed.
                         |Process exit code: $exitCode

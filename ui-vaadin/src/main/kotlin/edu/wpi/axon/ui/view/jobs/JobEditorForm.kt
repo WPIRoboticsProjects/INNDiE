@@ -136,11 +136,13 @@ class JobEditorForm : KComposite(), KoinComponent {
                         isIconAfterText = true
                         setWidthFull()
                         onLeftClick {
-                            job.map {
+                            job.map { job ->
                                 // TODO: Handle errors cancelling the Job
-                                jobRunner.cancelJob(it.id).unsafeRunSync()
-                                jobDb.remove(it)
-                                JobsView.navigateTo()
+                                jobRunner.cancelJob(job.id).map {
+                                    // Only remove the Job if it was successfully cancelled
+                                    jobDb.remove(job)
+                                    JobsView.navigateTo()
+                                }.unsafeRunSync()
                             }
                         }
                     }
@@ -199,6 +201,30 @@ class JobEditorForm : KComposite(), KoinComponent {
                                         }
                                     }
                                 )
+                            }
+                        }
+                    }
+                    button("Cancel", Icon(VaadinIcon.STOP)) {
+                        addThemeVariants(ButtonVariant.LUMO_ERROR)
+                        setWidthFull()
+                        binder.addStatusChangeListener {
+                            isEnabled = job.fold(
+                                {
+                                    // Nothing to cancel if there is no Job bound
+                                    false
+                                },
+                                {
+                                    // Nothing to cancel if the Job is not running
+                                    it.status != TrainingScriptProgress.NotStarted &&
+                                        it.status != TrainingScriptProgress.Completed &&
+                                        it.status != TrainingScriptProgress.Error
+                                }
+                            )
+                        }
+                        onLeftClick {
+                            job.map { job ->
+                                // TODO: Handle errors cancelling the Job
+                                jobRunner.cancelJob(job.id).unsafeRunSync()
                             }
                         }
                     }
