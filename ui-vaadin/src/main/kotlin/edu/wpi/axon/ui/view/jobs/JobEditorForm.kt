@@ -139,35 +139,38 @@ class JobEditorForm : KComposite(), KoinComponent {
                         isIconAfterText = true
                         setWidthFull()
                         binder.addStatusChangeListener {
-                            LOGGER.debug {
-                                """
-                                    job: $job
-                                """.trimIndent()
-                            }
-
                             isEnabled = job.fold(
                                 {
                                     // Nothing to run if there is no job bound
                                     false
                                 },
                                 {
+                                    val bucket = get<Option<String>>(named(axonBucketName))
+
+                                    LOGGER.debug {
+                                        """
+                                            job=$it
+                                            usesAWS=${it.usesAWS}
+                                            bucket=$bucket
+                                        """.trimIndent()
+                                    }
+
                                     // The user can run the job either if:
                                     //  1. They have AWS configured and the Job uses AWS
-                                    //  2. They don't have AWS configured and the Job doesn't use AWS
-                                    //  3. TODO: Support for when they have AWS configured and the Job
-                                    //      doesn't use AWS
+                                    //  2. They don't have AWS configured and the Job doesn't use
+                                    //      AWS
+                                    //  3. TODO: Support for when they have AWS configured and the
+                                    //      Job doesn't use AWS
                                     it.usesAWS.fold(
                                         {
                                             // The Job is configured incorrectly, don't let it run
                                             false
                                         },
                                         {
-                                            // The Job is configured correctly, just need to check if
-                                            // the user has AWS configured or not. Only supporting
-                                            // (1) and (2) for now.
-                                            it.xor(
-                                                get<Option<String>>(named(axonBucketName)) is Some
-                                            ).not()
+                                            // The Job is configured correctly, just need to check
+                                            // if the user has AWS configured or not. Only
+                                            // supporting (1) and (2) for now.
+                                            it.xor(bucket is Some).not()
                                         }
                                     )
                                 }
