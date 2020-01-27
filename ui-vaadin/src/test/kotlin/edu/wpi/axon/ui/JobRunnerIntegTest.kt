@@ -53,7 +53,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
         val jobRunner = JobRunner(5000)
         jobRunner.startJob(job).flatMap { id ->
-            jobRunner.waitForCompleted(id) { println(it) }
+            jobRunner.waitForFinish(id) { println(it) }
         }.unsafeRunSync()
     }
 
@@ -106,7 +106,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
         val jobRunner = JobRunner(5000)
         jobRunner.startJob(job).flatMap { id ->
-            jobRunner.waitForCompleted(id) { println(it) }
+            jobRunner.waitForFinish(id) { println(it) }
         }.unsafeRunSync()
     }
 }

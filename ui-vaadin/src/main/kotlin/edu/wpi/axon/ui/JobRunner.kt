@@ -169,7 +169,7 @@ class JobRunner : KoinComponent {
      * every time it is polled.
      * @return An [IO] for continuation.
      */
-    fun waitForCompleted(id: Int, progressUpdate: (TrainingScriptProgress) -> Unit): IO<Unit> {
+    fun waitForFinish(id: Int, progressUpdate: (TrainingScriptProgress) -> Unit): IO<Unit> {
         // Get the latest statusPollingDelay in case the user changed it
         val statusPollingDelay = get<PreferencesManager>().get().statusPollingDelay
         return IO.tailRecM(runners[id]!!.getTrainingProgress(id)) {

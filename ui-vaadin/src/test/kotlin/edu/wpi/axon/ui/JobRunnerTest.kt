@@ -36,7 +36,7 @@ internal class JobRunnerTest : KoinTestFixture() {
         }
 
         val jobRunner = JobRunner(1)
-        jobRunner.waitForCompleted(id) {}.unsafeRunSync()
+        jobRunner.waitForFinish(id) {}.unsafeRunSync()
 
         verifyAll {
             mockTrainingScriptRunner.getTrainingProgress(id)

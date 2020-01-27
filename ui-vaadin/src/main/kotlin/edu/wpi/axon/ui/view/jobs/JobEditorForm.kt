@@ -34,6 +34,10 @@ import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobRunner
 import edu.wpi.axon.util.axonBucketName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
@@ -46,6 +50,7 @@ class JobEditorForm : KComposite(), KoinComponent {
 
     private val jobDb by inject<JobDb>()
     private val jobRunner by inject<JobRunner>()
+    private val scope = CoroutineScope(Dispatchers.Default)
     private lateinit var form: FormLayout
     private val binder = beanValidationBinder<Job>()
 
@@ -183,7 +188,18 @@ class JobEditorForm : KComposite(), KoinComponent {
                             )
                         }
                         onLeftClick {
-                            thread(isDaemon = true) { runJob() }
+                            thread(isDaemon = true) {
+                                job.fold(
+                                    {
+                                        LOGGER.debug { "Could not run the Job because it is None." }
+                                    },
+                                    { job ->
+                                        scope.launch {
+                                            runJob(job)
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -195,25 +211,18 @@ class JobEditorForm : KComposite(), KoinComponent {
         isVisible = false
     }
 
-    private fun runJob() {
-        job.fold(
-            { LOGGER.debug { "Could not run the Job because it is None." } },
-            { job ->
-                IO.fx {
-                    jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
+    private suspend fun runJob(job: Job) = IO.fx {
+        jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
 
-                    jobRunner.startJob(job).bind()
-                    LOGGER.debug { "Started job with id: $id" }
+        jobRunner.startJob(job).bind()
+        LOGGER.debug { "Started job with id: $id" }
 
-                    Thread.sleep(5000)
+        effect { delay(5000) }.bind()
 
-                    jobRunner.waitForCompleted(job.id) {
-                        jobDb.update(job.copy(status = it))
-                    }.bind()
-                }.unsafeRunSync() // TODO: Handle errors here
-            }
-        )
-    }
+        jobRunner.waitForFinish(job.id) {
+            jobDb.update(job.copy(status = it))
+        }.bind()
+    }.unsafeRunSync() // TODO: Handle errors here
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
