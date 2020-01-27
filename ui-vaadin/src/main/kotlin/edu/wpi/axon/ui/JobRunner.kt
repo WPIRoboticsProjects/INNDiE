@@ -6,9 +6,12 @@ import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
 import arrow.fx.extensions.fx
+import edu.wpi.axon.aws.EC2TrainingScriptRunner
+import edu.wpi.axon.aws.LocalTrainingScriptRunner
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
 import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.aws.TrainingScriptRunner
+import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
@@ -23,28 +26,51 @@ import kotlinx.coroutines.delay
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
-import org.koin.core.inject
 import org.koin.core.qualifier.named
 
-class JobRunner(
-    private val statusPollingDelay: Long
-) : KoinComponent {
+/**
+ * Handles the lifecycle of running and managing Jobs. There is only one instance of this class
+ * when Axon is run in production.
+ */
+class JobRunner : KoinComponent {
 
-    private val scriptRunner: TrainingScriptRunner by inject()
-
-    init {
-        LOGGER.debug {
-            "statusPollingDelay=$statusPollingDelay"
-        }
-    }
+    private val runners = mutableMapOf<Int, TrainingScriptRunner>()
 
     /**
-     * Generates the code for a job and starts it on EC2.
+     * Generates the code for a job and starts it.
      *
      * @param job The [Job] to run.
-     * @return The script id of the script that was started.
+     * @return An [IO] for continuation.
      */
-    fun startJob(job: Job): IO<Long> = IO.fx {
+    @Suppress("ThrowableNotThrown")
+    fun startJob(job: Job): IO<Unit> = IO.fx {
+        // Verify that we can start the job
+        runners[job.id]?.let {
+            when (it.getTrainingProgress(job.id)) {
+                // These states are ok
+                TrainingScriptProgress.NotStarted,
+                TrainingScriptProgress.Completed,
+                TrainingScriptProgress.Error -> Unit
+
+                // Any other states are not allowed
+                else -> IO.raiseError<Unit>(
+                    IllegalArgumentException("Cannot start a job that is currently running.")
+                ).bind()
+            }
+        }
+
+        // Verify that usesAWS is configured correctly
+        val jobUsesAWS = job.usesAWS.fold(
+            {
+                IO.raiseError<Boolean>(
+                    IllegalArgumentException(
+                        "Cannot start a Job that is configured incorrectly (usesAWS failed)."
+                    )
+                ).bind()
+            },
+            { it }
+        )
+
         // TODO: Loading the old model will need to be done earlier by another part of Axon. This
         //  code is temporary.
         // If the model to start training from is in S3, we need to download it
@@ -89,37 +115,75 @@ class JobRunner(
             { IO.just(it) }
         ).bind()
 
+        // Create the correct TrainingScriptRunner based on whether the Job needs to use AWS
+        val scriptRunner = if (jobUsesAWS) {
+            val bucket = get<Option<String>>(named(axonBucketName)).fold(
+                {
+                    IO.raiseError<String>(
+                        IllegalStateException(
+                            "Tried to create an EC2TrainingScriptRunner but did not have a " +
+                                "bucket configured."
+                        )
+                    ).bind()
+                },
+                { it }
+            )
+
+            EC2TrainingScriptRunner(
+                bucket,
+                // TODO: Allow overriding the default node type in the Job editor form
+                get<PreferencesManager>().get().defaultEC2NodeType
+            )
+        } else {
+            LocalTrainingScriptRunner()
+        }
+
+        runners[job.id] = scriptRunner
         scriptRunner.startScript(
             RunTrainingScriptConfiguration(
                 oldModelName = job.userOldModelPath,
                 newModelName = job.userNewModelName,
                 dataset = job.userDataset,
                 scriptContents = script,
-                epochs = job.userEpochs
+                epochs = job.userEpochs,
+                id = job.id
             )
         )
     }
 
     /**
+     * Cancels the Job. If the Job is currently running, it is interrupted. If the Job is not
+     * running, this method does nothing.
+     *
+     * @param id The id of the Job to cancel.
+     */
+    fun cancelJob(id: Int): IO<Unit> = IO {
+        runners[id]!!.cancelScript(id)
+    }
+
+    /**
      * Waits until the [TrainingScriptProgress] state is either completed or error.
      *
-     * @param id The script id.
+     * @param id The Job id.
      * @param progressUpdate A callback that is given the current [TrainingScriptProgress] state
      * every time it is polled.
      * @return An [IO] for continuation.
      */
-    fun waitForCompleted(id: Long, progressUpdate: (TrainingScriptProgress) -> Unit): IO<Unit> =
-        IO.tailRecM(scriptRunner.getTrainingProgress(id)) {
+    fun waitForCompleted(id: Int, progressUpdate: (TrainingScriptProgress) -> Unit): IO<Unit> {
+        // Get the latest statusPollingDelay in case the user changed it
+        val statusPollingDelay = get<PreferencesManager>().get().statusPollingDelay
+        return IO.tailRecM(runners[id]!!.getTrainingProgress(id)) {
             IO {
                 progressUpdate(it)
                 if (it == TrainingScriptProgress.Completed || it == TrainingScriptProgress.Error) {
                     Either.Right(Unit)
                 } else {
                     delay(statusPollingDelay)
-                    Either.Left(scriptRunner.getTrainingProgress(id))
+                    Either.Left(runners[id]!!.getTrainingProgress(id))
                 }
             }
         }
+    }
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : Model> toTrainState(job: Job): TrainState<T> = TrainState(

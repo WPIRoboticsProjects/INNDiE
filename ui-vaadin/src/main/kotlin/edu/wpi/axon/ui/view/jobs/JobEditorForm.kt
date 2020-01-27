@@ -28,7 +28,6 @@ import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
-import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
@@ -46,6 +45,7 @@ import org.koin.core.qualifier.named
 class JobEditorForm : KComposite(), KoinComponent {
 
     private val jobDb by inject<JobDb>()
+    private val jobRunner by inject<JobRunner>()
     private lateinit var form: FormLayout
     private val binder = beanValidationBinder<Job>()
 
@@ -86,7 +86,9 @@ class JobEditorForm : KComposite(), KoinComponent {
                     formItem("Dataset") {
                         comboBox<Dataset> {
                             setWidthFull()
-                            setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull { it.objectInstance })
+                            setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
+                                it.objectInstance
+                            })
                             setItemLabelGenerator { it.displayName }
                             bind(binder).asRequired().bind(Job::userDataset)
                         }
@@ -130,6 +132,8 @@ class JobEditorForm : KComposite(), KoinComponent {
                         setWidthFull()
                         onLeftClick {
                             job.map {
+                                // TODO: Handle errors cancelling the Job
+                                jobRunner.cancelJob(it.id).unsafeRunSync()
                                 jobDb.remove(it)
                                 JobsView.navigateTo()
                             }
@@ -160,22 +164,19 @@ class JobEditorForm : KComposite(), KoinComponent {
                                         """.trimIndent()
                                     }
 
-                                    // The user can run the job either if:
-                                    //  1. They have AWS configured and the Job uses AWS
-                                    //  2. They don't have AWS configured and the Job doesn't use
-                                    //      AWS
-                                    //  3. TODO: Support for when they have AWS configured and the
-                                    //      Job doesn't use AWS
                                     it.usesAWS.fold(
                                         {
                                             // The Job is configured incorrectly, don't let it run
                                             false
                                         },
-                                        {
-                                            // The Job is configured correctly, just need to check
-                                            // if the user has AWS configured or not. Only
-                                            // supporting (1) and (2) for now.
-                                            it.xor(bucket is Some).not()
+                                        { jobUsesAWS ->
+                                            // The user can run the job if:
+                                            //  1. They have AWS configured and the Job uses AWS
+                                            //  2. They don't have AWS configured and the Job
+                                            //      doesn't use AWS
+                                            //  3. They have AWS configured and the Job doesn't
+                                            //      use AWS
+                                            (bucket is Some) || !jobUsesAWS
                                         }
                                     )
                                 }
@@ -196,22 +197,17 @@ class JobEditorForm : KComposite(), KoinComponent {
 
     private fun runJob() {
         job.fold(
-            {
-                LOGGER.warn {
-                    "Could not run the Job because it is None."
-                }
-            },
+            { LOGGER.debug { "Could not run the Job because it is None." } },
             { job ->
                 IO.fx {
                     jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
 
-                    val jobRunner = JobRunner(get<PreferencesManager>().get().statusPollingDelay)
-                    val id = jobRunner.startJob(job).bind()
-                    LOGGER.info { "Started job with id: $id" }
+                    jobRunner.startJob(job).bind()
+                    LOGGER.debug { "Started job with id: $id" }
 
                     Thread.sleep(5000)
 
-                    jobRunner.waitForCompleted(id) {
+                    jobRunner.waitForCompleted(job.id) {
                         jobDb.update(job.copy(status = it))
                     }.bind()
                 }.unsafeRunSync() // TODO: Handle errors here

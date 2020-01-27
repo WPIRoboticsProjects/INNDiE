@@ -9,7 +9,6 @@ import java.io.File
 import java.lang.NumberFormatException
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.concurrent.atomic.AtomicLong
 import kotlin.concurrent.thread
 import mu.KotlinLogging
 
@@ -19,12 +18,11 @@ import mu.KotlinLogging
  */
 class LocalTrainingScriptRunner : TrainingScriptRunner {
 
-    private val nextScriptId = AtomicLong()
-    private val scriptDataMap = mutableMapOf<Long, RunTrainingScriptConfiguration>()
-    private val scriptProgressMap = mutableMapOf<Long, TrainingScriptProgress>()
-    private val scriptThreadMap = mutableMapOf<Long, Thread>()
+    private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
+    private val scriptProgressMap = mutableMapOf<Int, TrainingScriptProgress>()
+    private val scriptThreadMap = mutableMapOf<Int, Thread>()
 
-    override fun startScript(config: RunTrainingScriptConfiguration): Long {
+    override fun startScript(config: RunTrainingScriptConfiguration) {
         require(config.oldModelName is FilePath.Local) {
             "Must start from a local model. Got: ${config.oldModelName}"
         }
@@ -53,12 +51,11 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         progressFile.createNewFile()
         progressFile.writeText("0.0")
 
-        val scriptId = nextScriptId.getAndIncrement()
-        scriptDataMap[scriptId] = config
-        scriptProgressMap[scriptId] = TrainingScriptProgress.Creating
+        scriptDataMap[config.id] = config
+        scriptProgressMap[config.id] = TrainingScriptProgress.Creating
 
-        scriptThreadMap[scriptId] = thread {
-            scriptProgressMap[scriptId] = TrainingScriptProgress.Initializing
+        scriptThreadMap[config.id] = thread {
+            scriptProgressMap[config.id] = TrainingScriptProgress.Initializing
 
             runCommand(
                 listOf("python3.6", scriptFile.absolutePath),
@@ -67,7 +64,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
             ).attempt().unsafeRunSync().fold(
                 {
                     LOGGER.warn(it) { "Training script failed." }
-                    scriptProgressMap[scriptId] = TrainingScriptProgress.Error
+                    scriptProgressMap[config.id] = TrainingScriptProgress.Error
                 },
                 { (exitCode, stdOut, stdErr) ->
                     LOGGER.info {
@@ -86,32 +83,30 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
                     val newModelFile =
                         Paths.get(config.newModelName.path).toFile()
                     if (newModelFile.exists()) {
-                        scriptProgressMap[scriptId] = TrainingScriptProgress.Completed
+                        scriptProgressMap[config.id] = TrainingScriptProgress.Completed
                     } else {
-                        scriptProgressMap[scriptId] = TrainingScriptProgress.Error
+                        scriptProgressMap[config.id] = TrainingScriptProgress.Error
                     }
                 }
             )
         }
-
-        return scriptId
     }
 
-    override fun getTrainingProgress(scriptId: Long): TrainingScriptProgress {
-        require(scriptId in scriptDataMap.keys)
-        require(scriptId in scriptThreadMap.keys)
-        require(scriptId in scriptProgressMap.keys)
+    override fun getTrainingProgress(jobId: Int): TrainingScriptProgress {
+        require(jobId in scriptDataMap.keys)
+        require(jobId in scriptThreadMap.keys)
+        require(jobId in scriptProgressMap.keys)
 
-        return if (scriptThreadMap[scriptId]!!.isAlive) {
+        return if (scriptThreadMap[jobId]!!.isAlive) {
             // Training thread is still running. Try to read the progress file.
-            when (scriptProgressMap[scriptId]!!) {
+            when (scriptProgressMap[jobId]!!) {
                 // These statuses are reasonable
                 is TrainingScriptProgress.Initializing -> TrainingScriptProgress.Initializing
                 is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
                 is TrainingScriptProgress.Error -> TrainingScriptProgress.Error
                 else -> {
                     // Otherwise it must be InProgress
-                    val config = scriptDataMap[scriptId]!!
+                    val config = scriptDataMap[jobId]!!
                     val modelName = config.newModelName.filename
                     val datasetName = config.dataset.progressReportingName
                     val progressFile = File(createProgressFilePath(modelName, datasetName))
@@ -132,7 +127,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
             // Training thread died or is not started yet. If it dies, either it finished and wrote
             // Completed to scriptProgressMap or exploded and didn't write Completed. If it is not
             // started yet, then the status will still be Creating.
-            when (scriptProgressMap[scriptId]!!) {
+            when (scriptProgressMap[jobId]!!) {
                 is TrainingScriptProgress.Creating -> TrainingScriptProgress.Creating
                 is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
                 else -> TrainingScriptProgress.Error
@@ -140,9 +135,9 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         }
     }
 
-    override fun cancelScript(scriptId: Long) {
-        scriptThreadMap[scriptId]?.interrupt()
-        scriptProgressMap[scriptId] = TrainingScriptProgress.Error
+    override fun cancelScript(jobId: Int) {
+        scriptThreadMap[jobId]?.interrupt()
+        scriptProgressMap[jobId] = TrainingScriptProgress.Error
     }
 
     companion object {
