@@ -7,6 +7,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.allS3OrLocal
 
 /**
  * All configuration data needed to generate a training script.
@@ -50,10 +51,5 @@ data class TrainState<T : Model>(
         require(s3Check) {
             "All FilePath instances must be of the same type."
         }
-    }
-
-    private fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
-        is FilePath.S3 -> data.all { it is FilePath.S3 }
-        is FilePath.Local -> data.all { it is FilePath.Local }
     }
 }

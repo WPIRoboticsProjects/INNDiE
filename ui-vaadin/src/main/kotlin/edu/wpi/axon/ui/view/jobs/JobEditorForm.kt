@@ -28,22 +28,29 @@ import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
-import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.dbdata.Job
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobRunner
+import edu.wpi.axon.util.axonBucketName
 import kotlin.concurrent.thread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
+import org.koin.core.qualifier.named
 
 @StyleSheet("styles/job-form.css")
 class JobEditorForm : KComposite(), KoinComponent {
 
     private val jobDb by inject<JobDb>()
+    private val jobRunner by inject<JobRunner>()
+    private val scope = CoroutineScope(Dispatchers.Default)
     private lateinit var form: FormLayout
     private val binder = beanValidationBinder<Job>()
 
@@ -84,7 +91,9 @@ class JobEditorForm : KComposite(), KoinComponent {
                     formItem("Dataset") {
                         comboBox<Dataset> {
                             setWidthFull()
-                            setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull { it.objectInstance })
+                            setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
+                                it.objectInstance
+                            })
                             setItemLabelGenerator { it.displayName }
                             bind(binder).asRequired().bind(Job::userDataset)
                         }
@@ -127,19 +136,96 @@ class JobEditorForm : KComposite(), KoinComponent {
                         isIconAfterText = true
                         setWidthFull()
                         onLeftClick {
-                            job.map {
-                                jobDb.remove(it)
-                                JobsView.navigateTo()
+                            job.map { job ->
+                                // TODO: Handle errors cancelling the Job
+                                jobRunner.cancelJob(job.id).map {
+                                    // Only remove the Job if it was successfully cancelled
+                                    jobDb.remove(job)
+                                    JobsView.navigateTo()
+                                }.unsafeRunSync()
                             }
                         }
                     }
                     button("Run", Icon(VaadinIcon.PLAY)) {
                         isIconAfterText = true
                         setWidthFull()
-                        // TODO: Don't let the user run the job if it needs to use AWS but there
-                        //  isn't a bucket name
+                        binder.addStatusChangeListener {
+                            isEnabled = job.fold(
+                                {
+                                    // Nothing to run if there is no job bound
+                                    false
+                                },
+                                {
+                                    if (it.status != TrainingScriptProgress.NotStarted) {
+                                        // Don't let the user run jobs that are currently running
+                                        return@fold false
+                                    }
+
+                                    val bucket = get<Option<String>>(named(axonBucketName))
+
+                                    LOGGER.debug {
+                                        """
+                                            job=$it
+                                            usesAWS=${it.usesAWS}
+                                            bucket=$bucket
+                                        """.trimIndent()
+                                    }
+
+                                    it.usesAWS.fold(
+                                        {
+                                            // The Job is configured incorrectly, don't let it run
+                                            false
+                                        },
+                                        { jobUsesAWS ->
+                                            // The user can run the job if:
+                                            //  1. They have AWS configured and the Job uses AWS
+                                            //  2. They don't have AWS configured and the Job
+                                            //      doesn't use AWS
+                                            //  3. They have AWS configured and the Job doesn't
+                                            //      use AWS
+                                            (bucket is Some) || !jobUsesAWS
+                                        }
+                                    )
+                                }
+                            )
+                        }
                         onLeftClick {
-                            thread(isDaemon = true) { runJob() }
+                            thread(isDaemon = true) {
+                                job.fold(
+                                    {
+                                        LOGGER.debug { "Could not run the Job because it is None." }
+                                    },
+                                    { job ->
+                                        scope.launch {
+                                            runJob(job)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    button("Cancel", Icon(VaadinIcon.STOP)) {
+                        addThemeVariants(ButtonVariant.LUMO_ERROR)
+                        setWidthFull()
+                        binder.addStatusChangeListener {
+                            isEnabled = job.fold(
+                                {
+                                    // Nothing to cancel if there is no Job bound
+                                    false
+                                },
+                                {
+                                    // Nothing to cancel if the Job is not running
+                                    it.status != TrainingScriptProgress.NotStarted &&
+                                        it.status != TrainingScriptProgress.Completed &&
+                                        it.status != TrainingScriptProgress.Error
+                                }
+                            )
+                        }
+                        onLeftClick {
+                            job.map { job ->
+                                // TODO: Handle errors cancelling the Job
+                                jobRunner.cancelJob(job.id).unsafeRunSync()
+                            }
                         }
                     }
                 }
@@ -151,30 +237,18 @@ class JobEditorForm : KComposite(), KoinComponent {
         isVisible = false
     }
 
-    private fun runJob() {
-        job.fold(
-            {
-                LOGGER.warn {
-                    "Could not run the Job because it is None."
-                }
-            },
-            { job ->
-                IO.fx {
-                    jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
+    private suspend fun runJob(job: Job) = IO.fx {
+        jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
 
-                    val jobRunner = JobRunner(get<PreferencesManager>().get().statusPollingDelay)
-                    val id = jobRunner.startJob(job).bind()
-                    LOGGER.info { "Started job with id: $id" }
+        jobRunner.startJob(job).bind()
+        LOGGER.debug { "Started job with id: $id" }
 
-                    Thread.sleep(5000)
+        effect { delay(5000) }.bind()
 
-                    jobRunner.waitForCompleted(id) {
-                        jobDb.update(job.copy(status = it))
-                    }.bind()
-                }.unsafeRunSync() // TODO: Handle errors here
-            }
-        )
-    }
+        jobRunner.waitForFinish(job.id) {
+            jobDb.update(job.copy(status = it))
+        }.bind()
+    }.unsafeRunSync() // TODO: Handle errors here
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }

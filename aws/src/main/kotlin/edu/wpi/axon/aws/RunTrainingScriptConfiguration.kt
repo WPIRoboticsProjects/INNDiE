@@ -11,11 +11,13 @@ import edu.wpi.axon.util.FilePath
  * @param dataset The path to the dataset.
  * @param scriptContents The contents of the training script.
  * @param epochs The number of epochs the model will be trained for. Must be greater than zero.
+ * @param id The id of the Job this script is associated with.
  */
 data class RunTrainingScriptConfiguration(
     val oldModelName: FilePath,
     val newModelName: FilePath,
     val dataset: Dataset,
     val scriptContents: String,
-    val epochs: Int
+    val epochs: Int,
+    val id: Int
 )

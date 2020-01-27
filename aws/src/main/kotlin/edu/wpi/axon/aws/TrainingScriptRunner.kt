@@ -8,15 +8,22 @@ interface TrainingScriptRunner {
      * Start running a training script.
      *
      * @param config The data needed to start the script.
-     * @return The script id used to query about the script during and after training.
      */
-    fun startScript(config: RunTrainingScriptConfiguration): Long
+    fun startScript(config: RunTrainingScriptConfiguration)
 
     /**
      * Queries for the current progress state of the script.
      *
-     * @param scriptId The id of the script, from [startScript].
+     * @param jobId The id of the Job associated with the script given to [startScript].
      * @return The current progress state of the script.
      */
-    fun getTrainingProgress(scriptId: Long): TrainingScriptProgress
+    fun getTrainingProgress(jobId: Int): TrainingScriptProgress
+
+    /**
+     * Cancels the script. If the script is currently running, it is interrupted. If the script is
+     * not running, this method does nothing.
+     *
+     * @param jobId The id of the Job associated with the script given to [startScript].
+     */
+    fun cancelScript(jobId: Int)
 }

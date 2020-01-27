@@ -39,7 +39,14 @@ fun runCommand(
 
     BufferedReader(InputStreamReader(proc.inputStream)).useLines { procStdOut ->
         BufferedReader(InputStreamReader(proc.errorStream)).useLines { procStdErr ->
-            val exitCode = proc.waitFor()
+            val exitCode = try {
+                proc.waitFor()
+            } catch (ex: InterruptedException) {
+                // An interruption means that the caller wants the command to be stopped immediately
+                proc.destroyForcibly()
+                throw RuntimeException("Forcibly destroyed the runCommand process.", ex)
+            }
+
             Tuple3(
                 exitCode,
                 procStdOut.joinToString("\n"),
@@ -56,5 +63,10 @@ fun runCommand(
  */
 fun createProgressFilePath(modelName: String, datasetName: String) =
     "/tmp/progress_reporting/$modelName/$datasetName/progress.txt"
+
+fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
+    is FilePath.S3 -> data.all { it is FilePath.S3 }
+    is FilePath.Local -> data.all { it is FilePath.Local }
+}
 
 private val LOGGER = KotlinLogging.logger { }
