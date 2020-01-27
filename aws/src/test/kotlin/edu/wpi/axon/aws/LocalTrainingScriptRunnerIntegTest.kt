@@ -17,7 +17,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
     private val runner = LocalTrainingScriptRunner()
 
     @Test
-    @Timeout(value = 1L, unit = TimeUnit.MINUTES)
+    @Timeout(value = 10L, unit = TimeUnit.MINUTES)
     fun `test running mnist training script`(@TempDir tempDir: File) {
         val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
         val newModelPath = "${tempDir.absolutePath}/custom_fashion_mnist-trained.h5"
@@ -115,7 +115,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
     }
 
     @Test
-    @Timeout(value = 1L, unit = TimeUnit.MINUTES)
+    @Timeout(value = 10L, unit = TimeUnit.MINUTES)
     @Tag("needsTensorFlowSupport")
     fun `test cancelling mnist training script`(@TempDir tempDir: File) {
         val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
