@@ -19,12 +19,6 @@ stages:
       container: axon-ci
 
       steps:
-        - task: DockerInstaller@0
-          displayName: 'Install Docker'
-          inputs:
-            dockerVersion: 19.03.4
-            releaseType: stable
-
         - task: Gradle@2
           displayName: 'Check'
           inputs:
