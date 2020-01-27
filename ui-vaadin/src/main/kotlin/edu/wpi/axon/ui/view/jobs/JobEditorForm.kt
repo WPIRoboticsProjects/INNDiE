@@ -145,27 +145,33 @@ class JobEditorForm : KComposite(), KoinComponent {
                                 """.trimIndent()
                             }
 
-                            job.map {
-                                // The user can run the job either if:
-                                //  1. They have AWS configured and the Job uses AWS
-                                //  2. They don't have AWS configured and the Job doesn't use AWS
-                                //  3. TODO: Support for when they have AWS configured and the Job
-                                //      doesn't use AWS
-                                isEnabled = it.usesAWS.fold(
-                                    {
-                                        // The Job is configured incorrectly, don't let it run
-                                        false
-                                    },
-                                    {
-                                        // The Job is configured correctly, just need to check if
-                                        // the user has AWS configured or not. Only supporting
-                                        // (1) and (2) for now.
-                                        it.xor(
-                                            get<Option<String>>(named(axonBucketName)) is Some
-                                        ).not()
-                                    }
-                                ) ?: false // Nothing to run if there is no job bound
-                            }
+                            isEnabled = job.fold(
+                                {
+                                    // Nothing to run if there is no job bound
+                                    false
+                                },
+                                {
+                                    // The user can run the job either if:
+                                    //  1. They have AWS configured and the Job uses AWS
+                                    //  2. They don't have AWS configured and the Job doesn't use AWS
+                                    //  3. TODO: Support for when they have AWS configured and the Job
+                                    //      doesn't use AWS
+                                    it.usesAWS.fold(
+                                        {
+                                            // The Job is configured incorrectly, don't let it run
+                                            false
+                                        },
+                                        {
+                                            // The Job is configured correctly, just need to check if
+                                            // the user has AWS configured or not. Only supporting
+                                            // (1) and (2) for now.
+                                            it.xor(
+                                                get<Option<String>>(named(axonBucketName)) is Some
+                                            ).not()
+                                        }
+                                    )
+                                }
+                            )
                         }
                         onLeftClick {
                             thread(isDaemon = true) { runJob() }
