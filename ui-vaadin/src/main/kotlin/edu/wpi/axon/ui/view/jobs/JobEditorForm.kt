@@ -34,11 +34,11 @@ import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobRunner
 import edu.wpi.axon.util.axonBucketName
+import kotlin.concurrent.thread
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
