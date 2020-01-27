@@ -5,8 +5,11 @@ import com.github.mvysny.karibudsl.v10.beanValidationBinder
 import com.github.mvysny.karibudsl.v10.bind
 import com.github.mvysny.karibudsl.v10.button
 import com.github.mvysny.karibudsl.v10.comboBox
+import com.github.mvysny.karibudsl.v10.numberField
 import com.github.mvysny.karibudsl.v10.onLeftClick
+import com.github.mvysny.karibudsl.v10.toLong
 import com.github.mvysny.karibudsl.v10.verticalLayout
+import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import edu.wpi.axon.aws.preferences.Preferences
@@ -31,8 +34,22 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
                     setItems(InstanceType.knownValues().stream().sorted())
                     isPreventInvalidInput = true
                     isRequired = true
-                    placeholder = InstanceType.T2_MICRO.toString()
                     bind(binder).asRequired().bind(Preferences::defaultEC2NodeType)
+                }
+
+                numberField("Status Polling Delay (ms)") {
+                    width = "12em"
+                    isPreventInvalidInput = true
+                    bind(binder)
+                        .asRequired()
+                        .toLong()
+                        .withValidator { value, _ ->
+                            if (value != null && value > 0) {
+                                ValidationResult.ok()
+                            } else {
+                                ValidationResult.error("must be greater than zero.")
+                            }
+                        }.bind(Preferences::statusPollingDelay)
                 }
 
                 button("Save") {

@@ -20,14 +20,23 @@ import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import java.io.File
 import kotlinx.coroutines.delay
+import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
 import org.koin.core.qualifier.named
 
-class JobRunner : KoinComponent {
+class JobRunner(
+    private val statusPollingDelay: Long
+) : KoinComponent {
 
     private val scriptRunner: TrainingScriptRunner by inject()
+
+    init {
+        LOGGER.debug {
+            "statusPollingDelay=$statusPollingDelay"
+        }
+    }
 
     /**
      * Generates the code for a job and starts it on EC2.
@@ -106,32 +115,11 @@ class JobRunner : KoinComponent {
                 if (it == TrainingScriptProgress.Completed || it == TrainingScriptProgress.Error) {
                     Either.Right(Unit)
                 } else {
-                    delay(5000)
+                    delay(statusPollingDelay)
                     Either.Left(scriptRunner.getTrainingProgress(id))
                 }
             }
         }
-
-    /**
-     * Waits until the [TrainingScriptProgress] state changes.
-     *
-     * @param id The script id.
-     * @param previousState The state to watch for a change from.
-     * @return The new [TrainingScriptProgress].
-     */
-    fun waitForChange(
-        id: Long,
-        previousState: TrainingScriptProgress
-    ): IO<TrainingScriptProgress> = IO.tailRecM(scriptRunner.getTrainingProgress(id)) {
-        IO {
-            if (it != previousState) {
-                Either.Right(it)
-            } else {
-                delay(5000)
-                Either.Left(scriptRunner.getTrainingProgress(id))
-            }
-        }
-    }
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : Model> toTrainState(job: Job): TrainState<T> = TrainState(
@@ -146,4 +134,8 @@ class JobRunner : KoinComponent {
         userNewModel = job.userNewModel as T,
         generateDebugComments = job.generateDebugComments
     )
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
+    }
 }
