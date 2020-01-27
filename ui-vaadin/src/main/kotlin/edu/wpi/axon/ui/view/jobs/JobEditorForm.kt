@@ -145,6 +145,11 @@ class JobEditorForm : KComposite(), KoinComponent {
                                     false
                                 },
                                 {
+                                    if (it.status != TrainingScriptProgress.NotStarted) {
+                                        // Don't let the user run jobs that are currently running
+                                        return@fold false
+                                    }
+
                                     val bucket = get<Option<String>>(named(axonBucketName))
 
                                     LOGGER.debug {
