@@ -34,14 +34,12 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
                     setItems(InstanceType.knownValues().stream().sorted())
                     isPreventInvalidInput = true
                     isRequired = true
-                    placeholder = InstanceType.T2_MICRO.toString()
                     bind(binder).asRequired().bind(Preferences::defaultEC2NodeType)
                 }
 
                 numberField("Status Polling Delay (ms)") {
                     // TODO: This element isn't wide enough for the label
                     isPreventInvalidInput = true
-                    placeholder = "5000"
                     bind(binder)
                         .asRequired()
                         .toLong()
