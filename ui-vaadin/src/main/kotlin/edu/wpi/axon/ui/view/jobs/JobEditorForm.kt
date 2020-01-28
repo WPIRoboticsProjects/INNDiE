@@ -3,6 +3,7 @@ package edu.wpi.axon.ui.view.jobs
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import arrow.fx.IO
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.VaadinDsl
 import com.github.mvysny.karibudsl.v10.beanValidationBinder
@@ -132,11 +133,13 @@ class JobEditorForm : KComposite(), KoinComponent {
                             onLeftClick {
                                 job.map { job ->
                                     // TODO: Handle errors cancelling the Job
-                                    jobLifecycleManager.cancelJob(job.id).map {
+                                    IO {
+                                        jobLifecycleManager.cancelJob(job.id)
+                                    }.map {
                                         // Only remove the Job if it was successfully cancelled
                                         jobDb.remove(job)
                                         JobsView.navigateTo()
-                                    }.unsafeRunSync()
+                                    }
                                 }
                             }
                         }
@@ -195,7 +198,9 @@ class JobEditorForm : KComposite(), KoinComponent {
                                         },
                                         {
                                             // TODO: Handle errors here
-                                            jobLifecycleManager.startJob(it).unsafeRunSync()
+                                            IO {
+                                                jobLifecycleManager.startJob(it)
+                                            }.unsafeRunSync()
                                         }
                                     )
                                 }
@@ -221,7 +226,9 @@ class JobEditorForm : KComposite(), KoinComponent {
                             onLeftClick {
                                 job.map { job ->
                                     // TODO: Handle errors cancelling the Job
-                                    jobLifecycleManager.cancelJob(job.id).unsafeRunSync()
+                                    IO {
+                                        jobLifecycleManager.cancelJob(job.id)
+                                    }.unsafeRunSync()
                                 }
                             }
                         }

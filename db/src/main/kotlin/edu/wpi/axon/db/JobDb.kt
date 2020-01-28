@@ -141,6 +141,16 @@ class JobDb(private val database: Database) {
             .firstOrNull()
     }
 
+    fun fetchRunningJobs(): List<Job> = transaction(database) {
+        Jobs.select {
+            Jobs.status notInList listOf(
+                TrainingScriptProgress.NotStarted.serialize(),
+                TrainingScriptProgress.Completed.serialize(),
+                TrainingScriptProgress.Error.serialize()
+            )
+        }.map { Jobs.toDomain(it) }
+    }
+
     fun remove(job: Job) {
         transaction(database) {
             Jobs.deleteWhere { Jobs.id eq job.id }

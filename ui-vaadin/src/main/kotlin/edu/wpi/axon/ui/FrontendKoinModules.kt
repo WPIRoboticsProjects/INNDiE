@@ -39,6 +39,6 @@ fun defaultFrontendModule() = module {
         }
     }
 
-    single { JobLifecycleManager() }
+    single { JobLifecycleManager(jobRunner = get(), jobDb = get(), waitAfterStartingJobMs = 5000L) }
     single { JobRunner() }
 }

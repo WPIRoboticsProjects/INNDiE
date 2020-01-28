@@ -1,11 +1,9 @@
 package edu.wpi.axon.ui
 
-import arrow.core.Either
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
-import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.EC2Manager
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.LocalTrainingScriptRunner
@@ -41,34 +39,21 @@ class JobRunner : KoinComponent {
      * @param job The [Job] to run.
      * @return An [IO] for continuation.
      */
-    @Suppress("ThrowableNotThrown")
-    fun startJob(job: Job): IO<Unit> = IO.fx {
-        // Verify that we can start the job
-        runners[job.id]?.let {
-            when (it.getTrainingProgress(job.id)) {
-                // These states are ok
-                TrainingScriptProgress.NotStarted,
-                TrainingScriptProgress.Completed,
-                TrainingScriptProgress.Error -> Unit
-
-                // Any other states are not allowed
-                else -> IO.raiseError<Unit>(
-                    IllegalArgumentException("Cannot start a job that is currently running.")
-                ).bind()
-            }
+    fun startJob(job: Job) {
+        // Verify that we can start the job. No sense in starting a Job that is already running.
+        require(
+            job.status == TrainingScriptProgress.NotStarted ||
+                job.status == TrainingScriptProgress.Completed ||
+                job.status == TrainingScriptProgress.Error
+        ) {
+            "The Job to start must not be running. Got a Job with state: ${job.status}"
         }
 
         // Verify that usesAWS is configured correctly
-        val jobUsesAWS = job.usesAWS.fold(
-            {
-                IO.raiseError<Boolean>(
-                    IllegalArgumentException(
-                        "Cannot start a Job that is configured incorrectly (usesAWS failed)."
-                    )
-                ).bind()
-            },
-            { it }
-        )
+        val usesAWS = job.usesAWS
+        require(usesAWS is Some) {
+            "Cannot start a Job that is configured incorrectly (usesAWS failed)."
+        }
 
         // TODO: Loading the old model will need to be done earlier by another part of Axon. This
         //  code is temporary.
@@ -87,7 +72,7 @@ class JobRunner : KoinComponent {
 
         val oldModel = ModelLoaderFactory().createModelLoader(localOldModel.name)
             .load(localOldModel)
-            .bind()
+            .unsafeRunSync()
 
         val trainModelScriptGenerator = when (job.userNewModel) {
             is Model.Sequential -> {
@@ -112,27 +97,20 @@ class JobRunner : KoinComponent {
                 )
             },
             { IO.just(it) }
-        ).bind()
+        ).unsafeRunSync()
 
         // Create the correct TrainingScriptRunner based on whether the Job needs to use AWS
-        val scriptRunner = if (jobUsesAWS) {
-            val bucket = get<Option<String>>(named(axonBucketName)).fold(
-                {
-                    IO.raiseError<String>(
-                        IllegalStateException(
-                            "Tried to create an EC2TrainingScriptRunner but did not have a " +
-                                "bucket configured."
-                        )
-                    ).bind()
-                },
-                { it }
-            )
+        val scriptRunner = if (usesAWS.t) {
+            val bucket = get<Option<String>>(named(axonBucketName))
+            check(bucket is Some) {
+                "Tried to create an EC2TrainingScriptRunner but did not have a bucket configured."
+            }
 
             EC2TrainingScriptRunner(
                 // TODO: Allow overriding the default node type in the Job editor form
                 get<PreferencesManager>().get().defaultEC2NodeType,
                 EC2Manager(),
-                S3Manager(bucket)
+                S3Manager(bucket.t)
             )
         } else {
             LocalTrainingScriptRunner()
@@ -157,7 +135,7 @@ class JobRunner : KoinComponent {
      *
      * @param id The id of the Job to cancel.
      */
-    fun cancelJob(id: Int): IO<Unit> = IO {
+    fun cancelJob(id: Int) {
         runners[id]!!.cancelScript(id)
     }
 
@@ -169,18 +147,18 @@ class JobRunner : KoinComponent {
      * every time it is polled.
      * @return An [IO] for continuation.
      */
-    fun waitForFinish(id: Int, progressUpdate: (TrainingScriptProgress) -> Unit): IO<Unit> {
+    suspend fun waitForFinish(id: Int, progressUpdate: (TrainingScriptProgress) -> Unit) {
         // Get the latest statusPollingDelay in case the user changed it
         val statusPollingDelay = get<PreferencesManager>().get().statusPollingDelay
-        return IO.tailRecM(runners[id]!!.getTrainingProgress(id)) {
-            IO {
-                progressUpdate(it)
-                if (it == TrainingScriptProgress.Completed || it == TrainingScriptProgress.Error) {
-                    Either.Right(Unit)
-                } else {
-                    delay(statusPollingDelay)
-                    Either.Left(runners[id]!!.getTrainingProgress(id))
-                }
+        while (true) {
+            val progress = runners[id]!!.getTrainingProgress(id)
+            progressUpdate(progress)
+            if (progress == TrainingScriptProgress.Completed ||
+                progress == TrainingScriptProgress.Error
+            ) {
+                break
+            } else {
+                delay(statusPollingDelay)
             }
         }
     }

@@ -1,7 +1,9 @@
 package edu.wpi.axon.db
 
+import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.dbdata.nextJob
 import io.kotlintest.matchers.collections.shouldContainExactly
+import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.matchers.nulls.shouldBeNull
 import io.kotlintest.shouldBe
 import java.io.File
@@ -74,6 +76,27 @@ internal class JobDbTest {
 
         db.remove(newJob)
         db.findByName(job.name).shouldBeNull()
+    }
+
+    @Test
+    fun `test fetching running jobs`(@TempDir tempDir: File) {
+        val db = createDb(tempDir)
+
+        val runningJobs = listOf(
+            Random.nextJob().copy(status = TrainingScriptProgress.Creating),
+            Random.nextJob().copy(status = TrainingScriptProgress.Initializing),
+            Random.nextJob().copy(status = TrainingScriptProgress.InProgress(0.2))
+        ).map { db.create(it) }
+
+        // Jobs that are not running
+        listOf(
+            Random.nextJob().copy(status = TrainingScriptProgress.NotStarted),
+            Random.nextJob().copy(status = TrainingScriptProgress.Completed),
+            Random.nextJob().copy(status = TrainingScriptProgress.Error)
+        ).map { db.create(it) }
+
+        val runningJobsFromDb = db.fetchRunningJobs()
+        runningJobsFromDb.shouldContainExactlyInAnyOrder(runningJobs)
     }
 
     private fun createDb(tempDir: File) = JobDb(

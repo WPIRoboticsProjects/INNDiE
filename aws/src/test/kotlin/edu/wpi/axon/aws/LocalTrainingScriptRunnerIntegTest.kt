@@ -3,6 +3,8 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.dbdata.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
+import io.kotlintest.matchers.booleans.shouldBeFalse
+import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -21,7 +23,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
     @Tag("needsTensorFlowSupport")
     fun `test running mnist training script`(@TempDir tempDir: File) {
         val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
-        val newModelPath = "${tempDir.absolutePath}/custom_fashion_mnist-trained.h5"
+        val newModelPath = "$tempDir/custom_fashion_mnist-trained.h5"
         val id = 1
         runner.startScript(
             RunTrainingScriptConfiguration(
@@ -107,7 +109,8 @@ internal class LocalTrainingScriptRunnerIntegTest {
             val progress = runner.getTrainingProgress(id)
             println(progress)
             if (progress == TrainingScriptProgress.Completed) {
-                break
+                File(newModelPath).exists().shouldBeTrue()
+                break // Done with test
             } else if (progress == TrainingScriptProgress.Error) {
                 fail { "Progress was: $progress" }
             }
@@ -120,7 +123,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
     @Tag("needsTensorFlowSupport")
     fun `test cancelling mnist training script`(@TempDir tempDir: File) {
         val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
-        val newModelPath = "${tempDir.absolutePath}/custom_fashion_mnist-trained.h5"
+        val newModelPath = "$tempDir/custom_fashion_mnist-trained.h5"
         val id = 1
         runner.startScript(
             RunTrainingScriptConfiguration(
@@ -209,10 +212,13 @@ internal class LocalTrainingScriptRunnerIntegTest {
 
                 TrainingScriptProgress.Error -> fail { "The script should not have errored yet." }
 
+                TrainingScriptProgress.Creating,
+                TrainingScriptProgress.Initializing,
                 is TrainingScriptProgress.InProgress -> {
                     runner.cancelScript(id)
                     val progressAfterCancellation = runner.getTrainingProgress(id)
                     progressAfterCancellation.shouldBe(TrainingScriptProgress.Error)
+                    File(newModelPath).exists().shouldBeFalse()
                     return // Done with the test
                 }
             }

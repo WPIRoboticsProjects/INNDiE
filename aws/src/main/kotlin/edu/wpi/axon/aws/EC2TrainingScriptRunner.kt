@@ -51,9 +51,6 @@ class EC2TrainingScriptRunner(
         @Suppress("MagicNumber")
         val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
-        val newModelName = config.newModelName.filename
-        val datasetName = config.dataset.progressReportingName
-
         s3Manager.uploadTrainingScript(scriptFileName, config.scriptContents)
 
         // Reset the training progress so the script doesn't start in the completed state
@@ -83,16 +80,16 @@ class EC2TrainingScriptRunner(
             |apt-cache policy docker-ce
             |apt install -y docker-ce
             |systemctl status docker
-            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.11/axon-0.1.11-py2.py3-none-any.whl
-            |axon create-heartbeat "$newModelName" "$datasetName"
-            |axon update-training-progress "$newModelName" "$datasetName" "initializing"
+            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.12/axon-0.1.12-py2.py3-none-any.whl
+            |axon create-heartbeat ${config.id}
+            |axon update-training-progress ${config.id} "initializing"
             |axon download-untrained-model "${config.oldModelName.path}"
             |$downloadDatasetString
             |axon download-training-script "$scriptFileName"
             |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
-            |axon upload-trained-model "$newModelName"
-            |axon update-training-progress "$newModelName" "$datasetName" "completed"
-            |axon remove-heartbeat "$newModelName" "$datasetName"
+            |axon upload-trained-model "${config.newModelName.filename}"
+            |axon update-training-progress ${config.id} "completed"
+            |axon remove-heartbeat ${config.id}
             |shutdown -h now
             """.trimMargin()
 

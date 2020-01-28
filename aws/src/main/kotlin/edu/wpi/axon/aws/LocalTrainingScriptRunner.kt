@@ -47,7 +47,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         File(createProgressFilePath(config.id)).apply {
             parentFile.mkdirs()
             createNewFile()
-            writeText("0.0")
+            writeText("initializing")
         }
 
         scriptDataMap[config.id] = config
@@ -92,26 +92,43 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
 
     override fun getTrainingProgress(jobId: Int): TrainingScriptProgress {
         requireJobIsInMaps(jobId)
+        val lastProgressData = scriptProgressMap[jobId]!!
         return if (scriptThreadMap[jobId]!!.isAlive) {
             // Training thread is still running. Try to read the progress file.
-            when (scriptProgressMap[jobId]!!) {
-                // These statuses are reasonable
-                is TrainingScriptProgress.Initializing -> TrainingScriptProgress.Initializing
-                is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
-                is TrainingScriptProgress.Error -> TrainingScriptProgress.Error
+            val progressFile = File(createProgressFilePath(jobId))
+            val progressText = progressFile.readText()
+
+            when {
+                lastProgressData == TrainingScriptProgress.Creating &&
+                    progressText == "initializing" -> {
+                    // It's initializing if the training thread wrote Creating and the progress file
+                    // still contains "initializing"
+                    TrainingScriptProgress.Creating
+                }
+
+                lastProgressData == TrainingScriptProgress.Initializing &&
+                    progressText == "initializing" -> {
+                    // It's initializing if the training thread wrote Initializing and the progress
+                    // file still contains "initializing"
+                    TrainingScriptProgress.Initializing
+                }
+
                 else -> {
-                    // Otherwise it must be InProgress
-                    val progressFile = File(createProgressFilePath(jobId))
-                    if (progressFile.exists()) {
-                        try {
-                            TrainingScriptProgress.InProgress(
-                                progressFile.readText().toDouble() / scriptDataMap[jobId]!!.epochs
-                            )
-                        } catch (ex: NumberFormatException) {
-                            TrainingScriptProgress.Error
+                    // Otherwise, it progressed further than Initializing.
+                    when (lastProgressData) {
+                        // These statuses are reasonable
+                        is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
+                        is TrainingScriptProgress.Error -> TrainingScriptProgress.Error
+                        else -> {
+                            // Otherwise it must be InProgress
+                            try {
+                                TrainingScriptProgress.InProgress(
+                                    progressText.toDouble() / scriptDataMap[jobId]!!.epochs
+                                )
+                            } catch (ex: NumberFormatException) {
+                                TrainingScriptProgress.Error
+                            }
                         }
-                    } else {
-                        TrainingScriptProgress.InProgress(0.0)
                     }
                 }
             }
@@ -119,7 +136,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
             // Training thread died or is not started yet. If it dies, either it finished and wrote
             // Completed to scriptProgressMap or exploded and didn't write Completed. If it is not
             // started yet, then the status will still be Creating.
-            when (scriptProgressMap[jobId]!!) {
+            when (lastProgressData) {
                 is TrainingScriptProgress.Creating -> TrainingScriptProgress.Creating
                 is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
                 else -> TrainingScriptProgress.Error

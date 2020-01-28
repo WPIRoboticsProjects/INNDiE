@@ -16,10 +16,17 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
+import io.kotlintest.matchers.booleans.shouldBeTrue
+import io.kotlintest.shouldBe
+import java.io.File
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 import org.koin.core.get
 import org.koin.core.qualifier.named
@@ -28,8 +35,47 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
     @Test
     @Timeout(value = 15L, unit = TimeUnit.MINUTES)
+    @Tag("needsTensorFlowSupport")
+    fun `test starting local job and tracking progress`(@TempDir tempDir: File) {
+        startKoin {
+            modules(listOf(defaultBackendModule(), defaultFrontendModule()))
+        }
+
+        val oldModelName = "32_32_1_conv_sequential.h5"
+        val newModelName = "$tempDir/32_32_1_conv_sequential-trained.h5"
+        val (oldModel, path) = loadModel(oldModelName) {}
+        val job = Job(
+            "Job 1",
+            TrainingScriptProgress.NotStarted,
+            FilePath.Local(path),
+            FilePath.Local(newModelName),
+            Dataset.ExampleDataset.FashionMnist,
+            Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+            Loss.SparseCategoricalCrossentropy,
+            setOf("accuracy"),
+            1,
+            oldModel,
+            false,
+            Random.nextInt(1, Int.MAX_VALUE)
+        )
+
+        val jobRunner = JobRunner()
+        jobRunner.startJob(job)
+        var status = job.status
+        runBlocking {
+            jobRunner.waitForFinish(job.id) {
+                println(it)
+                status = it
+            }
+        }
+        status.shouldBe(TrainingScriptProgress.Completed)
+        File(newModelName).exists().shouldBeTrue()
+    }
+
+    @Test
+    @Timeout(value = 15L, unit = TimeUnit.MINUTES)
     @Disabled("Needs AWS supervision.")
-    fun `test starting job and tracking progress`() {
+    fun `test starting AWS job and tracking progress`() {
         startKoin {
             modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
@@ -48,13 +94,20 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             setOf("accuracy"),
             1,
             oldModel,
-            false
+            false,
+            Random.nextInt(1, Int.MAX_VALUE)
         )
 
         val jobRunner = JobRunner()
-        jobRunner.startJob(job).flatMap {
-            jobRunner.waitForFinish(job.id) { println(it) }
-        }.unsafeRunSync()
+        jobRunner.startJob(job)
+        var status = job.status
+        runBlocking {
+            jobRunner.waitForFinish(job.id) {
+                println(it)
+                status = it
+            }
+        }
+        status.shouldBe(TrainingScriptProgress.Completed)
     }
 
     // TODO: This model doesn't work with the default dataset resizing, we need to configure that
@@ -101,12 +154,19 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             setOf("accuracy"),
             1,
             model,
-            false
+            false,
+            Random.nextInt(1, Int.MAX_VALUE)
         )
 
         val jobRunner = JobRunner()
-        jobRunner.startJob(job).flatMap {
-            jobRunner.waitForFinish(job.id) { println(it) }
-        }.unsafeRunSync()
+        jobRunner.startJob(job)
+        var status = job.status
+        runBlocking {
+            jobRunner.waitForFinish(job.id) {
+                println(it)
+                status = it
+            }
+        }
+        status.shouldBe(TrainingScriptProgress.Completed)
     }
 }
