@@ -6,6 +6,7 @@ import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
 import arrow.fx.extensions.fx
+import edu.wpi.axon.aws.EC2Manager
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.LocalTrainingScriptRunner
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
@@ -130,9 +131,10 @@ class JobRunner : KoinComponent {
             )
 
             EC2TrainingScriptRunner(
-                bucket,
                 // TODO: Allow overriding the default node type in the Job editor form
-                get<PreferencesManager>().get().defaultEC2NodeType
+                get<PreferencesManager>().get().defaultEC2NodeType,
+                EC2Manager(),
+                S3Manager(bucket)
             )
         } else {
             LocalTrainingScriptRunner()
