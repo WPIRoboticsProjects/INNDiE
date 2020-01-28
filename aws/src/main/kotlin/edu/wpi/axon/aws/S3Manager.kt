@@ -15,7 +15,7 @@ class S3Manager(
     private val bucketName: String
 ) {
 
-    private val s3 by lazy { S3Client.builder().build() }
+    private val s3 = S3Client.builder().build()
 
     /**
      * Uploads an "untrained" model (one that the user wants to upload to start a job with). Meant

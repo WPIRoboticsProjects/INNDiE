@@ -9,6 +9,7 @@ class TrainingProgressBar(value: TrainingScriptProgress? = null) : ProgressBar()
         value?.let { setValue(it) }
     }
 
+    @Suppress("LongMethod")
     fun setValue(value: TrainingScriptProgress) {
         setValue(
             when (value) {

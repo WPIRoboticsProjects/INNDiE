@@ -63,177 +63,181 @@ class JobEditorForm : KComposite(), KoinComponent {
             value.map { binder.readBean(it) }
         }
 
-    private val root = ui {
-        div {
-            className = "job-form"
-            verticalLayout {
-                className = "job-form-content"
-                setSizeUndefined()
-                form = formLayout {
-                    responsiveSteps = listOf(
-                        FormLayout.ResponsiveStep(
-                            "0",
-                            1,
-                            FormLayout.ResponsiveStep.LabelsPosition.TOP
-                        ),
-                        FormLayout.ResponsiveStep(
-                            "550px",
-                            1,
-                            FormLayout.ResponsiveStep.LabelsPosition.ASIDE
-                        )
-                    )
-                    formItem("Name") {
-                        textField {
-                            setWidthFull()
-                            bind(binder).asRequired().bind(Job::name)
-                        }
-                    }
-                    formItem("Dataset") {
-                        comboBox<Dataset> {
-                            setWidthFull()
-                            setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
-                                it.objectInstance
-                            })
-                            setItemLabelGenerator { it.displayName }
-                            bind(binder).asRequired().bind(Job::userDataset)
-                        }
-                    }
-                    formItem("Epochs") {
-                        numberField {
-                            setWidthFull()
-                            setHasControls(true)
-                            min = 1.0
-                            step = 1.0
-                            bind(binder).toInt().asRequired().bind(Job::userEpochs)
-                        }
-                    }
-                    formItem("Generate Debug Comments") {
-                        checkBox {
-                            bind(binder).bind(Job::generateDebugComments)
-                        }
-                    }
-                }
+    init {
+        ui {
+            div {
+                className = "job-form"
                 verticalLayout {
-                    button("Save", Icon(VaadinIcon.CHECK)) {
-                        setPrimary()
-                        addThemeVariants(ButtonVariant.LUMO_SUCCESS)
-                        isIconAfterText = true
-                        setWidthFull()
-                        binder.addStatusChangeListener {
-                            isEnabled = binder.hasChanges() && !it.hasValidationErrors()
+                    className = "job-form-content"
+                    setSizeUndefined()
+                    form = formLayout {
+                        responsiveSteps = listOf(
+                            FormLayout.ResponsiveStep(
+                                "0",
+                                1,
+                                FormLayout.ResponsiveStep.LabelsPosition.TOP
+                            ),
+                            FormLayout.ResponsiveStep(
+                                "550px",
+                                1,
+                                FormLayout.ResponsiveStep.LabelsPosition.ASIDE
+                            )
+                        )
+                        formItem("Name") {
+                            textField {
+                                setWidthFull()
+                                bind(binder).asRequired().bind(Job::name)
+                            }
                         }
-                        onLeftClick {
-                            job.map {
-                                if (binder.validate().isOk && binder.writeBeanIfValid(it)) {
-                                    jobDb.update(it)
-                                    JobsView.navigateTo()
+                        formItem("Dataset") {
+                            comboBox<Dataset> {
+                                setWidthFull()
+                                setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
+                                    it.objectInstance
+                                })
+                                setItemLabelGenerator { it.displayName }
+                                bind(binder).asRequired().bind(Job::userDataset)
+                            }
+                        }
+                        formItem("Epochs") {
+                            numberField {
+                                setWidthFull()
+                                setHasControls(true)
+                                min = 1.0
+                                step = 1.0
+                                bind(binder).toInt().asRequired().bind(Job::userEpochs)
+                            }
+                        }
+                        formItem("Generate Debug Comments") {
+                            checkBox {
+                                bind(binder).bind(Job::generateDebugComments)
+                            }
+                        }
+                    }
+                    verticalLayout {
+                        button("Save", Icon(VaadinIcon.CHECK)) {
+                            setPrimary()
+                            addThemeVariants(ButtonVariant.LUMO_SUCCESS)
+                            isIconAfterText = true
+                            setWidthFull()
+                            binder.addStatusChangeListener {
+                                isEnabled = binder.hasChanges() && !it.hasValidationErrors()
+                            }
+                            onLeftClick {
+                                job.map {
+                                    if (binder.validate().isOk && binder.writeBeanIfValid(it)) {
+                                        jobDb.update(it)
+                                        JobsView.navigateTo()
+                                    }
                                 }
                             }
                         }
-                    }
-                    button("Delete", Icon(VaadinIcon.TRASH)) {
-                        addThemeVariants(ButtonVariant.LUMO_ERROR)
-                        isIconAfterText = true
-                        setWidthFull()
-                        onLeftClick {
-                            job.map { job ->
-                                // TODO: Handle errors cancelling the Job
-                                jobRunner.cancelJob(job.id).map {
-                                    // Only remove the Job if it was successfully cancelled
-                                    jobDb.remove(job)
-                                    JobsView.navigateTo()
-                                }.unsafeRunSync()
+                        button("Delete", Icon(VaadinIcon.TRASH)) {
+                            addThemeVariants(ButtonVariant.LUMO_ERROR)
+                            isIconAfterText = true
+                            setWidthFull()
+                            onLeftClick {
+                                job.map { job ->
+                                    // TODO: Handle errors cancelling the Job
+                                    jobRunner.cancelJob(job.id).map {
+                                        // Only remove the Job if it was successfully cancelled
+                                        jobDb.remove(job)
+                                        JobsView.navigateTo()
+                                    }.unsafeRunSync()
+                                }
                             }
                         }
-                    }
-                    button("Run", Icon(VaadinIcon.PLAY)) {
-                        isIconAfterText = true
-                        setWidthFull()
-                        binder.addStatusChangeListener {
-                            isEnabled = job.fold(
-                                {
-                                    // Nothing to run if there is no job bound
-                                    false
-                                },
-                                {
-                                    if (it.status != TrainingScriptProgress.NotStarted) {
-                                        // Don't let the user run jobs that are currently running
-                                        return@fold false
-                                    }
+                        button("Run", Icon(VaadinIcon.PLAY)) {
+                            isIconAfterText = true
+                            setWidthFull()
+                            binder.addStatusChangeListener {
+                                isEnabled = job.fold(
+                                    {
+                                        // Nothing to run if there is no job bound
+                                        false
+                                    },
+                                    {
+                                        if (it.status != TrainingScriptProgress.NotStarted) {
+                                            // Don't let the user run jobs that are currently
+                                            // running
+                                            return@fold false
+                                        }
 
-                                    val bucket = get<Option<String>>(named(axonBucketName))
+                                        val bucket = get<Option<String>>(named(axonBucketName))
 
-                                    LOGGER.debug {
-                                        """
+                                        LOGGER.debug {
+                                            """
                                             job=$it
                                             usesAWS=${it.usesAWS}
                                             bucket=$bucket
                                         """.trimIndent()
-                                    }
+                                        }
 
-                                    it.usesAWS.fold(
-                                        {
-                                            // The Job is configured incorrectly, don't let it run
-                                            false
-                                        },
-                                        { jobUsesAWS ->
-                                            // The user can run the job if:
-                                            //  1. They have AWS configured and the Job uses AWS
-                                            //  2. They don't have AWS configured and the Job
-                                            //      doesn't use AWS
-                                            //  3. They have AWS configured and the Job doesn't
-                                            //      use AWS
-                                            (bucket is Some) || !jobUsesAWS
-                                        }
-                                    )
-                                }
-                            )
-                        }
-                        onLeftClick {
-                            thread(isDaemon = true) {
-                                job.fold(
-                                    {
-                                        LOGGER.debug { "Could not run the Job because it is None." }
-                                    },
-                                    { job ->
-                                        scope.launch {
-                                            runJob(job)
-                                        }
+                                        it.usesAWS.fold(
+                                            {
+                                                // The Job is configured incorrectly, don't let
+                                                // it run
+                                                false
+                                            },
+                                            { jobUsesAWS ->
+                                                // The user can run the job if:
+                                                //  1. They have AWS configured and the Job uses AWS
+                                                //  2. They don't have AWS configured and the Job
+                                                //      doesn't use AWS
+                                                //  3. They have AWS configured and the Job doesn't
+                                                //      use AWS
+                                                bucket is Some || !jobUsesAWS
+                                            }
+                                        )
                                     }
                                 )
                             }
-                        }
-                    }
-                    button("Cancel", Icon(VaadinIcon.STOP)) {
-                        addThemeVariants(ButtonVariant.LUMO_ERROR)
-                        setWidthFull()
-                        binder.addStatusChangeListener {
-                            isEnabled = job.fold(
-                                {
-                                    // Nothing to cancel if there is no Job bound
-                                    false
-                                },
-                                {
-                                    // Nothing to cancel if the Job is not running
-                                    it.status != TrainingScriptProgress.NotStarted &&
-                                        it.status != TrainingScriptProgress.Completed &&
-                                        it.status != TrainingScriptProgress.Error
+                            onLeftClick {
+                                thread(isDaemon = true) {
+                                    job.fold(
+                                        {
+                                            LOGGER.debug {
+                                                "Could not run the Job because it is None."
+                                            }
+                                        },
+                                        { job ->
+                                            scope.launch {
+                                                runJob(job)
+                                            }
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         }
-                        onLeftClick {
-                            job.map { job ->
-                                // TODO: Handle errors cancelling the Job
-                                jobRunner.cancelJob(job.id).unsafeRunSync()
+                        button("Cancel", Icon(VaadinIcon.STOP)) {
+                            addThemeVariants(ButtonVariant.LUMO_ERROR)
+                            setWidthFull()
+                            binder.addStatusChangeListener {
+                                isEnabled = job.fold(
+                                    {
+                                        // Nothing to cancel if there is no Job bound
+                                        false
+                                    },
+                                    {
+                                        // Nothing to cancel if the Job is not running
+                                        it.status != TrainingScriptProgress.NotStarted &&
+                                            it.status != TrainingScriptProgress.Completed &&
+                                            it.status != TrainingScriptProgress.Error
+                                    }
+                                )
+                            }
+                            onLeftClick {
+                                job.map { job ->
+                                    // TODO: Handle errors cancelling the Job
+                                    jobRunner.cancelJob(job.id).unsafeRunSync()
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
 
-    init {
         isVisible = false
     }
 
@@ -243,7 +247,7 @@ class JobEditorForm : KComposite(), KoinComponent {
         jobRunner.startJob(job).bind()
         LOGGER.debug { "Started job with id: $id" }
 
-        effect { delay(5000) }.bind()
+        effect { delay(defaultWaitAfterStaringJobMs) }.bind()
 
         jobRunner.waitForFinish(job.id) {
             jobDb.update(job.copy(status = it))
@@ -252,6 +256,7 @@ class JobEditorForm : KComposite(), KoinComponent {
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
+        private const val defaultWaitAfterStaringJobMs = 5000L
     }
 }
 

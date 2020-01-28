@@ -34,18 +34,11 @@ fun loadModel(modelName: String, stub: () -> Unit): Pair<Model, String> {
  * @param script The content of the script to run.
  * @param newModelName The name of the new model.
  */
-fun testTrainingScript(
-    dir: File,
-    script: String,
-    newModelName: String
-) {
+fun testTrainingScript(dir: File, script: String, newModelName: String) {
     val scriptFile = Files.createTempFile(dir.toPath(), "", ".py").toFile()
     scriptFile.writeText(script)
     runCommand(
-        listOf(
-            "python3.6",
-            scriptFile.path
-        ),
+        listOf("python3.6", scriptFile.path),
         emptyMap(),
         dir
     ).attempt().unsafeRunSync().shouldBeRight { (exitCode, stdOut, stdErr) ->

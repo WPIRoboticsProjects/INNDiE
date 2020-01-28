@@ -89,16 +89,12 @@ class TrainTask(name: String) : BaseTask(name) {
 
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
-    override fun isConfiguredCorrectly(): Boolean {
-        if (validationInputData.isDefined() && validationOutputData.isEmpty() ||
-            validationInputData.isEmpty() && validationOutputData.isDefined()
-        ) {
-            // Either both validation data fields must be defined or empty, not just one
-            return false
-        }
-
-        return super.isConfiguredCorrectly()
-    }
+    /**
+     * Either both validation data fields must be defined or empty, not just one.
+     */
+    override fun isConfiguredCorrectly() =
+        super.isConfiguredCorrectly() &&
+            !(validationInputData.isDefined().xor(validationOutputData.isDefined()))
 
     override fun code(): String {
         val callbackString = callbacks.joinToString(prefix = "[", postfix = "]") { it.name }

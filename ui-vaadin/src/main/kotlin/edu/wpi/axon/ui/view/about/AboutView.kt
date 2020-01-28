@@ -17,23 +17,26 @@ import edu.wpi.axon.ui.MainLayout
 @Route(value = "about", layout = MainLayout::class)
 @PageTitle("About")
 class AboutView : KComposite() {
-    private val root = ui {
-        verticalLayout {
-            setSizeFull()
-            justifyContentMode = FlexComponent.JustifyContentMode.CENTER
-            alignItems = FlexComponent.Alignment.CENTER
 
-            h1("Created by: Austin & Ryan")
-            horizontalLayout {
+    init {
+        ui {
+            verticalLayout {
+                setSizeFull()
                 justifyContentMode = FlexComponent.JustifyContentMode.CENTER
                 alignItems = FlexComponent.Alignment.CENTER
 
-                icon(VaadinIcon.INFO_CIRCLE)
-                text(
-                    " This Application is using Vaadin version ${VaadinCoreShrinkWrap::class.java.getAnnotation(
-                        NpmPackage::class.java
-                    ).version}"
-                )
+                h1("Created by: Austin & Ryan")
+                horizontalLayout {
+                    justifyContentMode = FlexComponent.JustifyContentMode.CENTER
+                    alignItems = FlexComponent.Alignment.CENTER
+
+                    icon(VaadinIcon.INFO_CIRCLE)
+                    text(
+                        " This Application is using Vaadin version ${VaadinCoreShrinkWrap::class.java.getAnnotation(
+                            NpmPackage::class.java
+                        ).version}"
+                    )
+                }
             }
         }
     }

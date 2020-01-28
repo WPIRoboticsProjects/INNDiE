@@ -96,12 +96,10 @@ class ApplyFunctionalLayerDeltaTask(name: String) : BaseTask(name) {
                     // Always make a new input layer
                     is Layer.InputLayer -> LayerOperation.MakeNewLayer(layer)
 
-                    else -> {
-                        if (layer.layer in oldLayers) {
-                            LayerOperation.CopyLayer(layer)
-                        } else {
-                            LayerOperation.MakeNewLayer(layer)
-                        }
+                    else -> if (layer.layer in oldLayers) {
+                        LayerOperation.CopyLayer(layer)
+                    } else {
+                        LayerOperation.MakeNewLayer(layer)
                     }
                 }
 

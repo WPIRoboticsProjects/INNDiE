@@ -6,6 +6,7 @@ import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
 import arrow.fx.extensions.fx
+import edu.wpi.axon.aws.EC2Manager
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
 import edu.wpi.axon.aws.LocalTrainingScriptRunner
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
@@ -23,7 +24,6 @@ import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import java.io.File
 import kotlinx.coroutines.delay
-import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.qualifier.named
@@ -130,9 +130,10 @@ class JobRunner : KoinComponent {
             )
 
             EC2TrainingScriptRunner(
-                bucket,
                 // TODO: Allow overriding the default node type in the Job editor form
-                get<PreferencesManager>().get().defaultEC2NodeType
+                get<PreferencesManager>().get().defaultEC2NodeType,
+                EC2Manager(),
+                S3Manager(bucket)
             )
         } else {
             LocalTrainingScriptRunner()
@@ -198,8 +199,4 @@ class JobRunner : KoinComponent {
         userNewModel = job.userNewModel as T,
         generateDebugComments = job.generateDebugComments
     )
-
-    companion object {
-        private val LOGGER = KotlinLogging.logger { }
-    }
 }

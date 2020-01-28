@@ -28,11 +28,6 @@ dependencies {
         name = "aws-sdk-java",
         version = "2.10.12"
     )
-    implementation(
-        group = "com.amazonaws",
-        name = "aws-java-sdk",
-        version = "1.11.674"
-    )
 
     implementation(
         group = "com.beust",

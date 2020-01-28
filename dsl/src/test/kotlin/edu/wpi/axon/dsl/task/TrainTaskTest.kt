@@ -3,12 +3,16 @@ package edu.wpi.axon.dsl.task
 import arrow.core.None
 import arrow.core.Some
 import edu.wpi.axon.dsl.TaskConfigurationTestFixture
+import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Verbosity
+import io.kotlintest.matchers.booleans.shouldBeFalse
+import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
+import org.koin.dsl.module
 
 internal class TrainTaskConfigurationTest : TaskConfigurationTestFixture<TrainTask>(
     TrainTask::class,
@@ -23,7 +27,9 @@ internal class TrainTaskTest : KoinTestFixture() {
 
     @Test
     fun `train code gen with null batch size and no callbacks`() {
-        startKoin { }
+        startKoin {
+            modules(module { alwaysValidImportValidator() })
+        }
 
         val task = TrainTask("task").apply {
             modelInput = configuredCorrectly("model")
@@ -38,6 +44,7 @@ internal class TrainTaskTest : KoinTestFixture() {
             shuffle = true
         }
 
+        task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
             |model.fit(
             |    trainInput,
@@ -55,7 +62,9 @@ internal class TrainTaskTest : KoinTestFixture() {
 
     @Test
     fun `train code gen with nonnull batch size and two callbacks`() {
-        startKoin { }
+        startKoin {
+            modules(module { alwaysValidImportValidator() })
+        }
 
         val task = TrainTask("task").apply {
             modelInput = configuredCorrectly("model")
@@ -70,6 +79,7 @@ internal class TrainTaskTest : KoinTestFixture() {
             shuffle = false
         }
 
+        task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
             |model.fit(
             |    trainInput,
@@ -87,7 +97,9 @@ internal class TrainTaskTest : KoinTestFixture() {
 
     @Test
     fun `train code gen with no validation data`() {
-        startKoin { }
+        startKoin {
+            modules(module { alwaysValidImportValidator() })
+        }
 
         val task = TrainTask("task").apply {
             modelInput = configuredCorrectly("model")
@@ -102,6 +114,7 @@ internal class TrainTaskTest : KoinTestFixture() {
             shuffle = true
         }
 
+        task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
             |model.fit(
             |    trainInput,
@@ -117,8 +130,32 @@ internal class TrainTaskTest : KoinTestFixture() {
     }
 
     @Test
+    fun `train code gen with partial validation data`() {
+        startKoin {
+            modules(module { alwaysValidImportValidator() })
+        }
+
+        val task = TrainTask("task").apply {
+            modelInput = configuredCorrectly("model")
+            trainInputData = configuredCorrectly("trainInput")
+            trainOutputData = configuredCorrectly("trainOutput")
+            validationInputData = Some(configuredCorrectly("validationInput"))
+            validationOutputData = None
+            callbacks = setOf()
+            batchSize = null
+            epochs = 10
+            verbose = Verbosity.Silent
+            shuffle = true
+        }
+
+        task.isConfiguredCorrectly().shouldBeFalse()
+    }
+
+    @Test
     fun `train code gen with validation split`() {
-        startKoin { }
+        startKoin {
+            modules(module { alwaysValidImportValidator() })
+        }
 
         val task = TrainTask("task").apply {
             modelInput = configuredCorrectly("model")
@@ -132,6 +169,7 @@ internal class TrainTaskTest : KoinTestFixture() {
             shuffle = true
         }
 
+        task.isConfiguredCorrectly().shouldBeTrue()
         task.code() shouldBe """
             |model.fit(
             |    trainInput,

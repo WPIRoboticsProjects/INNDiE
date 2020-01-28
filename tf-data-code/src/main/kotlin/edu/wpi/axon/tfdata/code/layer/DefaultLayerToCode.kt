@@ -42,10 +42,18 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
                     "epsilon" to layer.epsilon,
                     "center" to layer.center,
                     "scale" to layer.scale,
-                    "beta_initializer" to initializerToCode.makeNewInitializer(layer.betaInitializer).bind().unquoted(),
-                    "gamma_initializer" to initializerToCode.makeNewInitializer(layer.gammaInitializer).bind().unquoted(),
-                    "moving_mean_initializer" to initializerToCode.makeNewInitializer(layer.movingMeanInitializer).bind().unquoted(),
-                    "moving_variance_initializer" to initializerToCode.makeNewInitializer(layer.movingVarianceInitializer).bind().unquoted(),
+                    "beta_initializer" to initializerToCode.makeNewInitializer(
+                        layer.betaInitializer
+                    ).bind().unquoted(),
+                    "gamma_initializer" to initializerToCode.makeNewInitializer(
+                        layer.gammaInitializer
+                    ).bind().unquoted(),
+                    "moving_mean_initializer" to initializerToCode.makeNewInitializer(
+                        layer.movingMeanInitializer
+                    ).bind().unquoted(),
+                    "moving_variance_initializer" to initializerToCode.makeNewInitializer(
+                        layer.movingVarianceInitializer
+                    ).bind().unquoted(),
                     "beta_regularizer" to layer.betaRegularizer?.let {
                         regularizerToCode.makeNewRegularizer(
                             it

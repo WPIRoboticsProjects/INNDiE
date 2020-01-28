@@ -48,36 +48,36 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
     private lateinit var grid: JobGrid
     private lateinit var form: JobEditorForm
 
-    private val root = ui {
-        horizontalLayout {
-            setSizeFull()
-            verticalLayout {
+    init {
+        ui {
+            horizontalLayout {
                 setSizeFull()
-                horizontalLayout {
-                    setWidthFull()
-                    textField {
-                        verticalAlignSelf = FlexComponent.Alignment.START
-                        isExpand = true
-                        placeholder = "Filter name"
+                verticalLayout {
+                    setSizeFull()
+                    horizontalLayout {
+                        setWidthFull()
+                        textField {
+                            verticalAlignSelf = FlexComponent.Alignment.START
+                            isExpand = true
+                            placeholder = "Filter name"
+                        }
+                        button("New job", Icon(VaadinIcon.PLUS_CIRCLE)) {
+                            addThemeVariants(ButtonVariant.LUMO_PRIMARY)
+                            onLeftClick {
+                                navigateTo(-1)
+                            }
+                        }
                     }
-                    button("New job", Icon(VaadinIcon.PLUS_CIRCLE)) {
-                        addThemeVariants(ButtonVariant.LUMO_PRIMARY)
-                        onLeftClick {
-                            navigateTo(-1)
+                    grid = jobGrid(dataProvider) {
+                        asSingleSelect().addValueChangeListener {
+                            navigateTo(it.value?.id)
                         }
                     }
                 }
-                grid = jobGrid(dataProvider) {
-                    asSingleSelect().addValueChangeListener {
-                        navigateTo(it.value?.id)
-                    }
-                }
+                form = jobEditorForm()
             }
-            form = jobEditorForm()
         }
-    }
 
-    init {
         val ui = UI.getCurrent()
         jobDb.subscribe { op, jobFromDb ->
             form.job.map { currentJob ->

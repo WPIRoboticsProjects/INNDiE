@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 
-@Suppress("UNUSED_VARIABLE")
+@Suppress("UNUSED_VARIABLE", "StringLiteralDuplication")
 internal class ScriptGeneratorIntegrationTest : KoinTestFixture() {
 
     @Test

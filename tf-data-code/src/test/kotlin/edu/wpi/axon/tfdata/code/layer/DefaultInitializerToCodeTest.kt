@@ -20,7 +20,7 @@ internal class DefaultInitializerToCodeTest {
     companion object {
 
         @JvmStatic
-        @Suppress("unused")
+        @Suppress("unused", "LongMethod", "StringLiteralDuplication")
         fun initializerSource() = listOf(
             Arguments.of(
                 Initializer.Constant(SerializableEitherDLd.Left(0.0)),
@@ -56,7 +56,8 @@ internal class DefaultInitializerToCodeTest {
                     SerializableEitherDLd.Right(listOf(3.0, 4.0)),
                     null
                 ),
-                "tf.keras.initializers.RandomUniform(minval=[1.0, 2.0], maxval=[3.0, 4.0], seed=None)".right()
+                ("tf.keras.initializers.RandomUniform(minval=[1.0, 2.0], maxval=[3.0, 4.0], " +
+                    "seed=None)").right()
             ),
             Arguments.of(
                 Initializer.TruncatedNormal(1.0, 2.0, null),
@@ -69,7 +70,8 @@ internal class DefaultInitializerToCodeTest {
                     Initializer.VarianceScaling.Distribution.UntruncatedNormal,
                     null
                 ),
-                """tf.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="untruncated_normal", seed=None)""".right()
+                ("""tf.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", """ +
+                    """distribution="untruncated_normal", seed=None)""").right()
             ),
             Arguments.of(
                 Initializer.Zeros,

@@ -32,7 +32,7 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.octogonapus.ktguava.collections.toImmutableGraph
 
-@Suppress("UnstableApiUsage")
+@Suppress("UnstableApiUsage", "StringLiteralDuplication")
 internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
 
     private fun layerGraph(
@@ -55,6 +55,7 @@ internal class ApplyFunctionalLayerDeltaTaskTest : KoinTestFixture() {
         return layerGraph.toImmutableGraph()
     }
 
+    @Suppress("SpreadOperator")
     private fun makeModel(
         vararg layers: Pair<Layer.MetaLayer, Layer.MetaLayer>,
         input: Set<Layer.MetaLayer.UntrainableLayer>,
