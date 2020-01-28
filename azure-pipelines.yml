@@ -6,28 +6,26 @@ trigger:
     include:
       - '*'
 
+resources:
+  containers:
+  - container: axon-ci
+    image: wpilib/axon-ci:latest
+
 stages:
 - stage: Build
   jobs:
     - job: Linux
 
-      pool:
-        vmImage: ubuntu-16.04
+      container: axon-ci
 
       steps:
-        - task: DockerInstaller@0
-          displayName: 'Install Docker'
-          inputs:
-            dockerVersion: 19.03.4
-            releaseType: stable
-
         - task: Gradle@2
           displayName: 'Check'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
-            options: '--stacktrace -PlogTests -Pheadless -PhasDockerSupport'
+            options: '--stacktrace -PlogTests -Pheadless -PhasTensorFlowSupport'
             javaHomeOption: 'JDKVersion'
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
@@ -36,7 +34,7 @@ stages:
             tasks: 'check'
 
         - task: Gradle@2
-          displayName: 'Check'
+          displayName: 'JacocoRootReport'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
@@ -57,8 +55,7 @@ stages:
 
     - job: MacOS
 
-      pool:
-        vmImage: macOS-10.14
+      container: axon-ci
 
       steps:
         - task: Gradle@2
@@ -67,7 +64,7 @@ stages:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
-            options: '--stacktrace -PlogTests -Pheadless'
+            options: '--stacktrace -PlogTests -Pheadless -PhasTensorFlowSupport'
             javaHomeOption: 'JDKVersion'
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
@@ -75,7 +72,7 @@ stages:
             tasks: 'check'
 
         - task: Gradle@2
-          displayName: 'Check'
+          displayName: 'JacocoRootReport'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
@@ -90,8 +87,7 @@ stages:
 
     - job: Windows
 
-      pool:
-        vmImage: windows-2019
+      container: axon-ci
 
       steps:
         - task: Gradle@2
@@ -100,7 +96,7 @@ stages:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
-            options: '--stacktrace -PlogTests -Pheadless'
+            options: '--stacktrace -PlogTests -Pheadless -PhasTensorFlowSupport'
             javaHomeOption: 'JDKVersion'
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
@@ -108,7 +104,7 @@ stages:
             tasks: 'check'
 
         - task: Gradle@2
-          displayName: 'Check'
+          displayName: 'JacocoRootReport'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'

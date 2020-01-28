@@ -248,10 +248,6 @@ configure(javaProjects) {
              */
             excludeTags("needsSpecialSoftware")
 
-            if (!project.hasProperty("hasDockerSupport")) {
-                excludeTags("needsDockerSupport")
-            }
-
             if (!project.hasProperty("hasTensorFlowSupport")) {
                 excludeTags("needsTensorFlowSupport")
             }
