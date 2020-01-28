@@ -29,8 +29,7 @@ import org.koin.core.get
 import org.koin.core.qualifier.named
 
 /**
- * Handles the lifecycle of running and managing Jobs. There is only one instance of this class
- * when Axon is run in production.
+ * Handles running, cancelling, and progress polling for Jobs.
  */
 class JobRunner : KoinComponent {
 
@@ -197,6 +196,7 @@ class JobRunner : KoinComponent {
         userEpochs = job.userEpochs,
         userValidationSplit = None, // TODO: Add this to Job and pull it from there
         userNewModel = job.userNewModel as T,
-        generateDebugComments = job.generateDebugComments
+        generateDebugComments = job.generateDebugComments,
+        jobId = job.id
     )
 }

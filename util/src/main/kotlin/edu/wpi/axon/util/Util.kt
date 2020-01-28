@@ -57,12 +57,11 @@ fun runCommand(
 }
 
 /**
- * @param modelName The name of the model being trained.
- * @param datasetName The name of the dataset being trained on.
+ * @param id The unique Job ID.
  * @return The path to the progress reporting file used when Axon is running locally.
  */
-fun createProgressFilePath(modelName: String, datasetName: String) =
-    "/tmp/progress_reporting/$modelName/$datasetName/progress.txt"
+fun createProgressFilePath(id: Int) =
+    "/tmp/progress_reporting/$id/progress.txt"
 
 fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
     is FilePath.S3 -> data.all { it is FilePath.S3 }

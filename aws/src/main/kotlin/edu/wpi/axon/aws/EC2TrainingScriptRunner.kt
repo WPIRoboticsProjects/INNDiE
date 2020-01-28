@@ -17,6 +17,8 @@ import software.amazon.awssdk.services.ec2.model.InstanceType
  * current directory.
  *
  * @param instanceType The type of the EC2 instance to run the training script on.
+ * @param ec2Manager Used to interface with EC2.
+ * @param s3Manager Used to interface with S3.
  */
 class EC2TrainingScriptRunner(
     private val instanceType: InstanceType,
@@ -55,10 +57,10 @@ class EC2TrainingScriptRunner(
         s3Manager.uploadTrainingScript(scriptFileName, config.scriptContents)
 
         // Reset the training progress so the script doesn't start in the completed state
-        s3Manager.setTrainingProgress(newModelName, datasetName, "not started")
+        s3Manager.setTrainingProgress(config.id, "not started")
 
         // Remove the heartbeat so we know if the script set it
-        s3Manager.removeHeartbeat(newModelName, datasetName)
+        s3Manager.removeHeartbeat(config.id)
 
         // We need to download custom datasets from S3. Example datasets will be downloaded
         // by the script using Keras.
@@ -108,29 +110,23 @@ class EC2TrainingScriptRunner(
 
     @UseExperimental(ExperimentalStdlibApi::class)
     override fun getTrainingProgress(jobId: Int): TrainingScriptProgress {
-        require(jobId in instanceIds.keys)
-        require(jobId in scriptDataMap.keys)
-
-        val runTrainingScriptConfiguration = scriptDataMap[jobId]!!
-        val newModelName = runTrainingScriptConfiguration.newModelName.filename
-        val datasetName = runTrainingScriptConfiguration.dataset.progressReportingName
-
-        val status = ec2Manager.getInstanceState(instanceIds[jobId]!!)
-
-        val heartbeat = s3Manager.getHeartbeat(newModelName, datasetName)
-        val progress = s3Manager.getTrainingProgress(newModelName, datasetName)
-
+        requireJobIsInMaps(jobId)
         return computeTrainingScriptProgress(
-            heartbeat,
-            progress,
-            status,
-            runTrainingScriptConfiguration.epochs
+            heartbeat = s3Manager.getHeartbeat(jobId),
+            progress = s3Manager.getTrainingProgress(jobId),
+            status = ec2Manager.getInstanceState(instanceIds[jobId]!!),
+            epochs = scriptDataMap[jobId]!!.epochs
         )
     }
 
     override fun cancelScript(jobId: Int) {
-        require(jobId in instanceIds.keys)
+        requireJobIsInMaps(jobId)
         ec2Manager.terminateInstance(instanceIds[jobId]!!)
+    }
+
+    private fun requireJobIsInMaps(jobId: Int) {
+        require(jobId in instanceIds.keys)
+        require(jobId in scriptDataMap.keys)
     }
 
     companion object {

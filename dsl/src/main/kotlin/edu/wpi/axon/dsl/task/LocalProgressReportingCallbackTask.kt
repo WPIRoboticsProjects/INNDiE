@@ -15,14 +15,9 @@ import org.koin.core.inject
 class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     /**
-     * The name of the model being trained.
+     * The unique ID of the Job.
      */
-    var modelName by singleAssign<String>()
-
-    /**
-     * The name of the dataset being used in training.
-     */
-    var datasetName by singleAssign<String>()
+    var jobId by singleAssign<Int>()
 
     /**
      * Where to save the callback to.
@@ -47,7 +42,7 @@ class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     override fun code(): String {
         val callbackClassName = variableNameGenerator.uniqueVariableName()
-        val progressFilePath = createProgressFilePath(modelName, datasetName)
+        val progressFilePath = createProgressFilePath(jobId)
 
         // Add 1 to epoch because we get the index of the epoch, not the "element"
         return """

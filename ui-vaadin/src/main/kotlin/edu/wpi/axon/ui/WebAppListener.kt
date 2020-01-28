@@ -83,6 +83,50 @@ class WebAppListener : ServletContextListener, KoinComponent {
                 generateDebugComments = false
             )
         )
+
+        get<JobDb>().create(
+            Job(
+                name = "Local Job 2",
+                status = TrainingScriptProgress.NotStarted,
+                userOldModelPath = FilePath.Local(path),
+                userNewModelName = FilePath.Local(newModelName),
+                userDataset = Dataset.ExampleDataset.FashionMnist,
+                userOptimizer = Optimizer.Adam(
+                    learningRate = 0.001,
+                    beta1 = 0.9,
+                    beta2 = 0.999,
+                    epsilon = 1e-7,
+                    amsGrad = false
+                ),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 1,
+                userNewModel = model,
+                generateDebugComments = false
+            )
+        )
+
+        get<JobDb>().create(
+            Job(
+                name = "Local Job that was running",
+                status = TrainingScriptProgress.InProgress(0.2),
+                userOldModelPath = FilePath.Local(path),
+                userNewModelName = FilePath.Local(newModelName),
+                userDataset = Dataset.ExampleDataset.FashionMnist,
+                userOptimizer = Optimizer.Adam(
+                    learningRate = 0.001,
+                    beta1 = 0.9,
+                    beta2 = 0.999,
+                    epsilon = 1e-7,
+                    amsGrad = false
+                ),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 1,
+                userNewModel = model,
+                generateDebugComments = false
+            )
+        )
     }
 
     override fun contextDestroyed(sce: ServletContextEvent?) {

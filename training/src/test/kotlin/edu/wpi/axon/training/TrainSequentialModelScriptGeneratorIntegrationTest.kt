@@ -2,6 +2,7 @@
 
 package edu.wpi.axon.training
 
+import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
@@ -16,6 +17,7 @@ import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
 import java.nio.file.Paths
+import kotlin.random.Random
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -57,7 +59,10 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                             // Only train the last 3 layers
                             if (it.layers.size - index <= 3) layer.layer.trainable()
                             else layer.layer.trainable(false)
-                        })
+                        }),
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
@@ -94,7 +99,10 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                             // Only train the last layer
                             if (it.layers.size - index <= 1) layer.layer.trainable()
                             else layer.layer.trainable(false)
-                        })
+                        }),
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->

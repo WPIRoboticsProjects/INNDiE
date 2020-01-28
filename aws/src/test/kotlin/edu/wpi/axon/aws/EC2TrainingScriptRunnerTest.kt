@@ -43,14 +43,14 @@ internal class EC2TrainingScriptRunnerTest {
 
         val s3Manager = mockk<S3Manager> {
             every { uploadTrainingScript(any(), any()) } returns Unit
-            every { setTrainingProgress(any(), any(), any()) } returns Unit
-            every { removeHeartbeat(any(), any()) } returns Unit
-            every { getHeartbeat(any(), any()) } returnsMany listOf(
+            every { setTrainingProgress(any(), any()) } returns Unit
+            every { removeHeartbeat(any()) } returns Unit
+            every { getHeartbeat(any()) } returnsMany listOf(
                 "0", // Call 1
                 "1", // Call 2
                 "0" // Call 3
             )
-            every { getTrainingProgress(any(), any()) } returnsMany listOf(
+            every { getTrainingProgress(any()) } returnsMany listOf(
                 "not started", // Call 1
                 "1", // Call 2
                 "completed" // Call 3
@@ -84,17 +84,11 @@ internal class EC2TrainingScriptRunnerTest {
         }
 
         verify(atLeast = 3) {
-            s3Manager.getHeartbeat(
-                config.newModelName.filename,
-                config.dataset.progressReportingName
-            )
+            s3Manager.getHeartbeat(config.id)
         }
 
         verify(atLeast = 3) {
-            s3Manager.getTrainingProgress(
-                config.newModelName.filename,
-                config.dataset.progressReportingName
-            )
+            s3Manager.getTrainingProgress(config.id)
         }
     }
 
@@ -111,8 +105,8 @@ internal class EC2TrainingScriptRunnerTest {
 
         val s3Manager = mockk<S3Manager> {
             every { uploadTrainingScript(any(), any()) } returns Unit
-            every { setTrainingProgress(any(), any(), any()) } returns Unit
-            every { removeHeartbeat(any(), any()) } returns Unit
+            every { setTrainingProgress(any(), any()) } returns Unit
+            every { removeHeartbeat(any()) } returns Unit
         }
 
         val runner = EC2TrainingScriptRunner(instanceType, ec2, s3Manager)
@@ -147,18 +141,11 @@ internal class EC2TrainingScriptRunnerTest {
         }
 
         verify(exactly = 1) {
-            s3Manager.setTrainingProgress(
-                config.newModelName.filename,
-                config.dataset.progressReportingName,
-                "not started"
-            )
+            s3Manager.setTrainingProgress(config.id, "not started")
         }
 
         verify(exactly = 1) {
-            s3Manager.removeHeartbeat(
-                config.newModelName.filename,
-                config.dataset.progressReportingName
-            )
+            s3Manager.removeHeartbeat(config.id)
         }
 
         verify(exactly = 1) {

@@ -38,22 +38,20 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
             }
         }
 
-        val scriptFile = Files.createTempFile("", ".py").toFile()
-        scriptFile.createNewFile()
-        scriptFile.writeText(config.scriptContents)
-
-        val modelName = config.newModelName.filename
-        val datasetName = config.dataset.progressReportingName
+        val scriptFile = Files.createTempFile("", ".py").toFile().apply {
+            createNewFile()
+            writeText(config.scriptContents)
+        }
 
         // Clear the progress file if there was a previous run
-        val progressFile = File(createProgressFilePath(modelName, datasetName))
-        progressFile.parentFile.mkdirs()
-        progressFile.createNewFile()
-        progressFile.writeText("0.0")
+        File(createProgressFilePath(config.id)).apply {
+            parentFile.mkdirs()
+            createNewFile()
+            writeText("0.0")
+        }
 
         scriptDataMap[config.id] = config
         scriptProgressMap[config.id] = TrainingScriptProgress.Creating
-
         scriptThreadMap[config.id] = thread {
             scriptProgressMap[config.id] = TrainingScriptProgress.Initializing
 
@@ -93,10 +91,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
     }
 
     override fun getTrainingProgress(jobId: Int): TrainingScriptProgress {
-        require(jobId in scriptDataMap.keys)
-        require(jobId in scriptThreadMap.keys)
-        require(jobId in scriptProgressMap.keys)
-
+        requireJobIsInMaps(jobId)
         return if (scriptThreadMap[jobId]!!.isAlive) {
             // Training thread is still running. Try to read the progress file.
             when (scriptProgressMap[jobId]!!) {
@@ -106,14 +101,11 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
                 is TrainingScriptProgress.Error -> TrainingScriptProgress.Error
                 else -> {
                     // Otherwise it must be InProgress
-                    val config = scriptDataMap[jobId]!!
-                    val modelName = config.newModelName.filename
-                    val datasetName = config.dataset.progressReportingName
-                    val progressFile = File(createProgressFilePath(modelName, datasetName))
+                    val progressFile = File(createProgressFilePath(jobId))
                     if (progressFile.exists()) {
                         try {
                             TrainingScriptProgress.InProgress(
-                                progressFile.readText().toDouble() / config.epochs
+                                progressFile.readText().toDouble() / scriptDataMap[jobId]!!.epochs
                             )
                         } catch (ex: NumberFormatException) {
                             TrainingScriptProgress.Error
@@ -136,8 +128,15 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
     }
 
     override fun cancelScript(jobId: Int) {
+        requireJobIsInMaps(jobId)
         scriptThreadMap[jobId]?.interrupt()
         scriptProgressMap[jobId] = TrainingScriptProgress.Error
+    }
+
+    private fun requireJobIsInMaps(jobId: Int) {
+        require(jobId in scriptDataMap.keys)
+        require(jobId in scriptThreadMap.keys)
+        require(jobId in scriptProgressMap.keys)
     }
 
     companion object {

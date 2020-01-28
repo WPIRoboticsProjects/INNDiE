@@ -2,6 +2,7 @@
 
 package edu.wpi.axon.training
 
+import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
@@ -14,6 +15,7 @@ import edu.wpi.axon.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
+import kotlin.random.Random
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -41,7 +43,10 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),
                     userEpochs = 1,
-                    userNewModel = it
+                    userNewModel = it,
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
@@ -70,7 +75,10 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),
                     userEpochs = 1,
-                    userNewModel = it
+                    userNewModel = it,
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
