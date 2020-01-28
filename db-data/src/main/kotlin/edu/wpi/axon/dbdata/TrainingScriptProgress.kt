@@ -52,9 +52,7 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
         JsonConfiguration.Stable
     ).stringify(serializer(), this)
 
-    override fun compareTo(other: TrainingScriptProgress): Int {
-        return COMPARATOR.compare(this, other)
-    }
+    override fun compareTo(other: TrainingScriptProgress) = COMPARATOR.compare(this, other)
 
     companion object {
         fun deserialize(data: String) = Json(

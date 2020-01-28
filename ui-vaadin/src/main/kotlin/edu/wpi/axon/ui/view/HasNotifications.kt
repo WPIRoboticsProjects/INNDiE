@@ -5,9 +5,10 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.notification.Notification
 
 /**
- * Interface for views showing notifications to users
+ * Interface for views showing notifications to users.
  */
 interface HasNotifications {
+
     fun showNotification(message: String, persistent: Boolean = false) {
         if (persistent) {
             val close = Button("Close")
@@ -19,7 +20,11 @@ interface HasNotifications {
             }
             notification.open()
         } else {
-            Notification.show(message, 3000, Notification.Position.BOTTOM_STRETCH)
+            Notification.show(message, displayTimeMs, Notification.Position.BOTTOM_STRETCH)
         }
+    }
+
+    companion object {
+        private const val displayTimeMs = 3000
     }
 }

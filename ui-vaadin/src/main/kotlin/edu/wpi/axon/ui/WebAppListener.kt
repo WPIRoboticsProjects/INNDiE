@@ -42,33 +42,45 @@ class WebAppListener : ServletContextListener, KoinComponent {
 
         get<JobDb>().create(
             Job(
-                "AWS Job",
-                TrainingScriptProgress.NotStarted,
-                FilePath.S3(modelName),
-                FilePath.S3(newModelName),
-                Dataset.ExampleDataset.FashionMnist,
-                Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                Loss.SparseCategoricalCrossentropy,
-                setOf("accuracy"),
-                1,
-                model,
-                false
+                name = "AWS Job",
+                status = TrainingScriptProgress.NotStarted,
+                userOldModelPath = FilePath.S3(modelName),
+                userNewModelName = FilePath.S3(newModelName),
+                userDataset = Dataset.ExampleDataset.FashionMnist,
+                userOptimizer = Optimizer.Adam(
+                    learningRate = 0.001,
+                    beta1 = 0.9,
+                    beta2 = 0.999,
+                    epsilon = 1e-7,
+                    amsGrad = false
+                ),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 1,
+                userNewModel = model,
+                generateDebugComments = false
             )
         )
 
         get<JobDb>().create(
             Job(
-                "Local Job",
-                TrainingScriptProgress.NotStarted,
-                FilePath.Local(path),
-                FilePath.Local(newModelName),
-                Dataset.ExampleDataset.FashionMnist,
-                Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-                Loss.SparseCategoricalCrossentropy,
-                setOf("accuracy"),
-                1,
-                model,
-                false
+                name = "Local Job",
+                status = TrainingScriptProgress.NotStarted,
+                userOldModelPath = FilePath.Local(path),
+                userNewModelName = FilePath.Local(newModelName),
+                userDataset = Dataset.ExampleDataset.FashionMnist,
+                userOptimizer = Optimizer.Adam(
+                    learningRate = 0.001,
+                    beta1 = 0.9,
+                    beta2 = 0.999,
+                    epsilon = 1e-7,
+                    amsGrad = false
+                ),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 1,
+                userNewModel = model,
+                generateDebugComments = false
             )
         )
     }

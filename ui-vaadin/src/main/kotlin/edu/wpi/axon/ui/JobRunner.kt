@@ -24,7 +24,6 @@ import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import java.io.File
 import kotlinx.coroutines.delay
-import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.qualifier.named
@@ -200,8 +199,4 @@ class JobRunner : KoinComponent {
         userNewModel = job.userNewModel as T,
         generateDebugComments = job.generateDebugComments
     )
-
-    companion object {
-        private val LOGGER = KotlinLogging.logger { }
-    }
 }

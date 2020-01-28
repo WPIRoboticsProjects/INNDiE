@@ -122,17 +122,10 @@ internal class DefaultPolymorphicNamedDomainObjectContainerTest : KoinTestFixtur
     ) : Variable(name)
 
     data class MockTask(override val name: String) : BaseTask(name) {
-        override val imports: Set<Import>
-            get() = TODO("not implemented")
-        override val inputs: Set<Variable>
-            get() = TODO("not implemented")
-        override val outputs: Set<Variable>
-            get() = TODO("not implemented")
-        override val dependencies: MutableSet<Code<*>>
-            get() = TODO("not implemented")
-
-        override fun code(): String {
-            TODO("not implemented")
-        }
+        override val imports: Set<Import> = emptySet()
+        override val inputs: Set<Variable> = emptySet()
+        override val outputs: Set<Variable> = emptySet()
+        override val dependencies: MutableSet<Code<*>> = mutableSetOf()
+        override fun code() = ""
     }
 }

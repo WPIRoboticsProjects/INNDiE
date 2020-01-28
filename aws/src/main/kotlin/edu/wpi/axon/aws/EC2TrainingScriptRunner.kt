@@ -46,15 +46,13 @@ class EC2TrainingScriptRunner(
         }
 
         // The file name for the generated script
+        @Suppress("MagicNumber")
         val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
         val newModelName = config.newModelName.filename
         val datasetName = config.dataset.progressReportingName
 
-        s3Manager.uploadTrainingScript(
-            scriptFileName,
-            config.scriptContents
-        )
+        s3Manager.uploadTrainingScript(scriptFileName, config.scriptContents)
 
         // Reset the training progress so the script doesn't start in the completed state
         s3Manager.setTrainingProgress(newModelName, datasetName, "not started")
