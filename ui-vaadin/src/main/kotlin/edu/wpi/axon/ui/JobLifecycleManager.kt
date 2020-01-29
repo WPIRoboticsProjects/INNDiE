@@ -53,7 +53,8 @@ class JobLifecycleManager internal constructor(
         scope.launch {
             jobDb.update(job.id, status = TrainingScriptProgress.Creating)
 
-            jobRunner.startJob(job)
+            val trainingMethod = jobRunner.startJob(job)
+            jobDb.update(job.id, trainingMethod = trainingMethod)
             LOGGER.debug { "Started job with id: ${job.id}" }
 
             delay(waitAfterStartingJobMs)

@@ -58,7 +58,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
-            trainingMethod = JobTrainingMethod.EC2("i-0e6121c22fe233f12")
+            trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e")
         )
 
         get<JobDb>().create(

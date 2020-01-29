@@ -132,6 +132,8 @@ internal class JobRunner : KoinComponent {
      * @param id The id of the Job to cancel.
      */
     internal fun cancelJob(id: Int) {
+        // TODO: Use the new interface, TrainingScriptCanceller, and put it in a new map called
+        //  `cancellers` so that we don't access `runners` in here.
         runners[id]!!.cancelScript(id)
     }
 

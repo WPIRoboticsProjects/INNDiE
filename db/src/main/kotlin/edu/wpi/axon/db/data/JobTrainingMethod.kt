@@ -25,7 +25,7 @@ sealed class JobTrainingMethod {
     object Local : JobTrainingMethod()
 
     /**
-     * The Job has not been trained yet.
+     * The Job has not been trained yet. Jobs should start in this state.
      */
     @Serializable
     object Untrained : JobTrainingMethod()

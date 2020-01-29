@@ -113,6 +113,7 @@ class EC2TrainingScriptRunner(
     override fun getTrainingProgress(jobId: Int) = progressReporter.getTrainingProgress(jobId)
 
     override fun cancelScript(jobId: Int) {
+        // TODO: Pull this out into an implementation of a new interface, TrainingScriptCanceller
         requireJobIsInMaps(jobId)
         ec2Manager.terminateInstance(instanceIds[jobId]!!)
     }
