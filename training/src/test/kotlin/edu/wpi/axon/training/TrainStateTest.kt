@@ -27,7 +27,7 @@ internal class TrainStateTest {
             mockk<Model>(),
             None,
             false,
-            ModelDeploymentTarget.Normal,
+            ModelDeploymentTarget.Desktop,
             1
         ).usesAWS.shouldBeTrue()
     }
@@ -45,7 +45,7 @@ internal class TrainStateTest {
             mockk<Model>(),
             None,
             false,
-            ModelDeploymentTarget.Normal,
+            ModelDeploymentTarget.Desktop,
             1
         ).usesAWS.shouldBeTrue()
     }
@@ -63,7 +63,7 @@ internal class TrainStateTest {
             mockk<Model>(),
             None,
             false,
-            ModelDeploymentTarget.Normal,
+            ModelDeploymentTarget.Desktop,
             1
         ).usesAWS.shouldBeFalse()
     }
@@ -81,7 +81,7 @@ internal class TrainStateTest {
             mockk<Model>(),
             None,
             false,
-            ModelDeploymentTarget.Normal,
+            ModelDeploymentTarget.Desktop,
             1
         ).usesAWS.shouldBeFalse()
     }
@@ -100,7 +100,7 @@ internal class TrainStateTest {
                 mockk<Model>(),
                 None,
                 false,
-                ModelDeploymentTarget.Normal,
+                ModelDeploymentTarget.Desktop,
                 1
             )
         }

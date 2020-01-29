@@ -57,7 +57,7 @@ class TrainGeneralModelScriptGenerator(
                 }
 
                 val castDataset = when (trainState.target) {
-                    ModelDeploymentTarget.Normal -> loadedDataset
+                    ModelDeploymentTarget.Desktop -> loadedDataset
                     is ModelDeploymentTarget.Coral -> {
                         castLoadedDataset(
                             loadedDataset,
@@ -85,7 +85,7 @@ class TrainGeneralModelScriptGenerator(
                 )
 
                 lastTask = when (trainState.target) {
-                    ModelDeploymentTarget.Normal -> compileTrainSaveTask
+                    ModelDeploymentTarget.Desktop -> compileTrainSaveTask
 
                     is ModelDeploymentTarget.Coral -> {
                         val compileForEdgeTpuTask =

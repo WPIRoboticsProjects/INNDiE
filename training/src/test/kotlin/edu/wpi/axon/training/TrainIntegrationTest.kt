@@ -40,7 +40,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
-                    target = ModelDeploymentTarget.Normal,
+                    target = ModelDeploymentTarget.Desktop,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -68,7 +68,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
-                    target = ModelDeploymentTarget.Normal,
+                    target = ModelDeploymentTarget.Desktop,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -96,7 +96,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userNewModel = mockk(),
                 userValidationSplit = None,
                 generateDebugComments = false,
-                target = ModelDeploymentTarget.Normal,
+                target = ModelDeploymentTarget.Desktop,
                 jobId = Random.nextInt(1, Int.MAX_VALUE)
             ),
             mockk()

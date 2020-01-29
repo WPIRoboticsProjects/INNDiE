@@ -9,7 +9,7 @@ sealed class ModelDeploymentTarget {
      * The model is going to be deployed to a desktop-class machine that can load the standard
      * HDF5 file output.
      */
-    object Normal : ModelDeploymentTarget()
+    object Desktop : ModelDeploymentTarget()
 
     /**
      * The model is going to be deployed to a mobile system that uses the Coral Edge TPU.

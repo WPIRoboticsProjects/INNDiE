@@ -43,7 +43,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
-                    target = ModelDeploymentTarget.Normal,
+                    target = ModelDeploymentTarget.Desktop,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -83,7 +83,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
-                    target = ModelDeploymentTarget.Normal,
+                    target = ModelDeploymentTarget.Desktop,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

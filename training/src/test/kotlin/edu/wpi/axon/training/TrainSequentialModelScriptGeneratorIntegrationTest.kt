@@ -64,7 +64,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,
-                    target = ModelDeploymentTarget.Normal,
+                    target = ModelDeploymentTarget.Desktop,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
