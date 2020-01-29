@@ -237,14 +237,12 @@ internal fun ScriptGenerator.compileTrainSave(
     val progressReportingCallback: Variable = variables.create(Variable::class)
     if (trainState.usesAWS) {
         tasks.run(S3ProgressReportingCallbackTask::class) {
-            modelName = trainState.userNewModelPath.filename
-            datasetName = trainState.userDataset.progressReportingName
+            jobId = trainState.jobId
             output = progressReportingCallback
         }
     } else {
         tasks.run(LocalProgressReportingCallbackTask::class) {
-            modelName = trainState.userNewModelPath.filename
-            datasetName = trainState.userDataset.progressReportingName
+            jobId = trainState.jobId
             output = progressReportingCallback
         }
     }

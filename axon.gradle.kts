@@ -23,8 +23,7 @@ plugins {
 
 val awsProject = project(":aws")
 val dbProject = project(":db")
-val dbDataProject = project(":db-data")
-val dbDataTestUtilProject = project(":db-data-test-util")
+val dbTestUtilProject = project(":db-test-util")
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
@@ -44,8 +43,7 @@ val utilProject = project(":util")
 val kotlinProjects = setOf(
     awsProject,
     dbProject,
-    dbDataProject,
-    dbDataTestUtilProject,
+    dbTestUtilProject,
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
@@ -68,7 +66,6 @@ val javaProjects = setOf<Project>() + kotlinProjects
 val publishedProjects = setOf(
     awsProject,
     dbProject,
-    dbDataProject,
     dslProject,
     dslInterfaceProject,
     exampleModelsProject,

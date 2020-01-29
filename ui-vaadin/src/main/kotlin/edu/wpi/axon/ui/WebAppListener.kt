@@ -2,8 +2,8 @@ package edu.wpi.axon.ui
 
 import arrow.core.Either
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -41,48 +41,90 @@ class WebAppListener : ServletContextListener, KoinComponent {
         val (model, path) = loadModel(modelName)
 
         get<JobDb>().create(
-            Job(
-                name = "AWS Job",
-                status = TrainingScriptProgress.NotStarted,
-                userOldModelPath = FilePath.S3(modelName),
-                userNewModelName = FilePath.S3(newModelName),
-                userDataset = Dataset.ExampleDataset.FashionMnist,
-                userOptimizer = Optimizer.Adam(
-                    learningRate = 0.001,
-                    beta1 = 0.9,
-                    beta2 = 0.999,
-                    epsilon = 1e-7,
-                    amsGrad = false
-                ),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 1,
-                userNewModel = model,
-                generateDebugComments = false
-            )
+            name = "AWS Job",
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = FilePath.S3(modelName),
+            userNewModelName = FilePath.S3(newModelName),
+            userDataset = Dataset.ExampleDataset.FashionMnist,
+            userOptimizer = Optimizer.Adam(
+                learningRate = 0.001,
+                beta1 = 0.9,
+                beta2 = 0.999,
+                epsilon = 1e-7,
+                amsGrad = false
+            ),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 1,
+            userNewModel = model,
+            generateDebugComments = false,
+            trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e")
         )
 
         get<JobDb>().create(
-            Job(
-                name = "Local Job",
-                status = TrainingScriptProgress.NotStarted,
-                userOldModelPath = FilePath.Local(path),
-                userNewModelName = FilePath.Local(newModelName),
-                userDataset = Dataset.ExampleDataset.FashionMnist,
-                userOptimizer = Optimizer.Adam(
-                    learningRate = 0.001,
-                    beta1 = 0.9,
-                    beta2 = 0.999,
-                    epsilon = 1e-7,
-                    amsGrad = false
-                ),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 1,
-                userNewModel = model,
-                generateDebugComments = false
-            )
+            name = "Local Job",
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = FilePath.Local(path),
+            userNewModelName = FilePath.Local(newModelName),
+            userDataset = Dataset.ExampleDataset.FashionMnist,
+            userOptimizer = Optimizer.Adam(
+                learningRate = 0.001,
+                beta1 = 0.9,
+                beta2 = 0.999,
+                epsilon = 1e-7,
+                amsGrad = false
+            ),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 1,
+            userNewModel = model,
+            generateDebugComments = false,
+            trainingMethod = JobTrainingMethod.Untrained
         )
+
+        get<JobDb>().create(
+            name = "Local Job 2",
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = FilePath.Local(path),
+            userNewModelName = FilePath.Local(newModelName),
+            userDataset = Dataset.ExampleDataset.FashionMnist,
+            userOptimizer = Optimizer.Adam(
+                learningRate = 0.001,
+                beta1 = 0.9,
+                beta2 = 0.999,
+                epsilon = 1e-7,
+                amsGrad = false
+            ),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 1,
+            userNewModel = model,
+            generateDebugComments = false,
+            trainingMethod = JobTrainingMethod.Untrained
+        )
+
+        get<JobDb>().create(
+            name = "Local Job that was running",
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = FilePath.Local(path),
+            userNewModelName = FilePath.Local(newModelName),
+            userDataset = Dataset.ExampleDataset.FashionMnist,
+            userOptimizer = Optimizer.Adam(
+                learningRate = 0.001,
+                beta1 = 0.9,
+                beta2 = 0.999,
+                epsilon = 1e-7,
+                amsGrad = false
+            ),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 10,
+            userNewModel = model,
+            generateDebugComments = false,
+            trainingMethod = JobTrainingMethod.Untrained
+        )
+
+        get<JobLifecycleManager>().initialize()
     }
 
     override fun contextDestroyed(sce: ServletContextEvent?) {

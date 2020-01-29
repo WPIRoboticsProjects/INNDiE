@@ -20,7 +20,7 @@ dependencies {
     api(koin("koin-core"))
 
     api(project(":tf-data"))
-    api(project(":db-data"))
+    api(project(":db"))
     api(project(":training"))
 
     api(
@@ -45,5 +45,5 @@ dependencies {
     implementation(project(":util"))
 
     testImplementation(project(":test-util"))
-    testImplementation(project(":db-data-test-util"))
+    testImplementation(project(":db-test-util"))
 }

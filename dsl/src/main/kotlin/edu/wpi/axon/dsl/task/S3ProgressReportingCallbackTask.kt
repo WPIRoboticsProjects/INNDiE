@@ -18,14 +18,9 @@ import org.koin.core.qualifier.named
 class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     /**
-     * The name of the model being trained.
+     * The unique ID of the Job.
      */
-    var modelName by singleAssign<String>()
-
-    /**
-     * The name of the dataset being used in training.
-     */
-    var datasetName by singleAssign<String>()
+    var jobId by singleAssign<Int>()
 
     /**
      * Where to save the callback to.
@@ -58,8 +53,8 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
         return """
         |class $callbackClassName(tf.keras.callbacks.Callback):
         |    def on_epoch_end(self, epoch, logs=None):
-        |        axon.client.impl_update_training_progress("$modelName", "$datasetName",
-        |                                                  str(epoch + 1), "${(bucketName as Some<String>).t}",
+        |        axon.client.impl_update_training_progress($jobId, str(epoch + 1),
+        |                                                  "${(bucketName as Some<String>).t}",
         |                                                  None)
         |
         |${output.name} = $callbackClassName()

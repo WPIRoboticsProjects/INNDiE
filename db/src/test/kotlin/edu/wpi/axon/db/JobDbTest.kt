@@ -1,7 +1,10 @@
 package edu.wpi.axon.db
 
-import edu.wpi.axon.dbdata.nextJob
+import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.db.data.nextJob
 import io.kotlintest.matchers.collections.shouldContainExactly
+import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotlintest.matchers.collections.shouldHaveSize
 import io.kotlintest.matchers.nulls.shouldBeNull
 import io.kotlintest.shouldBe
 import java.io.File
@@ -18,12 +21,11 @@ internal class JobDbTest {
     @Test
     fun `create test`(@TempDir tempDir: File) {
         val db = createDb(tempDir)
-        val job = Random.nextJob()
 
-        val newJob = db.create(job)
+        val newJob = Random.nextJob(db)
 
         transaction {
-            Jobs.select { Jobs.name eq job.name }
+            Jobs.select { Jobs.nameCol eq newJob.name }
                 .map { Jobs.toDomain(it) }
                 .shouldContainExactly(newJob)
         }
@@ -32,26 +34,27 @@ internal class JobDbTest {
     @Test
     fun `update test`(@TempDir tempDir: File) {
         val db = createDb(tempDir)
-        val job = db.create(Random.nextJob())
+        val job = Random.nextJob(db)
 
-        job.name = "Test"
-        db.update(job)
+        db.update(job.id, name = "Test")
 
         transaction {
             Jobs.select { Jobs.id eq job.id }
                 .map { Jobs.toDomain(it) }
-                .shouldContainExactly(job)
+                .let {
+                    it.shouldHaveSize(1)
+                    it.first().name.shouldBe("Test")
+                }
         }
     }
 
     @Test
     fun `find by name test`(@TempDir tempDir: File) {
         val db = createDb(tempDir)
-        val job = Random.nextJob()
 
-        val newJob = db.create(job)
+        val job = Random.nextJob(db)
 
-        db.findByName(job.name).shouldBe(newJob)
+        db.findByName(job.name).shouldBe(job)
     }
 
     @Test
@@ -60,7 +63,7 @@ internal class JobDbTest {
 
         db.count().shouldBe(0)
 
-        db.create(Random.nextJob())
+        Random.nextJob(db)
 
         db.count().shouldBe(1)
     }
@@ -68,12 +71,32 @@ internal class JobDbTest {
     @Test
     fun `remove test`(@TempDir tempDir: File) {
         val db = createDb(tempDir)
-        val job = Random.nextJob()
 
-        val newJob = db.create(job)
+        val job = Random.nextJob(db)
 
-        db.remove(newJob)
+        db.remove(job)
         db.findByName(job.name).shouldBeNull()
+    }
+
+    @Test
+    fun `test fetching running jobs`(@TempDir tempDir: File) {
+        val db = createDb(tempDir)
+
+        val runningJobs = listOf(
+            Random.nextJob(db, status = TrainingScriptProgress.Creating),
+            Random.nextJob(db, status = TrainingScriptProgress.Initializing),
+            Random.nextJob(db, status = TrainingScriptProgress.InProgress(0.2))
+        )
+
+        // Jobs that are not running
+        listOf(
+            Random.nextJob(db, status = TrainingScriptProgress.NotStarted),
+            Random.nextJob(db, status = TrainingScriptProgress.Completed),
+            Random.nextJob(db, status = TrainingScriptProgress.Error)
+        )
+
+        val runningJobsFromDb = db.fetchRunningJobs()
+        runningJobsFromDb.shouldContainExactlyInAnyOrder(runningJobs)
     }
 
     private fun createDb(tempDir: File) = JobDb(

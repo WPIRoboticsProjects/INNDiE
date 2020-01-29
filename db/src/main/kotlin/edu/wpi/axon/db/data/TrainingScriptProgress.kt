@@ -1,4 +1,4 @@
-package edu.wpi.axon.dbdata
+package edu.wpi.axon.db.data
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

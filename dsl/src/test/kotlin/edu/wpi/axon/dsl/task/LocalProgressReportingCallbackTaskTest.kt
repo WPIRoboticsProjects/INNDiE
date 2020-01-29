@@ -5,7 +5,7 @@ import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.mockVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
 import io.kotlintest.shouldBe
-import org.apache.commons.lang3.RandomStringUtils
+import kotlin.random.Random
 import org.junit.Test
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -14,8 +14,7 @@ internal class LocalProgressReportingCallbackTaskConfigurationTest :
     TaskConfigurationTestFixture<LocalProgressReportingCallbackTask>(
         {
             LocalProgressReportingCallbackTask("").apply {
-                modelName = RandomStringUtils.randomAlphanumeric(10)
-                datasetName = RandomStringUtils.randomAlphanumeric(10)
+                jobId = Random.nextInt(1, Int.MAX_VALUE)
             }
         },
         listOf(
@@ -32,8 +31,7 @@ internal class LocalProgressReportingCallbackTaskTest : KoinTestFixture() {
         }
 
         val task = LocalProgressReportingCallbackTask("").apply {
-            modelName = "m"
-            datasetName = "d"
+            jobId = Random.nextInt(1, Int.MAX_VALUE)
             output = configuredCorrectly("output")
         }
 
@@ -49,7 +47,7 @@ internal class LocalProgressReportingCallbackTaskTest : KoinTestFixture() {
             |                raise
             |
             |    def on_epoch_end(self, epoch, logs=None):
-            |        with open("/tmp/m/d/progress.txt", "w") as f:
+            |        with open("/tmp/${task.jobId}/progress.txt", "w") as f:
             |            f.write(str(epoch + 1))
             |
             |output = var1()

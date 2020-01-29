@@ -95,29 +95,24 @@ class S3Manager(
     /**
      * Gets the latest training progress data.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      * @return The contents of the progress file.
      */
     @UseExperimental(ExperimentalStdlibApi::class)
-    fun getTrainingProgress(modelName: String, datasetName: String): String = s3.getObject {
-        it.bucket(bucketName).key(createTrainingProgressFilePath(modelName, datasetName))
+    fun getTrainingProgress(id: Int): String = s3.getObject {
+        it.bucket(bucketName).key(createTrainingProgressFilePath(id))
     }.readAllBytes().decodeToString()
 
     /**
      * Sets the training progress data.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      * @param data The data to write to the progress file.
      */
-    fun setTrainingProgress(modelName: String, datasetName: String, data: String) {
+    fun setTrainingProgress(id: Int, data: String) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName).key(
-                createTrainingProgressFilePath(
-                    modelName,
-                    datasetName
-                )
+                createTrainingProgressFilePath(id)
             ).build(),
             RequestBody.fromString(data)
         )
@@ -126,16 +121,12 @@ class S3Manager(
     /**
      * Creates a heartbeat that Axon uses to check if the training script is running properly.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      */
-    fun createHeartbeat(modelName: String, datasetName: String) {
+    fun createHeartbeat(id: Int) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName).key(
-                createHeartbeatFilePath(
-                    modelName,
-                    datasetName
-                )
+                createHeartbeatFilePath(id)
             ).build(),
             RequestBody.fromString("1")
         )
@@ -144,16 +135,12 @@ class S3Manager(
     /**
      * Removes a heartbeat that Axon uses to check if the training script is running properly.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      */
-    fun removeHeartbeat(modelName: String, datasetName: String) {
+    fun removeHeartbeat(id: Int) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName).key(
-                createHeartbeatFilePath(
-                    modelName,
-                    datasetName
-                )
+                createHeartbeatFilePath(id)
             ).build(),
             RequestBody.fromString("0")
         )
@@ -162,13 +149,12 @@ class S3Manager(
     /**
      * Gets the latest heartbeat.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      * @return The contents of the heartbeat file.
      */
     @UseExperimental(ExperimentalStdlibApi::class)
-    fun getHeartbeat(modelName: String, datasetName: String) = s3.getObject {
-        it.bucket(bucketName).key(createHeartbeatFilePath(modelName, datasetName))
+    fun getHeartbeat(id: Int) = s3.getObject {
+        it.bucket(bucketName).key(createHeartbeatFilePath(id))
     }.readAllBytes().decodeToString()
 
     /**
@@ -244,14 +230,13 @@ class S3Manager(
             it.bucket(bucketName).prefix(prefix)
         }.contents().map { it.key().substring(prefix.length) }
 
-    private fun createTrainingProgressPrefix(modelName: String, datasetName: String) =
-        "axon-training-progress/$modelName/$datasetName"
+    private fun createTrainingProgressPrefix(id: Int) = "axon-training-progress/$id"
 
-    private fun createTrainingProgressFilePath(modelName: String, datasetName: String) =
-        "${createTrainingProgressPrefix(modelName, datasetName)}/progress.txt"
+    private fun createTrainingProgressFilePath(id: Int) =
+        "${createTrainingProgressPrefix(id)}/progress.txt"
 
-    private fun createHeartbeatFilePath(modelName: String, datasetName: String) =
-        "${createTrainingProgressPrefix(modelName, datasetName)}/heartbeat.txt"
+    private fun createHeartbeatFilePath(id: Int) =
+        "${createTrainingProgressPrefix(id)}/heartbeat.txt"
 
     companion object {
         private const val preferencesFilename = "axon-preferences.json"

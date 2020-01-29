@@ -4,7 +4,6 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
-import arrow.fx.extensions.fx
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.VaadinDsl
 import com.github.mvysny.karibudsl.v10.beanValidationBinder
@@ -29,16 +28,11 @@ import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.ui.JobRunner
+import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.util.axonBucketName
-import kotlin.concurrent.thread
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
@@ -49,8 +43,7 @@ import org.koin.core.qualifier.named
 class JobEditorForm : KComposite(), KoinComponent {
 
     private val jobDb by inject<JobDb>()
-    private val jobRunner by inject<JobRunner>()
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val jobLifecycleManager by inject<JobLifecycleManager>()
     private lateinit var form: FormLayout
     private val binder = beanValidationBinder<Job>()
 
@@ -139,11 +132,13 @@ class JobEditorForm : KComposite(), KoinComponent {
                             onLeftClick {
                                 job.map { job ->
                                     // TODO: Handle errors cancelling the Job
-                                    jobRunner.cancelJob(job.id).map {
+                                    IO {
+                                        jobLifecycleManager.cancelJob(job.id)
+                                    }.map {
                                         // Only remove the Job if it was successfully cancelled
                                         jobDb.remove(job)
                                         JobsView.navigateTo()
-                                    }.unsafeRunSync()
+                                    }
                                 }
                             }
                         }
@@ -193,20 +188,20 @@ class JobEditorForm : KComposite(), KoinComponent {
                                 )
                             }
                             onLeftClick {
-                                thread(isDaemon = true) {
-                                    job.fold(
-                                        {
-                                            LOGGER.debug {
-                                                "Could not run the Job because it is None."
-                                            }
-                                        },
-                                        { job ->
-                                            scope.launch {
-                                                runJob(job)
-                                            }
+                                LOGGER.debug { "Running $job" }
+                                job.fold(
+                                    {
+                                        LOGGER.debug {
+                                            "Could not run the Job because it is None."
                                         }
-                                    )
-                                }
+                                    },
+                                    {
+                                        // TODO: Handle errors here
+                                        IO {
+                                            jobLifecycleManager.startJob(it)
+                                        }.unsafeRunSync()
+                                    }
+                                )
                             }
                         }
                         button("Cancel", Icon(VaadinIcon.STOP)) {
@@ -229,7 +224,9 @@ class JobEditorForm : KComposite(), KoinComponent {
                             onLeftClick {
                                 job.map { job ->
                                     // TODO: Handle errors cancelling the Job
-                                    jobRunner.cancelJob(job.id).unsafeRunSync()
+                                    IO {
+                                        jobLifecycleManager.cancelJob(job.id)
+                                    }.unsafeRunSync()
                                 }
                             }
                         }
@@ -241,22 +238,8 @@ class JobEditorForm : KComposite(), KoinComponent {
         isVisible = false
     }
 
-    private suspend fun runJob(job: Job) = IO.fx {
-        jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
-
-        jobRunner.startJob(job).bind()
-        LOGGER.debug { "Started job with id: $id" }
-
-        effect { delay(defaultWaitAfterStaringJobMs) }.bind()
-
-        jobRunner.waitForFinish(job.id) {
-            jobDb.update(job.copy(status = it))
-        }.bind()
-    }.unsafeRunSync() // TODO: Handle errors here
-
     companion object {
         private val LOGGER = KotlinLogging.logger { }
-        private const val defaultWaitAfterStaringJobMs = 5000L
     }
 }
 

@@ -25,7 +25,9 @@ internal class TrainStateTest {
             emptySet(),
             1,
             mockk<Model>(),
-            None
+            None,
+            false,
+            1
         ).usesAWS.shouldBeTrue()
     }
 
@@ -40,7 +42,9 @@ internal class TrainStateTest {
             emptySet(),
             1,
             mockk<Model>(),
-            None
+            None,
+            false,
+            1
         ).usesAWS.shouldBeTrue()
     }
 
@@ -55,7 +59,9 @@ internal class TrainStateTest {
             emptySet(),
             1,
             mockk<Model>(),
-            None
+            None,
+            false,
+            1
         ).usesAWS.shouldBeFalse()
     }
 
@@ -70,7 +76,9 @@ internal class TrainStateTest {
             emptySet(),
             1,
             mockk<Model>(),
-            None
+            None,
+            false,
+            1
         ).usesAWS.shouldBeFalse()
     }
 
@@ -86,7 +94,9 @@ internal class TrainStateTest {
                 emptySet(),
                 1,
                 mockk<Model>(),
-                None
+                None,
+                false,
+                1
             )
         }
     }
