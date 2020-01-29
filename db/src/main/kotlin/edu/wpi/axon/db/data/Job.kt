@@ -1,4 +1,4 @@
-package edu.wpi.axon.dbdata
+package edu.wpi.axon.db.data
 
 import arrow.core.None
 import arrow.core.Option
@@ -9,9 +9,6 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.allS3OrLocal
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 
 /**
  * @param userOldModelPath The path to the model to load.
@@ -26,8 +23,7 @@ import kotlinx.serialization.json.JsonConfiguration
  * @param generateDebugComments Whether to put debug comments in the output.
  * @param id The database-generated unique id. Do not modify.
  */
-@Serializable
-data class Job(
+data class Job internal constructor(
     var name: String,
     var status: TrainingScriptProgress,
     var userOldModelPath: FilePath,
@@ -39,7 +35,7 @@ data class Job(
     var userEpochs: Int,
     var userNewModel: Model,
     var generateDebugComments: Boolean,
-    var id: Int = -1
+    var id: Int
 ) {
 
     /**
@@ -65,15 +61,4 @@ data class Job(
                 None
             }
         }
-
-    fun serialize(): String = Json(
-        JsonConfiguration.Stable
-    ).stringify(serializer(), this)
-
-    companion object {
-
-        fun deserialize(data: String): Job = Json(
-            JsonConfiguration.Stable
-        ).parse(serializer(), data)
-    }
 }

@@ -1,4 +1,4 @@
-package edu.wpi.axon.dbdata
+package edu.wpi.axon.db.data
 
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest

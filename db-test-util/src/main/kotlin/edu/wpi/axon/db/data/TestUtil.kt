@@ -1,5 +1,6 @@
-package edu.wpi.axon.dbdata
+package edu.wpi.axon.db.data
 
+import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.SerializableTuple2II
@@ -27,30 +28,31 @@ fun Random.nextDataset(): Dataset {
 fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
     when (nextInt(TrainingScriptProgress::class.sealedSubclasses.count())) {
         0 -> TrainingScriptProgress.NotStarted
-        1 -> TrainingScriptProgress.InProgress(nextDouble(1.0))
+        1 -> TrainingScriptProgress.InProgress(nextDouble(0.0, 1.0))
         else -> TrainingScriptProgress.Completed
     }
 
-fun Random.nextJob() = Job(
-    name = RandomStringUtils.randomAlphanumeric(10),
-    status = nextTrainingScriptProgress(),
-    userOldModelPath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
-    userNewModelName = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
-    userDataset = nextDataset(),
-    userOptimizer = Optimizer.Adam(
-        nextDouble(),
-        nextDouble(),
-        nextDouble(),
-        nextDouble(),
+fun Random.nextJob(
+    jobDb: JobDb,
+    name: String = RandomStringUtils.randomAlphanumeric(10),
+    status: TrainingScriptProgress = nextTrainingScriptProgress(),
+    userOldModelPath: FilePath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
+    userNewModelName: FilePath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
+    userDataset: Dataset = nextDataset(),
+    userOptimizer: Optimizer = Optimizer.Adam(
+        nextDouble(0.0, 1.0),
+        nextDouble(0.0, 1.0),
+        nextDouble(0.0, 1.0),
+        nextDouble(0.0, 1.0),
         nextBoolean()
     ),
-    userLoss = Loss.SparseCategoricalCrossentropy,
-    userMetrics = setOf(
+    userLoss: Loss = Loss.SparseCategoricalCrossentropy,
+    userMetrics: Set<String> = setOf(
         RandomStringUtils.randomAlphanumeric(10),
         RandomStringUtils.randomAlphanumeric(10)
     ),
-    userEpochs = nextInt(),
-    userNewModel = Model.Sequential(
+    userEpochs: Int = nextInt(1, Int.MAX_VALUE),
+    userNewModel: Model = Model.Sequential(
         RandomStringUtils.randomAlphanumeric(10),
         (1..3).map { nextInt(128) },
         setOf(
@@ -65,5 +67,17 @@ fun Random.nextJob() = Job(
             Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
         )
     ),
-    generateDebugComments = nextBoolean()
+    generateDebugComments: Boolean = nextBoolean()
+) = jobDb.create(
+    name,
+    status,
+    userOldModelPath,
+    userNewModelName,
+    userDataset,
+    userOptimizer,
+    userLoss,
+    userMetrics,
+    userEpochs,
+    userNewModel,
+    generateDebugComments
 )

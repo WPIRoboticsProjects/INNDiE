@@ -11,8 +11,8 @@ import edu.wpi.axon.aws.RunTrainingScriptConfiguration
 import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.preferences.PreferencesManager
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator

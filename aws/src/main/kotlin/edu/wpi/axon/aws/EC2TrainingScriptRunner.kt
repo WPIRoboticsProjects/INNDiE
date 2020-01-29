@@ -1,6 +1,6 @@
 package edu.wpi.axon.aws
 
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
 import java.lang.NumberFormatException

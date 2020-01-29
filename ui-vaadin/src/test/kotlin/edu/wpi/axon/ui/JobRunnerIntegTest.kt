@@ -4,8 +4,9 @@ import arrow.core.Tuple3
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import edu.wpi.axon.aws.S3Manager
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.db.data.nextJob
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.examplemodel.downloadAndConfigureExampleModel
@@ -41,22 +42,23 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
 
+        val db = get<JobDb>()
         val oldModelName = "32_32_1_conv_sequential.h5"
         val newModelName = "$tempDir/32_32_1_conv_sequential-trained.h5"
         val (oldModel, path) = loadModel(oldModelName) {}
-        val job = Job(
-            "Job 1",
-            TrainingScriptProgress.NotStarted,
-            FilePath.Local(path),
-            FilePath.Local(newModelName),
-            Dataset.ExampleDataset.FashionMnist,
-            Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-            Loss.SparseCategoricalCrossentropy,
-            setOf("accuracy"),
-            1,
-            oldModel,
-            false,
-            Random.nextInt(1, Int.MAX_VALUE)
+        val job = Random.nextJob(
+            db,
+            name = "Job 1",
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = FilePath.Local(path),
+            userNewModelName = FilePath.Local(newModelName),
+            userDataset = Dataset.ExampleDataset.FashionMnist,
+            userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 1,
+            userNewModel = oldModel,
+            generateDebugComments = false
         )
 
         val jobRunner = JobRunner()
@@ -80,22 +82,23 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
 
+        val db = get<JobDb>()
         val oldModelName = "32_32_1_conv_sequential.h5"
         val newModelName = "32_32_1_conv_sequential-trained.h5"
         val (oldModel, _) = loadModel(oldModelName) {}
-        val job = Job(
-            "Job 1",
-            TrainingScriptProgress.NotStarted,
-            FilePath.S3(oldModelName),
-            FilePath.S3(newModelName),
-            Dataset.ExampleDataset.FashionMnist,
-            Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-            Loss.SparseCategoricalCrossentropy,
-            setOf("accuracy"),
-            1,
-            oldModel,
-            false,
-            Random.nextInt(1, Int.MAX_VALUE)
+        val job = Random.nextJob(
+            db,
+            name = "Job 1",
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = FilePath.S3(oldModelName),
+            userNewModelName = FilePath.S3(newModelName),
+            userDataset = Dataset.ExampleDataset.FashionMnist,
+            userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 1,
+            userNewModel = oldModel,
+            generateDebugComments = false
         )
 
         val jobRunner = JobRunner()
@@ -143,19 +146,20 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
                 "-trained." +
                 exampleModel.fileName.substringAfterLast(".")
 
-        val job = Job(
-            "Job 1",
-            TrainingScriptProgress.NotStarted,
-            FilePath.S3(file.name),
-            FilePath.S3(userNewModelName),
-            Dataset.ExampleDataset.Mnist,
-            Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
-            Loss.SparseCategoricalCrossentropy,
-            setOf("accuracy"),
-            1,
-            model,
-            false,
-            Random.nextInt(1, Int.MAX_VALUE)
+        val db = get<JobDb>()
+        val job = Random.nextJob(
+            db,
+            name = "Job 1",
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = FilePath.S3(file.name),
+            userNewModelName = FilePath.S3(userNewModelName),
+            userDataset = Dataset.ExampleDataset.Mnist,
+            userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 1,
+            userNewModel = model,
+            generateDebugComments = false
         )
 
         val jobRunner = JobRunner()

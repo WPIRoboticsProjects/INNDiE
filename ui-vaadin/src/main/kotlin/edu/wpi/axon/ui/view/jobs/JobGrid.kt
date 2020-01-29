@@ -12,7 +12,7 @@ import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.data.provider.DataProvider
 import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.data.renderer.TextRenderer
-import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.db.data.Job
 
 class JobGrid : Grid<Job>() {
     init {

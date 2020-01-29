@@ -1,10 +1,10 @@
 package edu.wpi.axon.ui
 
-import edu.wpi.axon.dbdata.TrainingScriptProgress
-import edu.wpi.axon.dbdata.nextJob
-import edu.wpi.axon.util.FilePath
+import arrow.core.None
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import io.kotlintest.shouldThrow
-import kotlin.random.Random
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -15,9 +15,13 @@ internal class JobRunnerTest {
 
     @ParameterizedTest
     @MethodSource("runningJobTestSource")
-    fun `test starting a running job`(status: TrainingScriptProgress) {
+    fun `test starting a running job`(givenStatus: TrainingScriptProgress) {
         shouldThrow<IllegalArgumentException> {
-            runner.startJob(Random.nextJob().copy(status = status))
+            runner.startJob(
+                mockk {
+                    every { status } returns givenStatus
+                }
+            )
         }
     }
 
@@ -25,10 +29,10 @@ internal class JobRunnerTest {
     fun `test starting a job where usesAWS failed`() {
         shouldThrow<IllegalArgumentException> {
             runner.startJob(
-                Random.nextJob().copy(
-                    userOldModelPath = FilePath.S3(""),
-                    userNewModelName = FilePath.Local("")
-                )
+                mockk {
+                    every { status } returns TrainingScriptProgress.NotStarted
+                    every { usesAWS } returns None
+                }
             )
         }
     }

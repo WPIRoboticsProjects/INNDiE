@@ -27,7 +27,7 @@ import com.vaadin.flow.router.Route
 import com.vaadin.flow.router.RouteAlias
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.JobDbOp
-import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.ui.MainLayout
 import edu.wpi.axon.ui.service.JobProvider
 import edu.wpi.axon.ui.view.EntityView

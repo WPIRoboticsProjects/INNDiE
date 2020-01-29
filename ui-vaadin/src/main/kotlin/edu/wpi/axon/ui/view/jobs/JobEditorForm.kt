@@ -28,8 +28,8 @@ import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.util.axonBucketName
@@ -189,21 +189,20 @@ class JobEditorForm : KComposite(), KoinComponent {
                                 )
                             }
                             onLeftClick {
-                                thread(isDaemon = true) {
-                                    job.fold(
-                                        {
-                                            LOGGER.debug {
-                                                "Could not run the Job because it is None."
-                                            }
-                                        },
-                                        {
-                                            // TODO: Handle errors here
-                                            IO {
-                                                jobLifecycleManager.startJob(it)
-                                            }.unsafeRunSync()
+                                LOGGER.debug { "Running $job" }
+                                job.fold(
+                                    {
+                                        LOGGER.debug {
+                                            "Could not run the Job because it is None."
                                         }
-                                    )
-                                }
+                                    },
+                                    {
+                                        // TODO: Handle errors here
+                                        IO {
+                                            jobLifecycleManager.startJob(it)
+                                        }.unsafeRunSync()
+                                    }
+                                )
                             }
                         }
                         button("Cancel", Icon(VaadinIcon.STOP)) {

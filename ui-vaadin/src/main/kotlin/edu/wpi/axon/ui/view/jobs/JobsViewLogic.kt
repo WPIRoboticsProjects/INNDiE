@@ -2,8 +2,8 @@
 //
 // import com.vaadin.flow.component.UI
 // import edu.wpi.axon.db.JobDb
-// import edu.wpi.axon.dbdata.Job
-// import edu.wpi.axon.dbdata.TrainingScriptProgress
+// import edu.wpi.axon.db.data.Job
+// import edu.wpi.axon.db.data.TrainingScriptProgress
 // import edu.wpi.axon.ui.JobRunner
 // import kotlin.concurrent.thread
 // import org.koin.core.KoinComponent

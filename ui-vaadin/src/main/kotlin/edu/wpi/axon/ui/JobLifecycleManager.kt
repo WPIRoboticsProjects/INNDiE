@@ -1,8 +1,8 @@
 package edu.wpi.axon.ui
 
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,8 +30,10 @@ class JobLifecycleManager(
         val runningJobs = jobDb.fetchRunningJobs()
         runningJobs.forEach { job ->
             scope.launch {
+                LOGGER.info { "launched" }
                 jobRunner.waitForFinish(job.id) {
-                    jobDb.update(job.copy(status = it))
+                    LOGGER.info { "update $it" }
+                    jobDb.update(job.id, status = it)
                 }
             }
         }
@@ -44,7 +46,7 @@ class JobLifecycleManager(
      */
     fun startJob(job: Job) {
         scope.launch {
-            jobDb.update(job.copy(status = TrainingScriptProgress.Creating))
+            jobDb.update(job.id, status = TrainingScriptProgress.Creating)
 
             jobRunner.startJob(job)
             LOGGER.debug { "Started job with id: ${job.id}" }
@@ -52,7 +54,7 @@ class JobLifecycleManager(
             delay(waitAfterStartingJobMs)
 
             jobRunner.waitForFinish(job.id) {
-                jobDb.update(job.copy(status = it))
+                jobDb.update(job.id, status = it)
             }
         }
     }
