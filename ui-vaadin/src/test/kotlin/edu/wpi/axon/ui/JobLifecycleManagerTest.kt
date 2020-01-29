@@ -97,6 +97,9 @@ internal class JobLifecycleManagerTest {
         val jobLifecycleManager = JobLifecycleManager(jobRunner, jobDb, waitAfterStaringJobMs)
         jobLifecycleManager.initialize()
 
+        // Give the coroutines inside initialize time to run
+        Thread.sleep(500)
+
         verify(exactly = 1) { jobDb.fetchRunningJobs() }
         coVerifyAll {
             jobRunner.waitForFinish(eq(jobId1), any())
