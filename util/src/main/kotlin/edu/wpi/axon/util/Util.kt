@@ -37,6 +37,8 @@ fun runCommand(
             }
         }.start()
 
+    LOGGER.debug { "Started on PID ${proc.pid()}" }
+
     BufferedReader(InputStreamReader(proc.inputStream)).useLines { procStdOut ->
         BufferedReader(InputStreamReader(proc.errorStream)).useLines { procStdErr ->
             val exitCode = try {

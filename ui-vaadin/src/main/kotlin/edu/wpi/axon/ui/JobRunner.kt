@@ -22,6 +22,7 @@ import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
+import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
@@ -245,6 +246,8 @@ internal class JobRunner : KoinComponent {
         userValidationSplit = None,
         userNewModel = job.userNewModel as T,
         generateDebugComments = job.generateDebugComments,
+        // TODO: Let the user target the Coral
+        target = ModelDeploymentTarget.Normal,
         jobId = job.id
     )
 }

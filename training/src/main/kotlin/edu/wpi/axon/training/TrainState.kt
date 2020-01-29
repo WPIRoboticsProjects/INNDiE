@@ -20,6 +20,7 @@ import edu.wpi.axon.util.allS3OrLocal
  * @param userEpochs The number of epochs.
  * @param userNewModel The new model.
  * @param generateDebugComments Whether to put debug comments in the output.
+ * @param target Where the model will be deployed.
  * @param jobId The unique ID of the Job.
  */
 data class TrainState<T : Model>(
@@ -33,6 +34,7 @@ data class TrainState<T : Model>(
     val userNewModel: T,
     val userValidationSplit: Option<Double>,
     val generateDebugComments: Boolean,
+    val target: ModelDeploymentTarget,
     val jobId: Int
 ) {
 

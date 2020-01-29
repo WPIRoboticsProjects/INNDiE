@@ -10,6 +10,7 @@ import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
 import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
+import edu.wpi.axon.dsl.task.CastTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
@@ -19,9 +20,12 @@ import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
 import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
+import edu.wpi.axon.dsl.task.PostTrainingQuantizationTask
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
+import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
+import edu.wpi.axon.dsl.task.SliceTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
@@ -103,12 +107,14 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
 ): LoadedDataset {
     require(trainState.userDataset is Dataset.Custom)
 
-    // TODO: Run conversion as a separate step so that eager execution is disabled when training
-    //  LoadTFRecordOfImagesWithObjects needs eager execution
-    check(pregenerationLastTask == null) {
-        "BUG: pregenerationLastTask was not null and would have been overwritten."
+    // LoadTFRecordOfImagesWithObjects needs eager execution
+    if (pregenerationLastTask == null) {
+        pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+    } else {
+        pregenerationLastTask!!.dependencies.add(
+            tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+        )
     }
-    pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
 
     val convertTask = tasks.run(ConvertSuperviselyDatasetToRecord::class) {
         dataset = trainState.userDataset
@@ -156,6 +162,36 @@ internal fun ScriptGenerator.reshapeAndScaleLoadedDataset(
     return dataset.copy(
         train = scaledTrain,
         validation = scaledValidation
+    )
+}
+
+internal fun ScriptGenerator.cast(
+    dataset: Variable,
+    dtypeIn: String
+): Variable {
+    val castDataset by variables.creating(Variable::class)
+    tasks.run(CastTask::class) {
+        input = dataset
+        output = castDataset
+        dtype = dtypeIn
+    }
+
+    return castDataset
+}
+
+internal fun ScriptGenerator.castLoadedDataset(
+    dataset: LoadedDataset,
+    dtype: String
+): LoadedDataset {
+    val castTrain = cast(dataset.train.first, dtype) to dataset.train.second
+
+    val castValidation = dataset.validation.map {
+        cast(it.first, dtype) to it.second
+    }
+
+    return dataset.copy(
+        train = castTrain,
+        validation = castValidation
     )
 }
 
@@ -270,4 +306,49 @@ internal fun ScriptGenerator.compileTrainSave(
         modelPath = trainState.userNewModelPath.path
         dependencies += trainModelTask
     }
+}
+
+/**
+ * Quantizes and compiles a model for the Coral Edge TPU. Uses post-training quantization.
+ *
+ * @param trainState The training state
+ * @param loadedDataset The dataset the model was trained on.
+ * @return The last task in the sequence of operations.
+ */
+internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
+    trainState: TrainState<*>,
+    loadedDataset: LoadedDataset
+): Task {
+    require(trainState.target is ModelDeploymentTarget.Coral)
+    // Post-training quantization needs eager execution
+    if (pregenerationLastTask == null) {
+        pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+    } else {
+        pregenerationLastTask!!.dependencies.add(
+            tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+        )
+    }
+
+    // Only grab 10% of the dataset
+    val datasetSlice = variables.create(Variable::class)
+    tasks.run(SliceTask::class) {
+        input = loadedDataset.train.first
+        output = datasetSlice
+        sliceNotation = "[:int(len(${loadedDataset.train.first.name}) * " +
+            "${trainState.target.representativeDatasetPercentage})]"
+    }
+
+    val tfliteModelPath = "${trainState.userNewModelPath.path.substringBeforeLast('.')}.tflite"
+    val postTrainingQuantizationTask by tasks.running(PostTrainingQuantizationTask::class) {
+        modelFilename = trainState.userNewModelPath.path
+        outputModelFilename = tfliteModelPath
+        representativeDataset = datasetSlice
+    }
+
+    val runEdgeTpuCompilerTask by tasks.running(RunEdgeTpuCompilerTask::class) {
+        inputModelFilename = tfliteModelPath
+        dependencies.add(postTrainingQuantizationTask)
+    }
+
+    return runEdgeTpuCompilerTask
 }

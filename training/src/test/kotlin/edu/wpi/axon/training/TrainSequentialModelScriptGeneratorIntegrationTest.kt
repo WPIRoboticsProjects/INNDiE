@@ -4,6 +4,7 @@ package edu.wpi.axon.training
 
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -14,6 +15,7 @@ import edu.wpi.axon.training.testutil.testTrainingScript
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
+import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
 import java.nio.file.Paths
@@ -62,11 +64,62 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Normal,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
                 testTrainingScript(tempDir, script, newModelName)
+            }
+        }
+    }
+
+    @Test
+    @Tag("needsTensorFlowSupport")
+    fun `test with fashion mnist targeting the coral`(@TempDir tempDir: File) {
+        startKoin {
+            modules(
+                listOf(
+                    defaultBackendModule(),
+                    module {
+                        single(named(axonBucketName)) { "dummy-bucket-name" }
+                    }
+                )
+            )
+        }
+
+        val modelName = "custom_fashion_mnist.h5"
+        val newModelName = "$tempDir/custom_fashion_mnist-trained.h5"
+        val (model, path) = loadModel(modelName) {}
+        model.shouldBeInstanceOf<Model.Sequential> {
+            TrainSequentialModelScriptGenerator(
+                TrainState(
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
+                    userDataset = Dataset.ExampleDataset.Mnist,
+                    userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                    userLoss = Loss.SparseCategoricalCrossentropy,
+                    userMetrics = setOf("accuracy"),
+                    userEpochs = 1,
+                    userNewModel = it.copy(
+                        layers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
+                            // Only train the last 3 layers
+                            if (it.layers.size - index <= 3) layer.layer.trainable()
+                            else layer.layer.trainable(false)
+                        }),
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    target = ModelDeploymentTarget.Coral(0.0001),
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
+                ),
+                it
+            ).generateScript().shouldBeValid { (script) ->
+                testTrainingScript(tempDir, script, newModelName)
+                // Also test for the compiled output
+                Paths.get(
+                    "$tempDir/" +
+                        RunEdgeTpuCompilerTask.getEdgeTpuCompiledModelFilename(newModelName)
+                ).shouldExist()
             }
         }
     }
@@ -102,6 +155,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Coral(0.1),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
