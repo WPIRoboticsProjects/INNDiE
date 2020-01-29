@@ -1,6 +1,6 @@
 package edu.wpi.axon.aws
 
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
 import io.kotlintest.should
@@ -9,12 +9,8 @@ import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlin.test.assertEquals
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
@@ -43,14 +39,14 @@ internal class EC2TrainingScriptRunnerTest {
 
         val s3Manager = mockk<S3Manager> {
             every { uploadTrainingScript(any(), any()) } returns Unit
-            every { setTrainingProgress(any(), any(), any()) } returns Unit
-            every { removeHeartbeat(any(), any()) } returns Unit
-            every { getHeartbeat(any(), any()) } returnsMany listOf(
+            every { setTrainingProgress(any(), any()) } returns Unit
+            every { removeHeartbeat(any()) } returns Unit
+            every { getHeartbeat(any()) } returnsMany listOf(
                 "0", // Call 1
                 "1", // Call 2
                 "0" // Call 3
             )
-            every { getTrainingProgress(any(), any()) } returnsMany listOf(
+            every { getTrainingProgress(any()) } returnsMany listOf(
                 "not started", // Call 1
                 "1", // Call 2
                 "completed" // Call 3
@@ -84,17 +80,11 @@ internal class EC2TrainingScriptRunnerTest {
         }
 
         verify(atLeast = 3) {
-            s3Manager.getHeartbeat(
-                config.newModelName.filename,
-                config.dataset.progressReportingName
-            )
+            s3Manager.getHeartbeat(config.id)
         }
 
         verify(atLeast = 3) {
-            s3Manager.getTrainingProgress(
-                config.newModelName.filename,
-                config.dataset.progressReportingName
-            )
+            s3Manager.getTrainingProgress(config.id)
         }
     }
 
@@ -111,8 +101,8 @@ internal class EC2TrainingScriptRunnerTest {
 
         val s3Manager = mockk<S3Manager> {
             every { uploadTrainingScript(any(), any()) } returns Unit
-            every { setTrainingProgress(any(), any(), any()) } returns Unit
-            every { removeHeartbeat(any(), any()) } returns Unit
+            every { setTrainingProgress(any(), any()) } returns Unit
+            every { removeHeartbeat(any()) } returns Unit
         }
 
         val runner = EC2TrainingScriptRunner(instanceType, ec2, s3Manager)
@@ -147,18 +137,11 @@ internal class EC2TrainingScriptRunnerTest {
         }
 
         verify(exactly = 1) {
-            s3Manager.setTrainingProgress(
-                config.newModelName.filename,
-                config.dataset.progressReportingName,
-                "not started"
-            )
+            s3Manager.setTrainingProgress(config.id, "not started")
         }
 
         verify(exactly = 1) {
-            s3Manager.removeHeartbeat(
-                config.newModelName.filename,
-                config.dataset.progressReportingName
-            )
+            s3Manager.removeHeartbeat(config.id)
         }
 
         verify(exactly = 1) {
@@ -228,107 +211,5 @@ internal class EC2TrainingScriptRunnerTest {
                 )
             )
         }
-    }
-
-    @ParameterizedTest
-    @MethodSource("progressTestSource")
-    fun `test progress`(
-        heartbeat: String,
-        progress: String,
-        status: InstanceStateName?,
-        epochs: Int,
-        expected: TrainingScriptProgress
-    ) {
-        assertEquals(
-            expected,
-            EC2TrainingScriptRunner.computeTrainingScriptProgress(
-                heartbeat,
-                progress,
-                status,
-                epochs
-            )
-        )
-    }
-
-    companion object {
-
-        @JvmStatic
-        @Suppress("unused")
-        fun progressTestSource() = listOf(
-            Arguments.of("0", "not started", null, 1, TrainingScriptProgress.Creating),
-            Arguments.of(
-                "0", "not started", InstanceStateName.PENDING, 1,
-                TrainingScriptProgress.Creating
-            ),
-            Arguments.of(
-                "0", "not started", InstanceStateName.RUNNING, 1,
-                TrainingScriptProgress.Initializing
-            ),
-            Arguments.of(
-                "1",
-                "initializing",
-                InstanceStateName.RUNNING,
-                1,
-                TrainingScriptProgress.Initializing
-            ),
-            Arguments.of(
-                "1",
-                "1.0",
-                InstanceStateName.RUNNING,
-                1,
-                TrainingScriptProgress.InProgress(1.0)
-            ),
-            Arguments.of("0", "completed", null, 1, TrainingScriptProgress.Completed),
-            Arguments.of(
-                "0",
-                "completed",
-                InstanceStateName.STOPPING,
-                1,
-                TrainingScriptProgress.Completed
-            ),
-            Arguments.of(
-                "0", "not started", InstanceStateName.SHUTTING_DOWN, 1,
-                TrainingScriptProgress.Error
-            ),
-            Arguments.of(
-                "1",
-                "not started",
-                InstanceStateName.PENDING,
-                1,
-                TrainingScriptProgress.Error
-            ),
-            Arguments.of(
-                "1",
-                "not started",
-                InstanceStateName.RUNNING,
-                1,
-                TrainingScriptProgress.Error
-            ),
-            Arguments.of("1", "not started", null, 1, TrainingScriptProgress.Error),
-            Arguments.of("1", "1.0", InstanceStateName.STOPPING, 1, TrainingScriptProgress.Error),
-            Arguments.of("1", "1.0", InstanceStateName.TERMINATED, 1, TrainingScriptProgress.Error),
-            Arguments.of(
-                "0",
-                "initializing",
-                InstanceStateName.RUNNING,
-                1,
-                TrainingScriptProgress.Error
-            ),
-            Arguments.of(
-                "1",
-                "initializing",
-                InstanceStateName.SHUTTING_DOWN,
-                1,
-                TrainingScriptProgress.Error
-            ),
-            Arguments.of(
-                "2",
-                "initializing",
-                InstanceStateName.RUNNING,
-                1,
-                TrainingScriptProgress.Error
-            ),
-            Arguments.of("1", "foo", InstanceStateName.RUNNING, 1, TrainingScriptProgress.Error)
-        )
     }
 }

@@ -1,6 +1,5 @@
 package edu.wpi.axon.training
 
-import arrow.core.None
 import arrow.core.Option
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -21,6 +20,7 @@ import edu.wpi.axon.util.allS3OrLocal
  * @param userEpochs The number of epochs.
  * @param userNewModel The new model.
  * @param generateDebugComments Whether to put debug comments in the output.
+ * @param jobId The unique ID of the Job.
  */
 data class TrainState<T : Model>(
     val userOldModelPath: FilePath,
@@ -31,8 +31,9 @@ data class TrainState<T : Model>(
     val userMetrics: Set<String>,
     val userEpochs: Int,
     val userNewModel: T,
-    val userValidationSplit: Option<Double> = None,
-    val generateDebugComments: Boolean = false
+    val userValidationSplit: Option<Double>,
+    val generateDebugComments: Boolean,
+    val jobId: Int
 ) {
 
     // Just need to check one because of the [require] below

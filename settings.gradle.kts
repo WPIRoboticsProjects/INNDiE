@@ -32,8 +32,7 @@ rootProject.name = "axon"
 
 include(":aws")
 include(":db")
-include(":db-data")
-include(":db-data-test-util")
+include(":db-test-util")
 include(":dsl")
 include(":dsl-interface")
 include(":dsl-test-util")

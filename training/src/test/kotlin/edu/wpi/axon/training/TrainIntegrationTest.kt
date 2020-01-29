@@ -1,5 +1,6 @@
 package edu.wpi.axon.training
 
+import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
@@ -13,6 +14,7 @@ import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.mockk.mockk
 import java.nio.file.Paths
+import kotlin.random.Random
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 
@@ -35,7 +37,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),
                     userEpochs = 50,
-                    userNewModel = it
+                    userNewModel = it,
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid()
@@ -59,7 +64,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),
                     userEpochs = 50,
-                    userNewModel = it
+                    userNewModel = it,
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid()
@@ -83,7 +91,10 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userLoss = Loss.SparseCategoricalCrossentropy,
                 userMetrics = setOf("accuracy"),
                 userEpochs = 50,
-                userNewModel = mockk()
+                userNewModel = mockk(),
+                userValidationSplit = None,
+                generateDebugComments = false,
+                jobId = Random.nextInt(1, Int.MAX_VALUE)
             ),
             mockk()
         ).generateScript().shouldBeInvalid()

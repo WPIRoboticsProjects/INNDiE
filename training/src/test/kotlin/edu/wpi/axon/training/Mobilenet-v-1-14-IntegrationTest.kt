@@ -2,6 +2,7 @@
 
 package edu.wpi.axon.training
 
+import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
@@ -12,6 +13,7 @@ import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
+import kotlin.random.Random
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 
@@ -38,7 +40,10 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
                     userLoss = Loss.SparseCategoricalCrossentropy,
                     userMetrics = setOf("accuracy"),
                     userEpochs = 50,
-                    userNewModel = it
+                    userNewModel = it,
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid()
