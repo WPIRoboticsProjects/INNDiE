@@ -28,8 +28,20 @@ fun Random.nextDataset(): Dataset {
 fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
     when (nextInt(TrainingScriptProgress::class.sealedSubclasses.count())) {
         0 -> TrainingScriptProgress.NotStarted
-        1 -> TrainingScriptProgress.InProgress(nextDouble(0.0, 1.0))
-        else -> TrainingScriptProgress.Completed
+        1 -> TrainingScriptProgress.Creating
+        2 -> TrainingScriptProgress.Initializing
+        3 -> TrainingScriptProgress.InProgress(nextDouble(0.0, 1.0))
+        4 -> TrainingScriptProgress.Completed
+        5 -> TrainingScriptProgress.Error
+        else -> TODO("Missing a TrainingScriptProgress case.")
+    }
+
+fun Random.nextTrainingMethod(): JobTrainingMethod =
+    when (nextInt(JobTrainingMethod::class.sealedSubclasses.count())) {
+        0 -> JobTrainingMethod.EC2(RandomStringUtils.randomAlphabetic(10))
+        1 -> JobTrainingMethod.Local
+        2 -> JobTrainingMethod.Untrained
+        else -> TODO("Missing a JobTrainingMethod case.")
     }
 
 fun Random.nextJob(
@@ -67,7 +79,8 @@ fun Random.nextJob(
             Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
         )
     ),
-    generateDebugComments: Boolean = nextBoolean()
+    generateDebugComments: Boolean = nextBoolean(),
+    trainingMethod: JobTrainingMethod = nextTrainingMethod()
 ) = jobDb.create(
     name,
     status,
@@ -79,5 +92,6 @@ fun Random.nextJob(
     userMetrics,
     userEpochs,
     userNewModel,
-    generateDebugComments
+    generateDebugComments,
+    trainingMethod
 )

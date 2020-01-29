@@ -2,6 +2,7 @@ package edu.wpi.axon.ui
 
 import arrow.core.Either
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.tfdata.Dataset
@@ -41,7 +42,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
 
         get<JobDb>().create(
             name = "AWS Job",
-            status = TrainingScriptProgress.NotStarted,
+            status = TrainingScriptProgress.Creating,
             userOldModelPath = FilePath.S3(modelName),
             userNewModelName = FilePath.S3(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
@@ -56,7 +57,8 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = model,
-            generateDebugComments = false
+            generateDebugComments = false,
+            trainingMethod = JobTrainingMethod.EC2("i-0e6121c22fe233f12")
         )
 
         get<JobDb>().create(
@@ -76,7 +78,8 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = model,
-            generateDebugComments = false
+            generateDebugComments = false,
+            trainingMethod = JobTrainingMethod.Untrained
         )
 
         get<JobDb>().create(
@@ -96,7 +99,8 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = model,
-            generateDebugComments = false
+            generateDebugComments = false,
+            trainingMethod = JobTrainingMethod.Untrained
         )
 
         get<JobDb>().create(
@@ -116,10 +120,11 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userMetrics = setOf("accuracy"),
             userEpochs = 10,
             userNewModel = model,
-            generateDebugComments = false
+            generateDebugComments = false,
+            trainingMethod = JobTrainingMethod.Local
         )
 
-        // get<JobLifecycleManager>().initialize()
+        get<JobLifecycleManager>().initialize()
     }
 
     override fun contextDestroyed(sce: ServletContextEvent?) {

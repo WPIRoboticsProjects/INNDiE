@@ -21,6 +21,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
     private val scriptProgressMap = mutableMapOf<Int, TrainingScriptProgress>()
     private val scriptThreadMap = mutableMapOf<Int, Thread>()
+    private val progressReporter = LocalTrainingScriptProgressReporter()
 
     override fun startScript(config: RunTrainingScriptConfiguration) {
         require(config.oldModelName is FilePath.Local) {
@@ -88,61 +89,11 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
                 }
             )
         }
+
+        progressReporter.addJob(config, scriptProgressMap, scriptThreadMap[config.id]!!)
     }
 
-    override fun getTrainingProgress(jobId: Int): TrainingScriptProgress {
-        requireJobIsInMaps(jobId)
-        val lastProgressData = scriptProgressMap[jobId]!!
-        return if (scriptThreadMap[jobId]!!.isAlive) {
-            // Training thread is still running. Try to read the progress file.
-            val progressFile = File(createProgressFilePath(jobId))
-            val progressText = progressFile.readText()
-
-            when {
-                lastProgressData == TrainingScriptProgress.Creating &&
-                    progressText == "initializing" -> {
-                    // It's initializing if the training thread wrote Creating and the progress file
-                    // still contains "initializing"
-                    TrainingScriptProgress.Creating
-                }
-
-                lastProgressData == TrainingScriptProgress.Initializing &&
-                    progressText == "initializing" -> {
-                    // It's initializing if the training thread wrote Initializing and the progress
-                    // file still contains "initializing"
-                    TrainingScriptProgress.Initializing
-                }
-
-                else -> {
-                    // Otherwise, it progressed further than Initializing.
-                    when (lastProgressData) {
-                        // These statuses are reasonable
-                        is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
-                        is TrainingScriptProgress.Error -> TrainingScriptProgress.Error
-                        else -> {
-                            // Otherwise it must be InProgress
-                            try {
-                                TrainingScriptProgress.InProgress(
-                                    progressText.toDouble() / scriptDataMap[jobId]!!.epochs
-                                )
-                            } catch (ex: NumberFormatException) {
-                                TrainingScriptProgress.Error
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            // Training thread died or is not started yet. If it dies, either it finished and wrote
-            // Completed to scriptProgressMap or exploded and didn't write Completed. If it is not
-            // started yet, then the status will still be Creating.
-            when (lastProgressData) {
-                is TrainingScriptProgress.Creating -> TrainingScriptProgress.Creating
-                is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
-                else -> TrainingScriptProgress.Error
-            }
-        }
-    }
+    override fun getTrainingProgress(jobId: Int) = progressReporter.getTrainingProgress(jobId)
 
     override fun cancelScript(jobId: Int) {
         requireJobIsInMaps(jobId)

@@ -2,6 +2,7 @@ package edu.wpi.axon.db
 
 import com.beust.klaxon.Klaxon
 import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -22,6 +23,7 @@ import org.jetbrains.exposed.sql.update
 private val klaxon = Klaxon()
 
 internal object Jobs : IntIdTable() {
+
     val nameCol = varchar("name", 255).uniqueIndex()
     val statusCol = varchar("status", 255)
     val userOldModelPathCol = varchar("userOldModelPath", 255)
@@ -33,6 +35,7 @@ internal object Jobs : IntIdTable() {
     val userEpochsCol = integer("userEpochs")
     val userModelCol = text("userModel")
     val generateDebugCommentsCol = bool("generateDebugComments")
+    val trainingMethodCol = varchar("trainingMethod", 255)
 
     fun toDomain(row: ResultRow) = Job(
         name = row[nameCol],
@@ -46,6 +49,7 @@ internal object Jobs : IntIdTable() {
         userEpochs = row[userEpochsCol],
         generateDebugComments = row[generateDebugCommentsCol],
         userNewModel = Model.deserialize(row[userModelCol]),
+        trainingMethod = JobTrainingMethod.deserialize(row[trainingMethodCol]),
         id = row[id].value
     )
 }
@@ -86,7 +90,8 @@ class JobDb(private val database: Database) {
         userMetrics: Set<String>,
         userEpochs: Int,
         userNewModel: Model,
-        generateDebugComments: Boolean
+        generateDebugComments: Boolean,
+        trainingMethod: JobTrainingMethod
     ): Job {
         val newId = transaction(database) {
             Jobs.insertAndGetId { row ->
@@ -101,6 +106,7 @@ class JobDb(private val database: Database) {
                 row[userEpochsCol] = userEpochs
                 row[userModelCol] = userNewModel.serialize()
                 row[generateDebugCommentsCol] = generateDebugComments
+                row[trainingMethodCol] = trainingMethod.serialize()
             }.value
         }
 
@@ -116,6 +122,7 @@ class JobDb(private val database: Database) {
             userEpochs = userEpochs,
             userNewModel = userNewModel,
             generateDebugComments = generateDebugComments,
+            trainingMethod = trainingMethod,
             id = newId
         )
 
@@ -136,7 +143,8 @@ class JobDb(private val database: Database) {
         job.userMetrics,
         job.userEpochs,
         job.userNewModel,
-        job.generateDebugComments
+        job.generateDebugComments,
+        job.trainingMethod
     )
 
     fun update(
@@ -151,7 +159,8 @@ class JobDb(private val database: Database) {
         userMetrics: Set<String>? = null,
         userEpochs: Int? = null,
         userNewModel: Model? = null,
-        generateDebugComments: Boolean? = null
+        generateDebugComments: Boolean? = null,
+        trainingMethod: JobTrainingMethod? = null
     ) {
         transaction(database) {
             Jobs.update({ Jobs.id eq id }) { row ->
@@ -166,6 +175,7 @@ class JobDb(private val database: Database) {
                 userEpochs?.let { row[userEpochsCol] = userEpochs }
                 userNewModel?.let { row[userModelCol] = userNewModel.serialize() }
                 generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
+                trainingMethod?.let { row[trainingMethodCol] = trainingMethod.serialize() }
             }
         }
 

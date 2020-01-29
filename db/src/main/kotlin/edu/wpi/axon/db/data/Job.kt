@@ -21,6 +21,8 @@ import edu.wpi.axon.util.allS3OrLocal
  * @param userNewModel The new model configuration (the old model after it was configured by the
  * user).
  * @param generateDebugComments Whether to put debug comments in the output.
+ * @param trainingMethod The method used to train the Job, used to resume progress updates if Axon
+ * is closed while Jobs are still running.
  * @param id The database-generated unique id. Do not modify.
  */
 data class Job internal constructor(
@@ -35,6 +37,7 @@ data class Job internal constructor(
     var userEpochs: Int,
     var userNewModel: Model,
     var generateDebugComments: Boolean,
+    var trainingMethod: JobTrainingMethod,
     var id: Int
 ) {
 

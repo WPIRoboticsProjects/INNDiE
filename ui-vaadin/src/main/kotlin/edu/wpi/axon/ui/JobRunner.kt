@@ -5,13 +5,17 @@ import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
 import edu.wpi.axon.aws.EC2Manager
+import edu.wpi.axon.aws.EC2TrainingScriptProgressReporter
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
+import edu.wpi.axon.aws.LocalTrainingScriptProgressReporter
 import edu.wpi.axon.aws.LocalTrainingScriptRunner
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
 import edu.wpi.axon.aws.S3Manager
+import edu.wpi.axon.aws.TrainingScriptProgressReporter
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
@@ -29,9 +33,10 @@ import org.koin.core.qualifier.named
 /**
  * Handles running, cancelling, and progress polling for Jobs.
  */
-class JobRunner : KoinComponent {
+internal class JobRunner : KoinComponent {
 
     private val runners = mutableMapOf<Int, TrainingScriptRunner>()
+    private val progressReporters = mutableMapOf<Int, TrainingScriptProgressReporter>()
 
     /**
      * Generates the code for a job and starts it.
@@ -39,7 +44,7 @@ class JobRunner : KoinComponent {
      * @param job The [Job] to run.
      * @return An [IO] for continuation.
      */
-    fun startJob(job: Job) {
+    internal fun startJob(job: Job): JobTrainingMethod {
         // Verify that we can start the job. No sense in starting a Job that is already running.
         require(
             job.status == TrainingScriptProgress.NotStarted ||
@@ -99,35 +104,38 @@ class JobRunner : KoinComponent {
             { IO.just(it) }
         ).unsafeRunSync()
 
-        // Create the correct TrainingScriptRunner based on whether the Job needs to use AWS
-        val scriptRunner = if (usesAWS.t) {
-            val bucket = get<Option<String>>(named(axonBucketName))
-            check(bucket is Some) {
-                "Tried to create an EC2TrainingScriptRunner but did not have a bucket configured."
-            }
+        val config = createTrainingScriptConfiguration(job, script)
 
-            EC2TrainingScriptRunner(
+        // Create the correct TrainingScriptRunner based on whether the Job needs to use AWS
+        val (scriptRunner, trainingMethod) = if (usesAWS.t) {
+            val runner = EC2TrainingScriptRunner(
                 // TODO: Allow overriding the default node type in the Job editor form
                 get<PreferencesManager>().get().defaultEC2NodeType,
                 EC2Manager(),
-                S3Manager(bucket.t)
+                S3Manager(getBucket())
             )
+            runner.startScript(config)
+            runner to JobTrainingMethod.EC2(runner.getInstanceId(config.id))
         } else {
-            LocalTrainingScriptRunner()
+            LocalTrainingScriptRunner() to JobTrainingMethod.Local
         }
 
         runners[job.id] = scriptRunner
-        scriptRunner.startScript(
-            RunTrainingScriptConfiguration(
-                oldModelName = job.userOldModelPath,
-                newModelName = job.userNewModelName,
-                dataset = job.userDataset,
-                scriptContents = script,
-                epochs = job.userEpochs,
-                id = job.id
-            )
-        )
+        progressReporters[job.id] = scriptRunner
+        return trainingMethod
     }
+
+    private fun createTrainingScriptConfiguration(
+        job: Job,
+        script: String
+    ) = RunTrainingScriptConfiguration(
+        oldModelName = job.userOldModelPath,
+        newModelName = job.userNewModelName,
+        dataset = job.userDataset,
+        scriptContents = script,
+        epochs = job.userEpochs,
+        id = job.id
+    )
 
     /**
      * Cancels the Job. If the Job is currently running, it is interrupted. If the Job is not
@@ -135,7 +143,7 @@ class JobRunner : KoinComponent {
      *
      * @param id The id of the Job to cancel.
      */
-    fun cancelJob(id: Int) {
+    internal fun cancelJob(id: Int) {
         runners[id]!!.cancelScript(id)
     }
 
@@ -147,11 +155,12 @@ class JobRunner : KoinComponent {
      * every time it is polled.
      * @return An [IO] for continuation.
      */
-    suspend fun waitForFinish(id: Int, progressUpdate: (TrainingScriptProgress) -> Unit) {
+    internal suspend fun waitForFinish(id: Int, progressUpdate: (TrainingScriptProgress) -> Unit) {
         // Get the latest statusPollingDelay in case the user changed it
         val statusPollingDelay = get<PreferencesManager>().get().statusPollingDelay
         while (true) {
-            val progress = runners[id]!!.getTrainingProgress(id)
+            // Only access `progressReporters` in here, not `runners`
+            val progress = progressReporters[id]!!.getTrainingProgress(id)
             progressUpdate(progress)
             if (progress == TrainingScriptProgress.Completed ||
                 progress == TrainingScriptProgress.Error
@@ -161,6 +170,44 @@ class JobRunner : KoinComponent {
                 delay(statusPollingDelay)
             }
         }
+    }
+
+    /**
+     * Starts progress reporting after Axon has been restarted. After calling this, it's safe to
+     * call [waitForFinish] to resume tracking progress updates for a Job.
+     *
+     * @param job The Job.
+     */
+    internal fun startProgressReporting(job: Job) {
+        require(runners[job.id] == null)
+
+        // The script contents don't matter to the progress reporter. Set an empty
+        // string to avoid having to regenerate the script.
+        val config = createTrainingScriptConfiguration(job, "")
+
+        progressReporters[job.id] = when (val trainingMethod = job.trainingMethod) {
+            is JobTrainingMethod.EC2 -> EC2TrainingScriptProgressReporter(
+                EC2Manager(),
+                S3Manager(getBucket())
+            ).apply {
+                addJob(config, trainingMethod.instanceId)
+            }
+
+            is JobTrainingMethod.Local -> LocalTrainingScriptProgressReporter().apply {
+                addJobAfterRestart(config)
+            }
+
+            is JobTrainingMethod.Untrained ->
+                error("Cannot resume training for a Job that has not started training.")
+        }
+    }
+
+    private fun getBucket(): String {
+        val bucket = get<Option<String>>(named(axonBucketName))
+        check(bucket is Some) {
+            "Tried to create an EC2TrainingScriptRunner but did not have a bucket configured."
+        }
+        return bucket.t
     }
 
     @Suppress("UNCHECKED_CAST")

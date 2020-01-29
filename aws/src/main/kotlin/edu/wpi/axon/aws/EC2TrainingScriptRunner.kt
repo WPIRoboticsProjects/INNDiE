@@ -28,6 +28,7 @@ class EC2TrainingScriptRunner(
 
     private val instanceIds = mutableMapOf<Int, String>()
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
+    private val progressReporter = EC2TrainingScriptProgressReporter(ec2Manager, s3Manager)
 
     override fun startScript(
         config: RunTrainingScriptConfiguration
@@ -101,20 +102,18 @@ class EC2TrainingScriptRunner(
             """.trimMargin()
         }
 
-        instanceIds[config.id] = ec2Manager.startTrainingInstance(scriptForEC2, instanceType)
+        val instanceId = ec2Manager.startTrainingInstance(scriptForEC2, instanceType)
+        instanceIds[config.id] = instanceId
         scriptDataMap[config.id] = config
+        progressReporter.addJob(config, instanceId)
     }
 
-    @UseExperimental(ExperimentalStdlibApi::class)
-    override fun getTrainingProgress(jobId: Int): TrainingScriptProgress {
+    fun getInstanceId(jobId: Int): String {
         requireJobIsInMaps(jobId)
-        return computeTrainingScriptProgress(
-            heartbeat = s3Manager.getHeartbeat(jobId),
-            progress = s3Manager.getTrainingProgress(jobId),
-            status = ec2Manager.getInstanceState(instanceIds[jobId]!!),
-            epochs = scriptDataMap[jobId]!!.epochs
-        )
+        return instanceIds[jobId]!!
     }
+
+    override fun getTrainingProgress(jobId: Int) = progressReporter.getTrainingProgress(jobId)
 
     override fun cancelScript(jobId: Int) {
         requireJobIsInMaps(jobId)
@@ -128,85 +127,5 @@ class EC2TrainingScriptRunner(
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
-
-        internal fun computeTrainingScriptProgress(
-            heartbeat: String,
-            progress: String,
-            status: InstanceStateName?,
-            epochs: Int
-        ): TrainingScriptProgress {
-            LOGGER.debug {
-                """
-                |Heartbeat: $heartbeat
-                |Progress: $progress
-                |Instance status: $status
-                """.trimMargin()
-            }
-
-            val progressAssumingEverythingIsFine = computeProgressAssumingEverythingIsFine(
-                heartbeat,
-                progress,
-                status,
-                epochs
-            )
-
-            if ((status == InstanceStateName.SHUTTING_DOWN ||
-                    status == InstanceStateName.TERMINATED ||
-                    status == InstanceStateName.STOPPING) &&
-                (heartbeat != "0" || progress != "completed")
-            ) {
-                return TrainingScriptProgress.Error
-            }
-
-            return when (heartbeat) {
-                "0" -> when (progress) {
-                    "not started", "completed" -> progressAssumingEverythingIsFine
-                    else -> TrainingScriptProgress.Error
-                }
-
-                "1" -> when (progress) {
-                    "initializing" -> progressAssumingEverythingIsFine
-                    "not started" -> TrainingScriptProgress.Error
-
-                    else -> when (status) {
-                        InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
-                        InstanceStateName.STOPPING -> TrainingScriptProgress.Error
-
-                        else -> progressAssumingEverythingIsFine
-                    }
-                }
-
-                else -> TrainingScriptProgress.Error
-            }
-        }
-
-        private fun computeProgressAssumingEverythingIsFine(
-            heartbeat: String,
-            progress: String,
-            status: InstanceStateName?,
-            epochs: Int
-        ) = when (progress) {
-            "not started" -> when (status) {
-                InstanceStateName.PENDING -> TrainingScriptProgress.Creating
-                InstanceStateName.RUNNING -> TrainingScriptProgress.Initializing
-                else -> TrainingScriptProgress.Creating
-            }
-
-            "initializing" -> TrainingScriptProgress.Initializing
-            "completed" -> TrainingScriptProgress.Completed
-
-            else -> if (heartbeat == "1") {
-                try {
-                    TrainingScriptProgress.InProgress(progress.toDouble() / epochs)
-                } catch (ex: NumberFormatException) {
-                    TrainingScriptProgress.Error
-                }
-            } else {
-                LOGGER.warn {
-                    "Training progress error. heartbeat=$heartbeat, progress=$progress"
-                }
-                TrainingScriptProgress.Error
-            }
-        }
     }
 }

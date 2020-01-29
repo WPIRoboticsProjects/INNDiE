@@ -2,6 +2,7 @@ package edu.wpi.axon.ui
 
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -9,6 +10,7 @@ import io.mockk.coVerifyAll
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifyAll
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
 
@@ -19,7 +21,7 @@ internal class JobLifecycleManagerTest {
     @Test
     fun `test starting job`() {
         val jobRunner = mockk<JobRunner> {
-            every { startJob(any()) } returns Unit
+            every { startJob(any()) } returns JobTrainingMethod.Local
             coEvery { waitForFinish(any(), any()) } returns Unit
         }
 
@@ -86,6 +88,7 @@ internal class JobLifecycleManagerTest {
 
         val jobRunner = mockk<JobRunner> {
             coEvery { waitForFinish(any(), any()) } returns Unit
+            every { startProgressReporting(any()) } returns Unit
         }
 
         val jobDb = mockk<JobDb> {
@@ -99,6 +102,8 @@ internal class JobLifecycleManagerTest {
         coVerifyAll {
             jobRunner.waitForFinish(eq(jobId1), any())
             jobRunner.waitForFinish(eq(jobId2), any())
+            jobRunner.startProgressReporting(job1)
+            jobRunner.startProgressReporting(job2)
         }
     }
 }
