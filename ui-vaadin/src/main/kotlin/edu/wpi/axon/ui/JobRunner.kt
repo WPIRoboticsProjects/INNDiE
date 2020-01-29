@@ -121,7 +121,9 @@ internal class JobRunner : KoinComponent {
             runner.startScript(config)
             runner to JobTrainingMethod.EC2(runner.getInstanceId(config.id))
         } else {
-            LocalTrainingScriptRunner() to JobTrainingMethod.Local
+            val runner = LocalTrainingScriptRunner()
+            runner.startScript(config)
+            runner to JobTrainingMethod.Local
         }
 
         runners[job.id] = scriptRunner
