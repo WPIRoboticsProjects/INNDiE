@@ -5,12 +5,15 @@ import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
 import edu.wpi.axon.aws.EC2Manager
+import edu.wpi.axon.aws.EC2TrainingScriptCanceller
 import edu.wpi.axon.aws.EC2TrainingScriptProgressReporter
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
+import edu.wpi.axon.aws.LocalTrainingScriptCanceller
 import edu.wpi.axon.aws.LocalTrainingScriptProgressReporter
 import edu.wpi.axon.aws.LocalTrainingScriptRunner
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
 import edu.wpi.axon.aws.S3Manager
+import edu.wpi.axon.aws.TrainingScriptCanceller
 import edu.wpi.axon.aws.TrainingScriptProgressReporter
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.preferences.PreferencesManager
@@ -37,6 +40,7 @@ internal class JobRunner : KoinComponent {
 
     private val runners = mutableMapOf<Int, TrainingScriptRunner>()
     private val progressReporters = mutableMapOf<Int, TrainingScriptProgressReporter>()
+    private val cancellers = mutableMapOf<Int, TrainingScriptCanceller>()
 
     /**
      * Generates the code for a job and starts it.
@@ -122,6 +126,7 @@ internal class JobRunner : KoinComponent {
 
         runners[job.id] = scriptRunner
         progressReporters[job.id] = scriptRunner
+        cancellers[job.id] = scriptRunner
         return trainingMethod
     }
 
@@ -132,9 +137,7 @@ internal class JobRunner : KoinComponent {
      * @param id The id of the Job to cancel.
      */
     internal fun cancelJob(id: Int) {
-        // TODO: Use the new interface, TrainingScriptCanceller, and put it in a new map called
-        //  `cancellers` so that we don't access `runners` in here.
-        runners[id]!!.cancelScript(id)
+        cancellers[id]!!.cancelScript(id)
     }
 
     /**
@@ -175,16 +178,30 @@ internal class JobRunner : KoinComponent {
         // string to avoid having to regenerate the script.
         val config = createTrainingScriptConfiguration(job, "")
 
-        progressReporters[job.id] = when (val trainingMethod = job.trainingMethod) {
-            is JobTrainingMethod.EC2 -> EC2TrainingScriptProgressReporter(
-                EC2Manager(),
-                S3Manager(getBucket())
-            ).apply {
-                addJob(config, trainingMethod.instanceId)
+        when (val trainingMethod = job.trainingMethod) {
+            is JobTrainingMethod.EC2 -> {
+                progressReporters[job.id] = EC2TrainingScriptProgressReporter(
+                    EC2Manager(),
+                    S3Manager(getBucket())
+                ).apply {
+                    addJob(config, trainingMethod.instanceId)
+                }
+
+                cancellers[job.id] = EC2TrainingScriptCanceller(EC2Manager()).apply {
+                    addJob(job.id, trainingMethod.instanceId)
+                }
             }
 
-            is JobTrainingMethod.Local -> LocalTrainingScriptProgressReporter().apply {
-                addJobAfterRestart(config)
+            is JobTrainingMethod.Local -> {
+                progressReporters[job.id] = LocalTrainingScriptProgressReporter().apply {
+                    addJobAfterRestart(config)
+                }
+
+                cancellers[job.id] = LocalTrainingScriptCanceller().apply {
+                    addJobAfterRestart(job.id) {
+                        progressReporters[job.id]!!.overrideTrainingProgress(job.id, it)
+                    }
+                }
             }
 
             is JobTrainingMethod.Untrained ->

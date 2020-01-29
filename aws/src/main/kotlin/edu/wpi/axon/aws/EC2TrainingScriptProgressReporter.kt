@@ -18,6 +18,7 @@ class EC2TrainingScriptProgressReporter(
 
     private val instanceIds = mutableMapOf<Int, String>()
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
+    private val overriddenProgressMap = mutableMapOf<Int, TrainingScriptProgress>()
 
     /**
      * Adds a Job.
@@ -34,12 +35,20 @@ class EC2TrainingScriptProgressReporter(
     @UseExperimental(ExperimentalStdlibApi::class)
     override fun getTrainingProgress(jobId: Int): TrainingScriptProgress {
         requireJobIsInMaps(jobId)
+
+        // If the progress is being overridden, return that progress data early
+        overriddenProgressMap[jobId]?.let { return it }
+
         return computeTrainingScriptProgress(
             heartbeat = s3Manager.getHeartbeat(jobId),
             progress = s3Manager.getTrainingProgress(jobId),
             status = ec2Manager.getInstanceState(instanceIds[jobId]!!),
             epochs = scriptDataMap[jobId]!!.epochs
         )
+    }
+
+    override fun overrideTrainingProgress(jobId: Int, progress: TrainingScriptProgress) {
+        overriddenProgressMap[jobId] = progress
     }
 
     private fun requireJobIsInMaps(jobId: Int) {

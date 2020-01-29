@@ -42,7 +42,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
 
         get<JobDb>().create(
             name = "AWS Job",
-            status = TrainingScriptProgress.Creating,
+            status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.S3(modelName),
             userNewModelName = FilePath.S3(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
@@ -105,7 +105,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
 
         get<JobDb>().create(
             name = "Local Job that was running",
-            status = TrainingScriptProgress.InProgress(0.4),
+            status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
             userNewModelName = FilePath.Local(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
@@ -121,7 +121,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 10,
             userNewModel = model,
             generateDebugComments = false,
-            trainingMethod = JobTrainingMethod.Local
+            trainingMethod = JobTrainingMethod.Untrained
         )
 
         get<JobLifecycleManager>().initialize()

@@ -1,5 +1,6 @@
 package edu.wpi.axon.aws
 
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
 import mu.KotlinLogging
@@ -26,6 +27,7 @@ class EC2TrainingScriptRunner(
     private val instanceIds = mutableMapOf<Int, String>()
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
     private val progressReporter = EC2TrainingScriptProgressReporter(ec2Manager, s3Manager)
+    private val canceller = EC2TrainingScriptCanceller(ec2Manager)
 
     override fun startScript(
         config: RunTrainingScriptConfiguration
@@ -103,6 +105,7 @@ class EC2TrainingScriptRunner(
         instanceIds[config.id] = instanceId
         scriptDataMap[config.id] = config
         progressReporter.addJob(config, instanceId)
+        canceller.addJob(config.id, instanceId)
     }
 
     fun getInstanceId(jobId: Int): String {
@@ -112,11 +115,10 @@ class EC2TrainingScriptRunner(
 
     override fun getTrainingProgress(jobId: Int) = progressReporter.getTrainingProgress(jobId)
 
-    override fun cancelScript(jobId: Int) {
-        // TODO: Pull this out into an implementation of a new interface, TrainingScriptCanceller
-        requireJobIsInMaps(jobId)
-        ec2Manager.terminateInstance(instanceIds[jobId]!!)
-    }
+    override fun overrideTrainingProgress(jobId: Int, progress: TrainingScriptProgress) =
+        progressReporter.overrideTrainingProgress(jobId, progress)
+
+    override fun cancelScript(jobId: Int) = canceller.cancelScript(jobId)
 
     private fun requireJobIsInMaps(jobId: Int) {
         require(jobId in instanceIds.keys)

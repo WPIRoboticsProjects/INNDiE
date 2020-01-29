@@ -16,8 +16,10 @@ class LocalTrainingScriptProgressReporter(
 ) : TrainingScriptProgressReporter {
 
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
+    // TODO: Use a callback to get the most recent progress instead of this
     private var scriptProgressMapMap = mutableMapOf<Int, Map<Int, TrainingScriptProgress>?>()
     private val scriptThreadMap = mutableMapOf<Int, Thread?>()
+    private val overriddenProgressMap = mutableMapOf<Int, TrainingScriptProgress>()
 
     /**
      * Adds a Job that was just created.
@@ -53,6 +55,10 @@ class LocalTrainingScriptProgressReporter(
     @Suppress("MapGetWithNotNullAssertionOperator")
     override fun getTrainingProgress(jobId: Int): TrainingScriptProgress {
         requireJobIsInMaps(jobId)
+
+        // If the progress is being overridden, return that progress data early
+        overriddenProgressMap[jobId]?.let { return it }
+
         val progressMap = scriptProgressMapMap[jobId]
         val epochs = scriptDataMap[jobId]!!.epochs
 
@@ -137,6 +143,10 @@ class LocalTrainingScriptProgressReporter(
                 }
             }
         }
+    }
+
+    override fun overrideTrainingProgress(jobId: Int, progress: TrainingScriptProgress) {
+        overriddenProgressMap[jobId] = progress
     }
 
     private fun requireJobIsInMaps(jobId: Int) {

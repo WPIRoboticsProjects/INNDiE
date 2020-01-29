@@ -25,6 +25,7 @@ class LocalTrainingScriptRunner(
     private val scriptProgressMap = mutableMapOf<Int, TrainingScriptProgress>()
     private val scriptThreadMap = mutableMapOf<Int, Thread>()
     private val progressReporter = LocalTrainingScriptProgressReporter(progressReportingDirPrefix)
+    private val canceller = LocalTrainingScriptCanceller()
 
     override fun startScript(config: RunTrainingScriptConfiguration) {
         require(config.oldModelName is FilePath.Local) {
@@ -94,16 +95,17 @@ class LocalTrainingScriptRunner(
         }
 
         progressReporter.addJob(config, scriptProgressMap, scriptThreadMap[config.id]!!)
+        canceller.addJob(config.id, scriptThreadMap[config.id]!!) {
+            scriptProgressMap[config.id] = it
+        }
     }
 
     override fun getTrainingProgress(jobId: Int) = progressReporter.getTrainingProgress(jobId)
 
-    override fun cancelScript(jobId: Int) {
-        // TODO: Pull this out into an implementation of a new interface, TrainingScriptCanceller
-        requireJobIsInMaps(jobId)
-        scriptThreadMap[jobId]?.interrupt()
-        scriptProgressMap[jobId] = TrainingScriptProgress.Error
-    }
+    override fun overrideTrainingProgress(jobId: Int, progress: TrainingScriptProgress) =
+        progressReporter.overrideTrainingProgress(jobId, progress)
+
+    override fun cancelScript(jobId: Int) = canceller.cancelScript(jobId)
 
     private fun requireJobIsInMaps(jobId: Int) {
         require(jobId in scriptDataMap.keys)
