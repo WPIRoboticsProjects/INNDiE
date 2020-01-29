@@ -1,11 +1,11 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import kotlin.test.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
-import kotlin.test.assertEquals
 
 internal class EC2TrainingScriptProgressReporterTest {
 

@@ -125,18 +125,6 @@ internal class JobRunner : KoinComponent {
         return trainingMethod
     }
 
-    private fun createTrainingScriptConfiguration(
-        job: Job,
-        script: String
-    ) = RunTrainingScriptConfiguration(
-        oldModelName = job.userOldModelPath,
-        newModelName = job.userNewModelName,
-        dataset = job.userDataset,
-        scriptContents = script,
-        epochs = job.userEpochs,
-        id = job.id
-    )
-
     /**
      * Cancels the Job. If the Job is currently running, it is interrupted. If the Job is not
      * running, this method does nothing.
@@ -210,6 +198,18 @@ internal class JobRunner : KoinComponent {
         return bucket.t
     }
 
+    private fun createTrainingScriptConfiguration(
+        job: Job,
+        script: String
+    ) = RunTrainingScriptConfiguration(
+        oldModelName = job.userOldModelPath,
+        newModelName = job.userNewModelName,
+        dataset = job.userDataset,
+        scriptContents = script,
+        epochs = job.userEpochs,
+        id = job.id
+    )
+
     @Suppress("UNCHECKED_CAST")
     private fun <T : Model> toTrainState(job: Job): TrainState<T> = TrainState(
         userOldModelPath = job.userOldModelPath,
@@ -219,7 +219,9 @@ internal class JobRunner : KoinComponent {
         userLoss = job.userLoss,
         userMetrics = job.userMetrics,
         userEpochs = job.userEpochs,
-        userValidationSplit = None, // TODO: Add this to Job and pull it from there
+        // TODO: Add userValidationSplit to Job and pull it from there so that the user can
+        //  configure it
+        userValidationSplit = None,
         userNewModel = job.userNewModel as T,
         generateDebugComments = job.generateDebugComments,
         jobId = job.id

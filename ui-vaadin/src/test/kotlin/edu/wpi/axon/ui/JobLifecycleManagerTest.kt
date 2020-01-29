@@ -10,7 +10,6 @@ import io.mockk.coVerifyAll
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.mockk.verifyAll
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
 

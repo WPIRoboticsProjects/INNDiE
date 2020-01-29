@@ -33,7 +33,6 @@ import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.util.axonBucketName
-import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get

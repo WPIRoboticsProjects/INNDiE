@@ -57,11 +57,12 @@ fun runCommand(
 }
 
 /**
+ * @param progressReportingDirPrefix The prefix for the local progress reporting directory.
  * @param id The unique Job ID.
  * @return The path to the progress reporting file used when Axon is running locally.
  */
-fun createProgressFilePath(id: Int) =
-    "/tmp/progress_reporting/$id/progress.txt"
+fun createLocalProgressFilepath(progressReportingDirPrefix: String, id: Int) =
+    "$progressReportingDirPrefix/$id/progress.txt"
 
 fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
     is FilePath.S3 -> data.all { it is FilePath.S3 }

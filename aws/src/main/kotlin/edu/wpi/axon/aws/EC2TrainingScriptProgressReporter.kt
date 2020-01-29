@@ -1,10 +1,16 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import java.lang.NumberFormatException
 import mu.KotlinLogging
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
-import java.lang.NumberFormatException
 
+/**
+ * A [TrainingScriptProgressReporter] that is designed for an [EC2TrainingScriptRunner].
+ *
+ * @param ec2Manager Used to interface with EC2.
+ * @param s3Manager Used to interface with S3.
+ */
 class EC2TrainingScriptProgressReporter(
     private val ec2Manager: EC2Manager,
     private val s3Manager: S3Manager
@@ -13,6 +19,13 @@ class EC2TrainingScriptProgressReporter(
     private val instanceIds = mutableMapOf<Int, String>()
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
 
+    /**
+     * Adds a Job.
+     *
+     * @param config The config the Job was started with.
+     * @param instanceId The EC2 instance ID for the instance that was started to run the training
+     * script.
+     */
     fun addJob(config: RunTrainingScriptConfiguration, instanceId: String) {
         instanceIds[config.id] = instanceId
         scriptDataMap[config.id] = config

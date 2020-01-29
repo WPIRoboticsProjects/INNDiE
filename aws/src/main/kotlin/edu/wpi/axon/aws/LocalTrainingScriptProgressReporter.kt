@@ -1,17 +1,31 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.util.createProgressFilePath
-import mu.KotlinLogging
+import edu.wpi.axon.util.createLocalProgressFilepath
 import java.io.File
 import java.lang.NumberFormatException
+import mu.KotlinLogging
 
-class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
+/**
+ * A [TrainingScriptProgressReporter] that is designed for a [LocalTrainingScriptRunner].
+ *
+ * @param progressReportingDirPrefix The prefix for the local progress reporting directory.
+ */
+class LocalTrainingScriptProgressReporter(
+    private val progressReportingDirPrefix: String = "/tmp/progress_reporting"
+) : TrainingScriptProgressReporter {
 
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
     private var scriptProgressMapMap = mutableMapOf<Int, Map<Int, TrainingScriptProgress>?>()
     private val scriptThreadMap = mutableMapOf<Int, Thread?>()
 
+    /**
+     * Adds a Job that was just created.
+     *
+     * @param config The config the Job was started with.
+     * @param progressMap The progress reporting map the training thread will write updates to.
+     * @param thread The training thread.
+     */
     fun addJob(
         config: RunTrainingScriptConfiguration,
         progressMap: Map<Int, TrainingScriptProgress>,
@@ -22,6 +36,12 @@ class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
         scriptThreadMap[config.id] = thread
     }
 
+    /**
+     * Adds a Job that was pulled from the DB after Axon was restarted (so there is no progressMap
+     * or thread data).
+     *
+     * @param config The config the Job was started with.
+     */
     fun addJobAfterRestart(
         config: RunTrainingScriptConfiguration
     ) {
@@ -38,11 +58,11 @@ class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
 
         // Create the progress file up here to share code but don't read from it unless we have to,
         // to avoid reading from it if it's not there but didn't have to be
-        val progressFile = File(createProgressFilePath(jobId))
+        val progressFile = File(createLocalProgressFilepath(progressReportingDirPrefix, jobId))
 
         return if (progressMap == null) {
             // We are resuming from a restart because there was no initial progress data. Remove
-            // whitespace from the progress text.
+            // whitespace from the progress text because `toInt` is picky.
             val progressText = progressFile.readText().replace(Regex("\\s+"), "")
             try {
                 LOGGER.debug {
@@ -69,7 +89,7 @@ class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
             val lastProgressData = progressMap[jobId]!!
             if (scriptThreadMap[jobId]!!.isAlive) {
                 // Training thread is still running. Try to read the progress file. Remove
-                // whitespace.
+                // whitespace because `toInt` is picky.
                 val progressText = progressFile.readText().replace(Regex("\\s+"), "")
 
                 when {

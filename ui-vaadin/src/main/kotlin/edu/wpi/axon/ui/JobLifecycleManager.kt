@@ -13,6 +13,11 @@ import org.koin.core.KoinComponent
 /**
  * Manages the entire lifecycle of a Job. Starting, tracking progress, cancelling, resuming progress
  * updates between restarts, etc.
+ *
+ * @param jobRunner Used to manage running/cancelling Jobs.
+ * @param jobDb Used to pull running Jobs from during [initialize].
+ * @param waitAfterStartingJobMs How long to wait after starting a Job before calling
+ * [JobRunner.waitForFinish] to ensure the Job has time to start.
  */
 class JobLifecycleManager internal constructor(
     private val jobRunner: JobRunner,
@@ -30,10 +35,9 @@ class JobLifecycleManager internal constructor(
         val runningJobs = jobDb.fetchRunningJobs()
         runningJobs.forEach { job ->
             scope.launch {
-                LOGGER.info { "launched" }
                 jobRunner.startProgressReporting(job)
+                LOGGER.debug { "Waiting for Job ${job.id} to finish." }
                 jobRunner.waitForFinish(job.id) {
-                    LOGGER.info { "update $it" }
                     jobDb.update(job.id, status = it)
                 }
             }

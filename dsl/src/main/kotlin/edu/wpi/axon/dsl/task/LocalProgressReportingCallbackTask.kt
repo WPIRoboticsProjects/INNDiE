@@ -5,7 +5,7 @@ import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.util.createProgressFilePath
+import edu.wpi.axon.util.createLocalProgressFilepath
 import edu.wpi.axon.util.singleAssign
 import org.koin.core.inject
 
@@ -23,6 +23,11 @@ class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
      * Where to save the callback to.
      */
     var output: Variable by singleAssign()
+
+    /**
+     * Where to save progress reporting data.
+     */
+    var progressReportingDirPrefix = "/tmp/progress_reporting"
 
     override val imports: Set<Import> = setOf(
         makeImport("import tensorflow as tf"),
@@ -42,7 +47,7 @@ class LocalProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     override fun code(): String {
         val callbackClassName = variableNameGenerator.uniqueVariableName()
-        val progressFilePath = createProgressFilePath(jobId)
+        val progressFilePath = createLocalProgressFilepath(progressReportingDirPrefix, jobId)
 
         // Add 1 to epoch because we get the index of the epoch, not the "element"
         return """

@@ -3,10 +3,9 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.createProgressFilePath
+import edu.wpi.axon.util.createLocalProgressFilepath
 import edu.wpi.axon.util.runCommand
 import java.io.File
-import java.lang.NumberFormatException
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.concurrent.thread
@@ -15,13 +14,17 @@ import mu.KotlinLogging
 /**
  * Runs the training script on the local machine. Assumes that Axon is running in the
  * wpilib/axon-hosted Docker container.
+ *
+ * @param progressReportingDirPrefix The prefix for the local progress reporting directory.
  */
-class LocalTrainingScriptRunner : TrainingScriptRunner {
+class LocalTrainingScriptRunner(
+    private val progressReportingDirPrefix: String = "/tmp/progress_reporting"
+) : TrainingScriptRunner {
 
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
     private val scriptProgressMap = mutableMapOf<Int, TrainingScriptProgress>()
     private val scriptThreadMap = mutableMapOf<Int, Thread>()
-    private val progressReporter = LocalTrainingScriptProgressReporter()
+    private val progressReporter = LocalTrainingScriptProgressReporter(progressReportingDirPrefix)
 
     override fun startScript(config: RunTrainingScriptConfiguration) {
         require(config.oldModelName is FilePath.Local) {
@@ -45,7 +48,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         }
 
         // Clear the progress file if there was a previous run
-        File(createProgressFilePath(config.id)).apply {
+        File(createLocalProgressFilepath(progressReportingDirPrefix, config.id)).apply {
             parentFile.mkdirs()
             createNewFile()
             writeText("initializing")
