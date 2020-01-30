@@ -17,6 +17,7 @@ import edu.wpi.axon.util.axonBucketName
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.matchers.types.shouldBeInstanceOf
+import org.junit.jupiter.api.Disabled
 import java.io.File
 import java.nio.file.Paths
 import kotlin.random.Random
@@ -126,7 +127,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
 
     @Test
     @Tag("needsTensorFlowSupport")
-    fun `test mobilenet with reduced wpilib dataset`(@TempDir tempDir: File) {
+    fun `test small model with reduced wpilib dataset`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
@@ -157,6 +158,50 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    jobId = Random.nextInt(1, Int.MAX_VALUE)
+                ),
+                it
+            ).generateScript().shouldBeValid { (script) ->
+                Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
+                    .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
+                testTrainingScript(tempDir, script, newModelName)
+            }
+        }
+    }
+
+    @Test
+    @Tag("needsTensorFlowSupport")
+    @Disabled("Broken targeting the Coral.")
+    fun `test small model with reduced wpilib dataset targeting the coral`(@TempDir tempDir: File) {
+        startKoin {
+            modules(defaultBackendModule())
+        }
+
+        val modelName = "small_model_for_wpilib_reduced_dataset.h5"
+        val newModelName = "$tempDir/small_model_for_wpilib_reduced_dataset-trained.h5"
+        val (model, path) = loadModel(modelName) {}
+        model.shouldBeInstanceOf<Model.Sequential> {
+            TrainSequentialModelScriptGenerator(
+                TrainState(
+                    userOldModelPath = FilePath.Local(path),
+                    userNewModelPath = FilePath.Local(newModelName),
+                    userDataset = Dataset.Custom(
+                        FilePath.Local("WPILib_reduced.tar"),
+                        "WPILib reduced"
+                    ),
+                    userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+                    userLoss = Loss.SparseCategoricalCrossentropy,
+                    userMetrics = setOf("accuracy"),
+                    userEpochs = 1,
+                    userNewModel = it.copy(
+                        layers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
+                            // Only train the last layer
+                            if (it.layers.size - index <= 1) layer.layer.trainable()
+                            else layer.layer.trainable(false)
+                        }),
+                    userValidationSplit = None,
+                    generateDebugComments = false,
+                    target = ModelDeploymentTarget.Coral(0.0001),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
