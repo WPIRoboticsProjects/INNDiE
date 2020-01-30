@@ -120,7 +120,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
         // TODO: Encapsulate this somewhere better
         fun loadModel(modelName: String): Pair<Model, String> {
             val localModelPath =
-                Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
+                Paths.get("/Users/austinshalit/git/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
                     .toString()
             val layers =
                 ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
