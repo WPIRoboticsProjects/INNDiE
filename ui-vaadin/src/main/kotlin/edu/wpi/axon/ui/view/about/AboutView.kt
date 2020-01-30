@@ -14,7 +14,7 @@ import com.vaadin.flow.router.Route
 import com.vaadin.shrinkwrap.VaadinCoreShrinkWrap
 import edu.wpi.axon.ui.MainLayout
 
-@Route(value = "about", layout = MainLayout::class)
+@Route(layout = MainLayout::class)
 @PageTitle("About")
 class AboutView : KComposite() {
 
