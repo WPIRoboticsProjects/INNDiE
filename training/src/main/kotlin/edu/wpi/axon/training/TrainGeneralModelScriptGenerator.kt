@@ -8,8 +8,10 @@ import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
+import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
+import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import mu.KotlinLogging
@@ -42,6 +44,8 @@ class TrainGeneralModelScriptGenerator(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
                 DefaultPolymorphicNamedDomainObjectContainer.of()
             ) {
+                pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+
                 val loadedDataset = loadDataset(trainState).let { dataset ->
                     if (trainState.userNewModel.input.size == 1) {
                         // Only try to transform the dataset if there is one input, similar to

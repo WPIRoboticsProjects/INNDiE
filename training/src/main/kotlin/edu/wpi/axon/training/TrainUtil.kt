@@ -8,14 +8,12 @@ import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
-import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CastTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
-import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
@@ -106,15 +104,6 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
     trainState: TrainState<*>
 ): LoadedDataset {
     require(trainState.userDataset is Dataset.Custom)
-
-    // LoadTFRecordOfImagesWithObjects needs eager execution
-    if (pregenerationLastTask == null) {
-        pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
-    } else {
-        pregenerationLastTask!!.dependencies.add(
-            tasks.runExactlyOnce(EnableEagerExecutionTask::class)
-        )
-    }
 
     val convertTask = tasks.run(ConvertSuperviselyDatasetToRecord::class) {
         dataset = trainState.userDataset
@@ -320,14 +309,6 @@ internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
     loadedDataset: LoadedDataset
 ): Task {
     require(trainState.target is ModelDeploymentTarget.Coral)
-    // Post-training quantization needs eager execution
-    if (pregenerationLastTask == null) {
-        pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
-    } else {
-        pregenerationLastTask!!.dependencies.add(
-            tasks.runExactlyOnce(EnableEagerExecutionTask::class)
-        )
-    }
 
     // Only grab 10% of the dataset
     val datasetSlice = variables.create(Variable::class)

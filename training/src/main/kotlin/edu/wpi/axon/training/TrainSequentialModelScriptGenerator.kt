@@ -8,8 +8,10 @@ import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
+import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplySequentialLayerDeltaTask
+import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import mu.KotlinLogging
@@ -46,6 +48,8 @@ class TrainSequentialModelScriptGenerator(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
                 DefaultPolymorphicNamedDomainObjectContainer.of()
             ) {
+                pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+
                 val loadedDataset = reshapeAndScaleLoadedDataset(
                     loadDataset(trainState),
                     reshapeArgsFromBatchShape,

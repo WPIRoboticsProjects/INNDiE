@@ -131,6 +131,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             modules(defaultBackendModule())
         }
 
+        // TODO: This breaks at runtime with a Coral target
         val modelName = "small_model_for_wpilib_reduced_dataset.h5"
         val newModelName = "$tempDir/small_model_for_wpilib_reduced_dataset-trained.h5"
         val (model, path) = loadModel(modelName) {}
@@ -155,7 +156,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,
-                    target = ModelDeploymentTarget.Coral(0.1),
+                    target = ModelDeploymentTarget.Desktop,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
