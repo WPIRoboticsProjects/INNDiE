@@ -13,7 +13,7 @@ import software.amazon.awssdk.services.ec2.model.InstanceType
  */
 @Serializable
 data class Preferences(
-    var defaultEC2NodeType: InstanceType = InstanceType.T2_MICRO,
+    var defaultEC2NodeType: InstanceType = InstanceType.T2_SMALL,
     var statusPollingDelay: Long = 5000
 ) {
 
