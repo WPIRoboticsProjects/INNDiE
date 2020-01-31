@@ -4,7 +4,7 @@ package edu.wpi.axon.training
 
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
-import edu.wpi.axon.plugin.DatasetPlugins
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -48,7 +48,17 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
+                    datasetPlugin = Plugin.Unofficial(
+                        "",
+                        """
+                        |def process_dataset(x, y):
+                        |    newX = tf.cast(x / 255.0, tf.float32)
+                        |    newY = tf.cast(y / 255.0, tf.float32)
+                        |    newX = newX[..., tf.newaxis]
+                        |    newY = newY[..., tf.newaxis]
+                        |    return (newX, newY)
+                        """.trimMargin()
+                    ),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -82,7 +92,17 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
+                    datasetPlugin = Plugin.Unofficial(
+                        "",
+                        """
+                        |def process_dataset(x, y):
+                        |    newX = tf.cast(x / 255.0, tf.float32)
+                        |    newY = tf.cast(y / 255.0, tf.float32)
+                        |    newX = newX[..., tf.newaxis]
+                        |    newY = newY[..., tf.newaxis]
+                        |    return (newX, newY)
+                        """.trimMargin()
+                    ),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

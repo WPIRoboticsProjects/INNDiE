@@ -46,29 +46,10 @@ class TrainGeneralModelScriptGenerator(
             ) {
                 pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
 
-                val loadedDataset = loadDataset(trainState).let { dataset ->
-                    if (trainState.userNewModel.input.size == 1) {
-                        // Only try to transform the dataset if there is one input, similar to
-                        // the sequential model case.
-
-                        val modelInput = trainState.userNewModel.input.first()
-                        require(modelInput.type.count { it == null } <= 1)
-                        val reshapeArgsFromInputType = modelInput.type.map { it ?: -1 }
-                        reshapeAndScaleLoadedDataset(dataset, reshapeArgsFromInputType, 255)
-                    } else {
-                        dataset
-                    }
-                }
-
-                val castDataset = when (trainState.target) {
-                    ModelDeploymentTarget.Desktop -> loadedDataset
-                    is ModelDeploymentTarget.Coral -> {
-                        castLoadedDataset(
-                            loadedDataset,
-                            "tf.float32"
-                        )
-                    }
-                }
+                val dataset = processLoadedDatasetWithPlugin(
+                    loadDataset(trainState),
+                    trainState.datasetPlugin
+                )
 
                 val model = loadModel(trainState)
 
@@ -85,7 +66,7 @@ class TrainGeneralModelScriptGenerator(
                     oldModel,
                     newModelVar,
                     applyLayerDeltaTask,
-                    castDataset
+                    dataset
                 )
 
                 lastTask = when (trainState.target) {
@@ -93,7 +74,7 @@ class TrainGeneralModelScriptGenerator(
 
                     is ModelDeploymentTarget.Coral -> {
                         val compileForEdgeTpuTask =
-                            quantizeAndCompileForEdgeTpu(trainState, castDataset)
+                            quantizeAndCompileForEdgeTpu(trainState, dataset)
                         compileForEdgeTpuTask.dependencies.add(compileTrainSaveTask)
                         compileForEdgeTpuTask
                     }

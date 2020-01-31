@@ -11,6 +11,7 @@ import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.examplemodel.downloadAndConfigureExampleModel
 import edu.wpi.axon.plugin.DatasetPlugins
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
@@ -59,7 +60,17 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = oldModel,
-            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
+            datasetPlugin = Plugin.Unofficial(
+                "",
+                """
+                |def process_dataset(x, y):
+                |    newX = tf.cast(x / 255.0, tf.float32)
+                |    newY = tf.cast(y / 255.0, tf.float32)
+                |    newX = newX[..., tf.newaxis]
+                |    newY = newY[..., tf.newaxis]
+                |    return (newX, newY)
+                """.trimMargin()
+            ),
             generateDebugComments = false
         )
 
@@ -100,7 +111,17 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = oldModel,
-            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
+            datasetPlugin = Plugin.Unofficial(
+                "",
+                """
+                |def process_dataset(x, y):
+                |    newX = tf.cast(x / 255.0, tf.float32)
+                |    newY = tf.cast(y / 255.0, tf.float32)
+                |    newX = newX[..., tf.newaxis]
+                |    newY = newY[..., tf.newaxis]
+                |    return (newX, newY)
+                """.trimMargin()
+            ),
             generateDebugComments = false
         )
 
@@ -116,7 +137,6 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         status.shouldBe(TrainingScriptProgress.Completed)
     }
 
-    // TODO: This model doesn't work with the default dataset resizing, we need to configure that
     @Test
     @Timeout(value = 15L, unit = TimeUnit.MINUTES)
     @Disabled("Needs AWS supervision.")
@@ -162,6 +182,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = model,
+            // TODO: Write a dataset plugin to put the dataset in the right format for this model
             datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             generateDebugComments = false
         )

@@ -21,12 +21,14 @@ import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.PostTrainingQuantizationTask
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
+import edu.wpi.axon.dsl.task.RunPluginTask
 import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.SliceTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 
@@ -122,6 +124,40 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
         train = xTrain to yTrain,
         validation = None,
         validationSplit = None
+    )
+}
+
+internal fun ScriptGenerator.processDatasetWithPlugin(
+    xIn: Variable,
+    yIn: Variable,
+    plugin: Plugin
+): Pair<Variable, Variable> {
+    val xOut by variables.creating(Variable::class)
+    val yOut by variables.creating(Variable::class)
+
+    tasks.run(RunPluginTask::class) {
+        functionName = "process_dataset"
+        functionDefinition = plugin.contents
+        functionInputs = listOf(xIn, yIn)
+        functionOutputs = listOf(xOut, yOut)
+    }
+
+    return xOut to yOut
+}
+
+internal fun ScriptGenerator.processLoadedDatasetWithPlugin(
+    dataset: LoadedDataset,
+    plugin: Plugin
+): LoadedDataset {
+    val processedTrain = processDatasetWithPlugin(dataset.train.first, dataset.train.second, plugin)
+
+    val processedValidation = dataset.validation.map {
+        processDatasetWithPlugin(it.first, it.second, plugin)
+    }
+
+    return dataset.copy(
+        train = processedTrain,
+        validation = processedValidation
     )
 }
 
