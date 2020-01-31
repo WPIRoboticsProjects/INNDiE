@@ -7,6 +7,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.allS3OrLocal
 
@@ -38,6 +39,7 @@ data class Job internal constructor(
     var userNewModel: Model,
     var generateDebugComments: Boolean,
     var trainingMethod: JobTrainingMethod,
+    var target: ModelDeploymentTarget,
     var id: Int
 ) {
 
