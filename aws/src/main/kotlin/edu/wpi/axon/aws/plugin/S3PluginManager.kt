@@ -4,7 +4,10 @@ import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
+import mu.KotlinLogging
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import java.io.File
+import java.nio.file.Files
 
 /**
  * Saves plugins to S3.
@@ -24,7 +27,12 @@ class S3PluginManager(
     private lateinit var cacheFile: File
 
     override fun initialize() {
-        cacheFile = s3Manager.downloadPluginCache(cacheName)
+        cacheFile = try {
+            s3Manager.downloadPluginCache(cacheName)
+        } catch (ex: NoSuchKeyException) {
+            LOGGER.warn(ex) { "Failed to download plugin cache from S3. Creating a new one." }
+            Files.createTempFile("", ".json").toFile().apply { createNewFile() }
+        }
         localPluginManager = LocalPluginManager(cacheFile, officialPlugins)
         localPluginManager.initialize()
     }
@@ -39,5 +47,9 @@ class S3PluginManager(
     override fun removeUnofficialPlugin(plugin: Plugin.Unofficial) {
         localPluginManager.removeUnofficialPlugin(plugin)
         s3Manager.uploadPluginCache(cacheName, cacheFile)
+    }
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
     }
 }
