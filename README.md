@@ -90,6 +90,9 @@ random alphanumeric characters for uniqueness), Axon manages these directories:
     - Contains training progress files that Axon polls to get training progress updates
     - EC2 writes training progress into here
     - File format is `axon-training-progress/{model name}/{dataset name}/progress.txt`
+- axon-plugins
+    - Contains directories for each plugin cache
+    - Unofficial plugins are stored here
 
 ### AWS Configuration
 
