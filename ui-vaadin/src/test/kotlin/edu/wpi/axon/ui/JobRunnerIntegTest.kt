@@ -10,6 +10,7 @@ import edu.wpi.axon.db.data.nextJob
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.examplemodel.downloadAndConfigureExampleModel
+import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
@@ -58,6 +59,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = oldModel,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             generateDebugComments = false
         )
 
@@ -98,6 +100,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = oldModel,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             generateDebugComments = false
         )
 
@@ -159,6 +162,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = model,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             generateDebugComments = false
         )
 

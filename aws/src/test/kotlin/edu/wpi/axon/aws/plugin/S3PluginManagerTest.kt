@@ -16,8 +16,8 @@ internal class S3PluginManagerTest {
     @Test
     fun `download plugins from s3`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
-        val plugin1 = Plugin.Unofficial("a")
-        val plugin2 = Plugin.Unofficial("b")
+        val plugin1 = Plugin.Unofficial("a", "a")
+        val plugin2 = Plugin.Unofficial("b", "b")
         pluginCacheFile.writeText(PluginCache(listOf(plugin1, plugin2)).serialize())
 
         val s3Manager = mockk<S3Manager> {
@@ -38,7 +38,7 @@ internal class S3PluginManagerTest {
     @Test
     fun `adding a plugin adds it to s3`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
-        val plugin1 = Plugin.Unofficial("a")
+        val plugin1 = Plugin.Unofficial("a", "a")
         val s3Manager = mockk<S3Manager> {
             every { downloadPluginCache(any()) } returns pluginCacheFile
             every { uploadPluginCache(any(), any()) } returns Unit
@@ -60,8 +60,8 @@ internal class S3PluginManagerTest {
     @Test
     fun `removing a plugin removes it from s3`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
-        val plugin1 = Plugin.Unofficial("a")
-        val plugin2 = Plugin.Unofficial("b")
+        val plugin1 = Plugin.Unofficial("a", "a")
+        val plugin2 = Plugin.Unofficial("b", "b")
         pluginCacheFile.writeText(PluginCache(listOf(plugin1, plugin2)).serialize())
 
         val s3Manager = mockk<S3Manager> {

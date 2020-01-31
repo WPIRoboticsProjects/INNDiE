@@ -30,9 +30,12 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.util.axonBucketName
+import edu.wpi.axon.util.datasetPluginManagerName
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
@@ -46,6 +49,7 @@ class JobEditorForm : KComposite(), KoinComponent {
     private val jobLifecycleManager by inject<JobLifecycleManager>()
     private lateinit var form: FormLayout
     private val binder = beanValidationBinder<Job>()
+    private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
 
     var job: Option<Job> = None
         set(value) {
@@ -90,6 +94,14 @@ class JobEditorForm : KComposite(), KoinComponent {
                                 })
                                 setItemLabelGenerator { it.displayName }
                                 bind(binder).asRequired().bind(Job::userDataset)
+                            }
+                        }
+                        formItem("Dataset Plugin") {
+                            comboBox<Plugin> {
+                                setWidthFull()
+                                setItems(datasetPluginManager.listPlugins())
+                                setItemLabelGenerator { it.name }
+                                bind(binder).asRequired().bind(Job::datasetPlugin)
                             }
                         }
                         formItem("Epochs") {

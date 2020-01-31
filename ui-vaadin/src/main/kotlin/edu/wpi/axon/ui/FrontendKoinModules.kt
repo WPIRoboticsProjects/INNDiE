@@ -3,11 +3,17 @@ package edu.wpi.axon.ui
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.aws.S3PreferencesManager
 import edu.wpi.axon.aws.findAxonS3Bucket
+import edu.wpi.axon.aws.plugin.S3PluginManager
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.plugin.LocalPluginManager
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.util.axonBucketName
+import edu.wpi.axon.util.datasetPluginManagerName
+import edu.wpi.axon.util.testPluginManagerName
 import java.nio.file.Paths
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
@@ -27,7 +33,7 @@ fun defaultFrontendModule() = module {
 
     single {
         when (val bucketName = get<Option<String>>(named(axonBucketName))) {
-            is Some -> S3PreferencesManager(bucketName.t).apply { initialize() }
+            is Some -> S3PreferencesManager(S3Manager(bucketName.t)).apply { initialize() }
             is None -> LocalPreferencesManager(
                 Paths.get(
                     System.getProperty("user.home"),
@@ -35,6 +41,60 @@ fun defaultFrontendModule() = module {
                     "Axon",
                     "preferences.json"
                 )
+            ).apply { initialize() }
+        }
+    }
+
+    single(named(datasetPluginManagerName)) {
+        // TODO: Load official plugins from resources
+        val officialPlugins = listOf(
+            Plugin.Official("Test dataset plugin", """print("Hello from test dataset plugin!")""")
+        )
+
+        when (val bucketName = get<Option<String>>(named(axonBucketName))) {
+            is Some -> {
+                S3PluginManager(
+                    S3Manager(bucketName.t),
+                    "axon-dataset-plugins",
+                    officialPlugins
+                ).apply { initialize() }
+            }
+
+            is None -> LocalPluginManager(
+                Paths.get(
+                    System.getProperty("user.home"),
+                    ".wpilib",
+                    "Axon",
+                    "dataset_plugin_cache.json"
+                ).toFile(),
+                officialPlugins
+            ).apply { initialize() }
+        }
+    }
+
+    single(named(testPluginManagerName)) {
+        // TODO: Load official plugins from resources
+        val officialPlugins = listOf(
+            Plugin.Official("Test test plugin", """print("Hello from test test plugin!")""")
+        )
+
+        when (val bucketName = get<Option<String>>(named(axonBucketName))) {
+            is Some -> {
+                S3PluginManager(
+                    S3Manager(bucketName.t),
+                    "axon-test-plugins",
+                    officialPlugins
+                ).apply { initialize() }
+            }
+
+            is None -> LocalPluginManager(
+                Paths.get(
+                    System.getProperty("user.home"),
+                    ".wpilib",
+                    "Axon",
+                    "test_plugin_cache.json"
+                ).toFile(),
+                officialPlugins
             ).apply { initialize() }
         }
     }

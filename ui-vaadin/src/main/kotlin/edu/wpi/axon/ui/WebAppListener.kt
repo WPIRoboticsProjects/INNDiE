@@ -5,6 +5,7 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -58,6 +59,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e")
         )
 
@@ -79,6 +81,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             trainingMethod = JobTrainingMethod.Untrained
         )
 
@@ -100,6 +103,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             trainingMethod = JobTrainingMethod.Untrained
         )
 
@@ -121,6 +125,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 10,
             userNewModel = model,
             generateDebugComments = false,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             trainingMethod = JobTrainingMethod.Untrained
         )
 

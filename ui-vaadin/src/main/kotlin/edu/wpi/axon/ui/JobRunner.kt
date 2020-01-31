@@ -248,6 +248,7 @@ internal class JobRunner : KoinComponent {
         generateDebugComments = job.generateDebugComments,
         // TODO: Let the user target the Coral
         target = ModelDeploymentTarget.Desktop,
+        datasetPlugin = job.datasetPlugin,
         jobId = job.id
     )
 }

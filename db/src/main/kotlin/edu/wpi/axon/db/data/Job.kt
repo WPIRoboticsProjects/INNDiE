@@ -3,6 +3,7 @@ package edu.wpi.axon.db.data
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -23,6 +24,7 @@ import edu.wpi.axon.util.allS3OrLocal
  * @param generateDebugComments Whether to put debug comments in the output.
  * @param trainingMethod The method used to train the Job, used to resume progress updates if Axon
  * is closed while Jobs are still running.
+ * @param datasetPlugin The plugin used to process the dataset after it is loaded.
  * @param id The database-generated unique id. Do not modify.
  */
 data class Job internal constructor(
@@ -38,6 +40,7 @@ data class Job internal constructor(
     var userNewModel: Model,
     var generateDebugComments: Boolean,
     var trainingMethod: JobTrainingMethod,
+    var datasetPlugin: Plugin,
     var id: Int
 ) {
 

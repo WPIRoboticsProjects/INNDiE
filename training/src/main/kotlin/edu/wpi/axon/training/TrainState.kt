@@ -1,6 +1,7 @@
 package edu.wpi.axon.training
 
 import arrow.core.Option
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -21,6 +22,7 @@ import edu.wpi.axon.util.allS3OrLocal
  * @param userNewModel The new model.
  * @param generateDebugComments Whether to put debug comments in the output.
  * @param target Where the model will be deployed.
+ * @param datasetPlugin The plugin used to process the dataset after it is loaded.
  * @param jobId The unique ID of the Job.
  */
 data class TrainState<T : Model>(
@@ -35,6 +37,7 @@ data class TrainState<T : Model>(
     val userValidationSplit: Option<Double>,
     val generateDebugComments: Boolean,
     val target: ModelDeploymentTarget,
+    val datasetPlugin: Plugin,
     val jobId: Int
 ) {
 

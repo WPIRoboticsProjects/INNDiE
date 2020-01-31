@@ -14,8 +14,8 @@ internal class LocalPluginManagerTest {
     fun `list plugins with just official plugins`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         val officialPlugins = listOf(
-            Plugin.Official("a"),
-            Plugin.Official("b")
+            Plugin.Official("a", "a"),
+            Plugin.Official("b", "b")
         )
 
         LocalPluginManager(pluginCacheFile, officialPlugins).apply { initialize() }
@@ -29,8 +29,8 @@ internal class LocalPluginManagerTest {
         val manager = LocalPluginManager(pluginCacheFile, listOf())
         manager.initialize()
         val unofficialPlugins = listOf(
-            Plugin.Unofficial("a"),
-            Plugin.Unofficial("b")
+            Plugin.Unofficial("a", "a"),
+            Plugin.Unofficial("b", "b")
         )
         unofficialPlugins.forEach { manager.addUnofficialPlugin(it) }
         manager.listPlugins().shouldContainExactlyInAnyOrder(unofficialPlugins)
@@ -40,13 +40,13 @@ internal class LocalPluginManagerTest {
     fun `list plugins with official and unofficial plugins`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         val officialPlugins = listOf(
-            Plugin.Official("a"),
-            Plugin.Official("b")
+            Plugin.Official("a", "a"),
+            Plugin.Official("b", "b")
         )
 
         val unofficialPlugins = listOf(
-            Plugin.Unofficial("a"),
-            Plugin.Unofficial("b")
+            Plugin.Unofficial("a", "a"),
+            Plugin.Unofficial("b", "b")
         )
 
         val manager = LocalPluginManager(pluginCacheFile, officialPlugins)
@@ -66,8 +66,8 @@ internal class LocalPluginManagerTest {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         val exampleCacheData = PluginCache(
             listOf(
-                Plugin.Unofficial("a"),
-                Plugin.Unofficial("b")
+                Plugin.Unofficial("a", "a"),
+                Plugin.Unofficial("b", "b")
             )
         )
 
@@ -81,8 +81,8 @@ internal class LocalPluginManagerTest {
     @Test
     fun `adding a plugin adds it to the cache`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
-        val plugin1 = Plugin.Unofficial("a")
-        val plugin2 = Plugin.Unofficial("b")
+        val plugin1 = Plugin.Unofficial("a", "a")
+        val plugin2 = Plugin.Unofficial("b", "b")
 
         val exampleCacheData = PluginCache(listOf(plugin1))
         pluginCacheFile.writeText(exampleCacheData.serialize())
@@ -98,8 +98,8 @@ internal class LocalPluginManagerTest {
     @Test
     fun `removing a plugin removes it from the cache`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
-        val plugin1 = Plugin.Unofficial("a")
-        val plugin2 = Plugin.Unofficial("b")
+        val plugin1 = Plugin.Unofficial("a", "a")
+        val plugin2 = Plugin.Unofficial("b", "b")
 
         val exampleCacheData = PluginCache(listOf(plugin1, plugin2))
         pluginCacheFile.writeText(exampleCacheData.serialize())
