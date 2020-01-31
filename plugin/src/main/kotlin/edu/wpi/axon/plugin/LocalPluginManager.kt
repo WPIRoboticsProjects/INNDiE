@@ -7,25 +7,19 @@ import mu.KotlinLogging
 /**
  * Saves plugin to the local filesystem.
  *
- * @param cacheDir The plugin save file will be made in this directory.
+ * @param pluginCacheFile The plugin save file.
  * @param officialPlugins The Axon-supported official plugins that should always be available to the
  * user.
  */
 class LocalPluginManager(
-    private val cacheDir: File,
+    private val pluginCacheFile: File,
     private val officialPlugins: List<Plugin.Official>
 ) : PluginManager {
 
     private var initialized = false
-    private lateinit var pluginCacheFile: File
     private val unofficialPlugins = mutableListOf<Plugin.Unofficial>()
 
     override fun initialize() {
-        if (!cacheDir.exists()) {
-            cacheDir.mkdirs()
-        }
-
-        pluginCacheFile = getPluginCacheFile(cacheDir)
         if (!pluginCacheFile.exists()) {
             pluginCacheFile.createNewFile()
         }
@@ -66,7 +60,5 @@ class LocalPluginManager(
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
-
-        fun getPluginCacheFile(cacheDir: File) = File(cacheDir, "plugin_cache.json")
     }
 }

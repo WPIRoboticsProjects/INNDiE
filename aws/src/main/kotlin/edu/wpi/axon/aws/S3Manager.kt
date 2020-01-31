@@ -157,6 +157,12 @@ class S3Manager(
         it.bucket(bucketName).key(createHeartbeatFilePath(id))
     }.readAllBytes().decodeToString()
 
+    fun uploadPluginCache(cacheName: String, file: File) =
+        uploadLocalFile(file, "axon-plugins/$cacheName/plugin_cache.json")
+
+    fun downloadPluginCache(cacheName: String): File =
+        downloadToLocalFile("axon-plugins/$cacheName/plugin_cache.json")
+
     /**
      * Downloads the preferences file to a local file. Throws an exception if there is no
      * preferences file in S3.
