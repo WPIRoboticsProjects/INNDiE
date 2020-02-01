@@ -8,10 +8,9 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.util.FilePath
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
-import io.kotlintest.shouldThrow
 import io.mockk.mockk
-import org.junit.jupiter.api.Test
 import java.nio.file.Paths
+import org.junit.jupiter.api.Test
 
 internal class TrainStateTest {
 

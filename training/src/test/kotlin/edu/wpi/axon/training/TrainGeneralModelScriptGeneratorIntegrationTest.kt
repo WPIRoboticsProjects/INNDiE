@@ -13,10 +13,10 @@ import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
+import java.nio.file.Paths
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
-import java.nio.file.Paths
 
 internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture() {
 

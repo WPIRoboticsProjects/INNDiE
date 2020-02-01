@@ -8,13 +8,13 @@ import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
 import java.io.File
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Paths
 
 internal class LocalTrainingScriptRunnerIntegTest {
 
@@ -70,7 +70,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 except OSError as err:
                     if err.errno != errno.EEXIST:
                         raise
-                
+
                 var15 = tf.keras.callbacks.ModelCheckpoint(
                     "$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
                     monitor="val_loss",
@@ -114,7 +114,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 except OSError as err:
                     if err.errno != errno.EEXIST:
                         raise
-                
+
                 var12.save("$newModelPath")
                 """.trimIndent(),
                 1,
@@ -154,7 +154,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 import os
                 import errno
                 from pathlib import Path
-                
+
                 var10 = tf.keras.models.load_model("$oldModelPath")
 
                 var12 = tf.keras.Sequential([
@@ -181,13 +181,13 @@ internal class LocalTrainingScriptRunnerIntegTest {
                     loss=tf.keras.losses.sparse_categorical_crossentropy,
                     metrics=["accuracy"]
                 )
-                
+
                 try:
                     os.makedirs(Path("$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5").parent)
                 except OSError as err:
                     if err.errno != errno.EEXIST:
                         raise
-                
+
                 var15 = tf.keras.callbacks.ModelCheckpoint(
                     "$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
                     monitor="val_loss",
@@ -231,7 +231,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 except OSError as err:
                     if err.errno != errno.EEXIST:
                         raise
-                
+
                 var12.save("$newModelPath")
                 """.trimIndent(),
                 1,

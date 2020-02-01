@@ -29,7 +29,6 @@ import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.util.getOutputModelName
 
 /**
  * Loads a model in to a variable using. Assumes the model is on disk.

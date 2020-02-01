@@ -7,7 +7,6 @@ import edu.wpi.axon.util.createLocalProgressFilepath
 import edu.wpi.axon.util.getOutputModelName
 import edu.wpi.axon.util.runCommand
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.concurrent.thread
 import mu.KotlinLogging

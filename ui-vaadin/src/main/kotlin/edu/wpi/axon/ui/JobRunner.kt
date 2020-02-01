@@ -28,13 +28,13 @@ import edu.wpi.axon.training.TrainState
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import kotlinx.coroutines.delay
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.qualifier.named
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * Handles running, cancelling, and progress polling for Jobs.
@@ -94,10 +94,7 @@ internal class JobRunner : KoinComponent {
         } else {
             // The local runner can work out of any directory.
             Paths.get(
-                System.getProperty("user.home"),
-                ".wpilib",
-                "Axon",
-                "local-script-runner-cache",
+                localScriptRunnerCache.toString(),
                 job.id.toString()
             ).apply { toFile().mkdirs() }
         }

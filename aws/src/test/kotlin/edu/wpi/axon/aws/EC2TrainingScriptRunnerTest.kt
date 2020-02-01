@@ -9,11 +9,11 @@ import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.nio.file.Paths
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
-import java.nio.file.Paths
 
 internal class EC2TrainingScriptRunnerTest {
 

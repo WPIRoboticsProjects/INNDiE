@@ -41,8 +41,8 @@ class RunEdgeTpuCompilerTask(name: String) : BaseTask(name) {
             super.isConfiguredCorrectly()
 
     override fun code(): String = """
-        |subprocess.run(["edgetpu_compiler", "$inputModelFilename", "-o $outputDir"])
-        |with open("${getEdgeTpuCompilerLogFilename(inputModelFilename)}", "r") as f:
+        |subprocess.run(["edgetpu_compiler", "$outputDir/$inputModelFilename", "-o $outputDir"])
+        |with open("$outputDir/${getEdgeTpuCompilerLogFilename(inputModelFilename)}", "r") as f:
         |    print(f.read())
     """.trimMargin()
 

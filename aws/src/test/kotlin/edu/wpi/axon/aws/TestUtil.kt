@@ -2,9 +2,9 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.nextDataset
 import edu.wpi.axon.util.FilePath
+import java.nio.file.Paths
 import kotlin.random.Random
 import org.apache.commons.lang3.RandomStringUtils
-import java.nio.file.Paths
 
 internal fun randomRunTrainingScriptConfigurationUsingAWS() = RunTrainingScriptConfiguration(
     oldModelName = FilePath.S3("${RandomStringUtils.randomAlphanumeric(10)}.h5"),

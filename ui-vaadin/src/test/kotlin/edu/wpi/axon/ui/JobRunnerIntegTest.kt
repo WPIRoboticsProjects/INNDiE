@@ -19,23 +19,27 @@ import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.getOutputModelName
-import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.matchers.collections.shouldContain
+import io.kotlintest.matchers.collections.shouldContainAll
 import io.kotlintest.shouldBe
-import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 import org.koin.core.get
 import org.koin.core.qualifier.named
 
 internal class JobRunnerIntegTest : KoinTestFixture() {
+
+    @BeforeEach
+    fun beforeEach() {
+        localScriptRunnerCache.toFile().deleteRecursively()
+    }
 
     @Test
     @Timeout(value = 15L, unit = TimeUnit.MINUTES)
@@ -74,6 +78,50 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         }
         status.shouldBe(TrainingScriptProgress.Completed)
         jobRunner.listResults(job.id).shouldContain(getOutputModelName(oldModelName))
+    }
+
+    @Test
+    @Timeout(value = 15L, unit = TimeUnit.MINUTES)
+    @Tag("needsTensorFlowSupport")
+    fun `test starting local job and tracking progress targeting the coral`() {
+        startKoin {
+            modules(listOf(defaultBackendModule(), defaultFrontendModule()))
+        }
+
+        val db = get<JobDb>()
+        val oldModelName = "32_32_1_conv_sequential.h5"
+        val (oldModel, path) = loadModel(oldModelName) {}
+        val job = Random.nextJob(
+            db,
+            name = "Job 1",
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = FilePath.Local(path),
+            userDataset = Dataset.ExampleDataset.FashionMnist,
+            userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 1,
+            userNewModel = oldModel,
+            target = ModelDeploymentTarget.Coral(0.001),
+            generateDebugComments = false
+        )
+
+        val jobRunner = JobRunner()
+        jobRunner.startJob(job)
+        var status = job.status
+        runBlocking {
+            jobRunner.waitForFinish(job.id) {
+                println(it)
+                status = it
+            }
+        }
+        status.shouldBe(TrainingScriptProgress.Completed)
+        jobRunner.listResults(job.id).shouldContainAll(
+            "32_32_1_conv_sequential-trained.h5",
+            "32_32_1_conv_sequential-trained.tflite",
+            "32_32_1_conv_sequential-trained_edgetpu.tflite",
+            "32_32_1_conv_sequential-trained_edgetpu.log"
+        )
     }
 
     @Test

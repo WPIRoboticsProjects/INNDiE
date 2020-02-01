@@ -3,8 +3,8 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
 import io.kotlintest.shouldThrow
-import org.junit.jupiter.api.Test
 import java.nio.file.Paths
+import org.junit.jupiter.api.Test
 
 internal class LocalTrainingScriptRunnerTest {
 
