@@ -8,7 +8,6 @@ import io.kotlintest.matchers.collections.shouldHaveSize
 import io.kotlintest.matchers.nulls.shouldBeNull
 import io.kotlintest.shouldBe
 import java.io.File
-import java.nio.file.Paths
 import kotlin.random.Random
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.select
@@ -101,7 +100,7 @@ internal class JobDbTest {
 
     private fun createDb(tempDir: File) = JobDb(
         Database.connect(
-            url = "jdbc:h2:file:${Paths.get(tempDir.absolutePath, "test.db")}",
+            url = "jdbc:h2:file:${tempDir.resolve("test.db")}",
             driver = "org.h2.Driver"
         )
     )

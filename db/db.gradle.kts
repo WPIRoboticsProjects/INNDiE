@@ -3,6 +3,7 @@ description = "Classes to interact with a database"
 dependencies {
     api(project(":tf-data"))
     api(project(":training"))
+    api(project(":plugin"))
 
     implementation(project(":util"))
 

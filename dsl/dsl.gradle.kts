@@ -30,6 +30,7 @@ dependencies {
     api(koin("koin-core"))
     api(project(":dsl-interface"))
     api(project(":tf-data"))
+    api(project(":plugin"))
 
     implementation(project(":util"))
     implementation(project(":tf-data-code"))

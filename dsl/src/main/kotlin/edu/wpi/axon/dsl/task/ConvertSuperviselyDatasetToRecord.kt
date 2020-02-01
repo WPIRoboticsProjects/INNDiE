@@ -46,8 +46,6 @@ class ConvertSuperviselyDatasetToRecord(name: String) : BaseTask(name) {
         val int64Feature = variableNameGenerator.uniqueVariableName()
         val convertToRecord = variableNameGenerator.uniqueVariableName()
         // TODO: Don't hardcode depth as 3
-        // TODO: Support resizing images (and their boxes) to a desired size using decode_jpeg
-        // TODO: Support downscaling images (and their boxes) using decode_jpeg
         // TODO: Don't convert this each time, cache it in S3
         return """
             |def $bytesFeature(value):

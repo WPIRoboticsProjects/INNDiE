@@ -4,6 +4,7 @@ package edu.wpi.axon.training
 
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -31,13 +32,12 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "$tempDir/32_32_1_conv_sequential-trained.h5"
+        val newModelName = tempDir.toPath().resolve("32_32_1_conv_sequential-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -46,6 +46,9 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Desktop,
+                    workingDir = tempDir.toPath(),
+                    datasetPlugin = processMnistTypePlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -63,13 +66,12 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "32_32_1_conv_general.h5"
-        val newModelName = "$tempDir/32_32_1_conv_general-trained.h5"
+        val newModelName = tempDir.toPath().resolve("32_32_1_conv_general-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -78,6 +80,9 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Desktop,
+                    workingDir = tempDir.toPath(),
+                    datasetPlugin = processMnistTypePlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

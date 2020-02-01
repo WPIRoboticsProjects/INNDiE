@@ -12,11 +12,12 @@ import software.amazon.awssdk.core.exception.SdkClientException
 /**
  * Manages the preferences data lifecycle. Stores preferences in S3.
  *
- * @param bucketName The S3 bucket name to use for all S3 API calls.
+ * @param s3Manager Used for interfacing with S3.
  */
-class S3PreferencesManager(bucketName: String) : PreferencesManager {
+class S3PreferencesManager(
+    private val s3Manager: S3Manager
+) : PreferencesManager {
 
-    private val s3Manager = S3Manager(bucketName)
     private var preferencesFile by singleAssign<File>()
     private var workingPreferences by Delegates.notNull<Preferences>()
 

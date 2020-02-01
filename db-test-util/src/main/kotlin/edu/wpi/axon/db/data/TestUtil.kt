@@ -1,6 +1,7 @@
 package edu.wpi.axon.db.data
 
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.SerializableTuple2II
@@ -8,6 +9,7 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.util.FilePath
 import kotlin.random.Random
 import org.apache.commons.lang3.RandomStringUtils
@@ -33,7 +35,7 @@ fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
         3 -> TrainingScriptProgress.InProgress(nextDouble(0.0, 1.0))
         4 -> TrainingScriptProgress.Completed
         5 -> TrainingScriptProgress.Error
-        else -> TODO("Missing a TrainingScriptProgress case.")
+        else -> error("Missing a TrainingScriptProgress case.")
     }
 
 fun Random.nextTrainingMethod(): JobTrainingMethod =
@@ -41,15 +43,30 @@ fun Random.nextTrainingMethod(): JobTrainingMethod =
         0 -> JobTrainingMethod.EC2(RandomStringUtils.randomAlphabetic(10))
         1 -> JobTrainingMethod.Local
         2 -> JobTrainingMethod.Untrained
-        else -> TODO("Missing a JobTrainingMethod case.")
+        else -> error("Missing a JobTrainingMethod case.")
     }
+
+fun Random.nextTarget(): ModelDeploymentTarget =
+    when (nextInt(ModelDeploymentTarget::class.sealedSubclasses.count())) {
+        0 -> ModelDeploymentTarget.Desktop
+        1 -> ModelDeploymentTarget.Coral(nextDouble(0.0, 1.0))
+        else -> error("Missing a ModelDeploymentTarget case.")
+    }
+
+fun Random.nextPlugin(): Plugin {
+    val data = RandomStringUtils.randomAlphanumeric(5)
+    return if (nextBoolean()) {
+        Plugin.Official("Official $data", """print("Hello from official $data")""")
+    } else {
+        Plugin.Unofficial("Unofficial $data", """print("Hello from unofficial $data")""")
+    }
+}
 
 fun Random.nextJob(
     jobDb: JobDb,
     name: String = RandomStringUtils.randomAlphanumeric(10),
     status: TrainingScriptProgress = nextTrainingScriptProgress(),
     userOldModelPath: FilePath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
-    userNewModelName: FilePath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
     userDataset: Dataset = nextDataset(),
     userOptimizer: Optimizer = Optimizer.Adam(
         nextDouble(0.0, 1.0),
@@ -80,12 +97,13 @@ fun Random.nextJob(
         )
     ),
     generateDebugComments: Boolean = nextBoolean(),
-    trainingMethod: JobTrainingMethod = nextTrainingMethod()
+    trainingMethod: JobTrainingMethod = nextTrainingMethod(),
+    target: ModelDeploymentTarget = nextTarget(),
+    datasetPlugin: Plugin = nextPlugin()
 ) = jobDb.create(
     name,
     status,
     userOldModelPath,
-    userNewModelName,
     userDataset,
     userOptimizer,
     userLoss,
@@ -93,5 +111,7 @@ fun Random.nextJob(
     userEpochs,
     userNewModel,
     generateDebugComments,
-    trainingMethod
+    trainingMethod,
+    target,
+    datasetPlugin
 )

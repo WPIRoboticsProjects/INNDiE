@@ -26,6 +26,12 @@ internal class CheckpointCallbackTaskTest : KoinTestFixture() {
         }
 
         task.code() shouldBe """
+            |try:
+            |    os.makedirs(Path("weights.{epoch:02d}-{val_loss:.2f}.hdf5").parent)
+            |except OSError as err:
+            |    if err.errno != errno.EEXIST:
+            |        raise
+            |
             |output = tf.keras.callbacks.ModelCheckpoint(
             |    "weights.{epoch:02d}-{val_loss:.2f}.hdf5",
             |    monitor="val_loss",

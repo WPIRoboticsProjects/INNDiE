@@ -20,6 +20,48 @@ import org.junit.jupiter.api.Test
 internal class HDF5ModelLoaderIntegrationTest {
 
     @Test
+    fun `load mobilenetv2 exported using TF 1-15`() {
+        loadModel<Model.General>("mobilenetv2_tf-1-15.h5") {
+            it.name shouldBe "mobilenetv2_1.00_224"
+            it.input.shouldContainExactly(
+                Model.General.InputData("input_1", listOf(null, 224, 224, 3))
+            )
+            it.output.shouldContainExactly(Model.General.OutputData("Logits"))
+            it.layers.nodes() shouldHaveSize 157
+
+            val nodesWithMultipleInputs = it.layers.nodes().filter {
+                it.inputs?.let { it.size > 1 } ?: false
+            }
+
+            // Only the block_xx_add layers should have more than one input
+            nodesWithMultipleInputs.all {
+                it.name.startsWith("block_") && it.name.endsWith("_add")
+            }.shouldBeTrue()
+        }
+    }
+
+    @Test
+    fun `load mobilenetv2 exported using TF 1-14`() {
+        loadModel<Model.General>("mobilenetv2_1.00_224.h5") {
+            it.name shouldBe "mobilenetv2_1.00_224"
+            it.input.shouldContainExactly(
+                Model.General.InputData("input_1", listOf(null, 224, 224, 3))
+            )
+            it.output.shouldContainExactly(Model.General.OutputData("Logits"))
+            it.layers.nodes() shouldHaveSize 157
+
+            val nodesWithMultipleInputs = it.layers.nodes().filter {
+                it.inputs?.let { it.size > 1 } ?: false
+            }
+
+            // Only the block_xx_add layers should have more than one input
+            nodesWithMultipleInputs.all {
+                it.name.startsWith("block_") && it.name.endsWith("_add")
+            }.shouldBeTrue()
+        }
+    }
+
+    @Test
     fun `load from test file 1`() {
         loadModel<Model.Sequential>("model1.h5") {
             it.name shouldBe "sequential_11"
@@ -77,27 +119,6 @@ internal class HDF5ModelLoaderIntegrationTest {
                     ).trainable()
                 )
             )
-        }
-    }
-
-    @Test
-    fun `load from test file 2`() {
-        loadModel<Model.General>("mobilenetv2_1.00_224.h5") {
-            it.name shouldBe "mobilenetv2_1.00_224"
-            it.input.shouldContainExactly(
-                Model.General.InputData("input_1", listOf(null, 224, 224, 3))
-            )
-            it.output.shouldContainExactly(Model.General.OutputData("Logits"))
-            it.layers.nodes() shouldHaveSize 157
-
-            val nodesWithMultipleInputs = it.layers.nodes().filter {
-                it.inputs?.let { it.size > 1 } ?: false
-            }
-
-            // Only the block_xx_add layers should have more than one input
-            nodesWithMultipleInputs.all {
-                it.name.startsWith("block_") && it.name.endsWith("_add")
-            }.shouldBeTrue()
         }
     }
 
