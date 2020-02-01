@@ -4,10 +4,10 @@ import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
-import mu.KotlinLogging
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import java.io.File
 import java.nio.file.Files
+import mu.KotlinLogging
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
 /**
  * Saves plugins to S3.

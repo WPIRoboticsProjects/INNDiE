@@ -44,8 +44,8 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.util.axonBucketName
-import kotlin.reflect.KClass
 import edu.wpi.axon.util.datasetPluginManagerName
+import kotlin.reflect.KClass
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get

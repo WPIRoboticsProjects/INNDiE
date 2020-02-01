@@ -30,7 +30,6 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
         // TODO: The dataset is in the wrong format for the model's input (actually, there are two
         //  inputs).
         val modelName = "network_with_add.h5"
-        val newModelName = "network_with_add-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             val script = TrainGeneralModelScriptGenerator(
@@ -71,7 +70,6 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
             return images
          */
         val modelName = "mobilenetv2_tf-1-15.h5"
-        val newModelName = "mobilenetv2_tf-1-15-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             val script = TrainGeneralModelScriptGenerator(
@@ -112,7 +110,6 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
             return images
          */
         val modelName = "mobilenetv2_tf-1-15.h5"
-        val newModelName = "mobilenetv2_tf-1-15-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             val script = TrainGeneralModelScriptGenerator(

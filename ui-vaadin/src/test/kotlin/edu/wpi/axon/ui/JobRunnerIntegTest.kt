@@ -196,7 +196,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         }
 
         val exampleModelManager = GitExampleModelManager()
-        val (exampleModel, model, file) = IO.fx {
+        val (_, model, file) = IO.fx {
             exampleModelManager.updateCache().bind()
 
             val exampleModel = exampleModelManager.getAllExampleModels().bind().first {

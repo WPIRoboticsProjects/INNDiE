@@ -39,7 +39,6 @@ class WebAppListener : ServletContextListener, KoinComponent {
         }
 
         val modelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "32_32_1_conv_sequential-trained.h5"
         val (model, path) = loadModel(modelName)
 
         get<JobDb>().create(

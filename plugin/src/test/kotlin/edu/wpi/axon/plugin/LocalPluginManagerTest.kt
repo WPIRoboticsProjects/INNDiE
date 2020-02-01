@@ -57,7 +57,7 @@ internal class LocalPluginManagerTest {
 
     @Test
     fun `list plugins with calling initialize`(@TempDir tempDir: File) {
-        val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
+        File(tempDir, "cache.json").apply { createNewFile() }
         shouldThrow<IllegalStateException> { LocalPluginManager(tempDir, listOf()).listPlugins() }
     }
 
