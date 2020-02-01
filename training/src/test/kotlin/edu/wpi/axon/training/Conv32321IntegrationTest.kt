@@ -48,8 +48,6 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
                     workingDir = tempDir.toPath(),
-                    target = ModelDeploymentTarget.Desktop,
-                    workingDir = tempDir.toPath(),
                     datasetPlugin = Plugin.Unofficial(
                         "",
                         """
@@ -92,8 +90,6 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
-                    target = ModelDeploymentTarget.Desktop,
-                    workingDir = tempDir.toPath(),
                     target = ModelDeploymentTarget.Desktop,
                     workingDir = tempDir.toPath(),
                     datasetPlugin = Plugin.Unofficial(

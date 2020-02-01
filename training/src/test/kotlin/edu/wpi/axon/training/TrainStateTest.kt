@@ -10,7 +10,6 @@ import edu.wpi.axon.util.FilePath
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.mockk.mockk
-import java.nio.file.Paths
 import java.io.File
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

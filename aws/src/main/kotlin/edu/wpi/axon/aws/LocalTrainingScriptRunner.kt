@@ -7,7 +7,6 @@ import edu.wpi.axon.util.createLocalProgressFilepath
 import edu.wpi.axon.util.getOutputModelName
 import edu.wpi.axon.util.runCommand
 import java.io.File
-import java.nio.file.Paths
 import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
@@ -83,10 +82,8 @@ class LocalTrainingScriptRunner(
                     }
 
                     val newModelFile = config.workingDir
-                        .resolve(getOutputModelName(
-                        config.workingDir.toString(),
-                        getOutputModelName(config.oldModelName.filename)
-                    ).toFile()
+                        .resolve(getOutputModelName(config.oldModelName.filename))
+                        .toFile()
                     if (newModelFile.exists()) {
                         scriptProgressMap[config.id] = TrainingScriptProgress.Completed
                     } else {
