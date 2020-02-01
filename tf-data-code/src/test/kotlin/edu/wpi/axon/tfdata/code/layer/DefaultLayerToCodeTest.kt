@@ -100,7 +100,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             ),
             Arguments.of(
                 Layer.UnknownLayer("", null),
-                """Cannot construct an unknown layer: UnknownLayer(name=, inputs=null)""".left(),
+                """Cannot construct an UnknownLayer: UnknownLayer(name=, inputs=null)""".left(),
                 null
             ),
             Arguments.of(
@@ -261,6 +261,19 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 Right(
                     "tf.keras.layers.GlobalAveragePooling2D(data_format=\"channels_last\", " +
                         "name=\"name\")"
+                ),
+                null
+            ),
+            Arguments.of(
+                Layer.Conv2D(
+                    "name",
+                    null,
+                    32,
+                    SerializableTuple2II(3, 3),
+                    Activation.Linear
+                ),
+                Right(
+                    "tf.keras.layers.Conv2D(32, (3, 3), activation=tf.keras.activations.linear, name=\"name\")"
                 ),
                 null
             )

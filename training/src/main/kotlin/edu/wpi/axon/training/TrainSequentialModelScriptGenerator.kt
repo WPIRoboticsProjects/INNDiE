@@ -43,21 +43,10 @@ class TrainSequentialModelScriptGenerator(
             ) {
                 pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
 
-                val loadedDataset = reshapeAndScaleLoadedDataset(
+                val dataset = processLoadedDatasetWithPlugin(
                     loadDataset(trainState),
-                    reshapeArgsFromBatchShape,
-                    255
+                    trainState.datasetPlugin
                 )
-
-                val castDataset = when (trainState.target) {
-                    ModelDeploymentTarget.Desktop -> loadedDataset
-                    is ModelDeploymentTarget.Coral -> {
-                        castLoadedDataset(
-                            loadedDataset,
-                            "tf.float32"
-                        )
-                    }
-                }
 
                 val model = loadModel(trainState)
 
@@ -74,7 +63,7 @@ class TrainSequentialModelScriptGenerator(
                     oldModel,
                     newModel,
                     applyLayerDeltaTask,
-                    castDataset
+                    dataset
                 )
 
                 lastTask = when (trainState.target) {
@@ -82,7 +71,7 @@ class TrainSequentialModelScriptGenerator(
 
                     is ModelDeploymentTarget.Coral -> {
                         val compileForEdgeTpuTask =
-                            quantizeAndCompileForEdgeTpu(trainState, castDataset)
+                            quantizeAndCompileForEdgeTpu(trainState, dataset)
                         compileForEdgeTpuTask.dependencies.add(compileTrainSaveTask)
                         compileForEdgeTpuTask
                     }

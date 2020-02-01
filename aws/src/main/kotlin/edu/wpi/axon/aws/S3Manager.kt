@@ -159,6 +159,24 @@ class S3Manager(
     }.readAllBytes().decodeToString()
 
     /**
+     * Uploads a plugin cache file.
+     *
+     * @param cacheName The name of the plugin cache.
+     * @param file The plugin cache file.
+     */
+    fun uploadPluginCache(cacheName: String, file: File) =
+        uploadLocalFile(file, "axon-plugins/$cacheName/plugin_cache.json")
+
+    /**
+     * Downloads a plugin cache file.
+     *
+     * @param cacheName The name of the plugin cache.
+     * @return A local file containing the plugin cache.
+     */
+    fun downloadPluginCache(cacheName: String): File =
+        downloadToLocalFile("axon-plugins/$cacheName/plugin_cache.json")
+
+    /**
      * Downloads the preferences file to a local file. Throws an exception if there is no
      * preferences file in S3.
      *

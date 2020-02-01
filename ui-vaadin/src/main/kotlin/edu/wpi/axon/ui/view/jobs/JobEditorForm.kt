@@ -38,10 +38,15 @@ import com.vaadin.flow.data.renderer.TextRenderer
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.util.axonBucketName
+import edu.wpi.axon.util.datasetPluginManagerName
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import kotlin.reflect.KClass
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
@@ -57,6 +62,7 @@ class JobEditorForm : KComposite(), KoinComponent {
     private lateinit var form: FormLayout
     private val binder = beanValidationBinder<Job>()
     private var coralRepresentativeDatasetPercentage = 0.0
+    private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
 
     var job: Option<Job> = None
         set(value) {
@@ -101,6 +107,14 @@ class JobEditorForm : KComposite(), KoinComponent {
                                 })
                                 setItemLabelGenerator { it.displayName }
                                 bind(binder).asRequired().bind(Job::userDataset)
+                            }
+                        }
+                        formItem("Dataset Plugin") {
+                            comboBox<Plugin> {
+                                setWidthFull()
+                                setItems(datasetPluginManager.listPlugins())
+                                setItemLabelGenerator { it.name }
+                                bind(binder).asRequired().bind(Job::datasetPlugin)
                             }
                         }
                         formItem("Epochs") {
@@ -265,7 +279,20 @@ class JobEditorForm : KComposite(), KoinComponent {
                 formItem("Representative Dataset Percentage") {
                     textField {
                         bind(binder).asRequired()
-                            .toDouble()
+                            .withConverter(Converter.from<String, Double>(
+                                {
+                                    try {
+                                        Result.ok(it.toDouble())
+                                    } catch (ex: NumberFormatException) {
+                                        Result.error<Double>(ex.localizedMessage)
+                                    }
+                                },
+                                {
+                                    DecimalFormat("#.####").apply {
+                                        roundingMode = RoundingMode.HALF_DOWN
+                                    }.format(it)
+                                }
+                            ))
                             .withValidator { value, _ ->
                                 when (value) {
                                     null -> ValidationResult.error("Outside range.")

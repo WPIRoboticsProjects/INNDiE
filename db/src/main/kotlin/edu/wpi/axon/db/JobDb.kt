@@ -4,6 +4,7 @@ import com.beust.klaxon.Klaxon
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -37,6 +38,7 @@ internal object Jobs : IntIdTable() {
     val generateDebugCommentsCol = bool("generateDebugComments")
     val trainingMethodCol = varchar("trainingMethod", 255)
     val targetCol = varchar("target", 255)
+    val datasetPluginCol = text("datasetPlugin")
 
     fun toDomain(row: ResultRow) = Job(
         name = row[nameCol],
@@ -51,6 +53,7 @@ internal object Jobs : IntIdTable() {
         userNewModel = Model.deserialize(row[userModelCol]),
         trainingMethod = JobTrainingMethod.deserialize(row[trainingMethodCol]),
         target = ModelDeploymentTarget.deserialize(row[targetCol]),
+        datasetPlugin = Plugin.deserialize(row[datasetPluginCol]),
         id = row[id].value
     )
 }
@@ -92,7 +95,8 @@ class JobDb(private val database: Database) {
         userNewModel: Model,
         generateDebugComments: Boolean,
         trainingMethod: JobTrainingMethod,
-        target: ModelDeploymentTarget
+        target: ModelDeploymentTarget,
+        datasetPlugin: Plugin
     ): Job {
         val newId = transaction(database) {
             Jobs.insertAndGetId { row ->
@@ -108,6 +112,7 @@ class JobDb(private val database: Database) {
                 row[generateDebugCommentsCol] = generateDebugComments
                 row[trainingMethodCol] = trainingMethod.serialize()
                 row[targetCol] = target.serialize()
+                row[datasetPluginCol] = datasetPlugin.serialize()
             }.value
         }
 
@@ -124,6 +129,7 @@ class JobDb(private val database: Database) {
             generateDebugComments = generateDebugComments,
             trainingMethod = trainingMethod,
             target = target,
+            datasetPlugin = datasetPlugin,
             id = newId
         )
 
@@ -145,7 +151,8 @@ class JobDb(private val database: Database) {
         job.userNewModel,
         job.generateDebugComments,
         job.trainingMethod,
-        job.target
+        job.target,
+        job.datasetPlugin
     )
 
     fun update(
@@ -161,7 +168,8 @@ class JobDb(private val database: Database) {
         userNewModel: Model? = null,
         generateDebugComments: Boolean? = null,
         trainingMethod: JobTrainingMethod? = null,
-        target: ModelDeploymentTarget? = null
+        target: ModelDeploymentTarget? = null,
+        datasetPlugin: Plugin? = null
     ) {
         transaction(database) {
             Jobs.update({ Jobs.id eq id }) { row ->
@@ -177,6 +185,7 @@ class JobDb(private val database: Database) {
                 generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
                 trainingMethod?.let { row[trainingMethodCol] = trainingMethod.serialize() }
                 target?.let { row[targetCol] = target.serialize() }
+                datasetPlugin?.let { row[datasetPluginCol] = datasetPlugin.serialize() }
             }
         }
 

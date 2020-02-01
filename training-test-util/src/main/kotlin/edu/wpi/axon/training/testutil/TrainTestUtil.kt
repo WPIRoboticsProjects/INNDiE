@@ -5,7 +5,6 @@ import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import edu.wpi.axon.util.runCommand
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.file.shouldExist
-import io.kotlintest.matchers.string.shouldNotBeEmpty
 import io.kotlintest.shouldBe
 import java.io.File
 import java.nio.file.Files
@@ -53,7 +52,6 @@ fun testTrainingScript(dir: File, script: String, newModelName: String) {
             """.trimMargin()
         )
 
-        stdOut.shouldNotBeEmpty()
         exitCode shouldBe 0
         Paths.get(newModelName).shouldExist()
     }

@@ -4,6 +4,7 @@ package edu.wpi.axon.training
 
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -26,8 +27,6 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
             modules(defaultBackendModule())
         }
 
-        // TODO: Use a dataset that works with this model so we can actually run the training script
-
         val modelName = "mobilenetv2_1.00_224.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
@@ -44,6 +43,7 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
                     workingDir = Path.of("."),
+                    datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

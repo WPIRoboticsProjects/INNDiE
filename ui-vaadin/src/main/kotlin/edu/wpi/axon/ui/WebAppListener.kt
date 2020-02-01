@@ -5,6 +5,7 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -38,7 +39,6 @@ class WebAppListener : ServletContextListener, KoinComponent {
         }
 
         val modelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "32_32_1_conv_sequential-trained.h5"
         val (model, path) = loadModel(modelName)
 
         get<JobDb>().create(
@@ -58,6 +58,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e"),
             target = ModelDeploymentTarget.Desktop
         )
@@ -79,6 +80,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             trainingMethod = JobTrainingMethod.Untrained,
             target = ModelDeploymentTarget.Desktop
         )
@@ -100,27 +102,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
-            trainingMethod = JobTrainingMethod.Untrained,
-            target = ModelDeploymentTarget.Desktop
-        )
-
-        get<JobDb>().create(
-            name = "Local Job that was running",
-            status = TrainingScriptProgress.NotStarted,
-            userOldModelPath = FilePath.Local(path),
-            userDataset = Dataset.ExampleDataset.FashionMnist,
-            userOptimizer = Optimizer.Adam(
-                learningRate = 0.001,
-                beta1 = 0.9,
-                beta2 = 0.999,
-                epsilon = 1e-7,
-                amsGrad = false
-            ),
-            userLoss = Loss.SparseCategoricalCrossentropy,
-            userMetrics = setOf("accuracy"),
-            userEpochs = 10,
-            userNewModel = model,
-            generateDebugComments = false,
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             trainingMethod = JobTrainingMethod.Untrained,
             target = ModelDeploymentTarget.Desktop
         )

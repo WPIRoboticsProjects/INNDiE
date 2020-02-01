@@ -1,6 +1,7 @@
 package edu.wpi.axon.training
 
 import arrow.core.None
+import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
@@ -29,6 +30,7 @@ internal class TrainStateTest {
             false,
             ModelDeploymentTarget.Desktop,
             tempDir.toPath(),
+            DatasetPlugins.datasetPassthroughPlugin,
             1
         ).usesAWS.shouldBeTrue()
     }
@@ -47,6 +49,7 @@ internal class TrainStateTest {
             false,
             ModelDeploymentTarget.Desktop,
             tempDir.toPath(),
+            DatasetPlugins.datasetPassthroughPlugin,
             1
         ).usesAWS.shouldBeTrue()
     }
@@ -65,6 +68,7 @@ internal class TrainStateTest {
             false,
             ModelDeploymentTarget.Desktop,
             tempDir.toPath(),
+            DatasetPlugins.datasetPassthroughPlugin,
             1
         ).usesAWS.shouldBeFalse()
     }
@@ -83,6 +87,7 @@ internal class TrainStateTest {
             false,
             ModelDeploymentTarget.Desktop,
             tempDir.toPath(),
+            DatasetPlugins.datasetPassthroughPlugin,
             1
         ).usesAWS.shouldBeFalse()
     }

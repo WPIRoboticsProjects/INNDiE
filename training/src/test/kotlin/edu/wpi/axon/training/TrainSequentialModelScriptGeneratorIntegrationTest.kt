@@ -5,6 +5,9 @@ package edu.wpi.axon.training
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
+import edu.wpi.axon.plugin.DatasetPlugins
+import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
+import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -65,6 +68,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    datasetPlugin = processMnistTypePlugin,
                     workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
@@ -111,15 +115,12 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.0001),
                     workingDir = tempDir.toPath(),
+                    datasetPlugin = processMnistTypePlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
                 testTrainingScript(tempDir, script, newModelName)
-                // Also test for the compiled output
-                tempDir.toPath().resolve(
-                    RunEdgeTpuCompilerTask.getEdgeTpuCompiledModelFilename(newModelName)
-                ).shouldExist()
             }
         }
     }
@@ -133,7 +134,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
 
         // TODO: This breaks at runtime with a Coral target
         val modelName = "small_model_for_wpilib_reduced_dataset.h5"
-        val newModelName = tempDir.toPath().resolve("small_model_for_wpilib_reduced_dataset-trained.h5").toString()
+        val newModelName =
+            tempDir.toPath().resolve("small_model_for_wpilib_reduced_dataset-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
@@ -157,6 +159,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
                     workingDir = tempDir.toPath(),
+                    datasetPlugin = datasetPassthroughPlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -177,7 +180,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
         }
 
         val modelName = "small_model_for_wpilib_reduced_dataset.h5"
-        val newModelName = tempDir.toPath().resolve("small_model_for_wpilib_reduced_dataset-trained.h5").toString()
+        val newModelName =
+            tempDir.toPath().resolve("small_model_for_wpilib_reduced_dataset-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
@@ -201,6 +205,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.0001),
                     workingDir = tempDir.toPath(),
+                    datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -208,6 +213,10 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                 Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
                     .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
                 testTrainingScript(tempDir, script, newModelName)
+                // Also test for the compiled output
+                tempDir.toPath().resolve(
+                    RunEdgeTpuCompilerTask.getEdgeTpuCompiledModelFilename(newModelName)
+                ).shouldExist()
             }
         }
     }

@@ -10,6 +10,8 @@ import edu.wpi.axon.db.data.nextJob
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.examplemodel.downloadAndConfigureExampleModel
+import edu.wpi.axon.plugin.DatasetPlugins
+import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
@@ -63,6 +65,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userEpochs = 1,
             userNewModel = oldModel,
             target = ModelDeploymentTarget.Desktop,
+            datasetPlugin = processMnistTypePlugin,
             generateDebugComments = false
         )
 
@@ -101,6 +104,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userEpochs = 1,
             userNewModel = oldModel,
             target = ModelDeploymentTarget.Coral(0.001),
+            datasetPlugin = processMnistTypePlugin,
             generateDebugComments = false
         )
 
@@ -144,6 +148,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userEpochs = 1,
             userNewModel = oldModel,
             target = ModelDeploymentTarget.Desktop,
+            datasetPlugin = processMnistTypePlugin,
             generateDebugComments = false
         )
 
@@ -160,7 +165,6 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         jobRunner.listResults(job.id).shouldContain(getOutputModelName(oldModelName))
     }
 
-    // TODO: This model doesn't work with the default dataset resizing, we need to configure that
     @Test
     @Timeout(value = 15L, unit = TimeUnit.MINUTES)
     @Disabled("Needs AWS supervision.")
@@ -170,7 +174,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         }
 
         val exampleModelManager = GitExampleModelManager()
-        val (exampleModel, model, file) = IO.fx {
+        val (_, model, file) = IO.fx {
             exampleModelManager.updateCache().bind()
 
             val exampleModel = exampleModelManager.getAllExampleModels().bind().first {
@@ -201,6 +205,8 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userEpochs = 1,
             userNewModel = model,
             target = ModelDeploymentTarget.Desktop,
+            // TODO: Write a dataset plugin to put the dataset in the right format for this model
+            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
             generateDebugComments = false
         )
 

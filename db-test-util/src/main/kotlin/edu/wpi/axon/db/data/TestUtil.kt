@@ -1,6 +1,7 @@
 package edu.wpi.axon.db.data
 
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.SerializableTuple2II
@@ -52,6 +53,15 @@ fun Random.nextTarget(): ModelDeploymentTarget =
         else -> error("Missing a ModelDeploymentTarget case.")
     }
 
+fun Random.nextPlugin(): Plugin {
+    val data = RandomStringUtils.randomAlphanumeric(5)
+    return if (nextBoolean()) {
+        Plugin.Official("Official $data", """print("Hello from official $data")""")
+    } else {
+        Plugin.Unofficial("Unofficial $data", """print("Hello from unofficial $data")""")
+    }
+}
+
 fun Random.nextJob(
     jobDb: JobDb,
     name: String = RandomStringUtils.randomAlphanumeric(10),
@@ -88,7 +98,8 @@ fun Random.nextJob(
     ),
     generateDebugComments: Boolean = nextBoolean(),
     trainingMethod: JobTrainingMethod = nextTrainingMethod(),
-    target: ModelDeploymentTarget = nextTarget()
+    target: ModelDeploymentTarget = nextTarget(),
+    datasetPlugin: Plugin = nextPlugin()
 ) = jobDb.create(
     name,
     status,
@@ -101,5 +112,6 @@ fun Random.nextJob(
     userNewModel,
     generateDebugComments,
     trainingMethod,
-    target
+    target,
+    datasetPlugin
 )

@@ -264,6 +264,7 @@ internal class JobRunner : KoinComponent {
         generateDebugComments = job.generateDebugComments,
         target = job.target,
         workingDir = workingDir,
+        datasetPlugin = job.datasetPlugin,
         jobId = job.id
     )
 }

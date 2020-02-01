@@ -4,6 +4,7 @@ package edu.wpi.axon.training
 
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -47,6 +48,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
                     workingDir = tempDir.toPath(),
+                    datasetPlugin = processMnistTypePlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -80,6 +82,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
                     workingDir = tempDir.toPath(),
+                    datasetPlugin = processMnistTypePlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
