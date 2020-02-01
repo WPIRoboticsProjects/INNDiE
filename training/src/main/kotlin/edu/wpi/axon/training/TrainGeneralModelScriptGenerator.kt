@@ -26,13 +26,6 @@ class TrainGeneralModelScriptGenerator(
     private val oldModel: Model.General
 ) : TrainModelScriptGenerator<Model.General> {
 
-    init {
-        require(trainState.userOldModelPath.filename != trainState.userNewModelPath.filename) {
-            "The old model name (${trainState.userOldModelPath}) cannot equal the new model " +
-                "name (${trainState.userNewModelPath})."
-        }
-    }
-
     @Suppress("UNUSED_VARIABLE")
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
         LOGGER.info {

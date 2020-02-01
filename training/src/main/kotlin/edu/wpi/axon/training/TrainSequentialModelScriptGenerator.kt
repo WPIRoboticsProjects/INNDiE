@@ -27,13 +27,6 @@ class TrainSequentialModelScriptGenerator(
     private val oldModel: Model.Sequential
 ) : TrainModelScriptGenerator<Model.Sequential> {
 
-    init {
-        require(trainState.userOldModelPath.filename != trainState.userNewModelPath.filename) {
-            "The old model name (${trainState.userOldModelPath}) cannot equal the new model " +
-                "name (${trainState.userNewModelPath})."
-        }
-    }
-
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
         LOGGER.info {
             "Generating script with trainState:\n$trainState"

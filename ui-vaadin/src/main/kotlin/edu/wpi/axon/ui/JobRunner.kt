@@ -22,13 +22,15 @@ import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
-import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import kotlinx.coroutines.delay
 import org.koin.core.KoinComponent
 import org.koin.core.get
@@ -84,14 +86,27 @@ internal class JobRunner : KoinComponent {
             .load(localOldModel)
             .unsafeRunSync()
 
+        val workingDir = if (usesAWS.t) {
+            // The EC2 runner needs to output to a relative directory (and NOT just the current
+            // directory) because it runs the training script in a Docker container and maps the
+            // current directory with `-v`.
+            Paths.get("./output")
+        } else {
+            // The local runner can work out of any directory.
+            Paths.get(
+                localScriptRunnerCache.toString(),
+                job.id.toString()
+            ).apply { toFile().mkdirs() }
+        }
+
         val trainModelScriptGenerator = when (job.userNewModel) {
             is Model.Sequential -> {
                 require(oldModel is Model.Sequential)
-                TrainSequentialModelScriptGenerator(toTrainState(job), oldModel)
+                TrainSequentialModelScriptGenerator(toTrainState(job, workingDir), oldModel)
             }
             is Model.General -> {
                 require(oldModel is Model.General)
-                TrainGeneralModelScriptGenerator(toTrainState(job), oldModel)
+                TrainGeneralModelScriptGenerator(toTrainState(job, workingDir), oldModel)
             }
         }
 
@@ -109,7 +124,7 @@ internal class JobRunner : KoinComponent {
             { IO.just(it) }
         ).unsafeRunSync()
 
-        val config = createTrainingScriptConfiguration(job, script)
+        val config = createTrainingScriptConfiguration(job, script, workingDir)
 
         // Create the correct TrainingScriptRunner based on whether the Job needs to use AWS
         val (scriptRunner, trainingMethod) = if (usesAWS.t) {
@@ -142,6 +157,10 @@ internal class JobRunner : KoinComponent {
     internal fun cancelJob(id: Int) {
         cancellers[id]!!.cancelScript(id)
     }
+
+    internal fun listResults(id: Int) = runners[id]!!.listResults(id)
+
+    internal fun getResult(id: Int, filename: String) = runners[id]!!.getResult(id, filename)
 
     /**
      * Waits until the [TrainingScriptProgress] state is either completed or error.
@@ -179,7 +198,7 @@ internal class JobRunner : KoinComponent {
 
         // The script contents don't matter to the progress reporter. Set an empty
         // string to avoid having to regenerate the script.
-        val config = createTrainingScriptConfiguration(job, "")
+        val config = createTrainingScriptConfiguration(job, "", Files.createTempDirectory(""))
 
         when (val trainingMethod = job.trainingMethod) {
             is JobTrainingMethod.EC2 -> {
@@ -222,20 +241,20 @@ internal class JobRunner : KoinComponent {
 
     private fun createTrainingScriptConfiguration(
         job: Job,
-        script: String
+        script: String,
+        workingDir: Path
     ) = RunTrainingScriptConfiguration(
         oldModelName = job.userOldModelPath,
-        newModelName = job.userNewModelName,
         dataset = job.userDataset,
         scriptContents = script,
         epochs = job.userEpochs,
+        workingDir = workingDir,
         id = job.id
     )
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : Model> toTrainState(job: Job): TrainState<T> = TrainState(
+    private fun <T : Model> toTrainState(job: Job, workingDir: Path): TrainState<T> = TrainState(
         userOldModelPath = job.userOldModelPath,
-        userNewModelPath = job.userNewModelName,
         userDataset = job.userDataset,
         userOptimizer = job.userOptimizer,
         userLoss = job.userLoss,
@@ -246,8 +265,8 @@ internal class JobRunner : KoinComponent {
         userValidationSplit = None,
         userNewModel = job.userNewModel as T,
         generateDebugComments = job.generateDebugComments,
-        // TODO: Let the user target the Coral
-        target = ModelDeploymentTarget.Desktop,
+        target = job.target,
+        workingDir = workingDir,
         datasetPlugin = job.datasetPlugin,
         jobId = job.id
     )

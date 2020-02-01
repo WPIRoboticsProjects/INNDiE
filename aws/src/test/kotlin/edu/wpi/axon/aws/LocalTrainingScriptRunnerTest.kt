@@ -3,6 +3,7 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
 import io.kotlintest.shouldThrow
+import java.nio.file.Paths
 import org.junit.jupiter.api.Test
 
 internal class LocalTrainingScriptRunnerTest {
@@ -15,26 +16,10 @@ internal class LocalTrainingScriptRunnerTest {
             runner.startScript(
                 RunTrainingScriptConfiguration(
                     FilePath.S3("a"),
-                    FilePath.Local("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
                     1,
-                    1
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `test running with non-local new model`() {
-        shouldThrow<IllegalArgumentException> {
-            runner.startScript(
-                RunTrainingScriptConfiguration(
-                    FilePath.Local("a"),
-                    FilePath.S3("b"),
-                    Dataset.ExampleDataset.FashionMnist,
-                    "",
-                    1,
+                    Paths.get("."),
                     1
                 )
             )
@@ -47,10 +32,10 @@ internal class LocalTrainingScriptRunnerTest {
             runner.startScript(
                 RunTrainingScriptConfiguration(
                     FilePath.Local("a"),
-                    FilePath.Local("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
                     0,
+                    Paths.get("."),
                     1
                 )
             )
@@ -63,10 +48,10 @@ internal class LocalTrainingScriptRunnerTest {
             runner.startScript(
                 RunTrainingScriptConfiguration(
                     FilePath.Local("a"),
-                    FilePath.Local("b"),
                     Dataset.Custom(FilePath.S3("d"), "d"),
                     "",
                     1,
+                    Paths.get("."),
                     1
                 )
             )

@@ -9,6 +9,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.util.FilePath
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
@@ -28,7 +29,6 @@ internal object Jobs : IntIdTable() {
     val nameCol = varchar("name", 255).uniqueIndex()
     val statusCol = varchar("status", 255)
     val userOldModelPathCol = varchar("userOldModelPath", 255)
-    val userNewModelNameCol = varchar("userNewModelName", 255)
     val userDatasetCol = text("dataset")
     val userOptimizerCol = varchar("userOptimizer", 255)
     val userLossCol = varchar("userLoss", 255)
@@ -37,13 +37,13 @@ internal object Jobs : IntIdTable() {
     val userModelCol = text("userModel")
     val generateDebugCommentsCol = bool("generateDebugComments")
     val trainingMethodCol = varchar("trainingMethod", 255)
+    val targetCol = varchar("target", 255)
     val datasetPluginCol = text("datasetPlugin")
 
     fun toDomain(row: ResultRow) = Job(
         name = row[nameCol],
         status = TrainingScriptProgress.deserialize(row[statusCol]),
         userOldModelPath = FilePath.deserialize(row[userOldModelPathCol]),
-        userNewModelName = FilePath.deserialize(row[userNewModelNameCol]),
         userDataset = Dataset.deserialize(row[userDatasetCol]),
         userOptimizer = Optimizer.deserialize(row[userOptimizerCol]),
         userLoss = Loss.deserialize(row[userLossCol]),
@@ -52,6 +52,7 @@ internal object Jobs : IntIdTable() {
         generateDebugComments = row[generateDebugCommentsCol],
         userNewModel = Model.deserialize(row[userModelCol]),
         trainingMethod = JobTrainingMethod.deserialize(row[trainingMethodCol]),
+        target = ModelDeploymentTarget.deserialize(row[targetCol]),
         datasetPlugin = Plugin.deserialize(row[datasetPluginCol]),
         id = row[id].value
     )
@@ -86,7 +87,6 @@ class JobDb(private val database: Database) {
         name: String,
         status: TrainingScriptProgress,
         userOldModelPath: FilePath,
-        userNewModelName: FilePath,
         userDataset: Dataset,
         userOptimizer: Optimizer,
         userLoss: Loss,
@@ -95,6 +95,7 @@ class JobDb(private val database: Database) {
         userNewModel: Model,
         generateDebugComments: Boolean,
         trainingMethod: JobTrainingMethod,
+        target: ModelDeploymentTarget,
         datasetPlugin: Plugin
     ): Job {
         val newId = transaction(database) {
@@ -102,7 +103,6 @@ class JobDb(private val database: Database) {
                 row[nameCol] = name
                 row[statusCol] = status.serialize()
                 row[userOldModelPathCol] = userOldModelPath.serialize()
-                row[userNewModelNameCol] = userNewModelName.serialize()
                 row[userDatasetCol] = userDataset.serialize()
                 row[userOptimizerCol] = userOptimizer.serialize()
                 row[userLossCol] = userLoss.serialize()
@@ -111,6 +111,7 @@ class JobDb(private val database: Database) {
                 row[userModelCol] = userNewModel.serialize()
                 row[generateDebugCommentsCol] = generateDebugComments
                 row[trainingMethodCol] = trainingMethod.serialize()
+                row[targetCol] = target.serialize()
                 row[datasetPluginCol] = datasetPlugin.serialize()
             }.value
         }
@@ -119,7 +120,6 @@ class JobDb(private val database: Database) {
             name = name,
             status = status,
             userOldModelPath = userOldModelPath,
-            userNewModelName = userNewModelName,
             userDataset = userDataset,
             userOptimizer = userOptimizer,
             userLoss = userLoss,
@@ -128,6 +128,7 @@ class JobDb(private val database: Database) {
             userNewModel = userNewModel,
             generateDebugComments = generateDebugComments,
             trainingMethod = trainingMethod,
+            target = target,
             datasetPlugin = datasetPlugin,
             id = newId
         )
@@ -142,7 +143,6 @@ class JobDb(private val database: Database) {
         job.name,
         job.status,
         job.userOldModelPath,
-        job.userNewModelName,
         job.userDataset,
         job.userOptimizer,
         job.userLoss,
@@ -151,6 +151,7 @@ class JobDb(private val database: Database) {
         job.userNewModel,
         job.generateDebugComments,
         job.trainingMethod,
+        job.target,
         job.datasetPlugin
     )
 
@@ -159,7 +160,6 @@ class JobDb(private val database: Database) {
         name: String? = null,
         status: TrainingScriptProgress? = null,
         userOldModelPath: FilePath? = null,
-        userNewModelName: FilePath? = null,
         userDataset: Dataset? = null,
         userOptimizer: Optimizer? = null,
         userLoss: Loss? = null,
@@ -168,6 +168,7 @@ class JobDb(private val database: Database) {
         userNewModel: Model? = null,
         generateDebugComments: Boolean? = null,
         trainingMethod: JobTrainingMethod? = null,
+        target: ModelDeploymentTarget? = null,
         datasetPlugin: Plugin? = null
     ) {
         transaction(database) {
@@ -175,7 +176,6 @@ class JobDb(private val database: Database) {
                 name?.let { row[nameCol] = name }
                 status?.let { row[statusCol] = status.serialize() }
                 userOldModelPath?.let { row[userOldModelPathCol] = userOldModelPath.serialize() }
-                userNewModelName?.let { row[userNewModelNameCol] = userNewModelName.serialize() }
                 userDataset?.let { row[userDatasetCol] = userDataset.serialize() }
                 userOptimizer?.let { row[userOptimizerCol] = userOptimizer.serialize() }
                 userLoss?.let { row[userLossCol] = userLoss.serialize() }
@@ -184,6 +184,7 @@ class JobDb(private val database: Database) {
                 userNewModel?.let { row[userModelCol] = userNewModel.serialize() }
                 generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
                 trainingMethod?.let { row[trainingMethodCol] = trainingMethod.serialize() }
+                target?.let { row[targetCol] = target.serialize() }
                 datasetPlugin?.let { row[datasetPluginCol] = datasetPlugin.serialize() }
             }
         }

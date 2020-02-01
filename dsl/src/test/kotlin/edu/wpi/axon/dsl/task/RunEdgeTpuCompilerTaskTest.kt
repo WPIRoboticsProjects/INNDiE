@@ -74,13 +74,14 @@ internal class RunEdgeTpuCompilerTaskTest : KoinTestFixture() {
 
         val task = RunEdgeTpuCompilerTask("").apply {
             inputModelFilename = "input.tflite"
+            outputDir = "."
         }
 
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code().shouldBe(
             """
-            |subprocess.run(["edgetpu_compiler", "input.tflite"])
-            |with open("input_edgetpu.log", "r") as f:
+            |subprocess.run(["edgetpu_compiler", "./input.tflite", "-o ."])
+            |with open("./input_edgetpu.log", "r") as f:
             |    print(f.read())
             """.trimMargin()
         )
