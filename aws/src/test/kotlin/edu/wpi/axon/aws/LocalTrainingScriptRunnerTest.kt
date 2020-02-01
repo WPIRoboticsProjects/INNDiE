@@ -3,15 +3,16 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
 import io.kotlintest.shouldThrow
-import java.nio.file.Paths
+import java.io.File
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 internal class LocalTrainingScriptRunnerTest {
 
     private val runner = LocalTrainingScriptRunner()
 
     @Test
-    fun `test running with non-local old model`() {
+    fun `test running with non-local old model`(@TempDir tempDir: File) {
         shouldThrow<IllegalArgumentException> {
             runner.startScript(
                 RunTrainingScriptConfiguration(
@@ -19,7 +20,7 @@ internal class LocalTrainingScriptRunnerTest {
                     Dataset.ExampleDataset.FashionMnist,
                     "",
                     1,
-                    Paths.get("."),
+                    tempDir.toPath(),
                     1
                 )
             )
@@ -27,7 +28,7 @@ internal class LocalTrainingScriptRunnerTest {
     }
 
     @Test
-    fun `test running with zero epochs`() {
+    fun `test running with zero epochs`(@TempDir tempDir: File) {
         shouldThrow<IllegalArgumentException> {
             runner.startScript(
                 RunTrainingScriptConfiguration(
@@ -35,7 +36,7 @@ internal class LocalTrainingScriptRunnerTest {
                     Dataset.ExampleDataset.FashionMnist,
                     "",
                     0,
-                    Paths.get("."),
+                    tempDir.toPath(),
                     1
                 )
             )
@@ -43,7 +44,7 @@ internal class LocalTrainingScriptRunnerTest {
     }
 
     @Test
-    fun `test running with non-local dataset`() {
+    fun `test running with non-local dataset`(@TempDir tempDir: File) {
         shouldThrow<IllegalArgumentException> {
             runner.startScript(
                 RunTrainingScriptConfiguration(
@@ -51,7 +52,7 @@ internal class LocalTrainingScriptRunnerTest {
                     Dataset.Custom(FilePath.S3("d"), "d"),
                     "",
                     1,
-                    Paths.get("."),
+                    tempDir.toPath(),
                     1
                 )
             )

@@ -9,13 +9,14 @@ import edu.wpi.axon.util.FilePath
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.mockk.mockk
-import java.nio.file.Paths
+import java.io.File
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 internal class TrainStateTest {
 
     @Test
-    fun `test all s3 paths`() {
+    fun `test all s3 paths`(@TempDir tempDir: File) {
         TrainState(
             FilePath.S3("a"),
             Dataset.Custom(FilePath.S3("d"), "d"),
@@ -27,13 +28,13 @@ internal class TrainStateTest {
             None,
             false,
             ModelDeploymentTarget.Desktop,
-            Paths.get("."),
+            tempDir.toPath(),
             1
         ).usesAWS.shouldBeTrue()
     }
 
     @Test
-    fun `test s3 paths with an example dataset`() {
+    fun `test s3 paths with an example dataset`(@TempDir tempDir: File) {
         TrainState(
             FilePath.S3("a"),
             Dataset.ExampleDataset.BostonHousing,
@@ -45,13 +46,13 @@ internal class TrainStateTest {
             None,
             false,
             ModelDeploymentTarget.Desktop,
-            Paths.get("."),
+            tempDir.toPath(),
             1
         ).usesAWS.shouldBeTrue()
     }
 
     @Test
-    fun `test all local paths`() {
+    fun `test all local paths`(@TempDir tempDir: File) {
         TrainState(
             FilePath.Local("a"),
             Dataset.Custom(FilePath.Local("d"), "d"),
@@ -63,13 +64,13 @@ internal class TrainStateTest {
             None,
             false,
             ModelDeploymentTarget.Desktop,
-            Paths.get("."),
+            tempDir.toPath(),
             1
         ).usesAWS.shouldBeFalse()
     }
 
     @Test
-    fun `test local paths with an example dataset`() {
+    fun `test local paths with an example dataset`(@TempDir tempDir: File) {
         TrainState(
             FilePath.Local("a"),
             Dataset.ExampleDataset.FashionMnist,
@@ -81,7 +82,7 @@ internal class TrainStateTest {
             None,
             false,
             ModelDeploymentTarget.Desktop,
-            Paths.get("."),
+            tempDir.toPath(),
             1
         ).usesAWS.shouldBeFalse()
     }

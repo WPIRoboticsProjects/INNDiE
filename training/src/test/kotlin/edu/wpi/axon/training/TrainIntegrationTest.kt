@@ -13,15 +13,17 @@ import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.mockk.mockk
+import java.io.File
 import java.nio.file.Paths
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 
 internal class TrainIntegrationTest : KoinTestFixture() {
 
     @Test
-    fun `test general model`() {
+    fun `test general model`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
@@ -40,7 +42,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    workingDir = Paths.get("."),
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -49,7 +51,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
     }
 
     @Test
-    fun `test sequential model`() {
+    fun `test sequential model`(@TempDir tempDir: File) {
         startKoin {
             modules(listOf(defaultBackendModule()))
         }
@@ -68,7 +70,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    workingDir = Paths.get("."),
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -77,7 +79,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
     }
 
     @Test
-    fun `test loading invalid model`() {
+    fun `test loading invalid model`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
@@ -96,7 +98,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userValidationSplit = None,
                 generateDebugComments = false,
                 target = ModelDeploymentTarget.Desktop,
-                workingDir = Paths.get("."),
+                workingDir = tempDir.toPath(),
                 jobId = Random.nextInt(1, Int.MAX_VALUE)
             ),
             mockk()

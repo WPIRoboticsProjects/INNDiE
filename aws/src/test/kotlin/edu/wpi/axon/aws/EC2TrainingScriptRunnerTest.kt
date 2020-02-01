@@ -9,9 +9,10 @@ import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.nio.file.Paths
+import java.io.File
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
 
@@ -24,8 +25,8 @@ internal class EC2TrainingScriptRunnerTest {
     )
 
     @Test
-    fun `test starting script and getting the state until completion`() {
-        val config = randomRunTrainingScriptConfigurationUsingAWS()
+    fun `test starting script and getting the state until completion`(@TempDir tempDir: File) {
+        val config = randomRunTrainingScriptConfigurationUsingAWS(tempDir)
         val instanceId = RandomStringUtils.randomAlphanumeric(10)
         val instanceType = InstanceType.T2_MICRO
 
@@ -90,8 +91,8 @@ internal class EC2TrainingScriptRunnerTest {
     }
 
     @Test
-    fun `test starting the script and cancelling it`() {
-        val config = randomRunTrainingScriptConfigurationUsingAWS()
+    fun `test starting the script and cancelling it`(@TempDir tempDir: File) {
+        val config = randomRunTrainingScriptConfigurationUsingAWS(tempDir)
         val instanceId = RandomStringUtils.randomAlphanumeric(10)
         val instanceType = InstanceType.T2_MICRO
 
@@ -151,7 +152,7 @@ internal class EC2TrainingScriptRunnerTest {
     }
 
     @Test
-    fun `test running with local old model`() {
+    fun `test running with local old model`(@TempDir tempDir: File) {
         shouldThrow<IllegalArgumentException> {
             runner.startScript(
                 RunTrainingScriptConfiguration(
@@ -159,7 +160,7 @@ internal class EC2TrainingScriptRunnerTest {
                     Dataset.ExampleDataset.FashionMnist,
                     "",
                     1,
-                    Paths.get("."),
+                    tempDir.toPath(),
                     1
                 )
             )
@@ -167,7 +168,7 @@ internal class EC2TrainingScriptRunnerTest {
     }
 
     @Test
-    fun `test running with zero epochs`() {
+    fun `test running with zero epochs`(@TempDir tempDir: File) {
         shouldThrow<IllegalArgumentException> {
             runner.startScript(
                 RunTrainingScriptConfiguration(
@@ -175,7 +176,7 @@ internal class EC2TrainingScriptRunnerTest {
                     Dataset.ExampleDataset.FashionMnist,
                     "",
                     0,
-                    Paths.get("."),
+                    tempDir.toPath(),
                     1
                 )
             )
@@ -183,7 +184,7 @@ internal class EC2TrainingScriptRunnerTest {
     }
 
     @Test
-    fun `test running with local dataset`() {
+    fun `test running with local dataset`(@TempDir tempDir: File) {
         shouldThrow<IllegalArgumentException> {
             runner.startScript(
                 RunTrainingScriptConfiguration(
@@ -191,7 +192,7 @@ internal class EC2TrainingScriptRunnerTest {
                     Dataset.Custom(FilePath.Local("d"), "d"),
                     "",
                     1,
-                    Paths.get("."),
+                    tempDir.toPath(),
                     1
                 )
             )
