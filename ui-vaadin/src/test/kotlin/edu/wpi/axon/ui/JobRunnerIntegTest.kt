@@ -56,7 +56,6 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         val (oldModel, path) = loadModel(oldModelName) {}
         val job = Random.nextJob(
             db,
-            name = "Job 1",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
             userDataset = Dataset.ExampleDataset.FashionMnist,
@@ -106,7 +105,6 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         val (oldModel, path) = loadModel(oldModelName) {}
         val job = Random.nextJob(
             db,
-            name = "Job 1",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
             userDataset = Dataset.ExampleDataset.FashionMnist,
@@ -150,7 +148,6 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         val (oldModel, _) = loadModel(oldModelName) {}
         val job = Random.nextJob(
             db,
-            name = "Job 1",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.S3(oldModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
