@@ -27,10 +27,10 @@ internal class LocalTrainingScriptProgressReporterTest {
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),
-                FilePath.Local("new.h5"),
                 Dataset.ExampleDataset.Mnist,
                 "",
                 10,
+                tempDir.toPath(),
                 id
             )
         )
@@ -53,10 +53,10 @@ internal class LocalTrainingScriptProgressReporterTest {
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),
-                FilePath.Local("new.h5"),
                 Dataset.ExampleDataset.Mnist,
                 "",
                 10,
+                tempDir.toPath(),
                 id
             )
         )
@@ -79,10 +79,10 @@ internal class LocalTrainingScriptProgressReporterTest {
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),
-                FilePath.Local("new.h5"),
                 Dataset.ExampleDataset.Mnist,
                 "",
                 10,
+                tempDir.toPath(),
                 id
             )
         )

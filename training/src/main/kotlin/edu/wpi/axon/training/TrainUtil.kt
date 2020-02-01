@@ -29,6 +29,7 @@ import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.util.getOutputModelName
 
 /**
  * Loads a model in to a variable using. Assumes the model is on disk.
@@ -241,9 +242,9 @@ internal fun ScriptGenerator.compileTrainSave(
         filePath = if (hasValidation) {
             // Can only use val_loss if there is validation data, which can take the form of
             // a validation dataset or a nonzero validation split
-            "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
         } else {
-            "${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
+            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
         }
         monitor = if (hasValidation) "val_loss" else "loss"
         saveWeightsOnly = true
@@ -292,7 +293,7 @@ internal fun ScriptGenerator.compileTrainSave(
 
     return tasks.run(SaveModelTask::class) {
         modelInput = newModel
-        modelPath = trainState.userNewModelPath.path
+        modelPath = "${trainState.workingDir}/${trainState.trainedModelFilename}"
         dependencies += trainModelTask
     }
 }
@@ -319,15 +320,16 @@ internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
             "${trainState.target.representativeDatasetPercentage})]"
     }
 
-    val tfliteModelPath = "${trainState.userNewModelPath.path.substringBeforeLast('.')}.tflite"
+    val tfliteModelPath = "${trainState.trainedModelFilename.substringBeforeLast('.')}.tflite"
     val postTrainingQuantizationTask by tasks.running(PostTrainingQuantizationTask::class) {
-        modelFilename = trainState.userNewModelPath.path
-        outputModelFilename = tfliteModelPath
+        modelFilename = "${trainState.workingDir}/${trainState.trainedModelFilename}"
+        outputModelFilename = "${trainState.workingDir}/$tfliteModelPath"
         representativeDataset = datasetSlice
     }
 
     val runEdgeTpuCompilerTask by tasks.running(RunEdgeTpuCompilerTask::class) {
         inputModelFilename = tfliteModelPath
+        outputDir = trainState.workingDir.toString()
         dependencies.add(postTrainingQuantizationTask)
     }
 

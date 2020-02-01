@@ -18,6 +18,11 @@ class RunEdgeTpuCompilerTask(name: String) : BaseTask(name) {
      */
     var inputModelFilename: String by singleAssign()
 
+    /**
+     * The directory for the compiler to output extra files to.
+     */
+    var outputDir: String by singleAssign()
+
     private val pathValidator: PathValidator by inject()
 
     override val imports: Set<Import> = setOf(
@@ -36,7 +41,7 @@ class RunEdgeTpuCompilerTask(name: String) : BaseTask(name) {
             super.isConfiguredCorrectly()
 
     override fun code(): String = """
-        |subprocess.run(["edgetpu_compiler", "$inputModelFilename"])
+        |subprocess.run(["edgetpu_compiler", "$inputModelFilename", "-o $outputDir"])
         |with open("${getEdgeTpuCompilerLogFilename(inputModelFilename)}", "r") as f:
         |    print(f.read())
     """.trimMargin()

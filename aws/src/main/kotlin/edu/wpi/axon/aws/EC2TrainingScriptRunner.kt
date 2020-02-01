@@ -7,6 +7,8 @@ import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
 import software.amazon.awssdk.services.ec2.model.InstanceType
+import java.io.File
+import java.nio.file.Paths
 
 /**
  * A [TrainingScriptRunner] that runs the training script on EC2 and hosts datasets and models on
@@ -34,9 +36,6 @@ class EC2TrainingScriptRunner(
     ) {
         require(config.oldModelName is FilePath.S3) {
             "Must start from a model in S3. Got: ${config.oldModelName}"
-        }
-        require(config.newModelName is FilePath.S3) {
-            "Must export to a model in S3. Got: ${config.newModelName}"
         }
         require(config.epochs > 0) {
             "Must train for at least one epoch. Got ${config.epochs} epochs."
@@ -80,14 +79,14 @@ class EC2TrainingScriptRunner(
             |apt-cache policy docker-ce
             |apt install -y docker-ce
             |systemctl status docker
-            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.13/axon-0.1.13-py2.py3-none-any.whl
+            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.14/axon-0.1.14-py2.py3-none-any.whl
             |axon create-heartbeat ${config.id}
             |axon update-training-progress ${config.id} "initializing"
             |axon download-untrained-model "${config.oldModelName.path}"
             |$downloadDatasetString
             |axon download-training-script "$scriptFileName"
             |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6" "/home/$scriptFileName"
-            |axon upload-trained-model "${config.newModelName.filename}"
+            |axon upload-training-results ${config.id} "${config.workingDir}"
             |axon update-training-progress ${config.id} "completed"
             |axon remove-heartbeat ${config.id}
             |shutdown -h now
@@ -107,6 +106,11 @@ class EC2TrainingScriptRunner(
         progressReporter.addJob(config, instanceId)
         canceller.addJob(config.id, instanceId)
     }
+
+    override fun listResults(id: Int): List<String> = s3Manager.listTrainingResults(id)
+
+    override fun getResult(id: Int, filename: String): File =
+        s3Manager.downloadTrainingResult(id, filename)
 
     fun getInstanceId(jobId: Int): String {
         requireJobIsInMaps(jobId)

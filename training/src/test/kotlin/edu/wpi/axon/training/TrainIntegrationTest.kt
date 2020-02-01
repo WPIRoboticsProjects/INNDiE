@@ -31,7 +31,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local("/tmp/network_with_add-trained.h5"),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -41,6 +40,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    workingDir = Paths.get(""),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -59,7 +59,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local("/tmp/custom_fashion_mnist-trained.h5"),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -69,6 +68,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    workingDir = Paths.get(""),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -87,7 +87,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userOldModelPath = FilePath.Local(Paths.get(
                     this::class.java.getResource("badModel1.h5").toURI()
                 ).toString()),
-                userNewModelPath = FilePath.Local("/tmp/badModel1-trained.h5"),
                 userDataset = Dataset.ExampleDataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -97,6 +96,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userValidationSplit = None,
                 generateDebugComments = false,
                 target = ModelDeploymentTarget.Desktop,
+                workingDir = Paths.get(""),
                 jobId = Random.nextInt(1, Int.MAX_VALUE)
             ),
             mockk()

@@ -45,7 +45,6 @@ class WebAppListener : ServletContextListener, KoinComponent {
             name = "AWS Job",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.S3(modelName),
-            userNewModelName = FilePath.S3(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,
@@ -67,7 +66,6 @@ class WebAppListener : ServletContextListener, KoinComponent {
             name = "Local Job",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
-            userNewModelName = FilePath.Local(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,
@@ -89,7 +87,6 @@ class WebAppListener : ServletContextListener, KoinComponent {
             name = "Local Job 2",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
-            userNewModelName = FilePath.Local(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,
@@ -111,7 +108,6 @@ class WebAppListener : ServletContextListener, KoinComponent {
             name = "Local Job that was running",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
-            userNewModelName = FilePath.Local(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,

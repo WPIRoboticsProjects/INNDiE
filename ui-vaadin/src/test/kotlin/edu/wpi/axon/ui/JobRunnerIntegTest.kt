@@ -14,10 +14,13 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
+import edu.wpi.axon.util.getOutputModelName
 import io.kotlintest.matchers.booleans.shouldBeTrue
+import io.kotlintest.matchers.collections.shouldContain
 import io.kotlintest.shouldBe
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -37,27 +40,26 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
     @Test
     @Timeout(value = 15L, unit = TimeUnit.MINUTES)
     @Tag("needsTensorFlowSupport")
-    fun `test starting local job and tracking progress`(@TempDir tempDir: File) {
+    fun `test starting local job and tracking progress`() {
         startKoin {
             modules(listOf(defaultBackendModule(), defaultFrontendModule()))
         }
 
         val db = get<JobDb>()
         val oldModelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "$tempDir/32_32_1_conv_sequential-trained.h5"
         val (oldModel, path) = loadModel(oldModelName) {}
         val job = Random.nextJob(
             db,
             name = "Job 1",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
-            userNewModelName = FilePath.Local(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             userLoss = Loss.SparseCategoricalCrossentropy,
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = oldModel,
+            target = ModelDeploymentTarget.Desktop,
             generateDebugComments = false
         )
 
@@ -71,7 +73,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             }
         }
         status.shouldBe(TrainingScriptProgress.Completed)
-        File(newModelName).exists().shouldBeTrue()
+        jobRunner.listResults(job.id).shouldContain(getOutputModelName(oldModelName))
     }
 
     @Test
@@ -84,20 +86,19 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
 
         val db = get<JobDb>()
         val oldModelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "32_32_1_conv_sequential-trained.h5"
         val (oldModel, _) = loadModel(oldModelName) {}
         val job = Random.nextJob(
             db,
             name = "Job 1",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.S3(oldModelName),
-            userNewModelName = FilePath.S3(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             userLoss = Loss.SparseCategoricalCrossentropy,
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = oldModel,
+            target = ModelDeploymentTarget.Desktop,
             generateDebugComments = false
         )
 
@@ -111,6 +112,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             }
         }
         status.shouldBe(TrainingScriptProgress.Completed)
+        jobRunner.listResults(job.id).shouldContain(getOutputModelName(oldModelName))
     }
 
     // TODO: This model doesn't work with the default dataset resizing, we need to configure that
@@ -141,24 +143,19 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         // Need to upload the example model so that EC2 can pull it back down
         S3Manager(get(named(axonBucketName))).uploadUntrainedModel(file)
 
-        val userNewModelName =
-            exampleModel.fileName.substringBeforeLast(".") +
-                "-trained." +
-                exampleModel.fileName.substringAfterLast(".")
-
         val db = get<JobDb>()
         val job = Random.nextJob(
             db,
             name = "Job 1",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.S3(file.name),
-            userNewModelName = FilePath.S3(userNewModelName),
             userDataset = Dataset.ExampleDataset.Mnist,
             userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
             userLoss = Loss.SparseCategoricalCrossentropy,
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = model,
+            target = ModelDeploymentTarget.Desktop,
             generateDebugComments = false
         )
 

@@ -51,7 +51,6 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -66,6 +65,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -96,7 +96,6 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -111,6 +110,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.0001),
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -140,7 +140,6 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.Custom(
                         FilePath.Local("WPILib_reduced.tar"),
                         "WPILib reduced"
@@ -158,6 +157,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -184,7 +184,6 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.Custom(
                         FilePath.Local("WPILib_reduced.tar"),
                         "WPILib reduced"
@@ -202,6 +201,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.0001),
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

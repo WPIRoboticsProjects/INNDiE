@@ -16,6 +16,7 @@ import io.kotlintest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
+import java.nio.file.Path
 
 internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
 
@@ -34,7 +35,6 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
             TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -44,6 +44,7 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    workingDir = Path.of(""),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

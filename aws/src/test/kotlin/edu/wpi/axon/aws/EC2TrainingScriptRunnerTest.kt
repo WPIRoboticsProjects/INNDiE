@@ -13,6 +13,7 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
+import java.nio.file.Paths
 
 internal class EC2TrainingScriptRunnerTest {
 
@@ -155,26 +156,10 @@ internal class EC2TrainingScriptRunnerTest {
             runner.startScript(
                 RunTrainingScriptConfiguration(
                     FilePath.Local("a"),
-                    FilePath.S3("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
                     1,
-                    1
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `test running with local new model`() {
-        shouldThrow<IllegalArgumentException> {
-            runner.startScript(
-                RunTrainingScriptConfiguration(
-                    FilePath.S3("a"),
-                    FilePath.Local("b"),
-                    Dataset.ExampleDataset.FashionMnist,
-                    "",
-                    1,
+                    Paths.get("."),
                     1
                 )
             )
@@ -187,10 +172,10 @@ internal class EC2TrainingScriptRunnerTest {
             runner.startScript(
                 RunTrainingScriptConfiguration(
                     FilePath.S3("a"),
-                    FilePath.S3("b"),
                     Dataset.ExampleDataset.FashionMnist,
                     "",
                     0,
+                    Paths.get("."),
                     1
                 )
             )
@@ -203,10 +188,10 @@ internal class EC2TrainingScriptRunnerTest {
             runner.startScript(
                 RunTrainingScriptConfiguration(
                     FilePath.S3("a"),
-                    FilePath.S3("b"),
                     Dataset.Custom(FilePath.Local("d"), "d"),
                     "",
                     1,
+                    Paths.get("."),
                     1
                 )
             )

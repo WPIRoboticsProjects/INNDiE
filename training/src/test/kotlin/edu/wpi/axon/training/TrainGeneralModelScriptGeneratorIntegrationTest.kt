@@ -16,6 +16,7 @@ import io.kotlintest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
+import java.nio.file.Paths
 
 internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture() {
 
@@ -34,7 +35,6 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
             val script = TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -44,6 +44,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    workingDir = Paths.get(""),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -74,7 +75,6 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
             val script = TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -84,6 +84,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
+                    workingDir = Paths.get(""),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -114,7 +115,6 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
             val script = TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -124,6 +124,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.001),
+                    workingDir = Paths.get(""),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

@@ -71,4 +71,7 @@ fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
     is FilePath.Local -> data.all { it is FilePath.Local }
 }
 
+fun getOutputModelName(inputModelName: String): String =
+    "${inputModelName.substringBeforeLast('.')}-trained.${inputModelName.substringAfterLast('.')}"
+
 private val LOGGER = KotlinLogging.logger { }

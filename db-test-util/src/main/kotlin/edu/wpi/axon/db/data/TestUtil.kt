@@ -57,7 +57,6 @@ fun Random.nextJob(
     name: String = RandomStringUtils.randomAlphanumeric(10),
     status: TrainingScriptProgress = nextTrainingScriptProgress(),
     userOldModelPath: FilePath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
-    userNewModelName: FilePath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
     userDataset: Dataset = nextDataset(),
     userOptimizer: Optimizer = Optimizer.Adam(
         nextDouble(0.0, 1.0),
@@ -94,7 +93,6 @@ fun Random.nextJob(
     name,
     status,
     userOldModelPath,
-    userNewModelName,
     userDataset,
     userOptimizer,
     userLoss,

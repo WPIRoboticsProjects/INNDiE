@@ -13,7 +13,6 @@ import edu.wpi.axon.util.allS3OrLocal
 
 /**
  * @param userOldModelPath The path to the model to load.
- * @param userNewModelName The name of the model to save to.
  * @param userDataset The dataset to train on.
  * @param userOptimizer The [Optimizer] to use.
  * @param userLoss The [Loss] function to use.
@@ -30,7 +29,6 @@ data class Job internal constructor(
     var name: String,
     var status: TrainingScriptProgress,
     var userOldModelPath: FilePath,
-    var userNewModelName: FilePath,
     var userDataset: Dataset,
     var userOptimizer: Optimizer,
     var userLoss: Loss,
@@ -50,12 +48,8 @@ data class Job internal constructor(
     val usesAWS: Option<Boolean>
         get() {
             val s3Check = when (val dataset = userDataset) {
-                is Dataset.ExampleDataset -> allS3OrLocal(userOldModelPath, userNewModelName)
-                is Dataset.Custom -> allS3OrLocal(
-                    userOldModelPath,
-                    userNewModelName,
-                    dataset.path
-                )
+                is Dataset.ExampleDataset -> allS3OrLocal(userOldModelPath)
+                is Dataset.Custom -> allS3OrLocal(userOldModelPath, dataset.path)
             }
 
             return if (s3Check) {
