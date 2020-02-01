@@ -15,14 +15,16 @@ import edu.wpi.axon.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.nio.file.Paths
+import java.io.File
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 
 internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture() {
 
     @Test
-    fun `test with custom model with an add`() {
+    fun `test with custom model with an add`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
@@ -44,7 +46,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    workingDir = Paths.get("."),
+                    workingDir = tempDir.toPath(),
                     datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
@@ -55,7 +57,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
     }
 
     @Test
-    fun `test code gen with mobilenetv2 from tf 1-15`() {
+    fun `test code gen with mobilenetv2 from tf 1-15`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
@@ -84,7 +86,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    workingDir = Paths.get("."),
+                    workingDir = tempDir.toPath(),
                     datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
@@ -95,7 +97,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
     }
 
     @Test
-    fun `test code gen with mobilenetv2 from tf 1-15 targeting the coral`() {
+    fun `test code gen with mobilenetv2 from tf 1-15 targeting the coral`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
@@ -124,7 +126,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.001),
-                    workingDir = Paths.get("."),
+                    workingDir = tempDir.toPath(),
                     datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),

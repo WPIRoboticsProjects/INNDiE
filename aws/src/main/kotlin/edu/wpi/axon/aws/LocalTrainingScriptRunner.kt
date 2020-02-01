@@ -82,11 +82,11 @@ class LocalTrainingScriptRunner(
                         """.trimMargin()
                     }
 
-                    val newModelFile = Paths.get(
+                    val newModelFile = config.workingDir
+                        .resolve(getOutputModelName(
                         config.workingDir.toString(),
                         getOutputModelName(config.oldModelName.filename)
                     ).toFile()
-
                     if (newModelFile.exists()) {
                         scriptProgressMap[config.id] = TrainingScriptProgress.Completed
                     } else {
@@ -109,7 +109,7 @@ class LocalTrainingScriptRunner(
 
     override fun getResult(id: Int, filename: String): File {
         requireJobIsInMaps(id)
-        return Paths.get(scriptDataMap[id]!!.workingDir.toString(), filename).toFile()
+        return scriptDataMap[id]!!.workingDir.resolve(filename).toFile()
     }
 
     override fun getTrainingProgress(jobId: Int) = progressReporter.getTrainingProgress(jobId)

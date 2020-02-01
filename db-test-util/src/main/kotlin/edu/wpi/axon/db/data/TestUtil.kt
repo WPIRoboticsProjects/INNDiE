@@ -53,6 +53,13 @@ fun Random.nextTarget(): ModelDeploymentTarget =
         else -> error("Missing a ModelDeploymentTarget case.")
     }
 
+fun Random.nextTarget(): ModelDeploymentTarget =
+    when (nextInt(ModelDeploymentTarget::class.sealedSubclasses.count())) {
+        0 -> ModelDeploymentTarget.Desktop
+        1 -> ModelDeploymentTarget.Coral(nextDouble(0.0, 1.0))
+        else -> error("Missing a ModelDeploymentTarget case.")
+    }
+
 fun Random.nextPlugin(): Plugin {
     val data = RandomStringUtils.randomAlphanumeric(5)
     return if (nextBoolean()) {

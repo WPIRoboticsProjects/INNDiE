@@ -48,6 +48,16 @@ class TrainSequentialModelScriptGenerator(
                     trainState.datasetPlugin
                 )
 
+                val castDataset = when (trainState.target) {
+                    ModelDeploymentTarget.Desktop -> loadedDataset
+                    is ModelDeploymentTarget.Coral -> {
+                        castLoadedDataset(
+                            loadedDataset,
+                            "tf.float32"
+                        )
+                    }
+                }
+
                 val model = loadModel(trainState)
 
                 val newModel by variables.creating(Variable::class)
@@ -63,7 +73,7 @@ class TrainSequentialModelScriptGenerator(
                     oldModel,
                     newModel,
                     applyLayerDeltaTask,
-                    dataset
+                    castDataset
                 )
 
                 lastTask = when (trainState.target) {
@@ -71,7 +81,7 @@ class TrainSequentialModelScriptGenerator(
 
                     is ModelDeploymentTarget.Coral -> {
                         val compileForEdgeTpuTask =
-                            quantizeAndCompileForEdgeTpu(trainState, dataset)
+                            quantizeAndCompileForEdgeTpu(trainState, castDataset)
                         compileForEdgeTpuTask.dependencies.add(compileTrainSaveTask)
                         compileForEdgeTpuTask
                     }

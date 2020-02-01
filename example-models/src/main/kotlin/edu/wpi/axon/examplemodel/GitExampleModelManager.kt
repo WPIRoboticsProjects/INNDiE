@@ -22,8 +22,8 @@ class GitExampleModelManager : ExampleModelManager {
     /**
      * The example models metadata file.
      */
-    val exampleModelMetadataFile: File
-        get() = Paths.get(cacheDir.absolutePath, "exampleModels.json").toFile()
+    private val exampleModelMetadataFile: File
+        get() = cacheDir.toPath().resolve("exampleModels.json").toFile()
 
     /**
      * The URL to download the example models metadata from.
@@ -59,7 +59,7 @@ class GitExampleModelManager : ExampleModelManager {
             "Failed to make necessary models directories in path: $cacheDir"
         }
 
-        val file = Paths.get(cacheDir.absolutePath, exampleModel.fileName).toFile()
+        val file = cacheDir.toPath().resolve(exampleModel.fileName).toFile()
 
         // Only create and download the file if it was not already in the cache
         if (!file.exists()) {

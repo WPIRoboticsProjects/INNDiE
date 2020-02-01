@@ -72,7 +72,7 @@ fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
 }
 
 /**
- * @param inputModelName The filename of the model being trained.
+ * @param inputModelName The filename (no path component) of the model being trained.
  * @return The filename of the trained model.
  */
 fun getOutputModelName(inputModelName: String): String =

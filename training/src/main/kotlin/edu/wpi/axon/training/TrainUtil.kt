@@ -22,6 +22,7 @@ import edu.wpi.axon.dsl.task.PostTrainingQuantizationTask
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.dsl.task.RunPluginTask
+import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
 import edu.wpi.axon.dsl.task.SliceTask
@@ -358,16 +359,8 @@ internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
 
     val tfliteModelPath = "${trainState.trainedModelFilename.substringBeforeLast('.')}.tflite"
     val postTrainingQuantizationTask by tasks.running(PostTrainingQuantizationTask::class) {
-        modelFilename = Paths.get(
-            trainState.workingDir.toString(),
-            trainState.trainedModelFilename
-        ).toString()
-
-        outputModelFilename = Paths.get(
-            trainState.workingDir.toString(),
-            tfliteModelPath
-        ).toString()
-
+        modelFilename = trainState.workingDir.resolve(trainState.trainedModelFilename).toString()
+        outputModelFilename = trainState.workingDir.resolve(tfliteModelPath).toString()
         representativeDataset = datasetSlice
     }
 

@@ -95,7 +95,6 @@ class JobDb(private val database: Database) {
         userNewModel: Model,
         generateDebugComments: Boolean,
         trainingMethod: JobTrainingMethod,
-        target: ModelDeploymentTarget,
         datasetPlugin: Plugin
     ): Job {
         val newId = transaction(database) {
