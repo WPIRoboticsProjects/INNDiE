@@ -100,7 +100,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             ),
             Arguments.of(
                 Layer.UnknownLayer("", null),
-                """Cannot construct an unknown layer: UnknownLayer(name=, inputs=null)""".left(),
+                """Cannot construct an UnknownLayer: UnknownLayer(name=, inputs=null)""".left(),
                 null
             ),
             Arguments.of(

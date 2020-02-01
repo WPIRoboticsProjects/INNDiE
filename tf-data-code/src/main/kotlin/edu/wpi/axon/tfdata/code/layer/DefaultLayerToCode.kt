@@ -178,8 +178,8 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
 
         is Layer.Conv2D -> TODO("Implement this.")
 
-        is Layer.ModelLayer -> Left("Cannot make a new ModelLayer.")
-        is Layer.UnknownLayer -> Left("Cannot make a new UnknownLayer.")
+        is Layer.ModelLayer -> Left("Cannot construct a ModelLayer: $layer")
+        is Layer.UnknownLayer -> Left("Cannot construct an UnknownLayer: $layer")
     }
 
     override fun makeNewActivation(activation: Activation) = "tf.keras.activations." +

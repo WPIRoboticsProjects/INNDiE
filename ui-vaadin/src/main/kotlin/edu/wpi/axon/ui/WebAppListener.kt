@@ -107,28 +107,6 @@ class WebAppListener : ServletContextListener, KoinComponent {
             target = ModelDeploymentTarget.Desktop
         )
 
-        get<JobDb>().create(
-            name = "Local Job that was running",
-            status = TrainingScriptProgress.NotStarted,
-            userOldModelPath = FilePath.Local(path),
-            userDataset = Dataset.ExampleDataset.FashionMnist,
-            userOptimizer = Optimizer.Adam(
-                learningRate = 0.001,
-                beta1 = 0.9,
-                beta2 = 0.999,
-                epsilon = 1e-7,
-                amsGrad = false
-            ),
-            userLoss = Loss.SparseCategoricalCrossentropy,
-            userMetrics = setOf("accuracy"),
-            userEpochs = 10,
-            userNewModel = model,
-            generateDebugComments = false,
-            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
-            trainingMethod = JobTrainingMethod.Untrained,
-            target = ModelDeploymentTarget.Desktop
-        )
-
         get<JobLifecycleManager>().initialize()
     }
 

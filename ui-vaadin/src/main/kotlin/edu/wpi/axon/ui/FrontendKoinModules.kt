@@ -9,6 +9,7 @@ import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.plugin.S3PluginManager
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.util.axonBucketName
@@ -55,7 +56,18 @@ fun defaultFrontendModule() = module {
     single(named(datasetPluginManagerName)) {
         // TODO: Load official plugins from resources
         val officialPlugins = listOf(
-            Plugin.Official("Test dataset plugin", """print("Hello from test dataset plugin!")""")
+            datasetPassthroughPlugin,
+            Plugin.Official(
+                "Process MNIST-type Dataset",
+                """
+                |def process_dataset(x, y):
+                |    newX = tf.cast(x / 255.0, tf.float32)
+                |    newY = tf.cast(y / 255.0, tf.float32)
+                |    newX = newX[..., tf.newaxis]
+                |    newY = newY[..., tf.newaxis]
+                |    return (newX, newY)
+                """.trimMargin()
+            )
         )
 
         when (val bucketName = get<Option<String>>(named(axonBucketName))) {
