@@ -27,8 +27,6 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
             modules(defaultBackendModule())
         }
 
-        // TODO: Use a dataset that works with this model so we can actually run the training script
-
         val modelName = "mobilenetv2_1.00_224.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {

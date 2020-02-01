@@ -1,8 +1,8 @@
 package edu.wpi.axon.tfdata.code.layer
 
 import arrow.core.Either
+import arrow.core.Left
 import arrow.core.extensions.fx
-import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.tfdata.code.asTuple
 import edu.wpi.axon.tfdata.code.namedArguments
@@ -176,8 +176,10 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
-        // TODO: Remove this
-        else -> "Cannot construct an unknown layer: $layer".left()
+        is Layer.Conv2D -> TODO("Implement this.")
+
+        is Layer.ModelLayer -> Left("Cannot make a new ModelLayer.")
+        is Layer.UnknownLayer -> Left("Cannot make a new UnknownLayer.")
     }
 
     override fun makeNewActivation(activation: Activation) = "tf.keras.activations." +

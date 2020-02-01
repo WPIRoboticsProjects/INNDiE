@@ -106,7 +106,7 @@ internal class HDF5ModelLoader(
                     }.layer as Layer.InputLayer).batchInputShape
                 )
             },
-            layers = layersToGraph.convertToGraph(layers).fold({ TODO() }, { it }),
+            layers = layersToGraph.convertToGraph(layers).fold({ error(it) }, { it }),
             output = outputLayerIds.mapTo(mutableSetOf()) { Model.General.OutputData(it) }
         )
     }
