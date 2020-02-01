@@ -31,7 +31,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "$tempDir/32_32_1_conv_sequential-trained.h5"
+        val newModelName = tempDir.toPath().resolve("32_32_1_conv_sequential-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
@@ -64,7 +64,7 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "32_32_1_conv_general.h5"
-        val newModelName = "$tempDir/32_32_1_conv_general-trained.h5"
+        val newModelName = tempDir.toPath().resolve("32_32_1_conv_general-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(

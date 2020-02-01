@@ -29,7 +29,6 @@ import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import java.nio.file.Paths
 
 /**
  * Loads a model in to a variable using. Assumes the model is on disk.
@@ -322,16 +321,8 @@ internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
 
     val tfliteModelPath = "${trainState.trainedModelFilename.substringBeforeLast('.')}.tflite"
     val postTrainingQuantizationTask by tasks.running(PostTrainingQuantizationTask::class) {
-        modelFilename = Paths.get(
-            trainState.workingDir.toString(),
-            trainState.trainedModelFilename
-        ).toString()
-
-        outputModelFilename = Paths.get(
-            trainState.workingDir.toString(),
-            tfliteModelPath
-        ).toString()
-
+        modelFilename = trainState.workingDir.resolve(trainState.trainedModelFilename).toString()
+        outputModelFilename = trainState.workingDir.resolve(tfliteModelPath).toString()
         representativeDataset = datasetSlice
     }
 

@@ -8,7 +8,6 @@ import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
 import java.io.File
-import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -26,7 +25,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
     fun `test running mnist training script`(@TempDir tempDir: File) {
         val oldModelName = "custom_fashion_mnist.h5"
         val oldModelPath = this::class.java.getResource(oldModelName).path
-        val newModelPath = "$tempDir/custom_fashion_mnist-trained.h5"
+        val newModelPath = tempDir.toPath().resolve("custom_fashion_mnist-trained.h5").toString()
         val id = 1
         runner.startScript(
             RunTrainingScriptConfiguration(
@@ -127,7 +126,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
             val progress = runner.getTrainingProgress(id)
             println(progress)
             if (progress == TrainingScriptProgress.Completed) {
-                Paths.get(tempDir.path, getOutputModelName(oldModelName)).toFile()
+                tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
                     .exists().shouldBeTrue()
                 break // Done with test
             } else if (progress == TrainingScriptProgress.Error) {
@@ -143,7 +142,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
     fun `test cancelling mnist training script`(@TempDir tempDir: File) {
         val oldModelName = "custom_fashion_mnist.h5"
         val oldModelPath = this::class.java.getResource(oldModelName).path
-        val newModelPath = "$tempDir/custom_fashion_mnist-trained.h5"
+        val newModelPath = tempDir.toPath().resolve("custom_fashion_mnist-trained.h5").toString()
         val id = 1
         runner.startScript(
             RunTrainingScriptConfiguration(
@@ -253,7 +252,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
                     runner.cancelScript(id)
                     val progressAfterCancellation = runner.getTrainingProgress(id)
                     progressAfterCancellation.shouldBe(TrainingScriptProgress.Error)
-                    Paths.get(tempDir.path, getOutputModelName(oldModelName)).toFile()
+                    tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
                         .exists().shouldBeFalse()
                     return // Done with the test
                 }

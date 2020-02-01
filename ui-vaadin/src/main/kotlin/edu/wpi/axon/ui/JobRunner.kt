@@ -90,13 +90,10 @@ internal class JobRunner : KoinComponent {
             // The EC2 runner needs to output to a relative directory (and NOT just the current
             // directory) because it runs the training script in a Docker container and maps the
             // current directory with `-v`.
-            Paths.get("./output")
+            Paths.get(".").resolve("output")
         } else {
             // The local runner can work out of any directory.
-            Paths.get(
-                localScriptRunnerCache.toString(),
-                job.id.toString()
-            ).apply { toFile().mkdirs() }
+            localScriptRunnerCache.resolve(job.id.toString()).apply { toFile().mkdirs() }
         }
 
         val trainModelScriptGenerator = when (job.userNewModel) {
