@@ -6,6 +6,7 @@ import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.plugin.DatasetPlugins
+import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
@@ -158,7 +159,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
                     workingDir = tempDir.toPath(),
-                    datasetPlugin = processMnistTypePlugin,
+                    datasetPlugin = datasetPassthroughPlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -166,10 +167,6 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                 Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
                     .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
                 testTrainingScript(tempDir, script, newModelName)
-                // Also test for the compiled output
-                tempDir.toPath().resolve(
-                    RunEdgeTpuCompilerTask.getEdgeTpuCompiledModelFilename(newModelName)
-                ).shouldExist()
             }
         }
     }
@@ -216,6 +213,10 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                 Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
                     .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
                 testTrainingScript(tempDir, script, newModelName)
+                // Also test for the compiled output
+                tempDir.toPath().resolve(
+                    RunEdgeTpuCompilerTask.getEdgeTpuCompiledModelFilename(newModelName)
+                ).shouldExist()
             }
         }
     }
