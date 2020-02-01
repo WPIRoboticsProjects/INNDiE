@@ -49,7 +49,7 @@ class MainLayout : AppLayout() {
         }
         drawer {
             menuLink(VaadinIcon.CONTROLLER, "Jobs", JobsView::class)
-            menuLink(VaadinIcon.MOVIE, "Test", TestView::class)
+            menuLink(VaadinIcon.FLASK, "Test", TestView::class)
             menuLink(VaadinIcon.COG, "Preferences", PreferencesView::class)
             menuLink(VaadinIcon.INFO, "About", AboutView::class)
         }
