@@ -58,7 +58,7 @@ fun Random.nextPlugin(): Plugin {
     return if (nextBoolean()) {
         Plugin.Official("Official $data", """print("Hello from official $data")""")
     } else {
-        Plugin.Official("Unofficial $data", """print("Hello from unofficial $data")""")
+        Plugin.Unofficial("Unofficial $data", """print("Hello from unofficial $data")""")
     }
 }
 
