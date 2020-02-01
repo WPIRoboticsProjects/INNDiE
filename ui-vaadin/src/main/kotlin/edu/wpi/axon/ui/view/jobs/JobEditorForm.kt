@@ -45,6 +45,8 @@ import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import kotlin.reflect.KClass
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
@@ -277,7 +279,20 @@ class JobEditorForm : KComposite(), KoinComponent {
                 formItem("Representative Dataset Percentage") {
                     textField {
                         bind(binder).asRequired()
-                            .toDouble()
+                            .withConverter(Converter.from<String, Double>(
+                                {
+                                    try {
+                                        Result.ok(it.toDouble())
+                                    } catch (ex: NumberFormatException) {
+                                        Result.error<Double>(ex.localizedMessage)
+                                    }
+                                },
+                                {
+                                    DecimalFormat("#.####").apply {
+                                        roundingMode = RoundingMode.HALF_DOWN
+                                    }.format(it)
+                                }
+                            ))
                             .withValidator { value, _ ->
                                 when (value) {
                                     null -> ValidationResult.error("Outside range.")
