@@ -53,7 +53,6 @@ class RunPluginTask(name: String) : BaseTask(name) {
         return """
             |
             |
-            |
             |$functionDefinition
             |
             |

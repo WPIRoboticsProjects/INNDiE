@@ -29,7 +29,7 @@ internal class RunPluginTaskTest : KoinTestFixture() {
         }
         task.isConfiguredCorrectly().shouldBeTrue()
         task.code().shouldBe(
-            """|
+            """
             |
             |
             |body

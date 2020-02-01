@@ -122,7 +122,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,
-                    target = ModelDeploymentTarget.Desktop,
+                    target = ModelDeploymentTarget.Coral(0.0001),
                     workingDir = tempDir.toPath(),
                     datasetPlugin = Plugin.Unofficial(
                         "",

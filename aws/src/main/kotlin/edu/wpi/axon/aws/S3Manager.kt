@@ -158,9 +158,21 @@ class S3Manager(
         it.bucket(bucketName).key(createHeartbeatFilePath(id))
     }.readAllBytes().decodeToString()
 
+    /**
+     * Uploads a plugin cache file.
+     *
+     * @param cacheName The name of the plugin cache.
+     * @param file The plugin cache file.
+     */
     fun uploadPluginCache(cacheName: String, file: File) =
         uploadLocalFile(file, "axon-plugins/$cacheName/plugin_cache.json")
 
+    /**
+     * Downloads a plugin cache file.
+     *
+     * @param cacheName The name of the plugin cache.
+     * @return A local file containing the plugin cache.
+     */
     fun downloadPluginCache(cacheName: String): File =
         downloadToLocalFile("axon-plugins/$cacheName/plugin_cache.json")
 

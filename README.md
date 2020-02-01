@@ -73,9 +73,9 @@ random alphanumeric characters for uniqueness), Axon manages these directories:
     - Contains “untrained” models that the user can use to create a new Job with
     - These models cannot be used for testing because they are assumed to not contain any weights (or at least not any meaningful weights)
     - EC2 pulls untrained models from here when running a training job
-- axon-trained-models
-    - Contains trained models
-    - These models can be used for testing because they are assumed to contain meaningful weights
+- axon-training-results
+    - File format is `axon-training-results/{job id}/{results files...}`
+    - Contains all results from running a training script
     - EC2 uploads trained models here after finishing a training job
 - axon-test-data
     - Contains test data files that can be used with the test view
