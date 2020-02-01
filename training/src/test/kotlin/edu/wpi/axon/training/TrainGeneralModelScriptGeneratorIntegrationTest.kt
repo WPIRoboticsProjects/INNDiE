@@ -44,7 +44,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    workingDir = Paths.get(""),
+                    workingDir = Paths.get("."),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -84,7 +84,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    workingDir = Paths.get(""),
+                    workingDir = Paths.get("."),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -124,7 +124,7 @@ internal class TrainGeneralModelScriptGeneratorIntegrationTest : KoinTestFixture
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.001),
-                    workingDir = Paths.get(""),
+                    workingDir = Paths.get("."),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

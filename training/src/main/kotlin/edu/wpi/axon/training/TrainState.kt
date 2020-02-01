@@ -22,6 +22,8 @@ import java.nio.file.Path
  * @param userNewModel The new model.
  * @param generateDebugComments Whether to put debug comments in the output.
  * @param target Where the model will be deployed.
+ * @param workingDir The directory the training script should work out of. New files, etc. will be
+ * put in this directory.
  * @param jobId The unique ID of the Job.
  */
 data class TrainState<T : Model>(

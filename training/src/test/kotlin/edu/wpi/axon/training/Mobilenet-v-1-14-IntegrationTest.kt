@@ -44,7 +44,7 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    workingDir = Path.of(""),
+                    workingDir = Path.of("."),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

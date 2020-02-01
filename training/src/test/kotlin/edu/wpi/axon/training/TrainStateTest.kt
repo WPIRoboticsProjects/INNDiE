@@ -27,7 +27,7 @@ internal class TrainStateTest {
             None,
             false,
             ModelDeploymentTarget.Desktop,
-            Paths.get(""),
+            Paths.get("."),
             1
         ).usesAWS.shouldBeTrue()
     }
@@ -45,7 +45,7 @@ internal class TrainStateTest {
             None,
             false,
             ModelDeploymentTarget.Desktop,
-            Paths.get(""),
+            Paths.get("."),
             1
         ).usesAWS.shouldBeTrue()
     }
@@ -63,7 +63,7 @@ internal class TrainStateTest {
             None,
             false,
             ModelDeploymentTarget.Desktop,
-            Paths.get(""),
+            Paths.get("."),
             1
         ).usesAWS.shouldBeFalse()
     }
@@ -81,7 +81,7 @@ internal class TrainStateTest {
             None,
             false,
             ModelDeploymentTarget.Desktop,
-            Paths.get(""),
+            Paths.get("."),
             1
         ).usesAWS.shouldBeFalse()
     }

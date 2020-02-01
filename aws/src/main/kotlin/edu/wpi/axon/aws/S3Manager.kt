@@ -37,9 +37,22 @@ class S3Manager(
     fun downloadUntrainedModel(filename: String): File =
         downloadToLocalFile("axon-untrained-models/$filename")
 
+    /**
+     * Lists the training results for the Job.
+     *
+     * @param jobId The ID of the Job.
+     * @return The filenames of the results.
+     */
     fun listTrainingResults(jobId: Int): List<String> =
         listObjectsWithPrefixAndRemovePrefix("axon-training-results/$jobId/")
 
+    /**
+     * Downloads a training result to a local file.
+     *
+     * @param jobId The ID of the Job.
+     * @param resultFilename The filename of the result to download.
+     * @return A local file containing the result.
+     */
     fun downloadTrainingResult(jobId: Int, resultFilename: String): File =
         downloadToLocalFile("axon-training-results/$jobId/$resultFilename")
 
