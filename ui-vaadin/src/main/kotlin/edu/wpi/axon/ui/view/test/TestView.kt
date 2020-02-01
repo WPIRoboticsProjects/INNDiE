@@ -12,7 +12,6 @@ class TestView : KComposite() {
     init {
         ui {
             verticalLayout {
-
             }
         }
     }
