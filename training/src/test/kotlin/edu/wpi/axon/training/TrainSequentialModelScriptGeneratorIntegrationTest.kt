@@ -153,7 +153,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
 
         // TODO: This breaks at runtime with a Coral target
         val modelName = "small_model_for_wpilib_reduced_dataset.h5"
-        val newModelName = tempDir.toPath().resolve("small_model_for_wpilib_reduced_dataset-trained.h5").toString()
+        val newModelName =
+            tempDir.toPath().resolve("small_model_for_wpilib_reduced_dataset-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
@@ -196,9 +197,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
                 testTrainingScript(tempDir, script, newModelName)
                 // Also test for the compiled output
-                Paths.get(
-                    "$tempDir/" +
-                        RunEdgeTpuCompilerTask.getEdgeTpuCompiledModelFilename(newModelName)
+                tempDir.toPath().resolve(
+                    RunEdgeTpuCompilerTask.getEdgeTpuCompiledModelFilename(newModelName)
                 ).shouldExist()
             }
         }
@@ -213,7 +213,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
         }
 
         val modelName = "small_model_for_wpilib_reduced_dataset.h5"
-        val newModelName = "$tempDir/small_model_for_wpilib_reduced_dataset-trained.h5"
+        val newModelName =
+            tempDir.toPath().resolve("small_model_for_wpilib_reduced_dataset-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
