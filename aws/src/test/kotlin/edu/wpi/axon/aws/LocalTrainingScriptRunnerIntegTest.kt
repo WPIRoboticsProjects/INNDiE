@@ -3,6 +3,7 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.getOutputModelName
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe
@@ -22,16 +23,19 @@ internal class LocalTrainingScriptRunnerIntegTest {
     @Timeout(value = 10L, unit = TimeUnit.MINUTES)
     @Tag("needsTensorFlowSupport")
     fun `test running mnist training script`(@TempDir tempDir: File) {
-        val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
-        val newModelPath = "$tempDir/custom_fashion_mnist-trained.h5"
+        val oldModelName = "custom_fashion_mnist.h5"
+        val oldModelPath = this::class.java.getResource(oldModelName).path
+        val newModelPath = tempDir.toPath().resolve("custom_fashion_mnist-trained.h5").toString()
         val id = 1
         runner.startScript(
             RunTrainingScriptConfiguration(
                 FilePath.Local(oldModelPath),
-                FilePath.Local(newModelPath),
                 Dataset.ExampleDataset.Mnist,
                 """
                 import tensorflow as tf
+                import os
+                import errno
+                from pathlib import Path
 
                 var10 = tf.keras.models.load_model("$oldModelPath")
 
@@ -59,6 +63,12 @@ internal class LocalTrainingScriptRunnerIntegTest {
                     loss=tf.keras.losses.sparse_categorical_crossentropy,
                     metrics=["accuracy"]
                 )
+
+                try:
+                    os.makedirs(Path("$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5").parent)
+                except OSError as err:
+                    if err.errno != errno.EEXIST:
+                        raise
 
                 var15 = tf.keras.callbacks.ModelCheckpoint(
                     "$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
@@ -98,9 +108,16 @@ internal class LocalTrainingScriptRunnerIntegTest {
                     shuffle=True
                 )
 
+                try:
+                    os.makedirs(Path("$newModelPath").parent)
+                except OSError as err:
+                    if err.errno != errno.EEXIST:
+                        raise
+
                 var12.save("$newModelPath")
                 """.trimIndent(),
                 1,
+                tempDir.toPath(),
                 id
             )
         )
@@ -109,7 +126,8 @@ internal class LocalTrainingScriptRunnerIntegTest {
             val progress = runner.getTrainingProgress(id)
             println(progress)
             if (progress == TrainingScriptProgress.Completed) {
-                File(newModelPath).exists().shouldBeTrue()
+                tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
+                    .exists().shouldBeTrue()
                 break // Done with test
             } else if (progress == TrainingScriptProgress.Error) {
                 fail { "Progress was: $progress" }
@@ -122,16 +140,19 @@ internal class LocalTrainingScriptRunnerIntegTest {
     @Timeout(value = 10L, unit = TimeUnit.MINUTES)
     @Tag("needsTensorFlowSupport")
     fun `test cancelling mnist training script`(@TempDir tempDir: File) {
-        val oldModelPath = this::class.java.getResource("custom_fashion_mnist.h5").path
-        val newModelPath = "$tempDir/custom_fashion_mnist-trained.h5"
+        val oldModelName = "custom_fashion_mnist.h5"
+        val oldModelPath = this::class.java.getResource(oldModelName).path
+        val newModelPath = tempDir.toPath().resolve("custom_fashion_mnist-trained.h5").toString()
         val id = 1
         runner.startScript(
             RunTrainingScriptConfiguration(
                 FilePath.Local(oldModelPath),
-                FilePath.Local(newModelPath),
                 Dataset.ExampleDataset.Mnist,
                 """
                 import tensorflow as tf
+                import os
+                import errno
+                from pathlib import Path
 
                 var10 = tf.keras.models.load_model("$oldModelPath")
 
@@ -159,6 +180,12 @@ internal class LocalTrainingScriptRunnerIntegTest {
                     loss=tf.keras.losses.sparse_categorical_crossentropy,
                     metrics=["accuracy"]
                 )
+
+                try:
+                    os.makedirs(Path("$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5").parent)
+                except OSError as err:
+                    if err.errno != errno.EEXIST:
+                        raise
 
                 var15 = tf.keras.callbacks.ModelCheckpoint(
                     "$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
@@ -198,9 +225,16 @@ internal class LocalTrainingScriptRunnerIntegTest {
                     shuffle=True
                 )
 
+                try:
+                    os.makedirs(Path("$newModelPath").parent)
+                except OSError as err:
+                    if err.errno != errno.EEXIST:
+                        raise
+
                 var12.save("$newModelPath")
                 """.trimIndent(),
                 1,
+                tempDir.toPath(),
                 id
             )
         )
@@ -218,7 +252,8 @@ internal class LocalTrainingScriptRunnerIntegTest {
                     runner.cancelScript(id)
                     val progressAfterCancellation = runner.getTrainingProgress(id)
                     progressAfterCancellation.shouldBe(TrainingScriptProgress.Error)
-                    File(newModelPath).exists().shouldBeFalse()
+                    tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
+                        .exists().shouldBeFalse()
                     return // Done with the test
                 }
             }

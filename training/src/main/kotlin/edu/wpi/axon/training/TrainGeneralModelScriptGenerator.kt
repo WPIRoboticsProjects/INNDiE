@@ -8,8 +8,10 @@ import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
+import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
+import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import mu.KotlinLogging
@@ -24,13 +26,6 @@ class TrainGeneralModelScriptGenerator(
     private val oldModel: Model.General
 ) : TrainModelScriptGenerator<Model.General> {
 
-    init {
-        require(trainState.userOldModelPath.filename != trainState.userNewModelPath.filename) {
-            "The old model name (${trainState.userOldModelPath}) cannot equal the new model " +
-                "name (${trainState.userNewModelPath})."
-        }
-    }
-
     @Suppress("UNUSED_VARIABLE")
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
         LOGGER.info {
@@ -42,6 +37,8 @@ class TrainGeneralModelScriptGenerator(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
                 DefaultPolymorphicNamedDomainObjectContainer.of()
             ) {
+                pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+
                 val loadedDataset = loadDataset(trainState).let { dataset ->
                     if (trainState.userNewModel.input.size == 1) {
                         // Only try to transform the dataset if there is one input, similar to
@@ -56,6 +53,16 @@ class TrainGeneralModelScriptGenerator(
                     }
                 }
 
+                val castDataset = when (trainState.target) {
+                    ModelDeploymentTarget.Desktop -> loadedDataset
+                    is ModelDeploymentTarget.Coral -> {
+                        castLoadedDataset(
+                            loadedDataset,
+                            "tf.float32"
+                        )
+                    }
+                }
+
                 val model = loadModel(trainState)
 
                 val newModelVar by variables.creating(Variable::class)
@@ -66,13 +73,24 @@ class TrainGeneralModelScriptGenerator(
                     newModelOutput = newModelVar
                 }
 
-                lastTask = compileTrainSave(
+                val compileTrainSaveTask = compileTrainSave(
                     trainState,
                     oldModel,
                     newModelVar,
                     applyLayerDeltaTask,
-                    loadedDataset
+                    castDataset
                 )
+
+                lastTask = when (trainState.target) {
+                    ModelDeploymentTarget.Desktop -> compileTrainSaveTask
+
+                    is ModelDeploymentTarget.Coral -> {
+                        val compileForEdgeTpuTask =
+                            quantizeAndCompileForEdgeTpu(trainState, castDataset)
+                        compileForEdgeTpuTask.dependencies.add(compileTrainSaveTask)
+                        compileForEdgeTpuTask
+                    }
+                }
             }
 
             script.code(trainState.generateDebugComments)

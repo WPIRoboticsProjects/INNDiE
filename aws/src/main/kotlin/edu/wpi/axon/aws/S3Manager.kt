@@ -38,22 +38,23 @@ class S3Manager(
         downloadToLocalFile("axon-untrained-models/$filename")
 
     /**
-     * Uploads a trained model (one that the user wants to test with).
+     * Lists the training results for the Job.
      *
-     * @param file The local file containing the model to upload. The filename of the uploaded model
-     * will be the same as the filename of this file.
+     * @param jobId The ID of the Job.
+     * @return The filenames of the results.
      */
-    fun uploadTrainedModel(file: File) = uploadLocalFile(file, "axon-trained-models/${file.name}")
+    fun listTrainingResults(jobId: Int): List<String> =
+        listObjectsWithPrefixAndRemovePrefix("axon-training-results/$jobId/")
 
     /**
-     * Downloads a trained model (which was put in S3 by the training script when it
-     * ran on EC2). Meant to be used to download to the user's local machine.
+     * Downloads a training result to a local file.
      *
-     * @param filename The filename of the trained model file.
-     * @return A local file containing the trained model.
+     * @param jobId The ID of the Job.
+     * @param resultFilename The filename of the result to download.
+     * @return A local file containing the result.
      */
-    fun downloadTrainedModel(filename: String): File =
-        downloadToLocalFile("axon-trained-models/$filename")
+    fun downloadTrainingResult(jobId: Int, resultFilename: String): File =
+        downloadToLocalFile("axon-training-results/$jobId/$resultFilename")
 
     /**
      * Uploads a test data file.

@@ -42,6 +42,8 @@ internal class HDF5ModelLoader(
             val config = it.getAttribute("model_config").data as String
             val data = Parser.default().parse(config.byteInputStream()) as JsonObject
             parseModel(data)
+            // TODO: Post-process the Model to get rid of any ModelLayer instances (basically,
+            //  flatten the Model).
         }
     }
 

@@ -13,6 +13,7 @@ import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
+import java.nio.file.Path
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
@@ -28,13 +29,11 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
         // TODO: Use a dataset that works with this model so we can actually run the training script
 
         val modelName = "mobilenetv2_1.00_224.h5"
-        val newModelName = "mobilenetv2_1.00_224-trained.h5"
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -43,6 +42,8 @@ internal class `Mobilenet-v-1-14-IntegrationTest` : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Desktop,
+                    workingDir = Path.of("."),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

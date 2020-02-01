@@ -13,15 +13,17 @@ import io.kotlintest.assertions.arrow.validation.shouldBeInvalid
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.mockk.mockk
+import java.io.File
 import java.nio.file.Paths
 import kotlin.random.Random
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 
 internal class TrainIntegrationTest : KoinTestFixture() {
 
     @Test
-    fun `test general model`() {
+    fun `test general model`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
@@ -31,7 +33,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local("/tmp/network_with_add-trained.h5"),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -40,6 +41,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Desktop,
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -48,7 +51,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
     }
 
     @Test
-    fun `test sequential model`() {
+    fun `test sequential model`(@TempDir tempDir: File) {
         startKoin {
             modules(listOf(defaultBackendModule()))
         }
@@ -58,7 +61,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
             TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local("/tmp/custom_fashion_mnist-trained.h5"),
                     userDataset = Dataset.ExampleDataset.Mnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -67,6 +69,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Desktop,
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -75,7 +79,7 @@ internal class TrainIntegrationTest : KoinTestFixture() {
     }
 
     @Test
-    fun `test loading invalid model`() {
+    fun `test loading invalid model`(@TempDir tempDir: File) {
         startKoin {
             modules(defaultBackendModule())
         }
@@ -85,7 +89,6 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userOldModelPath = FilePath.Local(Paths.get(
                     this::class.java.getResource("badModel1.h5").toURI()
                 ).toString()),
-                userNewModelPath = FilePath.Local("/tmp/badModel1-trained.h5"),
                 userDataset = Dataset.ExampleDataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,
@@ -94,6 +97,8 @@ internal class TrainIntegrationTest : KoinTestFixture() {
                 userNewModel = mockk(),
                 userValidationSplit = None,
                 generateDebugComments = false,
+                target = ModelDeploymentTarget.Desktop,
+                workingDir = tempDir.toPath(),
                 jobId = Random.nextInt(1, Int.MAX_VALUE)
             ),
             mockk()

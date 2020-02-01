@@ -10,6 +10,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
+import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.util.FilePath
 import java.io.File
 import java.nio.file.Paths
@@ -44,7 +45,6 @@ class WebAppListener : ServletContextListener, KoinComponent {
             name = "AWS Job",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.S3(modelName),
-            userNewModelName = FilePath.S3(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,
@@ -58,14 +58,14 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
-            trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e")
+            trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e"),
+            target = ModelDeploymentTarget.Desktop
         )
 
         get<JobDb>().create(
             name = "Local Job",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
-            userNewModelName = FilePath.Local(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,
@@ -79,14 +79,14 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
-            trainingMethod = JobTrainingMethod.Untrained
+            trainingMethod = JobTrainingMethod.Untrained,
+            target = ModelDeploymentTarget.Desktop
         )
 
         get<JobDb>().create(
             name = "Local Job 2",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
-            userNewModelName = FilePath.Local(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,
@@ -100,14 +100,14 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 1,
             userNewModel = model,
             generateDebugComments = false,
-            trainingMethod = JobTrainingMethod.Untrained
+            trainingMethod = JobTrainingMethod.Untrained,
+            target = ModelDeploymentTarget.Desktop
         )
 
         get<JobDb>().create(
             name = "Local Job that was running",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = FilePath.Local(path),
-            userNewModelName = FilePath.Local(newModelName),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,
@@ -121,7 +121,8 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userEpochs = 10,
             userNewModel = model,
             generateDebugComments = false,
-            trainingMethod = JobTrainingMethod.Untrained
+            trainingMethod = JobTrainingMethod.Untrained,
+            target = ModelDeploymentTarget.Desktop
         )
 
         get<JobLifecycleManager>().initialize()

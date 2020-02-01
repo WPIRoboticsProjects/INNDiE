@@ -31,13 +31,12 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "32_32_1_conv_sequential.h5"
-        val newModelName = "$tempDir/32_32_1_conv_sequential-trained.h5"
+        val newModelName = tempDir.toPath().resolve("32_32_1_conv_sequential-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.Sequential> {
             TrainSequentialModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -46,6 +45,8 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Desktop,
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -63,13 +64,12 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
         }
 
         val modelName = "32_32_1_conv_general.h5"
-        val newModelName = "$tempDir/32_32_1_conv_general-trained.h5"
+        val newModelName = tempDir.toPath().resolve("32_32_1_conv_general-trained.h5").toString()
         val (model, path) = loadModel(modelName) {}
         model.shouldBeInstanceOf<Model.General> {
             TrainGeneralModelScriptGenerator(
                 TrainState(
                     userOldModelPath = FilePath.Local(path),
-                    userNewModelPath = FilePath.Local(newModelName),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                     userLoss = Loss.SparseCategoricalCrossentropy,
@@ -78,6 +78,8 @@ internal class Conv32321IntegrationTest : KoinTestFixture() {
                     userNewModel = it,
                     userValidationSplit = None,
                     generateDebugComments = false,
+                    target = ModelDeploymentTarget.Desktop,
+                    workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

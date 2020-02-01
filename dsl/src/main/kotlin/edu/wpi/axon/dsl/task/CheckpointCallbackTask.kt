@@ -60,7 +60,12 @@ class CheckpointCallbackTask(name: String) : BaseTask(name) {
      */
     var output: Variable by singleAssign()
 
-    override val imports: Set<Import> = setOf(makeImport("import tensorflow as tf"))
+    override val imports: Set<Import> = setOf(
+        makeImport("import tensorflow as tf"),
+        makeImport("import os"),
+        makeImport("import errno"),
+        makeImport("from pathlib import Path")
+    )
 
     override val inputs: Set<Variable> = setOf()
 
@@ -70,6 +75,12 @@ class CheckpointCallbackTask(name: String) : BaseTask(name) {
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
     override fun code() = """
+        |try:
+        |    os.makedirs(Path("$filePath").parent)
+        |except OSError as err:
+        |    if err.errno != errno.EEXIST:
+        |        raise
+        |
         |${output.name} = tf.keras.callbacks.ModelCheckpoint(
         |    "$filePath",
         |    monitor="$monitor",

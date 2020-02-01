@@ -8,20 +8,22 @@ import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
-import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
+import edu.wpi.axon.dsl.task.CastTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
-import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
 import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
+import edu.wpi.axon.dsl.task.PostTrainingQuantizationTask
 import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
+import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
+import edu.wpi.axon.dsl.task.SliceTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
 import edu.wpi.axon.dsl.variable.Variable
@@ -103,13 +105,6 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
 ): LoadedDataset {
     require(trainState.userDataset is Dataset.Custom)
 
-    // TODO: Run conversion as a separate step so that eager execution is disabled when training
-    //  LoadTFRecordOfImagesWithObjects needs eager execution
-    check(pregenerationLastTask == null) {
-        "BUG: pregenerationLastTask was not null and would have been overwritten."
-    }
-    pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
-
     val convertTask = tasks.run(ConvertSuperviselyDatasetToRecord::class) {
         dataset = trainState.userDataset
     }
@@ -156,6 +151,36 @@ internal fun ScriptGenerator.reshapeAndScaleLoadedDataset(
     return dataset.copy(
         train = scaledTrain,
         validation = scaledValidation
+    )
+}
+
+internal fun ScriptGenerator.cast(
+    dataset: Variable,
+    dtypeIn: String
+): Variable {
+    val castDataset by variables.creating(Variable::class)
+    tasks.run(CastTask::class) {
+        input = dataset
+        output = castDataset
+        dtype = dtypeIn
+    }
+
+    return castDataset
+}
+
+internal fun ScriptGenerator.castLoadedDataset(
+    dataset: LoadedDataset,
+    dtype: String
+): LoadedDataset {
+    val castTrain = cast(dataset.train.first, dtype) to dataset.train.second
+
+    val castValidation = dataset.validation.map {
+        cast(it.first, dtype) to it.second
+    }
+
+    return dataset.copy(
+        train = castTrain,
+        validation = castValidation
     )
 }
 
@@ -216,9 +241,9 @@ internal fun ScriptGenerator.compileTrainSave(
         filePath = if (hasValidation) {
             // Can only use val_loss if there is validation data, which can take the form of
             // a validation dataset or a nonzero validation split
-            "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
         } else {
-            "${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
+            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
         }
         monitor = if (hasValidation) "val_loss" else "loss"
         saveWeightsOnly = true
@@ -267,7 +292,45 @@ internal fun ScriptGenerator.compileTrainSave(
 
     return tasks.run(SaveModelTask::class) {
         modelInput = newModel
-        modelPath = trainState.userNewModelPath.path
+        modelPath = "${trainState.workingDir}/${trainState.trainedModelFilename}"
         dependencies += trainModelTask
     }
+}
+
+/**
+ * Quantizes and compiles a model for the Coral Edge TPU. Uses post-training quantization.
+ *
+ * @param trainState The training state
+ * @param loadedDataset The dataset the model was trained on.
+ * @return The last task in the sequence of operations.
+ */
+internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
+    trainState: TrainState<*>,
+    loadedDataset: LoadedDataset
+): Task {
+    require(trainState.target is ModelDeploymentTarget.Coral)
+
+    // Only grab 10% of the dataset
+    val datasetSlice = variables.create(Variable::class)
+    tasks.run(SliceTask::class) {
+        input = loadedDataset.train.first
+        output = datasetSlice
+        sliceNotation = "[:int(len(${loadedDataset.train.first.name}) * " +
+            "${trainState.target.representativeDatasetPercentage})]"
+    }
+
+    val tfliteModelPath = "${trainState.trainedModelFilename.substringBeforeLast('.')}.tflite"
+    val postTrainingQuantizationTask by tasks.running(PostTrainingQuantizationTask::class) {
+        modelFilename = trainState.workingDir.resolve(trainState.trainedModelFilename).toString()
+        outputModelFilename = trainState.workingDir.resolve(tfliteModelPath).toString()
+        representativeDataset = datasetSlice
+    }
+
+    val runEdgeTpuCompilerTask by tasks.running(RunEdgeTpuCompilerTask::class) {
+        inputModelFilename = tfliteModelPath
+        outputDir = trainState.workingDir.toString()
+        dependencies.add(postTrainingQuantizationTask)
+    }
+
+    return runEdgeTpuCompilerTask
 }

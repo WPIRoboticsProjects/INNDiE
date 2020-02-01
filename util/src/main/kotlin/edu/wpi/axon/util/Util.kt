@@ -37,6 +37,8 @@ fun runCommand(
             }
         }.start()
 
+    LOGGER.debug { "Started on PID ${proc.pid()}" }
+
     BufferedReader(InputStreamReader(proc.inputStream)).useLines { procStdOut ->
         BufferedReader(InputStreamReader(proc.errorStream)).useLines { procStdErr ->
             val exitCode = try {
@@ -68,5 +70,12 @@ fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
     is FilePath.S3 -> data.all { it is FilePath.S3 }
     is FilePath.Local -> data.all { it is FilePath.Local }
 }
+
+/**
+ * @param inputModelName The filename (no path component) of the model being trained.
+ * @return The filename of the trained model.
+ */
+fun getOutputModelName(inputModelName: String): String =
+    "${inputModelName.substringBeforeLast('.')}-trained.${inputModelName.substringAfterLast('.')}"
 
 private val LOGGER = KotlinLogging.logger { }

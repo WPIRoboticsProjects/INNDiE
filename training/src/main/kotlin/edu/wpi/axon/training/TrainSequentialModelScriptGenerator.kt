@@ -8,8 +8,10 @@ import com.google.common.base.Throwables
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
+import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplySequentialLayerDeltaTask
+import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import mu.KotlinLogging
@@ -25,13 +27,6 @@ class TrainSequentialModelScriptGenerator(
     private val oldModel: Model.Sequential
 ) : TrainModelScriptGenerator<Model.Sequential> {
 
-    init {
-        require(trainState.userOldModelPath.filename != trainState.userNewModelPath.filename) {
-            "The old model name (${trainState.userOldModelPath}) cannot equal the new model " +
-                "name (${trainState.userNewModelPath})."
-        }
-    }
-
     override fun generateScript(): Validated<NonEmptyList<String>, String> {
         LOGGER.info {
             "Generating script with trainState:\n$trainState"
@@ -46,11 +41,23 @@ class TrainSequentialModelScriptGenerator(
                 DefaultPolymorphicNamedDomainObjectContainer.of(),
                 DefaultPolymorphicNamedDomainObjectContainer.of()
             ) {
+                pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
+
                 val loadedDataset = reshapeAndScaleLoadedDataset(
                     loadDataset(trainState),
                     reshapeArgsFromBatchShape,
                     255
                 )
+
+                val castDataset = when (trainState.target) {
+                    ModelDeploymentTarget.Desktop -> loadedDataset
+                    is ModelDeploymentTarget.Coral -> {
+                        castLoadedDataset(
+                            loadedDataset,
+                            "tf.float32"
+                        )
+                    }
+                }
 
                 val model = loadModel(trainState)
 
@@ -62,13 +69,24 @@ class TrainSequentialModelScriptGenerator(
                     newModelOutput = newModel
                 }
 
-                lastTask = compileTrainSave(
+                val compileTrainSaveTask = compileTrainSave(
                     trainState,
                     oldModel,
                     newModel,
                     applyLayerDeltaTask,
-                    loadedDataset
+                    castDataset
                 )
+
+                lastTask = when (trainState.target) {
+                    ModelDeploymentTarget.Desktop -> compileTrainSaveTask
+
+                    is ModelDeploymentTarget.Coral -> {
+                        val compileForEdgeTpuTask =
+                            quantizeAndCompileForEdgeTpu(trainState, castDataset)
+                        compileForEdgeTpuTask.dependencies.add(compileTrainSaveTask)
+                        compileForEdgeTpuTask
+                    }
+                }
             }
 
             script.code(trainState.generateDebugComments)
