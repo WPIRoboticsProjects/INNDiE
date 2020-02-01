@@ -60,7 +60,18 @@ To add an initializer,
 `DefaultInitializerToCodeTest`.
 3. Add a case for it in `LoadLayersFromHDF5::initializer`. Generate new models that use each
 variance of the new `Initializer` and add a test in `LoadLayersWithInitializersIntegrationTest` that
-loads each one. 
+loads each one.
+
+### Plugins
+
+Axon uses a simple plugin system to generalize over many different dataset and models. If you want
+to add a dataset plugin to process the dataset after it is loaded but before it is given to the
+model for training, your plugin body must implement this function:
+```python
+def process_dataset(x, y):
+    # Do some data processing in here and return the results.
+    return (x, y)
+```
 
 ## AWS Integration
 

@@ -6,7 +6,7 @@ import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.plugin.DatasetPlugins
-import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -67,17 +67,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userValidationSplit = None,
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
-                    datasetPlugin = Plugin.Unofficial(
-                        "",
-                        """
-                        |def process_dataset(x, y):
-                        |    newX = tf.cast(x / 255.0, tf.float32)
-                        |    newY = tf.cast(y / 255.0, tf.float32)
-                        |    newX = newX[..., tf.newaxis]
-                        |    newY = newY[..., tf.newaxis]
-                        |    return (newX, newY)
-                        """.trimMargin()
-                    ),
+                    datasetPlugin = processMnistTypePlugin,
                     workingDir = tempDir.toPath(),
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
@@ -124,17 +114,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.0001),
                     workingDir = tempDir.toPath(),
-                    datasetPlugin = Plugin.Unofficial(
-                        "",
-                        """
-                        |def process_dataset(x, y):
-                        |    newX = tf.cast(x / 255.0, tf.float32)
-                        |    newY = tf.cast(y / 255.0, tf.float32)
-                        |    newX = newX[..., tf.newaxis]
-                        |    newY = newY[..., tf.newaxis]
-                        |    return (newX, newY)
-                        """.trimMargin()
-                    ),
+                    datasetPlugin = processMnistTypePlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it
@@ -178,17 +158,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Desktop,
                     workingDir = tempDir.toPath(),
-                    datasetPlugin = Plugin.Unofficial(
-                        "",
-                        """
-                        |def process_dataset(x, y):
-                        |    newX = tf.cast(x / 255.0, tf.float32)
-                        |    newY = tf.cast(y / 255.0, tf.float32)
-                        |    newX = newX[..., tf.newaxis]
-                        |    newY = newY[..., tf.newaxis]
-                        |    return (newX, newY)
-                        """.trimMargin()
-                    ),
+                    datasetPlugin = processMnistTypePlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

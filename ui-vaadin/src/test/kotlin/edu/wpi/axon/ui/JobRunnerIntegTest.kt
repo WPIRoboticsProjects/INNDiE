@@ -11,7 +11,7 @@ import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.examplemodel.downloadAndConfigureExampleModel
 import edu.wpi.axon.plugin.DatasetPlugins
-import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
@@ -65,17 +65,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userEpochs = 1,
             userNewModel = oldModel,
             target = ModelDeploymentTarget.Desktop,
-            datasetPlugin = Plugin.Unofficial(
-                "",
-                """
-                |def process_dataset(x, y):
-                |    newX = tf.cast(x / 255.0, tf.float32)
-                |    newY = tf.cast(y / 255.0, tf.float32)
-                |    newX = newX[..., tf.newaxis]
-                |    newY = newY[..., tf.newaxis]
-                |    return (newX, newY)
-                """.trimMargin()
-            ),
+            datasetPlugin = processMnistTypePlugin,
             generateDebugComments = false
         )
 
@@ -114,17 +104,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userEpochs = 1,
             userNewModel = oldModel,
             target = ModelDeploymentTarget.Coral(0.001),
-            datasetPlugin = Plugin.Unofficial(
-                "",
-                """
-                |def process_dataset(x, y):
-                |    newX = tf.cast(x / 255.0, tf.float32)
-                |    newY = tf.cast(y / 255.0, tf.float32)
-                |    newX = newX[..., tf.newaxis]
-                |    newY = newY[..., tf.newaxis]
-                |    return (newX, newY)
-                """.trimMargin()
-            ),
+            datasetPlugin = processMnistTypePlugin,
             generateDebugComments = false
         )
 
@@ -168,17 +148,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
             userEpochs = 1,
             userNewModel = oldModel,
             target = ModelDeploymentTarget.Desktop,
-            datasetPlugin = Plugin.Unofficial(
-                "",
-                """
-                |def process_dataset(x, y):
-                |    newX = tf.cast(x / 255.0, tf.float32)
-                |    newY = tf.cast(y / 255.0, tf.float32)
-                |    newX = newX[..., tf.newaxis]
-                |    newY = newY[..., tf.newaxis]
-                |    return (newX, newY)
-                """.trimMargin()
-            ),
+            datasetPlugin = processMnistTypePlugin,
             generateDebugComments = false
         )
 
