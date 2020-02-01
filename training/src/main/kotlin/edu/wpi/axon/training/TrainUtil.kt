@@ -9,7 +9,6 @@ import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
 import edu.wpi.axon.dsl.running
-import edu.wpi.axon.dsl.task.CastTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
@@ -19,7 +18,6 @@ import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
 import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.PostTrainingQuantizationTask
-import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.dsl.task.RunPluginTask
 import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
@@ -159,89 +157,6 @@ internal fun ScriptGenerator.processLoadedDatasetWithPlugin(
         train = processedTrain,
         validation = processedValidation
     )
-}
-
-/**
- * Runs the [ReshapeAndScaleTask] on all data in the [dataset].
- *
- * @param dataset The dataset to scale.
- * @param reshapeArgs The reshape args for [ReshapeAndScaleTask.reshapeArgs].
- * @param scale The scale arg for [ReshapeAndScaleTask.scale].
- * @return A copy of [dataset] with the new data.
- */
-internal fun ScriptGenerator.reshapeAndScaleLoadedDataset(
-    dataset: LoadedDataset,
-    reshapeArgs: List<Int>,
-    scale: Int
-): LoadedDataset {
-    val scaledTrain = reshapeAndScale(
-        dataset.train.first,
-        reshapeArgs,
-        scale
-    ) to dataset.train.second
-
-    val scaledValidation = dataset.validation.map {
-        reshapeAndScale(it.first, reshapeArgs, scale) to it.second
-    }
-
-    return dataset.copy(
-        train = scaledTrain,
-        validation = scaledValidation
-    )
-}
-
-internal fun ScriptGenerator.cast(
-    dataset: Variable,
-    dtypeIn: String
-): Variable {
-    val castDataset by variables.creating(Variable::class)
-    tasks.run(CastTask::class) {
-        input = dataset
-        output = castDataset
-        dtype = dtypeIn
-    }
-
-    return castDataset
-}
-
-internal fun ScriptGenerator.castLoadedDataset(
-    dataset: LoadedDataset,
-    dtype: String
-): LoadedDataset {
-    val castTrain = cast(dataset.train.first, dtype) to dataset.train.second
-
-    val castValidation = dataset.validation.map {
-        cast(it.first, dtype) to it.second
-    }
-
-    return dataset.copy(
-        train = castTrain,
-        validation = castValidation
-    )
-}
-
-/**
- * Runs the [ReshapeAndScaleTask] on the input.
- *
- * @param dataset The dataset for [ReshapeAndScaleTask.input].
- * @param reshapeArgsIn The reshape args for [ReshapeAndScaleTask.reshapeArgs].
- * @param scaleIn The scale arg for [ReshapeAndScaleTask.scale].
- * @return The [ReshapeAndScaleTask.output].
- */
-internal fun ScriptGenerator.reshapeAndScale(
-    dataset: Variable,
-    reshapeArgsIn: List<Int>,
-    scaleIn: Number?
-): Variable {
-    val scaledDataset by variables.creating(Variable::class)
-    tasks.run(ReshapeAndScaleTask::class) {
-        input = dataset
-        output = scaledDataset
-        reshapeArgs = reshapeArgsIn
-        scale = scaleIn
-    }
-
-    return scaledDataset
 }
 
 /**
