@@ -263,6 +263,19 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                         "name=\"name\")"
                 ),
                 null
+            ),
+            Arguments.of(
+                Layer.Conv2D(
+                    "name",
+                    null,
+                    32,
+                    SerializableTuple2II(3, 3),
+                    Activation.Linear
+                ),
+                Right(
+                    "tf.keras.layers.Conv2D(32, (3, 3), activation=tf.keras.activations.linear, name=\"name\")"
+                ),
+                null
             )
         )
 

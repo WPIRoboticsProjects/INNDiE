@@ -6,6 +6,7 @@ import arrow.core.extensions.fx
 import arrow.core.right
 import edu.wpi.axon.tfdata.code.asTuple
 import edu.wpi.axon.tfdata.code.namedArguments
+import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.tfdata.code.unquoted
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
@@ -176,7 +177,17 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
-        is Layer.Conv2D -> TODO("Implement this.")
+        is Layer.Conv2D -> makeLayerCode(
+            "tf.keras.layers.Conv2D",
+            listOf(
+                layer.filters.toString(),
+                pythonString(layer.kernel)
+            ),
+            listOf(
+                "activation" to makeNewActivation(layer.activation).unquoted(),
+                "name" to layer.name
+            )
+        ).right()
 
         is Layer.ModelLayer -> Left("Cannot construct a ModelLayer: $layer")
         is Layer.UnknownLayer -> Left("Cannot construct an UnknownLayer: $layer")
