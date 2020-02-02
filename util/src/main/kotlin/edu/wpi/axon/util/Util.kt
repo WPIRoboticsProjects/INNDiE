@@ -5,6 +5,8 @@ import arrow.fx.IO
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.nio.file.Path
+import java.nio.file.Paths
 import mu.KotlinLogging
 
 infix fun <E> Iterable<E>.anyIn(other: Iterable<E>) = any { it in other }
@@ -77,5 +79,14 @@ fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
  */
 fun getOutputModelName(inputModelName: String): String =
     "${inputModelName.substringBeforeLast('.')}-trained.${inputModelName.substringAfterLast('.')}"
+
+/**
+ * The local directory that Axon uses to cache things in.
+ */
+val localAxonCacheDir: Path = Paths.get(
+    System.getProperty("user.home"),
+    ".wpilib",
+    "Axon"
+)
 
 private val LOGGER = KotlinLogging.logger { }

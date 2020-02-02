@@ -64,6 +64,15 @@ class S3Manager(
     fun uploadTestDataFile(file: File) = uploadLocalFile(file, "axon-test-data/${file.name}")
 
     /**
+     * Downloads a test data file to a local file.
+     *
+     * @param filename The test data filename.
+     * @return The test data in a local file.
+     */
+    fun downloadTestDataFile(filename: String): File =
+        downloadToLocalFile("axon-test-data/$filename")
+
+    /**
      * Lists all the untrained model files.
      *
      * @return A list of the untrained model filenames.
@@ -175,6 +184,23 @@ class S3Manager(
      */
     fun downloadPluginCache(cacheName: String): File =
         downloadToLocalFile("axon-plugins/$cacheName/plugin_cache.json")
+
+    /**
+     * Uploads a custom dataset.
+     *
+     * @param dataset The dataset file to upload.
+     */
+    fun uploadDataset(dataset: File) =
+        uploadLocalFile(dataset, "axon-datasets/${dataset.name}")
+
+    /**
+     * Downloads a custom dataset to a local file.
+     *
+     * @param datasetFilename The filename of the dataset to download.
+     * @return A local file containing the dataset.
+     */
+    fun downloadDataset(datasetFilename: String): File =
+        downloadToLocalFile("axon-datasets/$datasetFilename")
 
     /**
      * Downloads the preferences file to a local file. Throws an exception if there is no
