@@ -200,7 +200,7 @@ class S3Manager(
      * @return A local file containing the dataset.
      */
     fun downloadDataset(datasetFilename: String): File =
-        downloadToLocalFile("axon-datasets/${datasetFilename}")
+        downloadToLocalFile("axon-datasets/$datasetFilename")
 
     /**
      * Downloads the preferences file to a local file. Throws an exception if there is no
