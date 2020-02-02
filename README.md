@@ -40,7 +40,9 @@ singular DAG.
 If at any point the `ScriptGenerator` or any of its dependencies determines
 that the configuration is invalid, an error type is returned.
 
-### Adding a Layer
+### Modeling TensorFlow's Data
+
+#### Adding a Layer
 
 To add a layer,
 
@@ -51,7 +53,7 @@ To add a layer,
 previously did not understand the new layer type. If no tests fail, add a test that loads a model
 containing the new layer type.
 
-### Adding an Initializer
+#### Adding an Initializer
 
 To add an initializer,
 
@@ -64,7 +66,7 @@ loads each one.
 
 ### Plugins
 
-Axon uses a simple plugin system to generalize over many different dataset and models.
+Axon uses a simple plugin system to generalize over many different datasets and models.
 
 #### Dataset Plugins
 
@@ -75,10 +77,10 @@ be done. Dataset plugins must implement this function:
 ```python
 def process_dataset(x, y):
     # Do some data processing in here and return the results.
-    return (x, y)
+    return (processed_x, processed_y)
 ```
 
-In that function, `x` is the dataset and `y` is the label set.
+In that function, `x` is the input data and `y` is the target data.
 
 #### Test Data Loading Plugin
 
@@ -126,26 +128,17 @@ random alphanumeric characters for uniqueness), Axon manages these directories:
 - axon-untrained-models
     - Contains “untrained” models that the user can use to create a new Job with
     - These models cannot be used for testing because they are assumed to not contain any weights (or at least not any meaningful weights)
-    - EC2 pulls untrained models from here when running a training job
 - axon-training-results
-    - File format is `axon-training-results/{job id}/{results files...}`
     - Contains all results from running a training script
-    - EC2 uploads trained models here after finishing a training job
 - axon-test-data
     - Contains test data files that can be used with the test view
-    - Lambda pulls test data files from here
 - axon-datasets
-    - Contains the user's datasets
-    - EC2 pulls datasets from here for training
+    - Contains the user's custom datasets
 - axon-training-scripts
     - Contains generated training scripts
-    - EC2 pulls training scripts from here
 - axon-training-progress
     - Contains training progress files that Axon polls to get training progress updates
-    - EC2 writes training progress into here
-    - File format is `axon-training-progress/{model name}/{dataset name}/progress.txt`
 - axon-plugins
-    - Contains directories for each plugin cache
     - Unofficial plugins are stored here
 
 ### AWS Configuration
