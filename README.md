@@ -64,14 +64,57 @@ loads each one.
 
 ### Plugins
 
-Axon uses a simple plugin system to generalize over many different dataset and models. If you want
-to add a dataset plugin to process the dataset after it is loaded but before it is given to the
-model for training, your plugin body must implement this function:
+Axon uses a simple plugin system to generalize over many different dataset and models.
+
+#### Dataset Plugins
+
+You can use dataset plugins to control how datasets are processed before training. In the training
+script, after a dataset is loaded, it is given to a dataset plugin for processing, before being
+given to the model during training. This is when any model-specific processing or formatting should
+be done. Dataset plugins must implement this function:
 ```python
 def process_dataset(x, y):
     # Do some data processing in here and return the results.
     return (x, y)
 ```
+
+In that function, `x` is the dataset and `y` is the label set.
+
+#### Test Data Loading Plugin
+
+At the start of a test run, the test data must be loaded by a plugin. You can control how the test
+data is loaded and processed before being given to the model during inference using a test data
+loading plugin. These plugins must implement this function:
+```python
+def load_test_data(path):
+    # Load the dataset from `path`, process it, and return it
+    # along with `steps`.
+    return (data, steps)
+```
+
+In that function, `path` is the file path to the test data that the user requested be loaded. In the
+return statement, `data` is the final dataset that will be given directly to the model and `steps`
+is the number of steps to give to TensorFlow when running inference; consult [the TensorFlow
+documentation](https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/keras/Model#predict)
+for how to use `steps`.
+
+#### Test Output Processing Plugin
+
+After the inference step of a test run has completed, the input and output to/from the model is
+given to a test output processing plugin. This plugin is responsible for interpreting the output of
+the model and writing any test results to a folder in the current directory called `output`. Any
+files put into this directory will be presented to the user in Axon's test view UI. These plugins
+must implement this function:
+```python
+def process_model_output(model_input, model_output):
+    from pathlib import Path
+    # Write test result files into the `output` directory.
+    Path("output/file1.txt").touch()
+    Path("output/file2.txt").touch()
+```
+
+In that function, `model_input` is the data given to the model for inference and `model_output` is
+the output directly from the model.
 
 ## AWS Integration
 
