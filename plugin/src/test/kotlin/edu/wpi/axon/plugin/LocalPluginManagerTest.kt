@@ -1,6 +1,7 @@
 package edu.wpi.axon.plugin
 
 import io.kotlintest.matchers.collections.shouldBeEmpty
+import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.shouldThrow
 import java.io.File
@@ -13,7 +14,7 @@ internal class LocalPluginManagerTest {
     @Test
     fun `list plugins with just official plugins`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
-        val officialPlugins = listOf(
+        val officialPlugins = setOf(
             Plugin.Official("a", "a"),
             Plugin.Official("b", "b")
         )
@@ -26,9 +27,9 @@ internal class LocalPluginManagerTest {
     @Test
     fun `list plugins with just unofficial plugins`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
-        val manager = LocalPluginManager(pluginCacheFile, listOf())
+        val manager = LocalPluginManager(pluginCacheFile, setOf())
         manager.initialize()
-        val unofficialPlugins = listOf(
+        val unofficialPlugins = setOf(
             Plugin.Unofficial("a", "a"),
             Plugin.Unofficial("b", "b")
         )
@@ -39,12 +40,12 @@ internal class LocalPluginManagerTest {
     @Test
     fun `list plugins with official and unofficial plugins`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
-        val officialPlugins = listOf(
+        val officialPlugins = setOf(
             Plugin.Official("a", "a"),
             Plugin.Official("b", "b")
         )
 
-        val unofficialPlugins = listOf(
+        val unofficialPlugins = setOf(
             Plugin.Unofficial("a", "a"),
             Plugin.Unofficial("b", "b")
         )
@@ -58,14 +59,14 @@ internal class LocalPluginManagerTest {
     @Test
     fun `list plugins with calling initialize`(@TempDir tempDir: File) {
         File(tempDir, "cache.json").apply { createNewFile() }
-        shouldThrow<IllegalStateException> { LocalPluginManager(tempDir, listOf()).listPlugins() }
+        shouldThrow<IllegalStateException> { LocalPluginManager(tempDir, setOf()).listPlugins() }
     }
 
     @Test
     fun `load plugins from local cache`(@TempDir tempDir: File) {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         val exampleCacheData = PluginCache(
-            listOf(
+            setOf(
                 Plugin.Unofficial("a", "a"),
                 Plugin.Unofficial("b", "b")
             )
@@ -73,7 +74,7 @@ internal class LocalPluginManagerTest {
 
         pluginCacheFile.writeText(exampleCacheData.serialize())
 
-        val manager = LocalPluginManager(pluginCacheFile, listOf())
+        val manager = LocalPluginManager(pluginCacheFile, setOf())
         manager.initialize()
         manager.listPlugins().shouldContainExactlyInAnyOrder(exampleCacheData.plugins)
     }
@@ -84,10 +85,10 @@ internal class LocalPluginManagerTest {
         val plugin1 = Plugin.Unofficial("a", "a")
         val plugin2 = Plugin.Unofficial("b", "b")
 
-        val exampleCacheData = PluginCache(listOf(plugin1))
+        val exampleCacheData = PluginCache(setOf(plugin1))
         pluginCacheFile.writeText(exampleCacheData.serialize())
 
-        val manager = LocalPluginManager(pluginCacheFile, listOf())
+        val manager = LocalPluginManager(pluginCacheFile, setOf())
         manager.initialize()
         manager.addUnofficialPlugin(plugin2)
 
@@ -101,14 +102,14 @@ internal class LocalPluginManagerTest {
         val plugin1 = Plugin.Unofficial("a", "a")
         val plugin2 = Plugin.Unofficial("b", "b")
 
-        val exampleCacheData = PluginCache(listOf(plugin1, plugin2))
+        val exampleCacheData = PluginCache(setOf(plugin1, plugin2))
         pluginCacheFile.writeText(exampleCacheData.serialize())
 
-        val manager = LocalPluginManager(pluginCacheFile, listOf())
+        val manager = LocalPluginManager(pluginCacheFile, setOf())
         manager.initialize()
-        manager.removeUnofficialPlugin(plugin1)
+        manager.removeUnofficialPlugin(plugin1.name)
         PluginCache.deserialize(pluginCacheFile.readText()).plugins
-            .shouldContainExactlyInAnyOrder(plugin2)
+            .shouldContainExactly(plugin2)
     }
 
     @Test
@@ -116,8 +117,25 @@ internal class LocalPluginManagerTest {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         pluginCacheFile.writeText(RandomStringUtils.randomAlphanumeric(10))
 
-        val manager = LocalPluginManager(pluginCacheFile, listOf())
+        val manager = LocalPluginManager(pluginCacheFile, setOf())
         manager.initialize()
         manager.listPlugins().shouldBeEmpty()
+    }
+
+    @Test
+    fun `modifying a plugin modifies it in the cache`(@TempDir tempDir: File) {
+        val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
+        val plugin1 = Plugin.Unofficial("a", "a")
+        val plugin2 = Plugin.Unofficial("b", "b")
+
+        val exampleCacheData = PluginCache(setOf(plugin1, plugin2))
+        pluginCacheFile.writeText(exampleCacheData.serialize())
+
+        val manager = LocalPluginManager(pluginCacheFile, setOf())
+        manager.initialize()
+        val newPlugin1 = Plugin.Unofficial("a", "a1")
+        manager.modifyUnofficialPlugin(plugin1.name, newPlugin1)
+        PluginCache.deserialize(pluginCacheFile.readText()).plugins
+            .shouldContainExactlyInAnyOrder(newPlugin1, plugin2)
     }
 }
