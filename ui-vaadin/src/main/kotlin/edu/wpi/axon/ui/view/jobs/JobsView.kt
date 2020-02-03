@@ -67,6 +67,7 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
                                 JobCreatorDialog().let { dialog ->
                                     dialog.open()
                                     dialog.addDialogCloseActionListener {
+                                        grid.refresh()
                                         dialog.newJobId?.let { navigateTo(it) }
                                     }
                                 }

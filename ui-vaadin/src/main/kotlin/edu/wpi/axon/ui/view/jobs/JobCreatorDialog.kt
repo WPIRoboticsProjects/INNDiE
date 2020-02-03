@@ -121,8 +121,14 @@ class JobCreatorDialog : Dialog(), KoinComponent {
                                 } ?: ValidationResult.error("Must not be empty.")
                             }.bind(JobData::name)
                         }
+                    }
+
+                    verticalLayout {
+                        label("Training Data")
+                        hr()
 
                         comboBox<Dataset>("Training Dataset") {
+                            setWidthFull()
                             setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
                                 it.objectInstance
                             })
@@ -136,14 +142,25 @@ class JobCreatorDialog : Dialog(), KoinComponent {
                             setItemLabelGenerator { it.name }
                             bind(binder).asRequired().bind(JobData::datasetPlugin)
                         }
+                    }
+
+                    verticalLayout {
+                        label("Model")
+                        hr()
 
                         comboBox<ExampleModel>("Starting Model") {
                             val exampleModels =
                                 exampleModelManager.getAllExampleModels().unsafeRunSync()
+                            setWidthFull()
                             setItems(exampleModels)
                             setItemLabelGenerator { it.name }
                             bind(binder).asRequired().bind(JobData::exampleModel)
                         }
+                    }
+
+                    verticalLayout {
+                        label("Training")
+                        hr()
 
                         textField("Metrics") {
                             placeholder = "accuracy, loss"
@@ -177,6 +194,7 @@ class JobCreatorDialog : Dialog(), KoinComponent {
                         hr()
 
                         comboBox<Loss>("Loss") {
+                            setWidthFull()
                             setItems(Loss::class.sealedSubclasses.mapNotNull { it.objectInstance })
                             setItemLabelGenerator { it::class.simpleName }
                             bind(binder).asRequired().bind(JobData::loss)
@@ -191,6 +209,7 @@ class JobCreatorDialog : Dialog(), KoinComponent {
                             val comboBoxVL = this
                             var optContent: Component? = null
                             comboBox<KClass<out Optimizer>> {
+                                setWidthFull()
                                 setItems(Optimizer::class.sealedSubclasses)
                                 setItemLabelGenerator { it.simpleName }
 
@@ -228,8 +247,7 @@ class JobCreatorDialog : Dialog(), KoinComponent {
                     button("Confirm", Icon(VaadinIcon.CHECK_CIRCLE)) {
                         val jobData = JobData()
                         onLeftClick {
-                            if (binder.validate().isOk && binder.writeBeanIfValid(jobData)
-                            ) {
+                            if (binder.validate().isOk && binder.writeBeanIfValid(jobData)) {
                                 LOGGER.debug {
                                     """
                                     |$jobData
@@ -237,6 +255,7 @@ class JobCreatorDialog : Dialog(), KoinComponent {
                                 }
                                 val job = jobData.convertToJob(exampleModelManager, jobDb)
                                 newJobId = job.id
+                                LOGGER.debug { "New job id: $newJobId" }
                                 close()
                             }
                         }
