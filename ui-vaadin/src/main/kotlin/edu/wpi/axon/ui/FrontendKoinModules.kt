@@ -9,6 +9,8 @@ import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.plugin.S3PluginManager
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.examplemodel.ExampleModelManager
+import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.plugin.LocalPluginManager
@@ -16,8 +18,6 @@ import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.testPluginManagerName
-import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.examplemodel.GitExampleModelManager
 import java.nio.file.Paths
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
@@ -113,6 +113,5 @@ fun defaultFrontendModule() = module {
 
     single { JobLifecycleManager(jobRunner = get(), jobDb = get(), waitAfterStartingJobMs = 5000L) }
     single { JobRunner() }
-
     single<ExampleModelManager> { GitExampleModelManager() }
 }

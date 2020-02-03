@@ -65,19 +65,19 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
                             addThemeVariants(ButtonVariant.LUMO_PRIMARY)
                             onLeftClick {
                                 // navigateTo(-1)
-                            JobCreatorDialog().open()
+                                JobCreatorDialog().open()
+                            }
+                        }
+                    }
+                    grid = jobGrid(dataProvider) {
+                        asSingleSelect().addValueChangeListener {
+                            navigateTo(it.value?.id)
                         }
                     }
                 }
-                grid = jobGrid(dataProvider) {
-                    asSingleSelect().addValueChangeListener {
-                        navigateTo(it.value?.id)
-                    }
-                }
+                form = jobEditorForm()
             }
-            form = jobEditorForm()
         }
-    }
 
         val ui = UI.getCurrent()
         jobDb.subscribe { op, jobFromDb ->
