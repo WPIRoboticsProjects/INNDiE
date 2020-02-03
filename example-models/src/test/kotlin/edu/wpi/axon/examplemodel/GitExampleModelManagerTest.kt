@@ -9,7 +9,6 @@ import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.shouldBe
 import java.io.File
-import java.nio.file.Paths
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -102,7 +101,7 @@ internal class GitExampleModelManagerTest {
         manager.updateCache().unsafeRunSync()
         manager.cacheDir.shouldExist()
         manager.getAllExampleModels().unsafeRunSync().forEach { model ->
-            val file = Paths.get(manager.cacheDir.absolutePath, model.fileName).toFile()
+            val file = manager.cacheDir.toPath().resolve(model.fileName).toFile()
             file.createNewFile()
             manager.download(model).unsafeRunSync().let {
                 it.shouldExist()

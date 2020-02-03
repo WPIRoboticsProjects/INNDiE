@@ -1,22 +1,30 @@
 package edu.wpi.axon.aws
 
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import java.io.File
 
-interface TrainingScriptRunner {
+interface TrainingScriptRunner : TrainingScriptProgressReporter, TrainingScriptCanceller {
 
     /**
      * Start running a training script.
      *
-     * @param runTrainingScriptConfiguration The data needed to start the script.
-     * @return The script id used to query about the script during and after training.
+     * @param config The data needed to start the script.
      */
-    fun startScript(runTrainingScriptConfiguration: RunTrainingScriptConfiguration): Long
+    fun startScript(config: RunTrainingScriptConfiguration)
 
     /**
-     * Queries for the current progress state of the script.
+     * Lists the results from running the training script.
      *
-     * @param scriptId The id of the script, from [startScript].
-     * @return The current progress state of the script.
+     * @param id The Job ID.
+     * @return The names of the results.
      */
-    fun getTrainingProgress(scriptId: Long): TrainingScriptProgress
+    fun listResults(id: Int): List<String>
+
+    /**
+     * Gets a result as a local file.
+     *
+     * @param id The Job ID.
+     * @param filename The name of the result to download.
+     * @return A local file containing the result.
+     */
+    fun getResult(id: Int, filename: String): File
 }

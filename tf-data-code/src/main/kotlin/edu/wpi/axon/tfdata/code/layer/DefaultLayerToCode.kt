@@ -1,11 +1,12 @@
 package edu.wpi.axon.tfdata.code.layer
 
 import arrow.core.Either
+import arrow.core.Left
 import arrow.core.extensions.fx
-import arrow.core.left
 import arrow.core.right
 import edu.wpi.axon.tfdata.code.asTuple
 import edu.wpi.axon.tfdata.code.namedArguments
+import edu.wpi.axon.tfdata.code.pythonString
 import edu.wpi.axon.tfdata.code.unquoted
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
@@ -42,10 +43,18 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
                     "epsilon" to layer.epsilon,
                     "center" to layer.center,
                     "scale" to layer.scale,
-                    "beta_initializer" to initializerToCode.makeNewInitializer(layer.betaInitializer).bind().unquoted(),
-                    "gamma_initializer" to initializerToCode.makeNewInitializer(layer.gammaInitializer).bind().unquoted(),
-                    "moving_mean_initializer" to initializerToCode.makeNewInitializer(layer.movingMeanInitializer).bind().unquoted(),
-                    "moving_variance_initializer" to initializerToCode.makeNewInitializer(layer.movingVarianceInitializer).bind().unquoted(),
+                    "beta_initializer" to initializerToCode.makeNewInitializer(
+                        layer.betaInitializer
+                    ).bind().unquoted(),
+                    "gamma_initializer" to initializerToCode.makeNewInitializer(
+                        layer.gammaInitializer
+                    ).bind().unquoted(),
+                    "moving_mean_initializer" to initializerToCode.makeNewInitializer(
+                        layer.movingMeanInitializer
+                    ).bind().unquoted(),
+                    "moving_variance_initializer" to initializerToCode.makeNewInitializer(
+                        layer.movingVarianceInitializer
+                    ).bind().unquoted(),
                     "beta_regularizer" to layer.betaRegularizer?.let {
                         regularizerToCode.makeNewRegularizer(
                             it
@@ -168,8 +177,20 @@ class DefaultLayerToCode : LayerToCode, KoinComponent {
             )
         ).right()
 
-        // TODO: Remove this
-        else -> "Cannot construct an unknown layer: $layer".left()
+        is Layer.Conv2D -> makeLayerCode(
+            "tf.keras.layers.Conv2D",
+            listOf(
+                layer.filters.toString(),
+                pythonString(layer.kernel)
+            ),
+            listOf(
+                "activation" to makeNewActivation(layer.activation).unquoted(),
+                "name" to layer.name
+            )
+        ).right()
+
+        is Layer.ModelLayer -> Left("Cannot construct a ModelLayer: $layer")
+        is Layer.UnknownLayer -> Left("Cannot construct an UnknownLayer: $layer")
     }
 
     override fun makeNewActivation(activation: Activation) = "tf.keras.activations." +

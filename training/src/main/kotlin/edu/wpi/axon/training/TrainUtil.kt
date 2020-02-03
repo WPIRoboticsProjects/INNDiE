@@ -8,54 +8,39 @@ import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
-import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
-import edu.wpi.axon.dsl.task.DownloadUntrainedModelFromS3Task
 import edu.wpi.axon.dsl.task.EarlyStoppingTask
-import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
-import edu.wpi.axon.dsl.task.ReshapeAndScaleTask
+import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
+import edu.wpi.axon.dsl.task.PostTrainingQuantizationTask
+import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
+import edu.wpi.axon.dsl.task.RunPluginTask
 import edu.wpi.axon.dsl.task.S3ProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.SaveModelTask
+import edu.wpi.axon.dsl.task.SliceTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.task.TrainTask
-import edu.wpi.axon.dsl.task.UploadTrainedModelToS3Task
 import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 
 /**
- * Loads a model in to a variable using. Downloads the model from S3 first if credentials were
- * provided.
+ * Loads a model in to a variable using. Assumes the model is on disk.
  *
  * @param trainState The training state.
  * @return The loaded model from [LoadModelTask].
  */
 internal fun ScriptGenerator.loadModel(trainState: TrainState<*>): Variable {
-    val downloadModelFromS3Task = if (trainState.handleS3InScript) {
-        check(trainState.userBucketName != null) {
-            "The script was told to download the model from S3, but no bucket name was specified."
-        }
-
-        tasks.run(DownloadUntrainedModelFromS3Task::class) {
-            modelName = trainState.userOldModelPath
-            bucketName = trainState.userBucketName
-        }
-    } else null
-
     val model = variables.create(Variable::class)
     val loadModelTask = tasks.run(LoadModelTask::class) {
-        modelPath = trainState.userOldModelName
+        modelPath = trainState.userOldModelPath.path
         modelOutput = model
-
-        if (downloadModelFromS3Task != null) {
-            dependencies += downloadModelFromS3Task
-        }
     }
 
     return model
@@ -73,12 +58,8 @@ internal fun ScriptGenerator.loadDataset(
     is Dataset.ExampleDataset -> loadExampleDataset(trainState)
 
     is Dataset.Custom -> when {
-        trainState.userDataset.pathInS3.endsWith(".tar") ->
-            loadSuperviselyDataset(trainState)
-
-        else -> error(
-            "Unsupported dataset format: ${trainState.userDataset.pathInS3}"
-        )
+        trainState.userDataset.path.path.endsWith(".tar") -> loadSuperviselyDataset(trainState)
+        else -> error("Unsupported dataset format: ${trainState.userDataset}")
     }
 }
 
@@ -124,13 +105,6 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
 ): LoadedDataset {
     require(trainState.userDataset is Dataset.Custom)
 
-    // TODO: Run conversion as a separate step so that eager execution is disabled when training
-    // LoadTFRecordOfImagesWithObjects needs eager execution
-    check(pregenerationLastTask == null) {
-        "BUG: pregenerationLastTask was not null and would have been overwritten."
-    }
-    pregenerationLastTask = tasks.runExactlyOnce(EnableEagerExecutionTask::class)
-
     val convertTask = tasks.run(ConvertSuperviselyDatasetToRecord::class) {
         dataset = trainState.userDataset
     }
@@ -151,62 +125,42 @@ internal fun ScriptGenerator.loadSuperviselyDataset(
     )
 }
 
-/**
- * Runs the [ReshapeAndScaleTask] on all data in the [dataset].
- *
- * @param dataset The dataset to scale.
- * @param reshapeArgs The reshape args for [ReshapeAndScaleTask.reshapeArgs].
- * @param scale The scale arg for [ReshapeAndScaleTask.scale].
- * @return A copy of [dataset] with the new data.
- */
-internal fun ScriptGenerator.reshapeAndScaleLoadedDataset(
-    dataset: LoadedDataset,
-    reshapeArgs: List<Int>,
-    scale: Int
-): LoadedDataset {
-    val scaledTrain = reshapeAndScale(
-        dataset.train.first,
-        reshapeArgs,
-        scale
-    ) to dataset.train.second
+internal fun ScriptGenerator.processDatasetWithPlugin(
+    xIn: Variable,
+    yIn: Variable,
+    plugin: Plugin
+): Pair<Variable, Variable> {
+    val xOut by variables.creating(Variable::class)
+    val yOut by variables.creating(Variable::class)
 
-    val scaledValidation = dataset.validation.map {
-        reshapeAndScale(it.first, reshapeArgs, scale) to it.second
+    tasks.run(RunPluginTask::class) {
+        functionName = "process_dataset"
+        functionDefinition = plugin.contents
+        functionInputs = listOf(xIn, yIn)
+        functionOutputs = listOf(xOut, yOut)
+    }
+
+    return xOut to yOut
+}
+
+internal fun ScriptGenerator.processLoadedDatasetWithPlugin(
+    dataset: LoadedDataset,
+    plugin: Plugin
+): LoadedDataset {
+    val processedTrain = processDatasetWithPlugin(dataset.train.first, dataset.train.second, plugin)
+
+    val processedValidation = dataset.validation.map {
+        processDatasetWithPlugin(it.first, it.second, plugin)
     }
 
     return dataset.copy(
-        train = scaledTrain,
-        validation = scaledValidation
+        train = processedTrain,
+        validation = processedValidation
     )
 }
 
 /**
- * Runs the [ReshapeAndScaleTask] on the input.
- *
- * @param dataset The dataset for [ReshapeAndScaleTask.input].
- * @param reshapeArgsIn The reshape args for [ReshapeAndScaleTask.reshapeArgs].
- * @param scaleIn The scale arg for [ReshapeAndScaleTask.scale].
- * @return The [ReshapeAndScaleTask.output].
- */
-internal fun ScriptGenerator.reshapeAndScale(
-    dataset: Variable,
-    reshapeArgsIn: List<Int>,
-    scaleIn: Number?
-): Variable {
-    val scaledDataset by variables.creating(Variable::class)
-    tasks.run(ReshapeAndScaleTask::class) {
-        input = dataset
-        output = scaledDataset
-        reshapeArgs = reshapeArgsIn
-        scale = scaleIn
-    }
-
-    return scaledDataset
-}
-
-/**
- * Compiles, trains (with callbacks), and saves a model. Also uploads the model to S3 if credentials
- * were provided.
+ * Compiles, trains (with callbacks), and saves a model.
  *
  * @param trainState The training state.
  * @param oldModel The model on disk the user is starting training with.
@@ -238,9 +192,9 @@ internal fun ScriptGenerator.compileTrainSave(
         filePath = if (hasValidation) {
             // Can only use val_loss if there is validation data, which can take the form of
             // a validation dataset or a nonzero validation split
-            "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
         } else {
-            "${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
+            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
         }
         monitor = if (hasValidation) "val_loss" else "loss"
         saveWeightsOnly = true
@@ -256,14 +210,16 @@ internal fun ScriptGenerator.compileTrainSave(
         output = earlyStoppingCallback
     }
 
-    var s3ProgressReportingCallback: Variable? = null
-    if (trainState.userBucketName != null) {
-        s3ProgressReportingCallback = variables.create(Variable::class)
+    val progressReportingCallback: Variable = variables.create(Variable::class)
+    if (trainState.usesAWS) {
         tasks.run(S3ProgressReportingCallbackTask::class) {
-            modelName = trainState.userNewModelName
-            datasetName = trainState.userDataset.nameForS3ProgressReporting
-            bucketName = trainState.userBucketName
-            output = s3ProgressReportingCallback
+            jobId = trainState.jobId
+            output = progressReportingCallback
+        }
+    } else {
+        tasks.run(LocalProgressReportingCallbackTask::class) {
+            jobId = trainState.jobId
+            output = progressReportingCallback
         }
     }
 
@@ -279,35 +235,53 @@ internal fun ScriptGenerator.compileTrainSave(
             validationOutputData = Some(it.second)
         }
 
-        callbacks = setOf(checkpointCallback, earlyStoppingCallback)
-
-        // Add the s3 progress reporting callback if it is not null. Null when we don't have AWS
-        // data.
-        s3ProgressReportingCallback?.let { callbacks = callbacks + it }
+        callbacks = setOf(checkpointCallback, earlyStoppingCallback, progressReportingCallback)
 
         epochs = trainState.userEpochs
         dependencies += compileModelTask
     }
 
-    val saveModelTask by tasks.running(SaveModelTask::class) {
+    return tasks.run(SaveModelTask::class) {
         modelInput = newModel
-        modelFileName = trainState.userNewModelName
+        modelPath = "${trainState.workingDir}/${trainState.trainedModelFilename}"
         dependencies += trainModelTask
     }
+}
 
-    return if (trainState.handleS3InScript) {
-        val uploadModelToS3Task by tasks.running(UploadTrainedModelToS3Task::class) {
-            check(trainState.userBucketName != null) {
-                "The script was told to upload the model to S3, but no bucket name was specified."
-            }
+/**
+ * Quantizes and compiles a model for the Coral Edge TPU. Uses post-training quantization.
+ *
+ * @param trainState The training state
+ * @param loadedDataset The dataset the model was trained on.
+ * @return The last task in the sequence of operations.
+ */
+internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
+    trainState: TrainState<*>,
+    loadedDataset: LoadedDataset
+): Task {
+    require(trainState.target is ModelDeploymentTarget.Coral)
 
-            modelName = trainState.userNewModelName
-            bucketName = trainState.userBucketName
-            dependencies += saveModelTask
-        }
-
-        uploadModelToS3Task
-    } else {
-        saveModelTask
+    // Only grab 10% of the dataset
+    val datasetSlice = variables.create(Variable::class)
+    tasks.run(SliceTask::class) {
+        input = loadedDataset.train.first
+        output = datasetSlice
+        sliceNotation = "[:int(len(${loadedDataset.train.first.name}) * " +
+            "${trainState.target.representativeDatasetPercentage})]"
     }
+
+    val tfliteModelPath = "${trainState.trainedModelFilename.substringBeforeLast('.')}.tflite"
+    val postTrainingQuantizationTask by tasks.running(PostTrainingQuantizationTask::class) {
+        modelFilename = trainState.workingDir.resolve(trainState.trainedModelFilename).toString()
+        outputModelFilename = trainState.workingDir.resolve(tfliteModelPath).toString()
+        representativeDataset = datasetSlice
+    }
+
+    val runEdgeTpuCompilerTask by tasks.running(RunEdgeTpuCompilerTask::class) {
+        inputModelFilename = tfliteModelPath
+        outputDir = trainState.workingDir.toString()
+        dependencies.add(postTrainingQuantizationTask)
+    }
+
+    return runEdgeTpuCompilerTask
 }

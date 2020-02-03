@@ -47,21 +47,24 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
     companion object {
 
         @JvmStatic
-        @Suppress("unused")
+        @Suppress("unused", "LongMethod", "StringLiteralDuplication")
         fun layerSource() = listOf(
             Arguments.of(
                 Layer.Dense("name", null, 3, Activation.ReLu),
-                """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
+                ("tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, " +
+                    "name=\"name\")").right(),
                 null
             ),
             Arguments.of(
                 Layer.Dense("name", setOf("input_name"), 3, Activation.ReLu),
-                """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
+                ("tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, " +
+                    "name=\"name\")").right(),
                 null
             ),
             Arguments.of(
                 Layer.Dense("name", null, 3, Activation.ReLu).trainable(),
-                """tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, name="name")""".right(),
+                ("tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, " +
+                    "name=\"name\")").right(),
                 null
             ),
             Arguments.of(
@@ -71,29 +74,33 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
             ),
             Arguments.of(
                 Layer.InputLayer("name", listOf(224, 224, 3), null, null, false),
-                """tf.keras.Input(shape=(224,224,3), batch_size=None, dtype=None, sparse=False)""".right(),
+                ("tf.keras.Input(shape=(224,224,3), batch_size=None, dtype=None, " +
+                    "sparse=False)").right(),
                 null
             ),
             // Validating the first null is not in the shape for an InputLayer should be handled at
             // a higher level. This test ensures that this level does not try to handle it.
             Arguments.of(
                 Layer.InputLayer("name", listOf(null, 224, 224, 3), null, null, false),
-                """tf.keras.Input(shape=(None,224,224,3), batch_size=None, dtype=None, sparse=False)""".right(),
+                ("tf.keras.Input(shape=(None,224,224,3), batch_size=None, " +
+                    "dtype=None, sparse=False)").right(),
                 null
             ),
             Arguments.of(
                 Layer.Dropout("name", setOf("in1"), 0.2),
-                """tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None, name="name")""".right(),
+                ("tf.keras.layers.Dropout(0.2, noise_shape=None, seed=None, " +
+                    "name=\"name\")").right(),
                 null
             ),
             Arguments.of(
                 Layer.Dropout("name", setOf("in1"), 0.2, listOf(1, 2, 3), 2),
-                """tf.keras.layers.Dropout(0.2, noise_shape=(1,2,3), seed=2, name="name")""".right(),
+                ("tf.keras.layers.Dropout(0.2, noise_shape=(1,2,3), seed=2, " +
+                    "name=\"name\")").right(),
                 null
             ),
             Arguments.of(
                 Layer.UnknownLayer("", null),
-                """Cannot construct an unknown layer: UnknownLayer(name=, inputs=null)""".left(),
+                """Cannot construct an UnknownLayer: UnknownLayer(name=, inputs=null)""".left(),
                 null
             ),
             Arguments.of(
@@ -105,7 +112,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     PoolingPadding.Valid,
                     null
                 ),
-                """tf.keras.layers.MaxPooling2D(pool_size=1, strides=2, padding="valid", data_format=None, name="name")""".right(),
+                ("tf.keras.layers.MaxPooling2D(pool_size=1, strides=2, padding=\"valid\", " +
+                    "data_format=None, name=\"name\")").right(),
                 null
             ),
             Arguments.of(
@@ -117,7 +125,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     PoolingPadding.Same,
                     DataFormat.ChannelsLast
                 ),
-                """tf.keras.layers.MaxPooling2D(pool_size=1, strides=None, padding="same", data_format="channels_last", name="name")""".right(),
+                ("tf.keras.layers.MaxPooling2D(pool_size=1, strides=None, " +
+                    """padding="same", data_format="channels_last", name="name")""").right(),
                 null
             ),
             Arguments.of(
@@ -129,7 +138,8 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     PoolingPadding.Valid,
                     DataFormat.ChannelsFirst
                 ),
-                """tf.keras.layers.MaxPooling2D(pool_size=(1, 2), strides=(3, 4), padding="valid", data_format="channels_first", name="name")""".right(),
+                ("tf.keras.layers.MaxPooling2D(pool_size=(1, 2), strides=(3, 4), " +
+                    """padding="valid", data_format="channels_first", name="name")""").right(),
                 null
             ),
             Arguments.of(
@@ -157,10 +167,11 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 ),
                 ("tf.keras.layers.BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001, " +
                     "center=True, scale=True, beta_initializer=1, gamma_initializer=1, " +
-                    "moving_mean_initializer=1, moving_variance_initializer=1, beta_regularizer=2, " +
-                    "gamma_regularizer=2, beta_constraint=3, gamma_constraint=3, renorm=False, " +
-                    "renorm_clipping=None, renorm_momentum=0.99, fused=None, " +
-                    """virtual_batch_size=None, adjustment=None, name="name")""").right(),
+                    "moving_mean_initializer=1, moving_variance_initializer=1, " +
+                    "beta_regularizer=2, gamma_regularizer=2, beta_constraint=3, " +
+                    "gamma_constraint=3, renorm=False, renorm_clipping=None, " +
+                    "renorm_momentum=0.99, fused=None, virtual_batch_size=None, " +
+                    "adjustment=None, name=\"name\")").right(),
                 module {
                     single {
                         mockk<ConstraintToCode> {
@@ -187,7 +198,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     null,
                     DataFormat.ChannelsFirst
                 ),
-                ("""tf.keras.layers.Flatten(data_format="channels_first", name="name")""").right(),
+                """tf.keras.layers.Flatten(data_format="channels_first", name="name")""".right(),
                 null
             ),
             Arguments.of(
@@ -199,7 +210,10 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     PoolingPadding.Valid,
                     DataFormat.ChannelsLast
                 ),
-                Right("""tf.keras.layers.AvgPool2D(pool_size=(2, 2), strides=3, padding="valid", data_format="channels_last", name="name")"""),
+                Right(
+                    "tf.keras.layers.AvgPool2D(pool_size=(2, 2), strides=3, padding=\"valid\", " +
+                        """data_format="channels_last", name="name")"""
+                ),
                 null
             ),
             Arguments.of(
@@ -208,7 +222,10 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     null,
                     DataFormat.ChannelsFirst
                 ),
-                Right("""tf.keras.layers.GlobalMaxPooling2D(data_format="channels_first", name="name")"""),
+                Right(
+                    "tf.keras.layers.GlobalMaxPooling2D(data_format=\"channels_first\"," +
+                        " name=\"name\")"
+                ),
                 null
             ),
             Arguments.of(
@@ -229,7 +246,10 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     null,
                     Interpolation.Nearest
                 ),
-                Right("""tf.keras.layers.UpSampling2D(size=(2, 2), data_format=None, interpolation="nearest", name="name")"""),
+                Right(
+                    "tf.keras.layers.UpSampling2D(size=(2, 2), data_format=None, " +
+                        "interpolation=\"nearest\", name=\"name\")"
+                ),
                 null
             ),
             Arguments.of(
@@ -238,7 +258,23 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                     null,
                     DataFormat.ChannelsLast
                 ),
-                Right("""tf.keras.layers.GlobalAveragePooling2D(data_format="channels_last", name="name")"""),
+                Right(
+                    "tf.keras.layers.GlobalAveragePooling2D(data_format=\"channels_last\", " +
+                        "name=\"name\")"
+                ),
+                null
+            ),
+            Arguments.of(
+                Layer.Conv2D(
+                    "name",
+                    null,
+                    32,
+                    SerializableTuple2II(3, 3),
+                    Activation.Linear
+                ),
+                Right(
+                    "tf.keras.layers.Conv2D(32, (3, 3), activation=tf.keras.activations.linear, name=\"name\")"
+                ),
                 null
             )
         )

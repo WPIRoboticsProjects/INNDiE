@@ -20,17 +20,14 @@ dependencies {
     api(koin("koin-core"))
 
     api(project(":tf-data"))
-    api(project(":db-data"))
+    api(project(":db"))
+    api(project(":training"))
+    api(project(":plugin"))
 
     api(
         group = "software.amazon.awssdk",
         name = "aws-sdk-java",
         version = "2.10.12"
-    )
-    implementation(
-        group = "com.amazonaws",
-        name = "aws-java-sdk",
-        version = "1.11.674"
     )
 
     implementation(
@@ -49,5 +46,5 @@ dependencies {
     implementation(project(":util"))
 
     testImplementation(project(":test-util"))
-    testImplementation(project(":db-data-test-util"))
+    testImplementation(project(":db-test-util"))
 }

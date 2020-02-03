@@ -17,7 +17,8 @@ interface EntityView<T> : HasNotifications {
      * Shows an error notification with a given text.
      *
      * @param message a user-friendly error message
-     * @param isPersistent if `true` the message requires a user action to disappear (if `false` it disappears automatically after some time)
+     * @param isPersistent if `true` the message requires a user action to disappear (if
+     * `false` it disappears automatically after some time)
      */
     fun showError(message: String, isPersistent: Boolean) {
         showNotification(message, isPersistent)

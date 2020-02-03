@@ -15,7 +15,7 @@ class S3Manager(
     private val bucketName: String
 ) {
 
-    private val s3 by lazy { S3Client.builder().build() }
+    private val s3 = S3Client.builder().build()
 
     /**
      * Uploads an "untrained" model (one that the user wants to upload to start a job with). Meant
@@ -38,22 +38,23 @@ class S3Manager(
         downloadToLocalFile("axon-untrained-models/$filename")
 
     /**
-     * Uploads a trained model (one that the user wants to test with).
+     * Lists the training results for the Job.
      *
-     * @param file The local file containing the model to upload. The filename of the uploaded model
-     * will be the same as the filename of this file.
+     * @param jobId The ID of the Job.
+     * @return The filenames of the results.
      */
-    fun uploadTrainedModel(file: File) = uploadLocalFile(file, "axon-trained-models/${file.name}")
+    fun listTrainingResults(jobId: Int): List<String> =
+        listObjectsWithPrefixAndRemovePrefix("axon-training-results/$jobId/")
 
     /**
-     * Downloads a trained model (which was put in S3 by the training script when it
-     * ran on EC2). Meant to be used to download to the user's local machine.
+     * Downloads a training result to a local file.
      *
-     * @param filename The filename of the trained model file.
-     * @return A local file containing the trained model.
+     * @param jobId The ID of the Job.
+     * @param resultFilename The filename of the result to download.
+     * @return A local file containing the result.
      */
-    fun downloadTrainedModel(filename: String): File =
-        downloadToLocalFile("axon-trained-models/$filename")
+    fun downloadTrainingResult(jobId: Int, resultFilename: String): File =
+        downloadToLocalFile("axon-training-results/$jobId/$resultFilename")
 
     /**
      * Uploads a test data file.
@@ -95,29 +96,24 @@ class S3Manager(
     /**
      * Gets the latest training progress data.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      * @return The contents of the progress file.
      */
     @UseExperimental(ExperimentalStdlibApi::class)
-    fun getTrainingProgress(modelName: String, datasetName: String): String = s3.getObject {
-        it.bucket(bucketName).key(createTrainingProgressFilePath(modelName, datasetName))
+    fun getTrainingProgress(id: Int): String = s3.getObject {
+        it.bucket(bucketName).key(createTrainingProgressFilePath(id))
     }.readAllBytes().decodeToString()
 
     /**
      * Sets the training progress data.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      * @param data The data to write to the progress file.
      */
-    fun setTrainingProgress(modelName: String, datasetName: String, data: String) {
+    fun setTrainingProgress(id: Int, data: String) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName).key(
-                createTrainingProgressFilePath(
-                    modelName,
-                    datasetName
-                )
+                createTrainingProgressFilePath(id)
             ).build(),
             RequestBody.fromString(data)
         )
@@ -126,16 +122,12 @@ class S3Manager(
     /**
      * Creates a heartbeat that Axon uses to check if the training script is running properly.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      */
-    fun createHeartbeat(modelName: String, datasetName: String) {
+    fun createHeartbeat(id: Int) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName).key(
-                createHeartbeatFilePath(
-                    modelName,
-                    datasetName
-                )
+                createHeartbeatFilePath(id)
             ).build(),
             RequestBody.fromString("1")
         )
@@ -144,16 +136,12 @@ class S3Manager(
     /**
      * Removes a heartbeat that Axon uses to check if the training script is running properly.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      */
-    fun removeHeartbeat(modelName: String, datasetName: String) {
+    fun removeHeartbeat(id: Int) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName).key(
-                createHeartbeatFilePath(
-                    modelName,
-                    datasetName
-                )
+                createHeartbeatFilePath(id)
             ).build(),
             RequestBody.fromString("0")
         )
@@ -162,14 +150,31 @@ class S3Manager(
     /**
      * Gets the latest heartbeat.
      *
-     * @param modelName The filename of the model being trained.
-     * @param datasetName The filename of the dataset being trained on.
+     * @param id The unique Job ID.
      * @return The contents of the heartbeat file.
      */
     @UseExperimental(ExperimentalStdlibApi::class)
-    fun getHeartbeat(modelName: String, datasetName: String) = s3.getObject {
-        it.bucket(bucketName).key(createHeartbeatFilePath(modelName, datasetName))
+    fun getHeartbeat(id: Int) = s3.getObject {
+        it.bucket(bucketName).key(createHeartbeatFilePath(id))
     }.readAllBytes().decodeToString()
+
+    /**
+     * Uploads a plugin cache file.
+     *
+     * @param cacheName The name of the plugin cache.
+     * @param file The plugin cache file.
+     */
+    fun uploadPluginCache(cacheName: String, file: File) =
+        uploadLocalFile(file, "axon-plugins/$cacheName/plugin_cache.json")
+
+    /**
+     * Downloads a plugin cache file.
+     *
+     * @param cacheName The name of the plugin cache.
+     * @return A local file containing the plugin cache.
+     */
+    fun downloadPluginCache(cacheName: String): File =
+        downloadToLocalFile("axon-plugins/$cacheName/plugin_cache.json")
 
     /**
      * Downloads the preferences file to a local file. Throws an exception if there is no
@@ -244,14 +249,13 @@ class S3Manager(
             it.bucket(bucketName).prefix(prefix)
         }.contents().map { it.key().substring(prefix.length) }
 
-    private fun createTrainingProgressPrefix(modelName: String, datasetName: String) =
-        "axon-training-progress/$modelName/$datasetName"
+    private fun createTrainingProgressPrefix(id: Int) = "axon-training-progress/$id"
 
-    private fun createTrainingProgressFilePath(modelName: String, datasetName: String) =
-        "${createTrainingProgressPrefix(modelName, datasetName)}/progress.txt"
+    private fun createTrainingProgressFilePath(id: Int) =
+        "${createTrainingProgressPrefix(id)}/progress.txt"
 
-    private fun createHeartbeatFilePath(modelName: String, datasetName: String) =
-        "${createTrainingProgressPrefix(modelName, datasetName)}/heartbeat.txt"
+    private fun createHeartbeatFilePath(id: Int) =
+        "${createTrainingProgressPrefix(id)}/heartbeat.txt"
 
     companion object {
         private const val preferencesFilename = "axon-preferences.json"

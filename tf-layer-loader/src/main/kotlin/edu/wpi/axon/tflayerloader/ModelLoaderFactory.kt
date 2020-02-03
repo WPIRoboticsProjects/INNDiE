@@ -8,7 +8,7 @@ class ModelLoaderFactory {
      * @param modelFilename The filename of the model file that is going to be loaded.
      * @return A new [ModelLoader].
      */
-    fun createModeLoader(modelFilename: String): ModelLoader = when {
+    fun createModelLoader(modelFilename: String): ModelLoader = when {
         modelFilename.endsWith(".h5") || modelFilename.endsWith(".hdf5") ->
             HDF5ModelLoader(DefaultLayersToGraph())
         else -> error("Model file type not supported for model with filename: $modelFilename")

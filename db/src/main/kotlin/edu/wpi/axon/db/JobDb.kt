@@ -1,12 +1,16 @@
 package edu.wpi.axon.db
 
 import com.beust.klaxon.Klaxon
-import edu.wpi.axon.dbdata.Job
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.axon.util.FilePath
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
@@ -21,34 +25,37 @@ import org.jetbrains.exposed.sql.update
 private val klaxon = Klaxon()
 
 internal object Jobs : IntIdTable() {
-    val name = varchar("name", 255).uniqueIndex()
-    val status = varchar("status", 255)
-    val userOldModelPath = varchar("userOldModelPath", 255)
-    val userNewModelName = varchar("userNewModelName", 255)
-    val userDataset = text("dataset")
-    val userOptimizer = varchar("userOptimizer", 255)
-    val userLoss = varchar("userLoss", 255)
-    val userMetrics = varchar("userMetrics", 255)
-    val userEpochs = integer("userEpochs")
-    val userModel = text("userModel")
-    val generateDebugComments = bool("generateDebugComments")
 
-    fun toDomain(row: ResultRow): Job {
-        return Job(
-            name = row[name],
-            status = TrainingScriptProgress.deserialize(row[status]),
-            userOldModelPath = row[userOldModelPath],
-            userNewModelName = row[userNewModelName],
-            userDataset = Dataset.deserialize(row[userDataset]),
-            userOptimizer = Optimizer.deserialize(row[userOptimizer]),
-            userLoss = Loss.deserialize(row[userLoss]),
-            userMetrics = klaxon.parseArray<String>(row[userMetrics])!!.toSet(),
-            userEpochs = row[userEpochs],
-            generateDebugComments = row[generateDebugComments],
-            userModel = Model.deserialize(row[userModel]),
-            id = row[id].value
-        )
-    }
+    val nameCol = varchar("name", 255).uniqueIndex()
+    val statusCol = varchar("status", 255)
+    val userOldModelPathCol = varchar("userOldModelPath", 255)
+    val userDatasetCol = text("dataset")
+    val userOptimizerCol = varchar("userOptimizer", 255)
+    val userLossCol = varchar("userLoss", 255)
+    val userMetricsCol = varchar("userMetrics", 255)
+    val userEpochsCol = integer("userEpochs")
+    val userModelCol = text("userModel")
+    val generateDebugCommentsCol = bool("generateDebugComments")
+    val trainingMethodCol = varchar("trainingMethod", 255)
+    val targetCol = varchar("target", 255)
+    val datasetPluginCol = text("datasetPlugin")
+
+    fun toDomain(row: ResultRow) = Job(
+        name = row[nameCol],
+        status = TrainingScriptProgress.deserialize(row[statusCol]),
+        userOldModelPath = FilePath.deserialize(row[userOldModelPathCol]),
+        userDataset = Dataset.deserialize(row[userDatasetCol]),
+        userOptimizer = Optimizer.deserialize(row[userOptimizerCol]),
+        userLoss = Loss.deserialize(row[userLossCol]),
+        userMetrics = klaxon.parseArray<String>(row[userMetricsCol])!!.toSet(),
+        userEpochs = row[userEpochsCol],
+        generateDebugComments = row[generateDebugCommentsCol],
+        userNewModel = Model.deserialize(row[userModelCol]),
+        trainingMethod = JobTrainingMethod.deserialize(row[trainingMethodCol]),
+        target = ModelDeploymentTarget.deserialize(row[targetCol]),
+        datasetPlugin = Plugin.deserialize(row[datasetPluginCol]),
+        id = row[id].value
+    )
 }
 
 /**
@@ -76,46 +83,113 @@ class JobDb(private val database: Database) {
         observers.add(onUpdate)
     }
 
-    fun create(job: Job): Job {
+    fun create(
+        name: String,
+        status: TrainingScriptProgress,
+        userOldModelPath: FilePath,
+        userDataset: Dataset,
+        userOptimizer: Optimizer,
+        userLoss: Loss,
+        userMetrics: Set<String>,
+        userEpochs: Int,
+        userNewModel: Model,
+        generateDebugComments: Boolean,
+        trainingMethod: JobTrainingMethod,
+        target: ModelDeploymentTarget,
+        datasetPlugin: Plugin
+    ): Job {
         val newId = transaction(database) {
             Jobs.insertAndGetId { row ->
-                row[name] = job.name
-                row[status] = job.status.serialize()
-                row[userOldModelPath] = job.userOldModelPath
-                row[userNewModelName] = job.userNewModelName
-                row[userDataset] = job.userDataset.serialize()
-                row[userOptimizer] = job.userOptimizer.serialize()
-                row[userLoss] = job.userLoss.serialize()
-                row[userMetrics] = klaxon.toJsonString(job.userMetrics)
-                row[userEpochs] = job.userEpochs
-                row[userModel] = job.userModel.serialize()
-                row[generateDebugComments] = job.generateDebugComments
+                row[nameCol] = name
+                row[statusCol] = status.serialize()
+                row[userOldModelPathCol] = userOldModelPath.serialize()
+                row[userDatasetCol] = userDataset.serialize()
+                row[userOptimizerCol] = userOptimizer.serialize()
+                row[userLossCol] = userLoss.serialize()
+                row[userMetricsCol] = klaxon.toJsonString(userMetrics)
+                row[userEpochsCol] = userEpochs
+                row[userModelCol] = userNewModel.serialize()
+                row[generateDebugCommentsCol] = generateDebugComments
+                row[trainingMethodCol] = trainingMethod.serialize()
+                row[targetCol] = target.serialize()
+                row[datasetPluginCol] = datasetPlugin.serialize()
             }.value
         }
 
-        val newJob = job.copy(id = newId)
-        observers.forEach { it(JobDbOp.Create, newJob) }
+        val job = Job(
+            name = name,
+            status = status,
+            userOldModelPath = userOldModelPath,
+            userDataset = userDataset,
+            userOptimizer = userOptimizer,
+            userLoss = userLoss,
+            userMetrics = userMetrics,
+            userEpochs = userEpochs,
+            userNewModel = userNewModel,
+            generateDebugComments = generateDebugComments,
+            trainingMethod = trainingMethod,
+            target = target,
+            datasetPlugin = datasetPlugin,
+            id = newId
+        )
 
-        return newJob
+        observers.forEach { it(JobDbOp.Create, job) }
+
+        return job
     }
 
-    fun update(job: Job) {
+    fun update(job: Job) = update(
+        job.id,
+        job.name,
+        job.status,
+        job.userOldModelPath,
+        job.userDataset,
+        job.userOptimizer,
+        job.userLoss,
+        job.userMetrics,
+        job.userEpochs,
+        job.userNewModel,
+        job.generateDebugComments,
+        job.trainingMethod,
+        job.target,
+        job.datasetPlugin
+    )
+
+    fun update(
+        id: Int,
+        name: String? = null,
+        status: TrainingScriptProgress? = null,
+        userOldModelPath: FilePath? = null,
+        userDataset: Dataset? = null,
+        userOptimizer: Optimizer? = null,
+        userLoss: Loss? = null,
+        userMetrics: Set<String>? = null,
+        userEpochs: Int? = null,
+        userNewModel: Model? = null,
+        generateDebugComments: Boolean? = null,
+        trainingMethod: JobTrainingMethod? = null,
+        target: ModelDeploymentTarget? = null,
+        datasetPlugin: Plugin? = null
+    ) {
         transaction(database) {
-            Jobs.update({ Jobs.id eq job.id }) {
-                it[name] = job.name
-                it[status] = job.status.serialize()
-                it[userOldModelPath] = job.userOldModelPath
-                it[userNewModelName] = job.userNewModelName
-                it[userDataset] = job.userDataset.serialize()
-                it[userOptimizer] = job.userOptimizer.serialize()
-                it[userLoss] = job.userLoss.serialize()
-                it[userMetrics] = klaxon.toJsonString(job.userMetrics)
-                it[userEpochs] = job.userEpochs
-                it[generateDebugComments] = job.generateDebugComments
+            Jobs.update({ Jobs.id eq id }) { row ->
+                name?.let { row[nameCol] = name }
+                status?.let { row[statusCol] = status.serialize() }
+                userOldModelPath?.let { row[userOldModelPathCol] = userOldModelPath.serialize() }
+                userDataset?.let { row[userDatasetCol] = userDataset.serialize() }
+                userOptimizer?.let { row[userOptimizerCol] = userOptimizer.serialize() }
+                userLoss?.let { row[userLossCol] = userLoss.serialize() }
+                userMetrics?.let { row[userMetricsCol] = klaxon.toJsonString(userMetrics) }
+                userEpochs?.let { row[userEpochsCol] = userEpochs }
+                userNewModel?.let { row[userModelCol] = userNewModel.serialize() }
+                generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
+                trainingMethod?.let { row[trainingMethodCol] = trainingMethod.serialize() }
+                target?.let { row[targetCol] = target.serialize() }
+                datasetPlugin?.let { row[datasetPluginCol] = datasetPlugin.serialize() }
             }
         }
 
-        observers.forEach { it(JobDbOp.Update, job) }
+        observers.forEach { it(JobDbOp.Update, getById(id)!!) }
     }
 
     fun count(): Int = transaction(database) {
@@ -135,9 +209,19 @@ class JobDb(private val database: Database) {
     }
 
     fun findByName(name: String): Job? = transaction(database) {
-        Jobs.select { Jobs.name eq name }
+        Jobs.select { Jobs.nameCol eq name }
             .map { Jobs.toDomain(it) }
             .firstOrNull()
+    }
+
+    fun fetchRunningJobs(): List<Job> = transaction(database) {
+        Jobs.select {
+            Jobs.statusCol notInList listOf(
+                TrainingScriptProgress.NotStarted.serialize(),
+                TrainingScriptProgress.Completed.serialize(),
+                TrainingScriptProgress.Error.serialize()
+            )
+        }.map { Jobs.toDomain(it) }
     }
 
     fun remove(job: Job) {

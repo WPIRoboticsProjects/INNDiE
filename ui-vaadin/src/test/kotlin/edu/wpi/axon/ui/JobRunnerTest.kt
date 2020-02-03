@@ -1,76 +1,50 @@
 package edu.wpi.axon.ui
 
-import edu.wpi.axon.aws.TrainingScriptRunner
-import edu.wpi.axon.aws.axonBucketName
-import edu.wpi.axon.dbdata.TrainingScriptProgress
-import edu.wpi.axon.testutil.KoinTestFixture
+import arrow.core.None
+import edu.wpi.axon.db.data.TrainingScriptProgress
+import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verifyAll
-import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Timeout
-import org.koin.core.context.startKoin
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
-internal class JobRunnerTest : KoinTestFixture() {
+internal class JobRunnerTest {
 
-    @Test
-    @Timeout(value = 1L, unit = TimeUnit.MINUTES) // This test will timeout if it fails
-    fun `test waitForChange`() {
-        val id = 1L
+    private val runner = JobRunner()
 
-        val mockTrainingScriptRunner = mockk<TrainingScriptRunner> {
-            every { getTrainingProgress(id) }.returnsMany(
-                TrainingScriptProgress.NotStarted,
-                TrainingScriptProgress.NotStarted,
-                TrainingScriptProgress.Creating
+    @ParameterizedTest
+    @MethodSource("runningJobTestSource")
+    fun `test starting a running job`(givenStatus: TrainingScriptProgress) {
+        shouldThrow<IllegalArgumentException> {
+            runner.startJob(
+                mockk {
+                    every { status } returns givenStatus
+                }
             )
-        }
-
-        startKoin {
-            modules(module {
-                single<String?>(named(axonBucketName)) { null }
-                single { mockTrainingScriptRunner }
-            })
-        }
-
-        val jobRunner = JobRunner()
-        jobRunner.waitForChange(id).unsafeRunSync()
-
-        verifyAll {
-            mockTrainingScriptRunner.getTrainingProgress(id)
-            mockTrainingScriptRunner.getTrainingProgress(id)
         }
     }
 
     @Test
-    @Timeout(value = 1L, unit = TimeUnit.MINUTES) // This test will timeout if it fails
-    fun `test waitForCompleted`() {
-        val id = 1L
-
-        val mockTrainingScriptRunner = mockk<TrainingScriptRunner> {
-            every { getTrainingProgress(id) }.returnsMany(
-                TrainingScriptProgress.NotStarted,
-                TrainingScriptProgress.InProgress(0.5),
-                TrainingScriptProgress.Completed
+    fun `test starting a job where usesAWS failed`() {
+        shouldThrow<IllegalArgumentException> {
+            runner.startJob(
+                mockk {
+                    every { status } returns TrainingScriptProgress.NotStarted
+                    every { usesAWS } returns None
+                }
             )
         }
+    }
 
-        startKoin {
-            modules(module {
-                single<String?>(named(axonBucketName)) { null }
-                single { mockTrainingScriptRunner }
-            })
-        }
+    companion object {
 
-        val jobRunner = JobRunner()
-        jobRunner.waitForCompleted(id) {}.unsafeRunSync()
-
-        verifyAll {
-            mockTrainingScriptRunner.getTrainingProgress(id)
-            mockTrainingScriptRunner.getTrainingProgress(id)
-        }
+        @Suppress("unused")
+        @JvmStatic
+        fun runningJobTestSource() = listOf(
+            TrainingScriptProgress.Creating,
+            TrainingScriptProgress.Initializing,
+            TrainingScriptProgress.InProgress(0.2)
+        )
     }
 }

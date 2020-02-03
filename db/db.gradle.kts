@@ -1,8 +1,9 @@
 description = "Classes to interact with a database"
 
 dependencies {
-    api(project(":db-data"))
     api(project(":tf-data"))
+    api(project(":training"))
+    api(project(":plugin"))
 
     implementation(project(":util"))
 
@@ -19,5 +20,5 @@ dependencies {
     )
 
     testImplementation(project(":test-util"))
-    testImplementation(project(":db-data-test-util"))
+    testImplementation(project(":db-test-util"))
 }

@@ -2,13 +2,14 @@ package edu.wpi.axon.ui.view.jobs
 
 import com.vaadin.flow.component.progressbar.ProgressBar
 import com.vaadin.flow.component.progressbar.ProgressBarVariant
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.TrainingScriptProgress
 
 class TrainingProgressBar(value: TrainingScriptProgress? = null) : ProgressBar() {
     init {
         value?.let { setValue(it) }
     }
 
+    @Suppress("LongMethod")
     fun setValue(value: TrainingScriptProgress) {
         setValue(
             when (value) {

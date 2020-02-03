@@ -10,18 +10,18 @@ internal class ModelLoaderFactoryTest {
 
     @Test
     fun `test h5 file`() {
-        assertTrue(factory.createModeLoader("a.h5") is HDF5ModelLoader)
+        assertTrue(factory.createModelLoader("a.h5") is HDF5ModelLoader)
     }
 
     @Test
     fun `test hdf5 file`() {
-        assertTrue(factory.createModeLoader("a.hdf5") is HDF5ModelLoader)
+        assertTrue(factory.createModelLoader("a.hdf5") is HDF5ModelLoader)
     }
 
     @Test
     fun `test unknown file`() {
         assertThrows<IllegalStateException> {
-            factory.createModeLoader("a.abcd")
+            factory.createModelLoader("a.abcd")
         }
     }
 }

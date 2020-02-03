@@ -1,18 +1,13 @@
 package edu.wpi.axon.aws
 
-import edu.wpi.axon.dbdata.TrainingScriptProgress
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
-import java.lang.NumberFormatException
-import java.util.Base64
-import java.util.concurrent.atomic.AtomicLong
+import edu.wpi.axon.util.FilePath
+import java.io.File
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 import org.koin.core.KoinComponent
-import software.amazon.awssdk.services.ec2.Ec2Client
-import software.amazon.awssdk.services.ec2.model.Ec2Exception
-import software.amazon.awssdk.services.ec2.model.InstanceStateName
 import software.amazon.awssdk.services.ec2.model.InstanceType
-import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
 
 /**
  * A [TrainingScriptRunner] that runs the training script on EC2 and hosts datasets and models on
@@ -21,58 +16,53 @@ import software.amazon.awssdk.services.ec2.model.ShutdownBehavior
  * current directory.
  *
  * @param instanceType The type of the EC2 instance to run the training script on.
+ * @param ec2Manager Used to interface with EC2.
+ * @param s3Manager Used to interface with S3.
  */
 class EC2TrainingScriptRunner(
-    bucketName: String,
-    private val instanceType: InstanceType // TODO: Move this to [startScript]
+    private val instanceType: InstanceType,
+    private val ec2Manager: EC2Manager,
+    private val s3Manager: S3Manager
 ) : TrainingScriptRunner, KoinComponent {
 
-    private val ec2 by lazy { Ec2Client.builder().build() }
-    private val s3Manager = S3Manager(bucketName)
-
-    private val nextScriptId = AtomicLong()
-    private val instanceIds = mutableMapOf<Long, String>()
-    private val scriptDataMap = mutableMapOf<Long, RunTrainingScriptConfiguration>()
+    private val instanceIds = mutableMapOf<Int, String>()
+    private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
+    private val progressReporter = EC2TrainingScriptProgressReporter(ec2Manager, s3Manager)
+    private val canceller = EC2TrainingScriptCanceller(ec2Manager)
 
     override fun startScript(
-        runTrainingScriptConfiguration: RunTrainingScriptConfiguration
-    ): Long {
-        // Check for if the script uses the CLI to manage the model in S3. This class is supposed to
-        // own working with S3.
-        require(
-            !runTrainingScriptConfiguration.scriptContents.contains("download_model") &&
-                !runTrainingScriptConfiguration.scriptContents.contains("upload_model")
-        ) {
-            """
-            |Cannot start the script because it interfaces with AWS:
-            |${runTrainingScriptConfiguration.scriptContents}
-            |
-            """.trimMargin()
+        config: RunTrainingScriptConfiguration
+    ) {
+        require(config.oldModelName is FilePath.S3) {
+            "Must start from a model in S3. Got: ${config.oldModelName}"
+        }
+        require(config.epochs > 0) {
+            "Must train for at least one epoch. Got ${config.epochs} epochs."
+        }
+        when (config.dataset) {
+            is Dataset.Custom -> require(config.dataset.path is FilePath.S3) {
+                "Custom datasets must be in S3. Got non-local dataset: ${config.dataset}"
+            }
         }
 
         // The file name for the generated script
+        @Suppress("MagicNumber")
         val scriptFileName = "${RandomStringUtils.randomAlphanumeric(20)}.py"
 
-        val newModelName = runTrainingScriptConfiguration.newModelName
-        val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
-
-        s3Manager.uploadTrainingScript(
-            scriptFileName,
-            runTrainingScriptConfiguration.scriptContents
-        )
+        s3Manager.uploadTrainingScript(scriptFileName, config.scriptContents)
 
         // Reset the training progress so the script doesn't start in the completed state
-        s3Manager.setTrainingProgress(newModelName, datasetName, "not started")
+        s3Manager.setTrainingProgress(config.id, "not started")
 
         // Remove the heartbeat so we know if the script set it
-        s3Manager.removeHeartbeat(newModelName, datasetName)
+        s3Manager.removeHeartbeat(config.id)
 
         // We need to download custom datasets from S3. Example datasets will be downloaded
         // by the script using Keras.
-        val downloadDatasetString = when (runTrainingScriptConfiguration.dataset) {
+        val downloadDatasetString = when (config.dataset) {
             is Dataset.ExampleDataset -> ""
             is Dataset.Custom ->
-                """axon download-dataset "${runTrainingScriptConfiguration.dataset.pathInS3}""""
+                """axon download-dataset "${config.dataset.path.path}""""
         }
 
         val scriptForEC2 = """
@@ -88,20 +78,20 @@ class EC2TrainingScriptRunner(
             |apt-cache policy docker-ce
             |apt install -y docker-ce
             |systemctl status docker
-            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.11/axon-0.1.11-py2.py3-none-any.whl
-            |axon create-heartbeat "$newModelName" "$datasetName"
-            |axon update-training-progress "$newModelName" "$datasetName" "initializing"
-            |axon download-untrained-model "${runTrainingScriptConfiguration.oldModelName}"
+            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.14/axon-0.1.14-py2.py3-none-any.whl
+            |axon create-heartbeat ${config.id}
+            |axon update-training-progress ${config.id} "initializing"
+            |axon download-untrained-model "${config.oldModelName.path}"
             |$downloadDatasetString
             |axon download-training-script "$scriptFileName"
-            |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6 /home/$scriptFileName"
-            |axon upload-trained-model "$newModelName"
-            |axon update-training-progress "$newModelName" "$datasetName" "completed"
-            |axon remove-heartbeat "$newModelName" "$datasetName"
+            |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6" "/home/$scriptFileName"
+            |axon upload-training-results ${config.id} "${config.workingDir}"
+            |axon update-training-progress ${config.id} "completed"
+            |axon remove-heartbeat ${config.id}
             |shutdown -h now
             """.trimMargin()
 
-        LOGGER.info {
+        LOGGER.debug {
             """
             |Sending script to EC2:
             |$scriptForEC2
@@ -109,120 +99,36 @@ class EC2TrainingScriptRunner(
             """.trimMargin()
         }
 
-        val runInstancesResponse = ec2.runInstances {
-            it.imageId("ami-04b9e92b5572fa0d1")
-                .instanceType(instanceType)
-                .maxCount(1)
-                .minCount(1)
-                .userData(scriptForEC2.toBase64())
-                .securityGroups("axon-autogenerated-ec2-sg")
-                .instanceInitiatedShutdownBehavior(ShutdownBehavior.TERMINATE)
-                .iamInstanceProfile { it.name("axon-autogenerated-ec2-instance-profile") }
-        }
-
-        val scriptId = nextScriptId.getAndIncrement()
-        instanceIds[scriptId] = runInstancesResponse.instances().first().instanceId()
-        scriptDataMap[scriptId] = runTrainingScriptConfiguration
-        return scriptId
+        val instanceId = ec2Manager.startTrainingInstance(scriptForEC2, instanceType)
+        instanceIds[config.id] = instanceId
+        scriptDataMap[config.id] = config
+        progressReporter.addJob(config, instanceId)
+        canceller.addJob(config.id, instanceId)
     }
 
-    @UseExperimental(ExperimentalStdlibApi::class)
-    override fun getTrainingProgress(scriptId: Long): TrainingScriptProgress {
-        require(scriptId in instanceIds.keys)
-        require(scriptId in scriptDataMap.keys)
+    override fun listResults(id: Int): List<String> = s3Manager.listTrainingResults(id)
 
-        val runTrainingScriptConfiguration = scriptDataMap[scriptId]!!
-        val newModelName = runTrainingScriptConfiguration.newModelName
-        val datasetName = runTrainingScriptConfiguration.dataset.nameForS3ProgressReporting
+    override fun getResult(id: Int, filename: String): File =
+        s3Manager.downloadTrainingResult(id, filename)
 
-        val status = try {
-            ec2.describeInstanceStatus {
-                it.instanceIds(instanceIds[scriptId]!!)
-            }.instanceStatuses().firstOrNull()?.instanceState()?.name()
-        } catch (ex: Ec2Exception) {
-            null
-        }
-
-        val heartbeat = s3Manager.getHeartbeat(newModelName, datasetName)
-        val progress = s3Manager.getTrainingProgress(newModelName, datasetName)
-
-        return computeTrainingScriptProgress(
-            heartbeat,
-            progress,
-            status,
-            runTrainingScriptConfiguration.epochs
-        )
+    fun getInstanceId(jobId: Int): String {
+        requireJobIsInMaps(jobId)
+        return instanceIds[jobId]!!
     }
 
-    private fun String.toBase64() =
-        Base64.getEncoder().encodeToString(byteInputStream().readAllBytes())
+    override fun getTrainingProgress(jobId: Int) = progressReporter.getTrainingProgress(jobId)
+
+    override fun overrideTrainingProgress(jobId: Int, progress: TrainingScriptProgress) =
+        progressReporter.overrideTrainingProgress(jobId, progress)
+
+    override fun cancelScript(jobId: Int) = canceller.cancelScript(jobId)
+
+    private fun requireJobIsInMaps(jobId: Int) {
+        require(jobId in instanceIds.keys)
+        require(jobId in scriptDataMap.keys)
+    }
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
-
-        internal fun computeTrainingScriptProgress(
-            heartbeat: String,
-            progress: String,
-            status: InstanceStateName?,
-            epochs: Int
-        ): TrainingScriptProgress {
-            val progressAssumingEverythingIsFine = computeProgressAssumingEverythingIsFine(
-                heartbeat,
-                progress,
-                status,
-                epochs
-            )
-
-            return when (heartbeat) {
-                "0" -> when (progress) {
-                    "not started", "completed" -> progressAssumingEverythingIsFine
-                    else -> TrainingScriptProgress.Error
-                }
-
-                "1" -> when (progress) {
-                    "initializing" -> progressAssumingEverythingIsFine
-                    "not started" -> TrainingScriptProgress.Error
-
-                    else -> when (status) {
-                        InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
-                        InstanceStateName.STOPPING, InstanceStateName.STOPPED, null ->
-                            TrainingScriptProgress.Error
-
-                        else -> progressAssumingEverythingIsFine
-                    }
-                }
-
-                else -> TrainingScriptProgress.Error
-            }
-        }
-
-        private fun computeProgressAssumingEverythingIsFine(
-            heartbeat: String,
-            progress: String,
-            status: InstanceStateName?,
-            epochs: Int
-        ) = when (progress) {
-            "not started" -> when (status) {
-                InstanceStateName.PENDING -> TrainingScriptProgress.Creating
-                InstanceStateName.RUNNING -> TrainingScriptProgress.Initializing
-                else -> TrainingScriptProgress.NotStarted
-            }
-
-            "initializing" -> TrainingScriptProgress.Initializing
-            "completed" -> TrainingScriptProgress.Completed
-
-            else -> if (heartbeat == "1") {
-                try {
-                    TrainingScriptProgress.InProgress(progress.toDouble() / epochs)
-                } catch (ex: NumberFormatException) {
-                    TrainingScriptProgress.Error
-                }
-            } else {
-                LOGGER.warn {
-                    "Training progress error. heartbeat=$heartbeat, progress=$progress"
-                }
-                TrainingScriptProgress.Error
-            }
-        }
     }
 }

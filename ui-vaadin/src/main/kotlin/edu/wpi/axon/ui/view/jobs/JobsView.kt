@@ -27,7 +27,7 @@ import com.vaadin.flow.router.Route
 import com.vaadin.flow.router.RouteAlias
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.JobDbOp
-import edu.wpi.axon.dbdata.Job
+import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.ui.MainLayout
 import edu.wpi.axon.ui.service.JobProvider
 import edu.wpi.axon.ui.view.EntityView
@@ -48,22 +48,23 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
     private lateinit var grid: JobGrid
     private lateinit var form: JobEditorForm
 
-    private val root = ui {
-        horizontalLayout {
-            setSizeFull()
-            verticalLayout {
+    init {
+        ui {
+            horizontalLayout {
                 setSizeFull()
-                horizontalLayout {
-                    setWidthFull()
-                    textField {
-                        verticalAlignSelf = FlexComponent.Alignment.START
-                        isExpand = true
-                        placeholder = "Filter name"
-                    }
-                    button("New job", Icon(VaadinIcon.PLUS_CIRCLE)) {
-                        addThemeVariants(ButtonVariant.LUMO_PRIMARY)
-                        onLeftClick {
-                            // navigateTo(-1)
+                verticalLayout {
+                    setSizeFull()
+                    horizontalLayout {
+                        setWidthFull()
+                        textField {
+                            verticalAlignSelf = FlexComponent.Alignment.START
+                            isExpand = true
+                            placeholder = "Filter name"
+                        }
+                        button("New job", Icon(VaadinIcon.PLUS_CIRCLE)) {
+                            addThemeVariants(ButtonVariant.LUMO_PRIMARY)
+                            onLeftClick {
+                                // navigateTo(-1)
                             JobCreatorDialog().open()
                         }
                     }
@@ -78,7 +79,6 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
         }
     }
 
-    init {
         val ui = UI.getCurrent()
         jobDb.subscribe { op, jobFromDb ->
             form.job.map { currentJob ->

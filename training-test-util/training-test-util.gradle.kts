@@ -6,4 +6,5 @@ dependencies {
     api(project(":tf-layer-loader"))
 
     implementation(project(":logging"))
+    implementation(project(":util"))
 }

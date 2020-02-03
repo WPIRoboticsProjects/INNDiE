@@ -60,7 +60,18 @@ To add an initializer,
 `DefaultInitializerToCodeTest`.
 3. Add a case for it in `LoadLayersFromHDF5::initializer`. Generate new models that use each
 variance of the new `Initializer` and add a test in `LoadLayersWithInitializersIntegrationTest` that
-loads each one. 
+loads each one.
+
+### Plugins
+
+Axon uses a simple plugin system to generalize over many different dataset and models. If you want
+to add a dataset plugin to process the dataset after it is loaded but before it is given to the
+model for training, your plugin body must implement this function:
+```python
+def process_dataset(x, y):
+    # Do some data processing in here and return the results.
+    return (x, y)
+```
 
 ## AWS Integration
 
@@ -73,9 +84,9 @@ random alphanumeric characters for uniqueness), Axon manages these directories:
     - Contains “untrained” models that the user can use to create a new Job with
     - These models cannot be used for testing because they are assumed to not contain any weights (or at least not any meaningful weights)
     - EC2 pulls untrained models from here when running a training job
-- axon-trained-models
-    - Contains trained models
-    - These models can be used for testing because they are assumed to contain meaningful weights
+- axon-training-results
+    - File format is `axon-training-results/{job id}/{results files...}`
+    - Contains all results from running a training script
     - EC2 uploads trained models here after finishing a training job
 - axon-test-data
     - Contains test data files that can be used with the test view
@@ -90,6 +101,9 @@ random alphanumeric characters for uniqueness), Axon manages these directories:
     - Contains training progress files that Axon polls to get training progress updates
     - EC2 writes training progress into here
     - File format is `axon-training-progress/{model name}/{dataset name}/progress.txt`
+- axon-plugins
+    - Contains directories for each plugin cache
+    - Unofficial plugins are stored here
 
 ### AWS Configuration
 

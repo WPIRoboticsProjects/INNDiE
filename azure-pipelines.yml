@@ -6,28 +6,26 @@ trigger:
     include:
       - '*'
 
+resources:
+  containers:
+  - container: axon-ci
+    image: wpilib/axon-ci:latest
+
 stages:
 - stage: Build
   jobs:
-    - job: Linux
+    - job: Linux_Docker
 
-      pool:
-        vmImage: ubuntu-16.04
+      container: axon-ci
 
       steps:
-        - task: DockerInstaller@0
-          displayName: 'Install Docker'
-          inputs:
-            dockerVersion: 19.03.4
-            releaseType: stable
-
         - task: Gradle@2
           displayName: 'Check'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
-            options: '--stacktrace -PlogTests -Pheadless -PhasDockerSupport'
+            options: '--stacktrace -PlogTests -Pheadless -PhasTensorFlowSupport'
             javaHomeOption: 'JDKVersion'
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'
@@ -36,7 +34,7 @@ stages:
             tasks: 'check'
 
         - task: Gradle@2
-          displayName: 'Check'
+          displayName: 'JacocoRootReport'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
@@ -54,6 +52,40 @@ stages:
           workingDirectory: ''
           env:
             CODECOV_TOKEN: $(CODECOV_TOKEN)
+
+    - job: Linux
+
+      pool:
+        vmImage: ubuntu-16.04
+
+      steps:
+        - task: Gradle@2
+          displayName: 'Check'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/TEST-*.xml'
+            tasks: 'check'
+
+        - task: Gradle@2
+          displayName: 'JacocoRootReport'
+          inputs:
+            workingDirectory: ''
+            gradleWrapperFile: 'gradlew'
+            gradleOptions: '-Xmx3072m'
+            options: '--stacktrace -PlogTests -Pheadless'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.11'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/TEST-*.xml'
+            tasks: 'jacocoRootReport'
 
     - job: MacOS
 
@@ -75,7 +107,7 @@ stages:
             tasks: 'check'
 
         - task: Gradle@2
-          displayName: 'Check'
+          displayName: 'JacocoRootReport'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
@@ -108,7 +140,7 @@ stages:
             tasks: 'check'
 
         - task: Gradle@2
-          displayName: 'Check'
+          displayName: 'JacocoRootReport'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'

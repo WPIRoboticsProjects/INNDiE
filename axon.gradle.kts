@@ -23,14 +23,14 @@ plugins {
 
 val awsProject = project(":aws")
 val dbProject = project(":db")
-val dbDataProject = project(":db-data")
-val dbDataTestUtilProject = project(":db-data-test-util")
+val dbTestUtilProject = project(":db-test-util")
 val dslProject = project(":dsl")
 val dslInterfaceProject = project(":dsl-interface")
 val dslTestUtilProject = project(":dsl-test-util")
 val exampleModelsProject = project(":example-models")
 val loggingProject = project(":logging")
 val patternMatchProject = project(":pattern-match")
+val pluginProject = project(":plugin")
 val testUtilProject = project(":test-util")
 val tfDataProject = project(":tf-data")
 val tfDataCode = project(":tf-data-code")
@@ -44,14 +44,14 @@ val utilProject = project(":util")
 val kotlinProjects = setOf(
     awsProject,
     dbProject,
-    dbDataProject,
-    dbDataTestUtilProject,
+    dbTestUtilProject,
     dslProject,
     dslInterfaceProject,
     dslTestUtilProject,
     exampleModelsProject,
     loggingProject,
     patternMatchProject,
+    pluginProject,
     testUtilProject,
     tfDataProject,
     tfDataCode,
@@ -68,12 +68,12 @@ val javaProjects = setOf<Project>() + kotlinProjects
 val publishedProjects = setOf(
     awsProject,
     dbProject,
-    dbDataProject,
     dslProject,
     dslInterfaceProject,
     exampleModelsProject,
     loggingProject,
     patternMatchProject,
+    pluginProject,
     tfDataProject,
     tfDataCode,
     tfLayerLoaderProject,
@@ -197,7 +197,7 @@ configure(javaProjects) {
         // )
 
         // TODO: Go back to the old dependencies once 4.x.x is out
-        // https://github.com/wpilibsuite/Axon/issues/84
+        //  https://github.com/wpilibsuite/Axon/issues/84
         testImplementation(
             files(
                 "$rootDir/libraries/kotlintest-runner-junit5-jvm-4.0.2631-SNAPSHOT.jar",
@@ -248,8 +248,8 @@ configure(javaProjects) {
              */
             excludeTags("needsSpecialSoftware")
 
-            if (!project.hasProperty("hasDockerSupport")) {
-                excludeTags("needsDockerSupport")
+            if (!project.hasProperty("hasTensorFlowSupport")) {
+                excludeTags("needsTensorFlowSupport")
             }
         }
 
