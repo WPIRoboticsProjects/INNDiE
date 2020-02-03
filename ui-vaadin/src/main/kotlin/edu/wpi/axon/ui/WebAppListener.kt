@@ -38,74 +38,74 @@ class WebAppListener : ServletContextListener, KoinComponent {
             )
         }
 
-        val modelName = "32_32_1_conv_sequential.h5"
-        val (model, path) = loadModel(modelName)
-
-        get<JobDb>().create(
-            name = "AWS Job",
-            status = TrainingScriptProgress.NotStarted,
-            userOldModelPath = FilePath.S3(modelName),
-            userDataset = Dataset.ExampleDataset.FashionMnist,
-            userOptimizer = Optimizer.Adam(
-                learningRate = 0.001,
-                beta1 = 0.9,
-                beta2 = 0.999,
-                epsilon = 1e-7,
-                amsGrad = false
-            ),
-            userLoss = Loss.SparseCategoricalCrossentropy,
-            userMetrics = setOf("accuracy"),
-            userEpochs = 1,
-            userNewModel = model,
-            generateDebugComments = false,
-            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
-            trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e"),
-            target = ModelDeploymentTarget.Desktop
-        )
-
-        get<JobDb>().create(
-            name = "Local Job",
-            status = TrainingScriptProgress.NotStarted,
-            userOldModelPath = FilePath.Local(path),
-            userDataset = Dataset.ExampleDataset.FashionMnist,
-            userOptimizer = Optimizer.Adam(
-                learningRate = 0.001,
-                beta1 = 0.9,
-                beta2 = 0.999,
-                epsilon = 1e-7,
-                amsGrad = false
-            ),
-            userLoss = Loss.SparseCategoricalCrossentropy,
-            userMetrics = setOf("accuracy"),
-            userEpochs = 1,
-            userNewModel = model,
-            generateDebugComments = false,
-            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
-            trainingMethod = JobTrainingMethod.Untrained,
-            target = ModelDeploymentTarget.Desktop
-        )
-
-        get<JobDb>().create(
-            name = "Local Job 2",
-            status = TrainingScriptProgress.NotStarted,
-            userOldModelPath = FilePath.Local(path),
-            userDataset = Dataset.ExampleDataset.FashionMnist,
-            userOptimizer = Optimizer.Adam(
-                learningRate = 0.001,
-                beta1 = 0.9,
-                beta2 = 0.999,
-                epsilon = 1e-7,
-                amsGrad = false
-            ),
-            userLoss = Loss.SparseCategoricalCrossentropy,
-            userMetrics = setOf("accuracy"),
-            userEpochs = 1,
-            userNewModel = model,
-            generateDebugComments = false,
-            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
-            trainingMethod = JobTrainingMethod.Untrained,
-            target = ModelDeploymentTarget.Desktop
-        )
+//        val modelName = "32_32_1_conv_sequential.h5"
+//        val (model, path) = loadModel(modelName)
+//
+//        get<JobDb>().create(
+//            name = "AWS Job",
+//            status = TrainingScriptProgress.NotStarted,
+//            userOldModelPath = FilePath.S3(modelName),
+//            userDataset = Dataset.ExampleDataset.FashionMnist,
+//            userOptimizer = Optimizer.Adam(
+//                learningRate = 0.001,
+//                beta1 = 0.9,
+//                beta2 = 0.999,
+//                epsilon = 1e-7,
+//                amsGrad = false
+//            ),
+//            userLoss = Loss.SparseCategoricalCrossentropy,
+//            userMetrics = setOf("accuracy"),
+//            userEpochs = 1,
+//            userNewModel = model,
+//            generateDebugComments = false,
+//            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
+//            trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e"),
+//            target = ModelDeploymentTarget.Desktop
+//        )
+//
+//        get<JobDb>().create(
+//            name = "Local Job",
+//            status = TrainingScriptProgress.NotStarted,
+//            userOldModelPath = FilePath.Local(path),
+//            userDataset = Dataset.ExampleDataset.FashionMnist,
+//            userOptimizer = Optimizer.Adam(
+//                learningRate = 0.001,
+//                beta1 = 0.9,
+//                beta2 = 0.999,
+//                epsilon = 1e-7,
+//                amsGrad = false
+//            ),
+//            userLoss = Loss.SparseCategoricalCrossentropy,
+//            userMetrics = setOf("accuracy"),
+//            userEpochs = 1,
+//            userNewModel = model,
+//            generateDebugComments = false,
+//            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
+//            trainingMethod = JobTrainingMethod.Untrained,
+//            target = ModelDeploymentTarget.Desktop
+//        )
+//
+//        get<JobDb>().create(
+//            name = "Local Job 2",
+//            status = TrainingScriptProgress.NotStarted,
+//            userOldModelPath = FilePath.Local(path),
+//            userDataset = Dataset.ExampleDataset.FashionMnist,
+//            userOptimizer = Optimizer.Adam(
+//                learningRate = 0.001,
+//                beta1 = 0.9,
+//                beta2 = 0.999,
+//                epsilon = 1e-7,
+//                amsGrad = false
+//            ),
+//            userLoss = Loss.SparseCategoricalCrossentropy,
+//            userMetrics = setOf("accuracy"),
+//            userEpochs = 1,
+//            userNewModel = model,
+//            generateDebugComments = false,
+//            datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
+//            trainingMethod = JobTrainingMethod.Untrained,
+//            target = ModelDeploymentTarget.Desktop
+//        )
 
         get<JobLifecycleManager>().initialize()
     }
