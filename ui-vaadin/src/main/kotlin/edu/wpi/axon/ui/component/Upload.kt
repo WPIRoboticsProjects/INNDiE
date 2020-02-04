@@ -7,5 +7,5 @@ import com.vaadin.flow.component.upload.Receiver
 import com.vaadin.flow.component.upload.Upload
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).upload(receiver: Receiver, block: (@VaadinDsl Upload).() -> Unit = {}): Upload
-        = init(Upload(receiver), block)
+fun (@VaadinDsl HasComponents).upload(receiver: Receiver, block: (@VaadinDsl Upload).() -> Unit = {}): Upload =
+        init(Upload(receiver), block)

@@ -1,7 +1,6 @@
 package edu.wpi.axon.ui.view.preferences
 
 import com.github.mvysny.karibudsl.v10.KComposite
-import com.github.mvysny.karibudsl.v10.alignSelf
 import com.github.mvysny.karibudsl.v10.beanValidationBinder
 import com.github.mvysny.karibudsl.v10.bind
 import com.github.mvysny.karibudsl.v10.button
@@ -12,7 +11,6 @@ import com.github.mvysny.karibudsl.v10.onLeftClick
 import com.github.mvysny.karibudsl.v10.setPrimary
 import com.github.mvysny.karibudsl.v10.textArea
 import com.github.mvysny.karibudsl.v10.textField
-import com.github.mvysny.karibudsl.v10.verticalAlignSelf
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.icon.Icon

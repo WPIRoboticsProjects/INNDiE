@@ -30,8 +30,8 @@ import edu.wpi.axon.ui.view.HasNotifications
 import java.util.function.Predicate
 
 class PluginManagerComponent(title: String, pluginManager: PluginManager) : KComposite(), HasNotifications, HasSize {
-    class PluginManagerDataProvider(pluginManager: PluginManager)
-        : CallbackDataProvider<Plugin, Predicate<Plugin>>(FetchCallback<Plugin, Predicate<Plugin>> {
+    class PluginManagerDataProvider(pluginManager: PluginManager) :
+        CallbackDataProvider<Plugin, Predicate<Plugin>>(FetchCallback<Plugin, Predicate<Plugin>> {
         pluginManager.listPlugins().stream()
                 .filter(it.filter.orElse(Predicate { true }))
                 .sorted { o1, o2 -> o1.name.compareTo(o2.name) }
@@ -114,5 +114,5 @@ class PluginManagerComponent(title: String, pluginManager: PluginManager) : KCom
 }
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).pluginManagerComponent(title: String, pluginManager: PluginManager, block: (@VaadinDsl PluginManagerComponent).() -> Unit = {})
-        = init(PluginManagerComponent(title, pluginManager), block)
+fun (@VaadinDsl HasComponents).pluginManagerComponent(title: String, pluginManager: PluginManager, block: (@VaadinDsl PluginManagerComponent).() -> Unit = {}) =
+        init(PluginManagerComponent(title, pluginManager), block)
