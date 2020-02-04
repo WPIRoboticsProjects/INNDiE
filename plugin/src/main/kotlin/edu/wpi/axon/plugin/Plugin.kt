@@ -24,13 +24,19 @@ sealed class Plugin {
      * An Axon-supported plugin that users get by default.
      */
     @Serializable
-    data class Official(override var name: String, override var contents: String) : Plugin()
+    data class Official(
+        override var name: String,
+        override var contents: String
+    ) : Plugin()
 
     /**
      * A plugin that the user added themselves.
      */
     @Serializable
-    data class Unofficial(override var name: String, override var contents: String) : Plugin()
+    data class Unofficial(
+        override var name: String,
+        override var contents: String
+    ) : Plugin()
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable

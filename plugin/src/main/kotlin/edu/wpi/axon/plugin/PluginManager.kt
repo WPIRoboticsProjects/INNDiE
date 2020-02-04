@@ -16,7 +16,7 @@ interface PluginManager {
      *
      * @return All plugins.
      */
-    fun listPlugins(): List<Plugin>
+    fun listPlugins(): Set<Plugin>
 
     /**
      * Adds a plugin.
@@ -28,7 +28,15 @@ interface PluginManager {
     /**
      * Removes a plugin.
      *
-     * @param plugin The plugin to remove.
+     * @param plugin The the plugin to remove.
      */
     fun removeUnofficialPlugin(plugin: Plugin.Unofficial)
+
+    /**
+     * Modified a plugin.
+     *
+     * @param pluginName The name of the plugin to modify.
+     * @param plugin The new plugin value.
+     */
+    fun modifyUnofficialPlugin(pluginName: String, plugin: Plugin.Unofficial)
 }

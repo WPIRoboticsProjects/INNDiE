@@ -13,11 +13,11 @@ import mu.KotlinLogging
  */
 class LocalPluginManager(
     private val pluginCacheFile: File,
-    private val officialPlugins: List<Plugin.Official>
+    private val officialPlugins: Set<Plugin.Official>
 ) : PluginManager {
 
     private var initialized = false
-    private val unofficialPlugins = mutableListOf<Plugin.Unofficial>()
+    private val unofficialPlugins = mutableSetOf<Plugin.Unofficial>()
 
     override fun initialize() {
         if (!pluginCacheFile.exists()) {
@@ -28,7 +28,7 @@ class LocalPluginManager(
             PluginCache.deserialize(pluginCacheFile.readText())
         } catch (ex: JsonDecodingException) {
             LOGGER.warn(ex) { "Invalid plugin cache file contents. Creating new cache." }
-            val newCache = PluginCache(listOf())
+            val newCache = PluginCache(setOf())
             pluginCacheFile.writeText(newCache.serialize())
             newCache
         }
@@ -37,7 +37,7 @@ class LocalPluginManager(
         initialized = true
     }
 
-    override fun listPlugins(): List<Plugin> {
+    override fun listPlugins(): Set<Plugin> {
         check(initialized)
         return officialPlugins + unofficialPlugins
     }
@@ -50,7 +50,14 @@ class LocalPluginManager(
 
     override fun removeUnofficialPlugin(plugin: Plugin.Unofficial) {
         check(initialized)
-        unofficialPlugins.remove(plugin)
+        unofficialPlugins.remove(unofficialPlugins.first { it.name == plugin.name })
+        synchronizeCacheFile()
+    }
+
+    override fun modifyUnofficialPlugin(pluginName: String, plugin: Plugin.Unofficial) {
+        check(initialized)
+        unofficialPlugins.remove(unofficialPlugins.first { it.name == pluginName })
+        unofficialPlugins.add(plugin)
         synchronizeCacheFile()
     }
 

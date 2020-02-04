@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonConfiguration
  */
 @Serializable
 data class PluginCache(
-    val plugins: List<Plugin.Unofficial>
+    val plugins: Set<Plugin.Unofficial>
 ) {
     fun serialize(): String = Json(
         JsonConfiguration.Stable

@@ -32,9 +32,16 @@ import java.util.function.Predicate
 class PluginManagerComponent(title: String, pluginManager: PluginManager) : KComposite(), HasNotifications, HasSize {
     class PluginManagerDataProvider(pluginManager: PluginManager)
         : CallbackDataProvider<Plugin, Predicate<Plugin>>(FetchCallback<Plugin, Predicate<Plugin>> {
-        pluginManager.listPlugins().stream().filter(it.filter.orElse(Predicate { true })).skip(it.offset.toLong()).limit(it.limit.toLong())
+        pluginManager.listPlugins().stream()
+                .filter(it.filter.orElse(Predicate { true }))
+                .sorted { o1, o2 -> o1.name.compareTo(o2.name) }
+                .skip(it.offset.toLong())
+                .limit(it.limit.toLong())
     }, CountCallback<Plugin, Predicate<Plugin>> {
-        pluginManager.listPlugins().stream().filter(it.filter.orElse(Predicate { true })).count().toInt()
+        pluginManager.listPlugins().stream()
+                .filter(it.filter.orElse(Predicate { true }))
+                .count()
+                .toInt()
     })
 
     private val dataProvider = PluginManagerDataProvider(pluginManager)
@@ -61,6 +68,23 @@ class PluginManagerComponent(title: String, pluginManager: PluginManager) : KCom
                     addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER)
                     isHeightByRows = true
                     addColumn(TextRenderer { it.name })
+                    addComponentColumn { plugin ->
+                        Button(Icon(VaadinIcon.PENCIL)).apply {
+                            if (plugin is Plugin.Unofficial) {
+                                onLeftClick {
+                                    PluginEditorDialog(pluginManager, plugin) {
+                                        dataProvider.refreshAll()
+                                    }.apply {
+                                        open()
+                                    }
+                                }
+                            } else {
+                                isEnabled = false
+                            }
+                        }
+                    }.apply {
+                        textAlign = ColumnTextAlign.END
+                    }
                     addComponentColumn { plugin ->
                         Button(Icon(VaadinIcon.TRASH)).apply {
                             addThemeVariants(ButtonVariant.LUMO_ERROR)

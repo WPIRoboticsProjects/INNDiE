@@ -18,7 +18,7 @@ import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.ui.view.HasNotifications
 
-class PluginEditorDialog(pluginManager: PluginManager, onSave: (Plugin) -> Unit = {}) : KComposite(), HasNotifications {
+class PluginEditorDialog(pluginManager: PluginManager, bean: Plugin? = null, onSave: (Plugin) -> Unit = {}) : KComposite(), HasNotifications {
     private val binder = beanValidationBinder<Plugin>()
 
     private lateinit var dialog: Dialog
@@ -27,13 +27,11 @@ class PluginEditorDialog(pluginManager: PluginManager, onSave: (Plugin) -> Unit 
         ui {
             dialog {
                 dialog = this
-                height = "75%"
-                width = "75%"
                 verticalLayout {
                     textField("Name") {
                         addValueChangeListener { binder.validate() }
                         bind(binder).asRequired()
-                                .withValidator({ name -> !pluginManager.listPlugins().map { it.name }.contains(name) }, "A plugin with that name already exists!")
+                                .withValidator({ name -> !pluginManager.listPlugins().map { it.name }.contains(name) || name == bean?.name }, "A plugin with that name already exists!")
                                 .bind(Plugin::name)
                     }
                     textArea("Content") {
@@ -47,14 +45,18 @@ class PluginEditorDialog(pluginManager: PluginManager, onSave: (Plugin) -> Unit 
                                 this@dialog.close()
                             }
                         }
-                        button("Add", Icon(VaadinIcon.PLUS_CIRCLE)) {
+                        button("Save", Icon(VaadinIcon.CHECK_CIRCLE)) {
                             setPrimary()
                             isEnabled = false
                             binder.addStatusChangeListener { isEnabled = !it.hasValidationErrors() }
                             onLeftClick {
                                 val plugin = Plugin.Unofficial("", "")
                                 if (binder.validate().isOk && binder.writeBeanIfValid(plugin)) {
-                                    pluginManager.addUnofficialPlugin(plugin)
+                                    if (bean == null) {
+                                        pluginManager.addUnofficialPlugin(plugin)
+                                    } else {
+                                        pluginManager.modifyUnofficialPlugin(bean.name, plugin)
+                                    }
                                     onSave.invoke(plugin)
                                     this@dialog.close()
                                 }
@@ -64,9 +66,9 @@ class PluginEditorDialog(pluginManager: PluginManager, onSave: (Plugin) -> Unit 
                 }
             }
         }
+
+        binder.readBean(bean)
     }
 
     fun open() = dialog.open()
-
-    fun readBean(bean: Plugin) = binder.readBean(bean)
 }
