@@ -80,7 +80,7 @@ data class JobData(
     }
 }
 
-class JobCreatorDialog : Dialog(), KoinComponent {
+class JobCreatorDialog(onCreate: (Job) -> Unit = {}) : Dialog(), KoinComponent {
 
     private val binder = beanValidationBinder<JobData>()
     private val exampleModelManager: ExampleModelManager by inject()
@@ -268,6 +268,7 @@ class JobCreatorDialog : Dialog(), KoinComponent {
                                         val job = jobData.convertToJob(exampleModelManager, jobDb)
                                         newJobId = job.id
                                         LOGGER.debug { "New job id: $newJobId" }
+                                        onCreate(job)
                                         close()
                                     }
                                 }

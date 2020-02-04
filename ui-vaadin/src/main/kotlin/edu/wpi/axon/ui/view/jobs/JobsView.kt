@@ -64,13 +64,9 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
                         button("New job", Icon(VaadinIcon.PLUS_CIRCLE)) {
                             addThemeVariants(ButtonVariant.LUMO_PRIMARY)
                             onLeftClick {
-                                JobCreatorDialog().let { dialog ->
-                                    dialog.open()
-                                    dialog.addDialogCloseActionListener {
-                                        grid.refresh()
-                                        dialog.newJobId?.let { navigateTo(it) }
-                                    }
-                                }
+                                JobCreatorDialog {
+                                    navigateTo(it.id)
+                                }.open()
                             }
                         }
                     }
