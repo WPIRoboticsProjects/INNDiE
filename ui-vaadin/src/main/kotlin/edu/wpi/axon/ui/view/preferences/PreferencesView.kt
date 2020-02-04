@@ -6,7 +6,7 @@ import com.github.mvysny.karibudsl.v10.beanValidationBinder
 import com.github.mvysny.karibudsl.v10.bind
 import com.github.mvysny.karibudsl.v10.button
 import com.github.mvysny.karibudsl.v10.comboBox
-import com.github.mvysny.karibudsl.v10.h3
+import com.github.mvysny.karibudsl.v10.h4
 import com.github.mvysny.karibudsl.v10.hr
 import com.github.mvysny.karibudsl.v10.init
 import com.github.mvysny.karibudsl.v10.numberField
@@ -15,7 +15,6 @@ import com.github.mvysny.karibudsl.v10.toLong
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
@@ -23,7 +22,6 @@ import edu.wpi.axon.aws.preferences.Preferences
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.ui.MainLayout
-import edu.wpi.axon.ui.component.upload
 import edu.wpi.axon.ui.view.HasNotifications
 import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.testPluginManagerName
@@ -45,7 +43,7 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
         ui {
             verticalLayout {
                 setSizeFull()
-                section("AWS") {
+                verticalLayoutSection("AWS") {
                     comboBox<InstanceType>("Training Instance Type") {
                         setItems(InstanceType.knownValues().stream().sorted())
                         isPreventInvalidInput = true
@@ -67,16 +65,11 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
                                 }.bind(Preferences::statusPollingDelay)
                     }
                 }
-                section("Plugins") {
-                    upload(MemoryBuffer()) {
-                        addSucceededListener {
-                            showNotification("Uploaded File ${it.fileName}, ${it.mimeType}")
-                        }
-                        addFailedListener {
-                            showNotification("Could not upload file: ${it.reason}")
-                        }
-                        setAcceptedFileTypes("text/x-python-script")
-                    }
+                verticalLayoutSection {
+                    pluginManagerComponent("Dataset Plugins", datasetPluginManager)
+                }
+                verticalLayoutSection {
+                    pluginManagerComponent("Test Plugins", testPluginManager)
                 }
                 button("Save") {
                     onLeftClick {
@@ -97,8 +90,8 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
     }
 
     @VaadinDsl
-    private fun (@VaadinDsl HasComponents).section(title: String? = null, block: (@VaadinDsl HasComponents).() -> Unit = {}) = init(VerticalLayout()) {
-        if (title != null) h3(title)
+    private fun (@VaadinDsl HasComponents).verticalLayoutSection(title: String? = null, block: (@VaadinDsl VerticalLayout).() -> Unit = {}) = init(VerticalLayout()) {
+        if (title != null) h4(title)
         block()
         hr()
     }
