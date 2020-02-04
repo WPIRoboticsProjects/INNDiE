@@ -43,6 +43,8 @@ internal class EC2TrainingScriptRunnerTest {
             every { uploadTrainingScript(any(), any()) } returns Unit
             every { setTrainingProgress(any(), any()) } returns Unit
             every { removeHeartbeat(any()) } returns Unit
+            every { clearTrainingLogFile(any()) } returns Unit
+            every { getTrainingLogFile(any()) } returns ""
             every { getHeartbeat(any()) } returnsMany listOf(
                 "0", // Call 1
                 "1", // Call 2
@@ -88,6 +90,10 @@ internal class EC2TrainingScriptRunnerTest {
         verify(atLeast = 3) {
             s3Manager.getTrainingProgress(config.id)
         }
+
+        verify(atLeast = 1) {
+            s3Manager.getTrainingLogFile(config.id)
+        }
     }
 
     @Test
@@ -105,6 +111,7 @@ internal class EC2TrainingScriptRunnerTest {
             every { uploadTrainingScript(any(), any()) } returns Unit
             every { setTrainingProgress(any(), any()) } returns Unit
             every { removeHeartbeat(any()) } returns Unit
+            every { clearTrainingLogFile(any()) } returns Unit
         }
 
         val runner = EC2TrainingScriptRunner(instanceType, ec2, s3Manager)
@@ -144,6 +151,10 @@ internal class EC2TrainingScriptRunnerTest {
 
         verify(exactly = 1) {
             s3Manager.removeHeartbeat(config.id)
+        }
+
+        verify(exactly = 1) {
+            s3Manager.clearTrainingLogFile(config.id)
         }
 
         verify(exactly = 1) {

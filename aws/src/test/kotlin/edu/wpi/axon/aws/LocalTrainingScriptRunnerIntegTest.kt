@@ -129,7 +129,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
                     .exists().shouldBeTrue()
                 break // Done with test
-            } else if (progress == TrainingScriptProgress.Error) {
+            } else if (progress is TrainingScriptProgress.Error) {
                 fail { "Progress was: $progress" }
             }
             Thread.sleep(1000)
@@ -244,7 +244,8 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 TrainingScriptProgress.Completed ->
                     fail { "The script should not have completed yet." }
 
-                TrainingScriptProgress.Error -> fail { "The script should not have errored yet." }
+                is TrainingScriptProgress.Error ->
+                    fail { "The script should not have errored yet." }
 
                 TrainingScriptProgress.Creating,
                 TrainingScriptProgress.Initializing,

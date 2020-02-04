@@ -65,7 +65,7 @@ class LocalTrainingScriptRunner(
             ).attempt().unsafeRunSync().fold(
                 {
                     LOGGER.debug(it) { "Training script failed." }
-                    scriptProgressMap[config.id] = TrainingScriptProgress.Error
+                    scriptProgressMap[config.id] = TrainingScriptProgress.Error(it.localizedMessage)
                 },
                 { (exitCode, stdOut, stdErr) ->
                     LOGGER.debug {
@@ -87,7 +87,9 @@ class LocalTrainingScriptRunner(
                     if (newModelFile.exists()) {
                         scriptProgressMap[config.id] = TrainingScriptProgress.Completed
                     } else {
-                        scriptProgressMap[config.id] = TrainingScriptProgress.Error
+                        scriptProgressMap[config.id] = TrainingScriptProgress.Error(
+                            "The trained model file (${newModelFile.path}) does not exist."
+                        )
                     }
                 }
             )

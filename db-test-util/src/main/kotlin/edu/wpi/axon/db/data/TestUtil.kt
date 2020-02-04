@@ -34,7 +34,7 @@ fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
         2 -> TrainingScriptProgress.Initializing
         3 -> TrainingScriptProgress.InProgress(nextDouble(0.0, 1.0))
         4 -> TrainingScriptProgress.Completed
-        5 -> TrainingScriptProgress.Error
+        5 -> TrainingScriptProgress.Error(RandomStringUtils.randomAlphanumeric(50))
         else -> error("Missing a TrainingScriptProgress case.")
     }
 

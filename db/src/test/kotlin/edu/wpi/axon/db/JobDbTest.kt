@@ -91,7 +91,7 @@ internal class JobDbTest {
         listOf(
             Random.nextJob(db, status = TrainingScriptProgress.NotStarted),
             Random.nextJob(db, status = TrainingScriptProgress.Completed),
-            Random.nextJob(db, status = TrainingScriptProgress.Error)
+            Random.nextJob(db, status = TrainingScriptProgress.Error("some error msg"))
         )
 
         val runningJobsFromDb = db.fetchRunningJobs()
