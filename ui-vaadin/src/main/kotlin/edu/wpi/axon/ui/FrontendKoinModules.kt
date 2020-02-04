@@ -58,7 +58,7 @@ fun defaultFrontendModule() = module {
 
     single(named(datasetPluginManagerName)) {
         // TODO: Load official plugins from resources
-        val officialPlugins = listOf(
+        val officialPlugins = setOf(
             datasetPassthroughPlugin,
             processMnistTypePlugin
         )
@@ -86,7 +86,7 @@ fun defaultFrontendModule() = module {
 
     single(named(testPluginManagerName)) {
         // TODO: Load official plugins from resources
-        val officialPlugins = listOf(
+        val officialPlugins = setOf(
             Plugin.Official("Test test plugin", """print("Hello from test test plugin!")""")
         )
 

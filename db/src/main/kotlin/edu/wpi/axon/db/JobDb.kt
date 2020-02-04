@@ -17,6 +17,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -27,7 +28,7 @@ private val klaxon = Klaxon()
 internal object Jobs : IntIdTable() {
 
     val nameCol = varchar("name", 255).uniqueIndex()
-    val statusCol = varchar("status", 255)
+    val statusCol = text("status")
     val userOldModelPathCol = varchar("userOldModelPath", 255)
     val userDatasetCol = text("dataset")
     val userOptimizerCol = varchar("userOptimizer", 255)
@@ -215,13 +216,13 @@ class JobDb(private val database: Database) {
     }
 
     fun fetchRunningJobs(): List<Job> = transaction(database) {
+        // TODO: Split the error log off of the status so we don't need to do this filter
         Jobs.select {
-            Jobs.statusCol notInList listOf(
-                TrainingScriptProgress.NotStarted.serialize(),
-                TrainingScriptProgress.Completed.serialize(),
-                TrainingScriptProgress.Error.serialize()
-            )
+            (Jobs.statusCol like "%Creating%") or
+                (Jobs.statusCol like "%Initializing%") or
+                (Jobs.statusCol like "%InProgress%")
         }.map { Jobs.toDomain(it) }
+            .filter { it.status !is TrainingScriptProgress.Error }
     }
 
     fun remove(job: Job) {
