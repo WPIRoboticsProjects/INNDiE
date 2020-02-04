@@ -58,8 +58,6 @@ class PluginManagerComponent(title: String, pluginManager: PluginManager) : KCom
                         onLeftClick {
                             PluginEditorDialog(pluginManager) {
                                 dataProvider.refreshAll()
-                            }.apply {
-                                open()
                             }
                         }
                     }
@@ -74,8 +72,6 @@ class PluginManagerComponent(title: String, pluginManager: PluginManager) : KCom
                                 onLeftClick {
                                     PluginEditorDialog(pluginManager, plugin) {
                                         dataProvider.refreshAll()
-                                    }.apply {
-                                        open()
                                     }
                                 }
                             } else {

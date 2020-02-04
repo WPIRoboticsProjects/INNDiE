@@ -12,7 +12,6 @@ import com.github.mvysny.karibudsl.v10.setPrimary
 import com.github.mvysny.karibudsl.v10.textArea
 import com.github.mvysny.karibudsl.v10.textField
 import com.github.mvysny.karibudsl.v10.verticalLayout
-import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
@@ -20,15 +19,16 @@ import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.ui.view.HasNotifications
 
-class PluginEditorDialog(pluginManager: PluginManager, bean: Plugin? = null, onSave: (Plugin) -> Unit = {}) : KComposite(), HasNotifications {
+class PluginEditorDialog(
+        pluginManager: PluginManager,
+        bean: Plugin? = null,
+        onSave: (Plugin) -> Unit = {}
+): KComposite(), HasNotifications {
     private val binder = beanValidationBinder<Plugin>()
-
-    private lateinit var dialog: Dialog
 
     init {
         ui {
             dialog {
-                dialog = this
                 width = "50vw"
                 verticalLayout {
                     textField("Name") {
@@ -71,11 +71,10 @@ class PluginEditorDialog(pluginManager: PluginManager, bean: Plugin? = null, onS
                         }
                     }
                 }
+                open()
             }
         }
 
         binder.readBean(bean)
     }
-
-    fun open() = dialog.open()
 }
