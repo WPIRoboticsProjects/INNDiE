@@ -43,7 +43,7 @@ class TrainingProgressBar(value: TrainingScriptProgress? = null) : ProgressBar()
                     max
                 }
 
-                TrainingScriptProgress.Error -> {
+                is TrainingScriptProgress.Error -> {
                     isIndeterminate = false
                     themeName = ProgressBarVariant.LUMO_ERROR.variantName
                     max

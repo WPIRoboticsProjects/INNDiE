@@ -86,7 +86,7 @@ class LocalTrainingScriptProgressReporter(
                     TrainingScriptProgress.InProgress(progressDouble / epochs.toDouble())
                 }
             } catch (ex: NumberFormatException) {
-                TrainingScriptProgress.Error
+                TrainingScriptProgress.Error("Invalid progress text: $progressText")
             }
         } else {
             // If progressMap wasn't null, then the thread should've been set as well
@@ -117,8 +117,8 @@ class LocalTrainingScriptProgressReporter(
                         // Otherwise, it progressed further than Initializing.
                         when (lastProgressData) {
                             // These statuses are reasonable
-                            is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
-                            is TrainingScriptProgress.Error -> TrainingScriptProgress.Error
+                            is TrainingScriptProgress.Completed -> lastProgressData
+                            is TrainingScriptProgress.Error -> lastProgressData
                             else -> {
                                 // Otherwise it must be InProgress
                                 try {
@@ -126,7 +126,9 @@ class LocalTrainingScriptProgressReporter(
                                         progressText.toInt() / epochs.toDouble()
                                     )
                                 } catch (ex: NumberFormatException) {
-                                    TrainingScriptProgress.Error
+                                    TrainingScriptProgress.Error(
+                                        "Invalid progress text: $progressText"
+                                    )
                                 }
                             }
                         }
@@ -137,9 +139,12 @@ class LocalTrainingScriptProgressReporter(
                 // Completed to scriptProgressMap or exploded and didn't write Completed. If it is not
                 // started yet, then the status will still be Creating.
                 when (lastProgressData) {
-                    is TrainingScriptProgress.Creating -> TrainingScriptProgress.Creating
-                    is TrainingScriptProgress.Completed -> TrainingScriptProgress.Completed
-                    else -> TrainingScriptProgress.Error
+                    is TrainingScriptProgress.Creating -> lastProgressData
+                    is TrainingScriptProgress.Completed -> lastProgressData
+                    else -> TrainingScriptProgress.Error(
+                        "The training thread did not exit cleanly. " +
+                            "Last progress data: $lastProgressData"
+                    )
                 }
             }
         }

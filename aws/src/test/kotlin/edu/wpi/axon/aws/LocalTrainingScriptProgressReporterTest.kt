@@ -87,6 +87,6 @@ internal class LocalTrainingScriptProgressReporterTest {
             )
         )
 
-        reporter.getTrainingProgress(id).shouldBe(TrainingScriptProgress.Error)
+        reporter.getTrainingProgress(id)::class.shouldBe(TrainingScriptProgress.Error::class)
     }
 }

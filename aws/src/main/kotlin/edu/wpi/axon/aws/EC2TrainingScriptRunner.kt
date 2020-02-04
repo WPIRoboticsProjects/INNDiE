@@ -57,6 +57,9 @@ class EC2TrainingScriptRunner(
         // Remove the heartbeat so we know if the script set it
         s3Manager.removeHeartbeat(config.id)
 
+        // Clear the log file so we know what the instance wrote
+        s3Manager.clearTrainingLogFile(config.id)
+
         // We need to download custom datasets from S3. Example datasets will be downloaded
         // by the script using Keras.
         val downloadDatasetString = when (config.dataset) {
@@ -78,7 +81,7 @@ class EC2TrainingScriptRunner(
             |apt-cache policy docker-ce
             |apt install -y docker-ce
             |systemctl status docker
-            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.14/axon-0.1.14-py2.py3-none-any.whl
+            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.15/axon-0.1.15-py2.py3-none-any.whl
             |axon create-heartbeat ${config.id}
             |axon update-training-progress ${config.id} "initializing"
             |axon download-untrained-model "${config.oldModelName.path}"
@@ -88,6 +91,7 @@ class EC2TrainingScriptRunner(
             |axon upload-training-results ${config.id} "${config.workingDir}"
             |axon update-training-progress ${config.id} "completed"
             |axon remove-heartbeat ${config.id}
+            |axon set-training-log-file ${config.id} "/var/log/syslog"
             |shutdown -h now
             """.trimMargin()
 

@@ -1,7 +1,7 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import kotlin.test.assertEquals
+import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -18,15 +18,13 @@ internal class EC2TrainingScriptProgressReporterTest {
         epochs: Int,
         expected: TrainingScriptProgress
     ) {
-        assertEquals(
-            expected,
-            EC2TrainingScriptProgressReporter.computeTrainingScriptProgress(
-                heartbeat,
-                progress,
-                status,
-                epochs
-            )
-        )
+        EC2TrainingScriptProgressReporter.computeTrainingScriptProgress(
+            heartbeat,
+            progress,
+            status,
+            "",
+            epochs
+        )::class.shouldBe(expected::class)
     }
 
     companion object {
@@ -67,47 +65,59 @@ internal class EC2TrainingScriptProgressReporterTest {
             ),
             Arguments.of(
                 "0", "not started", InstanceStateName.SHUTTING_DOWN, 1,
-                TrainingScriptProgress.Error
+                TrainingScriptProgress.Error("")
             ),
             Arguments.of(
                 "1",
                 "not started",
                 InstanceStateName.PENDING,
                 1,
-                TrainingScriptProgress.Error
+                TrainingScriptProgress.Error("")
             ),
             Arguments.of(
                 "1",
                 "not started",
                 InstanceStateName.RUNNING,
                 1,
-                TrainingScriptProgress.Error
+                TrainingScriptProgress.Error("")
             ),
-            Arguments.of("1", "not started", null, 1, TrainingScriptProgress.Error),
-            Arguments.of("1", "1.0", InstanceStateName.STOPPING, 1, TrainingScriptProgress.Error),
-            Arguments.of("1", "1.0", InstanceStateName.TERMINATED, 1, TrainingScriptProgress.Error),
+            Arguments.of("1", "not started", null, 1, TrainingScriptProgress.Error("")),
+            Arguments.of(
+                "1",
+                "1.0",
+                InstanceStateName.STOPPING,
+                1,
+                TrainingScriptProgress.Error("")
+            ),
+            Arguments.of(
+                "1",
+                "1.0",
+                InstanceStateName.TERMINATED,
+                1,
+                TrainingScriptProgress.Error("")
+            ),
             Arguments.of(
                 "0",
                 "initializing",
                 InstanceStateName.RUNNING,
                 1,
-                TrainingScriptProgress.Error
+                TrainingScriptProgress.Error("")
             ),
             Arguments.of(
                 "1",
                 "initializing",
                 InstanceStateName.SHUTTING_DOWN,
                 1,
-                TrainingScriptProgress.Error
+                TrainingScriptProgress.Error("")
             ),
             Arguments.of(
                 "2",
                 "initializing",
                 InstanceStateName.RUNNING,
                 1,
-                TrainingScriptProgress.Error
+                TrainingScriptProgress.Error("")
             ),
-            Arguments.of("1", "foo", InstanceStateName.RUNNING, 1, TrainingScriptProgress.Error)
+            Arguments.of("1", "foo", InstanceStateName.RUNNING, 1, TrainingScriptProgress.Error(""))
         )
     }
 }

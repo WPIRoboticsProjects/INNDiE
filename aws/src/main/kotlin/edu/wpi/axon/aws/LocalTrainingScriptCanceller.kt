@@ -40,6 +40,6 @@ class LocalTrainingScriptCanceller : TrainingScriptCanceller {
     override fun cancelScript(jobId: Int) {
         require(jobId in updateProgressMap.keys)
         scriptThreadMap[jobId]?.interrupt()
-        updateProgressMap[jobId]!!(TrainingScriptProgress.Error)
+        updateProgressMap[jobId]!!(TrainingScriptProgress.Error("Script cancelled."))
     }
 }
