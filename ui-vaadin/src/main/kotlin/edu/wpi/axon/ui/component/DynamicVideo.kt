@@ -54,5 +54,5 @@ class DynamicVideo : Component(), HasDynamicContent, HasSize, HasStyle {
 }
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).dynamicVideo(block: (@VaadinDsl DynamicVideo).() -> Unit = {})
-        = init(DynamicVideo(), block)
+fun (@VaadinDsl HasComponents).dynamicVideo(block: (@VaadinDsl DynamicVideo).() -> Unit = {}) =
+        init(DynamicVideo(), block)

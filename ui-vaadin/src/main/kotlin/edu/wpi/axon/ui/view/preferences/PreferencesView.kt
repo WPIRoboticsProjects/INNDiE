@@ -24,7 +24,8 @@ import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.ui.MainLayout
 import edu.wpi.axon.ui.view.HasNotifications
 import edu.wpi.axon.util.datasetPluginManagerName
-import edu.wpi.axon.util.testPluginManagerName
+import edu.wpi.axon.util.loadTestDataPluginManagerName
+import edu.wpi.axon.util.processTestOutputPluginManagerName
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -34,10 +35,16 @@ import software.amazon.awssdk.services.ec2.model.InstanceType
 @Route(layout = MainLayout::class)
 @PageTitle("Preferences")
 class PreferencesView : KComposite(), HasNotifications, KoinComponent {
+
     private val binder = beanValidationBinder<Preferences>()
     private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
     private val preferencesManager by inject<PreferencesManager>()
-    private val testPluginManager by inject<PluginManager>(named(testPluginManagerName))
+    private val loadTestDataPluginManager by inject<PluginManager>(
+        named(loadTestDataPluginManagerName)
+    )
+    private val processTestOutputPluginManager by inject<PluginManager>(
+        named(processTestOutputPluginManagerName)
+    )
 
     init {
         ui {
@@ -54,23 +61,33 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
                         width = "12em"
                         isPreventInvalidInput = true
                         bind(binder)
-                                .asRequired()
-                                .toLong()
-                                .withValidator { value, _ ->
-                                    if (value != null && value > 0) {
-                                        ValidationResult.ok()
-                                    } else {
-                                        ValidationResult.error("must be greater than zero.")
-                                    }
-                                }.bind(Preferences::statusPollingDelay)
+                            .asRequired()
+                            .toLong()
+                            .withValidator { value, _ ->
+                                if (value != null && value > 0) {
+                                    ValidationResult.ok()
+                                } else {
+                                    ValidationResult.error("must be greater than zero.")
+                                }
+                            }.bind(Preferences::statusPollingDelay)
                     }
                 }
+
                 verticalLayoutSection {
                     pluginManagerComponent("Dataset Plugins", datasetPluginManager)
                 }
+
                 verticalLayoutSection {
-                    pluginManagerComponent("Test Plugins", testPluginManager)
+                    pluginManagerComponent("Test Data Loader Plugins", loadTestDataPluginManager)
                 }
+
+                verticalLayoutSection {
+                    pluginManagerComponent(
+                        "Test Output Processor Plugins",
+                        processTestOutputPluginManager
+                    )
+                }
+
                 button("Save") {
                     onLeftClick {
                         val preferences = Preferences()
@@ -90,7 +107,10 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
     }
 
     @VaadinDsl
-    private fun (@VaadinDsl HasComponents).verticalLayoutSection(title: String? = null, block: (@VaadinDsl VerticalLayout).() -> Unit = {}) = init(VerticalLayout()) {
+    private fun (@VaadinDsl HasComponents).verticalLayoutSection(
+        title: String? = null,
+        block: (@VaadinDsl VerticalLayout).() -> Unit = {}
+    ) = init(VerticalLayout()) {
         if (title != null) h4(title)
         block()
         hr()

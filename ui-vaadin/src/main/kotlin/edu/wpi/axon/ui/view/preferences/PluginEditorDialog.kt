@@ -20,10 +20,11 @@ import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.ui.view.HasNotifications
 
 class PluginEditorDialog(
-        pluginManager: PluginManager,
-        bean: Plugin? = null,
-        onSave: (Plugin) -> Unit = {}
-): KComposite(), HasNotifications {
+    pluginManager: PluginManager,
+    bean: Plugin? = null,
+    onSave: (Plugin) -> Unit = {}
+) : KComposite(), HasNotifications {
+
     private val binder = beanValidationBinder<Plugin>()
 
     init {
@@ -35,15 +36,19 @@ class PluginEditorDialog(
                         setWidthFull()
                         addValueChangeListener { binder.validate() }
                         bind(binder).asRequired()
-                                .withValidator({ name -> !pluginManager.listPlugins().map { it.name }.contains(name) || name == bean?.name }, "A plugin with that name already exists!")
-                                .bind(Plugin::name)
+                            .withValidator({ name ->
+                                !pluginManager.listPlugins().map { it.name }.contains(
+                                    name
+                                ) || name == bean?.name
+                            }, "A plugin with that name already exists!")
+                            .bind(Plugin::name)
                     }
                     textArea("Content") {
                         setWidthFull()
                         height = "40vh"
                         addValueChangeListener { binder.validate() }
                         bind(binder).asRequired()
-                                .bind(Plugin::contents)
+                            .bind(Plugin::contents)
                     }
                     horizontalLayout {
                         horizontalAlignSelf = FlexComponent.Alignment.END

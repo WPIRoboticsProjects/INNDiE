@@ -12,5 +12,5 @@ class DynamicImage : Image(), HasDynamicContent {
 }
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).dynamicImage(block: (@VaadinDsl DynamicImage).() -> Unit = {})
-        = init(DynamicImage(), block)
+fun (@VaadinDsl HasComponents).dynamicImage(block: (@VaadinDsl DynamicImage).() -> Unit = {}) =
+        init(DynamicImage(), block)

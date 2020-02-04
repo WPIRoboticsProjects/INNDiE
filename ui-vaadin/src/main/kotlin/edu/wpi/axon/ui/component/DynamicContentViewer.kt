@@ -59,5 +59,5 @@ class DynamicContentViewer : KComposite() {
 }
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).dynamicContentViewer(block: (@VaadinDsl DynamicContentViewer).() -> Unit = {})
-        = init(DynamicContentViewer(), block)
+fun (@VaadinDsl HasComponents).dynamicContentViewer(block: (@VaadinDsl DynamicContentViewer).() -> Unit = {}) =
+        init(DynamicContentViewer(), block)
