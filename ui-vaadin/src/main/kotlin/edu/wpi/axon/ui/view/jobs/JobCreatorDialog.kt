@@ -1,5 +1,6 @@
 package edu.wpi.axon.ui.view.jobs
 
+import com.github.mvysny.karibudsl.v10.VaadinDsl
 import com.github.mvysny.karibudsl.v10.beanValidationBinder
 import com.github.mvysny.karibudsl.v10.bind
 import com.github.mvysny.karibudsl.v10.button
@@ -16,6 +17,7 @@ import com.github.mvysny.karibudsl.v10.toDouble
 import com.github.mvysny.karibudsl.v10.toInt
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.component.Component
+import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.html.Label
 import com.vaadin.flow.component.icon.Icon
@@ -87,8 +89,6 @@ class JobCreatorDialog(onCreate: (Job) -> Unit = {}) : Dialog(), KoinComponent {
     private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
     private val jobDb by inject<JobDb>()
     private var makeOptimizer: () -> Optimizer? = { null }
-    var newJobId: Int? = null
-        private set
 
     init {
         isCloseOnEsc = false
@@ -110,149 +110,12 @@ class JobCreatorDialog(onCreate: (Job) -> Unit = {}) : Dialog(), KoinComponent {
                 div {
                     verticalLayout {
                         formLayout {
-                            verticalLayout {
-                                label("Basic Information")
-                                hr()
-
-                                textField("Job Name") {
-                                    bind(binder).asRequired().withValidator { value, _ ->
-                                        value?.let {
-                                            val notEmpty = value.isNotEmpty()
-                                            val notInDb = jobDb.findByName(value) == null
-                                            if (notEmpty && notInDb) {
-                                                ValidationResult.ok()
-                                            } else {
-                                                if (!notEmpty) {
-                                                    ValidationResult.error("Must not be empty.")
-                                                } else if (!notInDb) {
-                                                    ValidationResult.error("Must be unique.")
-                                                } else {
-                                                    ValidationResult.error("Unknown error.")
-                                                }
-                                            }
-                                        } ?: ValidationResult.error("Must not be empty.")
-                                    }.bind(JobData::name)
-                                }
-                            }
-
-                            verticalLayout {
-                                label("Training Data")
-                                hr()
-
-                                comboBox<Dataset>("Training Dataset") {
-                                    setWidthFull()
-                                    setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
-                                        it.objectInstance
-                                    })
-                                    setItemLabelGenerator { it.displayName }
-                                    bind(binder).asRequired().bind(JobData::trainingDataset)
-                                }
-
-                                comboBox<Plugin>("Dataset Plugin") {
-                                    setWidthFull()
-                                    setItems(datasetPluginManager.listPlugins())
-                                    setItemLabelGenerator { it.name }
-                                    bind(binder).asRequired().bind(JobData::datasetPlugin)
-                                }
-                            }
-
-                            verticalLayout {
-                                label("Model")
-                                hr()
-
-                                comboBox<ExampleModel>("Starting Model") {
-                                    val exampleModels =
-                                        exampleModelManager.getAllExampleModels().unsafeRunSync()
-                                    setWidthFull()
-                                    setItems(exampleModels)
-                                    setItemLabelGenerator { it.name }
-                                    bind(binder).asRequired().bind(JobData::exampleModel)
-                                }
-                            }
-
-                            verticalLayout {
-                                label("Training")
-                                hr()
-
-                                textField("Metrics") {
-                                    placeholder = "accuracy, loss"
-                                    bind(binder).withConverter(
-                                        Converter.from<String, Set<String>>(
-                                            {
-                                                if (it == null) {
-                                                    Result.ok(setOf())
-                                                } else {
-                                                    Result.ok(it.split(Regex(",\\s*")).toSet())
-                                                }
-                                            },
-                                            {
-                                                it.joinToString()
-                                            }
-                                        )
-                                    ).bind(JobData::metrics)
-                                }
-
-                                textField("Epochs") {
-                                    placeholder = "1"
-                                    bind(binder).asRequired()
-                                        .toInt()
-                                        .withValidator(validateNotEmpty())
-                                        .bind(JobData::epochs)
-                                }
-                            }
-
-                            verticalLayout {
-                                label("Loss")
-                                hr()
-
-                                comboBox<Loss>("Loss") {
-                                    setWidthFull()
-                                    setItems(Loss::class.sealedSubclasses.mapNotNull { it.objectInstance })
-                                    setItemLabelGenerator { it::class.simpleName }
-                                    bind(binder).asRequired().bind(JobData::loss)
-                                }
-                            }
-
-                            verticalLayout {
-                                label("Optimizer")
-                                hr()
-
-                                verticalLayout {
-                                    val comboBoxVL = this
-                                    var optContent: Component? = null
-                                    comboBox<KClass<out Optimizer>> {
-                                        setWidthFull()
-                                        setItems(Optimizer::class.sealedSubclasses)
-                                        setItemLabelGenerator { it.simpleName }
-
-                                        addValueChangeListener {
-                                            it.value?.let {
-                                                optContent?.let { comboBoxVL.remove(it) }
-                                                optContent = buildOptimizerComponent(it)
-                                                comboBoxVL.add(optContent)
-                                            }
-                                        }
-
-                                        bind(binder).asRequired()
-                                            .withValidator(validateNotEmpty())
-                                            .withConverter(
-                                                Converter.from<KClass<out Optimizer>, Optimizer>(
-                                                    {
-                                                        val opt = makeOptimizer()
-                                                        if (opt != null) {
-                                                            Result.ok(opt)
-                                                        } else {
-                                                            Result.error("Invalid optimizer configuration.")
-                                                        }
-                                                    },
-                                                    {
-                                                        it::class
-                                                    }
-                                                )
-                                            ).bind(JobData::optimizer)
-                                    }
-                                }
-                            }
+                            createBasicInformation()
+                            createTrainingData()
+                            createModel()
+                            createTraining()
+                            createLoss()
+                            createOptimizer()
                         }
 
                         horizontalLayout {
@@ -262,13 +125,10 @@ class JobCreatorDialog(onCreate: (Job) -> Unit = {}) : Dialog(), KoinComponent {
                                     if (binder.validate().isOk && binder.writeBeanIfValid(jobData)) {
                                         LOGGER.debug {
                                             """
-                                    |$jobData
-                                    """.trimMargin()
+                                            |$jobData
+                                            """.trimMargin()
                                         }
-                                        val job = jobData.convertToJob(exampleModelManager, jobDb)
-                                        newJobId = job.id
-                                        LOGGER.debug { "New job id: $newJobId" }
-                                        onCreate(job)
+                                        onCreate(jobData.convertToJob(exampleModelManager, jobDb))
                                         close()
                                     }
                                 }
@@ -284,6 +144,156 @@ class JobCreatorDialog(onCreate: (Job) -> Unit = {}) : Dialog(), KoinComponent {
                 }
             }
         )
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).createOptimizer() = verticalLayout {
+        label("Optimizer")
+        hr()
+
+        verticalLayout {
+            val comboBoxVL = this
+            var optContent: Component? = null
+            comboBox<KClass<out Optimizer>> {
+                setWidthFull()
+                setItems(Optimizer::class.sealedSubclasses)
+                setItemLabelGenerator { it.simpleName }
+
+                addValueChangeListener {
+                    it.value?.let {
+                        optContent?.let { comboBoxVL.remove(it) }
+                        optContent = buildOptimizerComponent(it)
+                        comboBoxVL.add(optContent)
+                    }
+                }
+
+                bind(binder).asRequired()
+                    .withValidator(validateNotEmpty())
+                    .withConverter(
+                        Converter.from<KClass<out Optimizer>, Optimizer>(
+                            {
+                                val opt = makeOptimizer()
+                                if (opt != null) {
+                                    Result.ok(opt)
+                                } else {
+                                    Result.error("Invalid optimizer configuration.")
+                                }
+                            },
+                            {
+                                it::class
+                            }
+                        )
+                    ).bind(JobData::optimizer)
+            }
+        }
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).createLoss() = verticalLayout {
+        label("Loss")
+        hr()
+
+        comboBox<Loss>("Loss") {
+            setWidthFull()
+            setItems(Loss::class.sealedSubclasses.mapNotNull { it.objectInstance })
+            setItemLabelGenerator { it::class.simpleName }
+            bind(binder).asRequired().bind(JobData::loss)
+        }
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).createTraining() = verticalLayout {
+        label("Training")
+        hr()
+
+        textField("Metrics") {
+            placeholder = "accuracy, loss"
+            bind(binder).withConverter(
+                Converter.from<String, Set<String>>(
+                    {
+                        if (it == null) {
+                            Result.ok(setOf())
+                        } else {
+                            Result.ok(it.split(Regex(",\\s*")).toSet())
+                        }
+                    },
+                    {
+                        it.joinToString()
+                    }
+                )
+            ).bind(JobData::metrics)
+        }
+
+        textField("Epochs") {
+            placeholder = "1"
+            bind(binder).asRequired()
+                .toInt()
+                .withValidator(validateNotEmpty())
+                .bind(JobData::epochs)
+        }
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).createModel() = verticalLayout {
+        label("Model")
+        hr()
+
+        comboBox<ExampleModel>("Starting Model") {
+            val exampleModels =
+                exampleModelManager.getAllExampleModels().unsafeRunSync()
+            setWidthFull()
+            setItems(exampleModels)
+            setItemLabelGenerator { it.name }
+            bind(binder).asRequired().bind(JobData::exampleModel)
+        }
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).createTrainingData() = verticalLayout {
+        label("Training Data")
+        hr()
+
+        comboBox<Dataset>("Training Dataset") {
+            setWidthFull()
+            setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
+                it.objectInstance
+            })
+            setItemLabelGenerator { it.displayName }
+            bind(binder).asRequired().bind(JobData::trainingDataset)
+        }
+
+        comboBox<Plugin>("Dataset Plugin") {
+            setWidthFull()
+            setItems(datasetPluginManager.listPlugins())
+            setItemLabelGenerator { it.name }
+            bind(binder).asRequired().bind(JobData::datasetPlugin)
+        }
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).createBasicInformation() = verticalLayout {
+        label("Basic Information")
+        hr()
+
+        textField("Job Name") {
+            bind(binder).asRequired().withValidator { value, _ ->
+                value?.let {
+                    val notEmpty = value.isNotEmpty()
+                    val notInDb = jobDb.findByName(value) == null
+                    if (notEmpty && notInDb) {
+                        ValidationResult.ok()
+                    } else {
+                        if (!notEmpty) {
+                            ValidationResult.error("Must not be empty.")
+                        } else if (!notInDb) {
+                            ValidationResult.error("Must be unique.")
+                        } else {
+                            ValidationResult.error("Unknown error.")
+                        }
+                    }
+                } ?: ValidationResult.error("Must not be empty.")
+            }.bind(JobData::name)
+        }
     }
 
     private fun buildOptimizerComponent(optimizer: KClass<out Optimizer>): Component =
