@@ -26,6 +26,8 @@ import edu.wpi.axon.ui.view.HasNotifications
 import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.loadTestDataPluginManagerName
 import edu.wpi.axon.util.processTestOutputPluginManagerName
+import edu.wpi.axon.util.datasetPluginManagerName
+import edu.wpi.axon.util.testPluginManagerName
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.inject
