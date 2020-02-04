@@ -24,7 +24,6 @@ class PluginEditorDialog(
     bean: Plugin? = null,
     onSave: (Plugin) -> Unit = {}
 ) : KComposite(), HasNotifications {
-
     private val binder = beanValidationBinder<Plugin>()
 
     init {
@@ -40,8 +39,8 @@ class PluginEditorDialog(
                                 !pluginManager.listPlugins().map { it.name }.contains(
                                     name
                                 ) || name == bean?.name
-                            }, "A plugin with that name already exists!")
-                            .bind(Plugin::name)
+                            }, "A plugin with that name already exists!"
+                            ).bind(Plugin::name)
                     }
                     textArea("Content") {
                         setWidthFull()
