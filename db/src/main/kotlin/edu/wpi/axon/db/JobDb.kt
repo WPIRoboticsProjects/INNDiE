@@ -216,11 +216,13 @@ class JobDb(private val database: Database) {
     }
 
     fun fetchRunningJobs(): List<Job> = transaction(database) {
+        // TODO: Split the error log off of the status so we don't need to do this filter
         Jobs.select {
             (Jobs.statusCol like "%Creating%") or
                 (Jobs.statusCol like "%Initializing%") or
                 (Jobs.statusCol like "%InProgress%")
         }.map { Jobs.toDomain(it) }
+            .filter { it.status !is TrainingScriptProgress.Error }
     }
 
     fun remove(job: Job) {
