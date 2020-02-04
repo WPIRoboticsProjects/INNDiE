@@ -44,9 +44,11 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
 
     /**
      * The training script encountered an error.
+     *
+     * @param log Any error logs.
      */
     @Serializable
-    object Error : TrainingScriptProgress()
+    data class Error(val log: String) : TrainingScriptProgress()
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable

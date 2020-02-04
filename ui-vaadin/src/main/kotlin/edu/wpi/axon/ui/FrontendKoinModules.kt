@@ -51,7 +51,7 @@ fun defaultFrontendModule() = module {
 
     single(named(datasetPluginManagerName)) {
         bindPluginManager(
-            listOf(
+            setOf(
                 datasetPassthroughPlugin,
                 processMnistTypePlugin
             ),
@@ -62,7 +62,7 @@ fun defaultFrontendModule() = module {
 
     single(named(loadTestDataPluginManagerName)) {
         bindPluginManager(
-            listOf(),
+            setOf(),
             "axon-load-test-data-plugins",
             "load_test_data_plugin_cache.json"
         )
@@ -70,7 +70,7 @@ fun defaultFrontendModule() = module {
 
     single(named(processTestOutputPluginManagerName)) {
         bindPluginManager(
-            listOf(),
+            setOf(),
             "axon-process-test-output-plugins",
             "process_test_output_plugin_cache.json"
         )
@@ -81,7 +81,7 @@ fun defaultFrontendModule() = module {
 }
 
 private fun Scope.bindPluginManager(
-    officialPlugins: List<Plugin.Official>,
+    officialPlugins: Set<Plugin.Official>,
     cacheName: String,
     cacheFileName: String
 ): PluginManager = when (val bucketName = get<Option<String>>(named(axonBucketName))) {

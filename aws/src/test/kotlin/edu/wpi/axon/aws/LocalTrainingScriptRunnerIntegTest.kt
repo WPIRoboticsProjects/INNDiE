@@ -6,7 +6,7 @@ import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
-import io.kotlintest.shouldBe
+import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Tag
@@ -129,7 +129,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
                     .exists().shouldBeTrue()
                 break // Done with test
-            } else if (progress == TrainingScriptProgress.Error) {
+            } else if (progress is TrainingScriptProgress.Error) {
                 fail { "Progress was: $progress" }
             }
             Thread.sleep(1000)
@@ -244,14 +244,15 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 TrainingScriptProgress.Completed ->
                     fail { "The script should not have completed yet." }
 
-                TrainingScriptProgress.Error -> fail { "The script should not have errored yet." }
+                is TrainingScriptProgress.Error ->
+                    fail { "The script should not have errored yet." }
 
                 TrainingScriptProgress.Creating,
                 TrainingScriptProgress.Initializing,
                 is TrainingScriptProgress.InProgress -> {
                     runner.cancelScript(id)
                     val progressAfterCancellation = runner.getTrainingProgress(id)
-                    progressAfterCancellation.shouldBe(TrainingScriptProgress.Error)
+                    progressAfterCancellation.shouldBeInstanceOf<TrainingScriptProgress.Error>()
                     tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
                         .exists().shouldBeFalse()
                     return // Done with the test

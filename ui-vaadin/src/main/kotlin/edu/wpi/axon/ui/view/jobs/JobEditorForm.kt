@@ -195,7 +195,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                     // Nothing to cancel if the Job is not running
                     it.status != TrainingScriptProgress.NotStarted &&
                         it.status != TrainingScriptProgress.Completed &&
-                        it.status != TrainingScriptProgress.Error
+                        it.status !is TrainingScriptProgress.Error
                 }
             )
         }

@@ -22,7 +22,7 @@ internal class TrainingScriptProgressTest {
             TrainingScriptProgress.Initializing,
             TrainingScriptProgress.InProgress(0.5),
             TrainingScriptProgress.Completed,
-            TrainingScriptProgress.Error
+            TrainingScriptProgress.Error("a")
         )
     }
 }

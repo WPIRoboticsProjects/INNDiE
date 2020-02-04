@@ -20,7 +20,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 class S3PluginManager(
     private val s3Manager: S3Manager,
     private val cacheName: String,
-    private val officialPlugins: List<Plugin.Official>
+    private val officialPlugins: Set<Plugin.Official>
 ) : PluginManager {
 
     private lateinit var localPluginManager: LocalPluginManager
@@ -44,8 +44,13 @@ class S3PluginManager(
         s3Manager.uploadPluginCache(cacheName, cacheFile)
     }
 
-    override fun removeUnofficialPlugin(plugin: Plugin.Unofficial) {
-        localPluginManager.removeUnofficialPlugin(plugin)
+    override fun removeUnofficialPlugin(pluginName: String) {
+        localPluginManager.removeUnofficialPlugin(pluginName)
+        s3Manager.uploadPluginCache(cacheName, cacheFile)
+    }
+
+    override fun modifyUnofficialPlugin(pluginName: String, plugin: Plugin.Unofficial) {
+        localPluginManager.modifyUnofficialPlugin(pluginName, plugin)
         s3Manager.uploadPluginCache(cacheName, cacheFile)
     }
 

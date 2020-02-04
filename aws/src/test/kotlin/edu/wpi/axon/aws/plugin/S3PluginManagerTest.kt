@@ -18,7 +18,7 @@ internal class S3PluginManagerTest {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         val plugin1 = Plugin.Unofficial("a", "a")
         val plugin2 = Plugin.Unofficial("b", "b")
-        pluginCacheFile.writeText(PluginCache(listOf(plugin1, plugin2)).serialize())
+        pluginCacheFile.writeText(PluginCache(setOf(plugin1, plugin2)).serialize())
 
         val s3Manager = mockk<S3Manager> {
             every { downloadPluginCache(any()) } returns pluginCacheFile
@@ -27,7 +27,7 @@ internal class S3PluginManagerTest {
         val manager = S3PluginManager(
             s3Manager,
             "plugin-cache",
-            listOf()
+            setOf()
         )
         manager.initialize()
         manager.listPlugins().shouldContainExactlyInAnyOrder(plugin1, plugin2)
@@ -47,7 +47,7 @@ internal class S3PluginManagerTest {
         val manager = S3PluginManager(
             s3Manager,
             "plugin-cache",
-            listOf()
+            setOf()
         )
         manager.initialize()
         manager.addUnofficialPlugin(plugin1)
@@ -62,7 +62,7 @@ internal class S3PluginManagerTest {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         val plugin1 = Plugin.Unofficial("a", "a")
         val plugin2 = Plugin.Unofficial("b", "b")
-        pluginCacheFile.writeText(PluginCache(listOf(plugin1, plugin2)).serialize())
+        pluginCacheFile.writeText(PluginCache(setOf(plugin1, plugin2)).serialize())
 
         val s3Manager = mockk<S3Manager> {
             every { downloadPluginCache(any()) } returns pluginCacheFile
@@ -72,11 +72,37 @@ internal class S3PluginManagerTest {
         val manager = S3PluginManager(
             s3Manager,
             "plugin-cache",
-            listOf()
+            setOf()
         )
         manager.initialize()
-        manager.removeUnofficialPlugin(plugin1)
+        manager.removeUnofficialPlugin(plugin1.name)
         manager.listPlugins().shouldContainExactlyInAnyOrder(plugin2)
+
+        verify(exactly = 1) { s3Manager.downloadPluginCache("plugin-cache") }
+        verify(exactly = 1) { s3Manager.uploadPluginCache("plugin-cache", pluginCacheFile) }
+    }
+
+    @Test
+    fun `modifying a plugin modifies it in s3`(@TempDir tempDir: File) {
+        val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
+        val plugin1 = Plugin.Unofficial("a", "a")
+        val plugin2 = Plugin.Unofficial("b", "b")
+        val newPlugin1 = Plugin.Unofficial("a", "a1")
+        pluginCacheFile.writeText(PluginCache(setOf(plugin1, plugin2)).serialize())
+
+        val s3Manager = mockk<S3Manager> {
+            every { downloadPluginCache(any()) } returns pluginCacheFile
+            every { uploadPluginCache(any(), any()) } returns Unit
+        }
+
+        val manager = S3PluginManager(
+            s3Manager,
+            "plugin-cache",
+            setOf()
+        )
+        manager.initialize()
+        manager.modifyUnofficialPlugin(plugin1.name, newPlugin1)
+        manager.listPlugins().shouldContainExactlyInAnyOrder(newPlugin1, plugin2)
 
         verify(exactly = 1) { s3Manager.downloadPluginCache("plugin-cache") }
         verify(exactly = 1) { s3Manager.uploadPluginCache("plugin-cache", pluginCacheFile) }

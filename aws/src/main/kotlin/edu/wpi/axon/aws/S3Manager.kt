@@ -168,6 +168,30 @@ class S3Manager(
     }.readAllBytes().decodeToString()
 
     /**
+     * Clears the log file from the training script.
+     *
+     * @param id The unique Job ID.
+     */
+    fun clearTrainingLogFile(id: Int) {
+        s3.putObject(
+            PutObjectRequest.builder().bucket(bucketName)
+                .key("axon-training-progress/$id/log.txt").build(),
+            RequestBody.fromString("")
+        )
+    }
+
+    /**
+     * Gets the log file from the training script.
+     *
+     * @param id The unique Job ID.
+     * @return The contents of the log file.
+     */
+    @UseExperimental(ExperimentalStdlibApi::class)
+    fun getTrainingLogFile(id: Int) = s3.getObject {
+        it.bucket(bucketName).key("axon-training-progress/$id/log.txt")
+    }.readAllBytes().decodeToString()
+
+    /**
      * Uploads a plugin cache file.
      *
      * @param cacheName The name of the plugin cache.

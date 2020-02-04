@@ -50,7 +50,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
         //     userNewModel = model,
         //     generateDebugComments = false,
         //     datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
-        //     trainingMethod = JobTrainingMethod.EC2("i-0ca5697ea71b6772e"),
+        //     trainingMethod = JobTrainingMethod.Untrained,
         //     target = ModelDeploymentTarget.Desktop
         // )
         //
