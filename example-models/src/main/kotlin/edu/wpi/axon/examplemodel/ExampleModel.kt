@@ -11,22 +11,22 @@ data class ExampleModel(
     /**
      * The pretty name of the model.
      */
-    val name: String,
+    var name: String,
     /**
      * The filename the model should be put in.
      */
-    val fileName: String,
+    var fileName: String,
     /**
      * The url to the model.
      */
-    val url: String,
+    var url: String,
     /**
      * A short description of what the model does.
      */
-    val description: String,
+    var description: String,
     /**
      * Which layers to freeze by default. Associates a layer name with an optional trainable
      * flag.
      */
-    val freezeLayers: Map<String, SerializableOptionB>
+    var freezeLayers: Map<String, SerializableOptionB>
 )

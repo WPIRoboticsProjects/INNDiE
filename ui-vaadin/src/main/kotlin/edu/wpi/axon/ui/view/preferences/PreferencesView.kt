@@ -61,7 +61,7 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
                                 if (value != null && value > 0) {
                                     ValidationResult.ok()
                                 } else {
-                                    ValidationResult.error("must be greater than zero.")
+                                    ValidationResult.error("Must be greater than zero.")
                                 }
                             }.bind(Preferences::statusPollingDelay)
                     }
