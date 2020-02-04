@@ -56,7 +56,7 @@ internal class JobRunner : KoinComponent {
         require(
             job.status == TrainingScriptProgress.NotStarted ||
                 job.status == TrainingScriptProgress.Completed ||
-                job.status == TrainingScriptProgress.Error
+                job.status is TrainingScriptProgress.Error
         ) {
             "The Job to start must not be running. Got a Job with state: ${job.status}"
         }
@@ -175,7 +175,7 @@ internal class JobRunner : KoinComponent {
             val progress = progressReporters[id]!!.getTrainingProgress(id)
             progressUpdate(progress)
             if (progress == TrainingScriptProgress.Completed ||
-                progress == TrainingScriptProgress.Error
+                progress is TrainingScriptProgress.Error
             ) {
                 break
             } else {

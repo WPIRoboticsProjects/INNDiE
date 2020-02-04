@@ -39,10 +39,12 @@ class EC2TrainingScriptProgressReporter(
         // If the progress is being overridden, return that progress data early
         overriddenProgressMap[jobId]?.let { return it }
 
+        val instanceId = instanceIds[jobId]!!
         return computeTrainingScriptProgress(
             heartbeat = s3Manager.getHeartbeat(jobId),
             progress = s3Manager.getTrainingProgress(jobId),
-            status = ec2Manager.getInstanceState(instanceIds[jobId]!!),
+            status = ec2Manager.getInstanceState(instanceId),
+            ec2ConsoleOutput = s3Manager.getTrainingLogFile(jobId),
             epochs = scriptDataMap[jobId]!!.epochs
         )
     }
@@ -63,6 +65,7 @@ class EC2TrainingScriptProgressReporter(
             heartbeat: String,
             progress: String,
             status: InstanceStateName?,
+            ec2ConsoleOutput: String,
             epochs: Int
         ): TrainingScriptProgress {
             LOGGER.debug {
@@ -85,28 +88,38 @@ class EC2TrainingScriptProgressReporter(
                     status == InstanceStateName.STOPPING) &&
                 (heartbeat != "0" || progress != "completed")
             ) {
-                return TrainingScriptProgress.Error
+                return TrainingScriptProgress.Error(
+                    "The EC2 instance stopped without exiting cleanly.\n$ec2ConsoleOutput"
+                )
             }
 
             return when (heartbeat) {
                 "0" -> when (progress) {
                     "not started", "completed" -> progressAssumingEverythingIsFine
-                    else -> TrainingScriptProgress.Error
+                    else -> TrainingScriptProgress.Error(
+                        "Unknown progress text: $progress\n$ec2ConsoleOutput"
+                    )
                 }
 
                 "1" -> when (progress) {
                     "initializing" -> progressAssumingEverythingIsFine
-                    "not started" -> TrainingScriptProgress.Error
+                    "not started" -> TrainingScriptProgress.Error(
+                        "Unknown progress text: $progress\n$ec2ConsoleOutput"
+                    )
 
                     else -> when (status) {
                         InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
-                        InstanceStateName.STOPPING -> TrainingScriptProgress.Error
+                        InstanceStateName.STOPPING -> TrainingScriptProgress.Error(
+                            "The EC2 instance stopped without exiting cleanly.\n$ec2ConsoleOutput"
+                        )
 
                         else -> progressAssumingEverythingIsFine
                     }
                 }
 
-                else -> TrainingScriptProgress.Error
+                else -> TrainingScriptProgress.Error(
+                    "Unknown heartbeat text: $heartbeat.\n$ec2ConsoleOutput"
+                )
             }
         }
 
@@ -129,13 +142,13 @@ class EC2TrainingScriptProgressReporter(
                 try {
                     TrainingScriptProgress.InProgress(progress.toDouble() / epochs)
                 } catch (ex: NumberFormatException) {
-                    TrainingScriptProgress.Error
+                    TrainingScriptProgress.Error("Invalid heartbeat text: $heartbeat")
                 }
             } else {
                 LOGGER.warn {
                     "Training progress error. heartbeat=$heartbeat, progress=$progress"
                 }
-                TrainingScriptProgress.Error
+                TrainingScriptProgress.Error("Invalid progress text: $progress")
             }
         }
     }
