@@ -6,6 +6,7 @@ import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
+import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.kotlintest.shouldBe
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -252,7 +253,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 is TrainingScriptProgress.InProgress -> {
                     runner.cancelScript(id)
                     val progressAfterCancellation = runner.getTrainingProgress(id)
-                    progressAfterCancellation.shouldBe(TrainingScriptProgress.Error)
+                    progressAfterCancellation.shouldBeInstanceOf<TrainingScriptProgress.Error>()
                     tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
                         .exists().shouldBeFalse()
                     return // Done with the test
