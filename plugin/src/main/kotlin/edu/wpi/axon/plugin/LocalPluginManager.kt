@@ -48,9 +48,9 @@ class LocalPluginManager(
         synchronizeCacheFile()
     }
 
-    override fun removeUnofficialPlugin(plugin: Plugin.Unofficial) {
+    override fun removeUnofficialPlugin(pluginName: String) {
         check(initialized)
-        unofficialPlugins.remove(unofficialPlugins.first { it.name == plugin.name })
+        unofficialPlugins.remove(unofficialPlugins.first { it.name == pluginName })
         synchronizeCacheFile()
     }
 

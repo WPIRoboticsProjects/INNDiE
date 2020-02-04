@@ -107,7 +107,7 @@ internal class LocalPluginManagerTest {
 
         val manager = LocalPluginManager(pluginCacheFile, setOf())
         manager.initialize()
-        manager.removeUnofficialPlugin(plugin1)
+        manager.removeUnofficialPlugin(plugin1.name)
         PluginCache.deserialize(pluginCacheFile.readText()).plugins
             .shouldContainExactly(plugin2)
     }

@@ -90,7 +90,7 @@ class PluginManagerComponent(title: String, pluginManager: PluginManager) : KCom
                             addThemeVariants(ButtonVariant.LUMO_ERROR)
                             if (plugin is Plugin.Unofficial) {
                                 onLeftClick {
-                                    pluginManager.removeUnofficialPlugin(plugin)
+                                    pluginManager.removeUnofficialPlugin(plugin.name)
                                     dataProvider.refreshAll()
                                 }
                             } else {

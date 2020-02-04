@@ -75,7 +75,7 @@ internal class S3PluginManagerTest {
             setOf()
         )
         manager.initialize()
-        manager.removeUnofficialPlugin(plugin1)
+        manager.removeUnofficialPlugin(plugin1.name)
         manager.listPlugins().shouldContainExactlyInAnyOrder(plugin2)
 
         verify(exactly = 1) { s3Manager.downloadPluginCache("plugin-cache") }

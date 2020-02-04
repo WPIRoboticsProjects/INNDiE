@@ -28,9 +28,9 @@ interface PluginManager {
     /**
      * Removes a plugin.
      *
-     * @param plugin The the plugin to remove.
+     * @param pluginName The name of the plugin to remove.
      */
-    fun removeUnofficialPlugin(plugin: Plugin.Unofficial)
+    fun removeUnofficialPlugin(pluginName: String)
 
     /**
      * Modified a plugin.

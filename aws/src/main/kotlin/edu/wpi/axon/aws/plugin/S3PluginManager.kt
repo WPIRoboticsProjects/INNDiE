@@ -44,8 +44,8 @@ class S3PluginManager(
         s3Manager.uploadPluginCache(cacheName, cacheFile)
     }
 
-    override fun removeUnofficialPlugin(plugin: Plugin.Unofficial) {
-        localPluginManager.removeUnofficialPlugin(plugin)
+    override fun removeUnofficialPlugin(pluginName: String) {
+        localPluginManager.removeUnofficialPlugin(pluginName)
         s3Manager.uploadPluginCache(cacheName, cacheFile)
     }
 
