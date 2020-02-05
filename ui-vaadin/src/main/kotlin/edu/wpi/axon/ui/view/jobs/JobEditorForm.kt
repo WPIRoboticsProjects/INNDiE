@@ -27,21 +27,18 @@ import com.github.mvysny.karibudsl.v10.toInt
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasComponents
-import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.listbox.ListBox
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.tabs.Tab
 import com.vaadin.flow.component.tabs.Tabs
 import com.vaadin.flow.data.binder.Result
 import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.converter.Converter
-import com.vaadin.flow.data.renderer.TextRenderer
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.TrainingScriptProgress
@@ -50,6 +47,7 @@ import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
+import edu.wpi.axon.ui.validateNotEmpty
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
 import java.math.RoundingMode
@@ -68,7 +66,6 @@ class JobEditorForm : KComposite(), KoinComponent {
     private val jobLifecycleManager by inject<JobLifecycleManager>()
     private lateinit var form: FormLayout
     private val binder = beanValidationBinder<Job>()
-    private var coralRepresentativeDatasetPercentage = 0.0
     private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
     private lateinit var tabs: Tabs
     private val tabMap = mutableMapOf<Tab, Component>()
@@ -77,8 +74,8 @@ class JobEditorForm : KComposite(), KoinComponent {
         set(value) {
             field = value
             isVisible = value is Some
-            // form.isEnabled =
-            //     value.fold({ false }, { it.status == TrainingScriptProgress.NotStarted })
+            form.isEnabled =
+                value.fold({ false }, { it.status == TrainingScriptProgress.NotStarted })
             value.map { binder.readBean(it) }
         }
 
@@ -320,15 +317,27 @@ class JobEditorForm : KComposite(), KoinComponent {
 
     private fun configureTargetForm(): (@VaadinDsl FormLayout.FormItem).() -> Unit = {
         verticalLayout {
+            var makeCoral: () -> ModelDeploymentTarget.Coral? = { null }
+
             val coralForm = FormLayout().apply {
                 isVisible = false
+
+                data class CoralData(
+                    var percentage: Double? = null
+                )
+
+                val coralBinder = beanValidationBinder<CoralData>()
+
                 formItem("Representative Dataset Percentage") {
                     textField {
-                        bind(binder).asRequired()
+                        placeholder = "1.0"
+                        bind(coralBinder)
+                            .asRequired()
+                            .withValidator(validateNotEmpty())
                             .withConverter(Converter.from<String, Double>(
                                 {
                                     try {
-                                        Result.ok(it.toDouble())
+                                        Result.ok(it.toDouble() / 100)
                                     } catch (ex: NumberFormatException) {
                                         Result.error<Double>(ex.localizedMessage)
                                     }
@@ -336,63 +345,67 @@ class JobEditorForm : KComposite(), KoinComponent {
                                 {
                                     DecimalFormat("#.####").apply {
                                         roundingMode = RoundingMode.HALF_DOWN
-                                    }.format(it)
+                                    }.format(it * 100)
                                 }
                             ))
                             .withValidator { value, _ ->
                                 when (value) {
-                                    null -> ValidationResult.error("Outside range.")
+                                    null -> ValidationResult.error("Must not be empty.")
                                     in 0.0..1.0 -> ValidationResult.ok()
                                     else -> ValidationResult.error("Outside range.")
                                 }
                             }
-                            .bind(
-                                { coralRepresentativeDatasetPercentage },
-                                { _, value ->
-                                    value?.let { coralRepresentativeDatasetPercentage = it }
-                                }
-                            )
+                            .bind(CoralData::percentage)
                     }
+                }
+
+                makeCoral = {
+                    val coralData = CoralData()
+                    if (coralBinder.validate().isOk && coralBinder.writeBeanIfValid(coralData)) {
+                        ModelDeploymentTarget.Coral(coralData.percentage!!)
+                    } else null
                 }
             }
 
-            val targetConverter = Converter.from<
-                KClass<out ModelDeploymentTarget>,
-                ModelDeploymentTarget>(
-                {
-                    when (it) {
-                        ModelDeploymentTarget.Desktop::class -> Result.ok(
-                            ModelDeploymentTarget.Desktop
-                        )
-
-                        ModelDeploymentTarget.Coral::class -> Result.ok(
-                            ModelDeploymentTarget.Coral(coralRepresentativeDatasetPercentage)
-                        )
-
-                        else -> Result.error<ModelDeploymentTarget>("Unknown selection.")
-                    }
-                },
-                { it::class }
-            )
-
-            add(ListBox<KClass<out ModelDeploymentTarget>>().apply {
-                setItems(
-                    ModelDeploymentTarget.Desktop::class,
-                    ModelDeploymentTarget.Coral::class
-                )
-
+            comboBox<KClass<out ModelDeploymentTarget>> {
+                setItems(ModelDeploymentTarget.Desktop::class, ModelDeploymentTarget.Coral::class)
                 value = ModelDeploymentTarget.Desktop::class
-
-                setRenderer(TextRenderer(ItemLabelGenerator { it.simpleName }))
-
-                bind(binder)
-                    .withConverter(targetConverter)
-                    .bind(Job::target)
-
+                // setRenderer(TextRenderer(ItemLabelGenerator { it.simpleName }))
+                setItemLabelGenerator { it.simpleName }
                 addValueChangeListener {
                     coralForm.isVisible = it.value == ModelDeploymentTarget.Coral::class
                 }
-            })
+
+                bind(binder)
+                    .asRequired()
+                    .withConverter(
+                        Converter.from<KClass<out ModelDeploymentTarget>, ModelDeploymentTarget>(
+                            {
+                                when (it) {
+                                    ModelDeploymentTarget.Desktop::class -> Result.ok(
+                                        ModelDeploymentTarget.Desktop
+                                    )
+
+                                    ModelDeploymentTarget.Coral::class -> {
+                                        val coral = makeCoral()
+                                        if (coral != null) {
+                                            Result.ok(coral as ModelDeploymentTarget)
+                                        } else {
+                                            Result.error("Invalid Coral configuration.")
+                                        }
+                                    }
+
+                                    else ->
+                                        Result.error<ModelDeploymentTarget>("Unknown selection.")
+                                }
+                            },
+                            {
+                                it::class
+                            }
+                        )
+                    )
+                    .bind(Job::target)
+            }
 
             add(coralForm)
         }
