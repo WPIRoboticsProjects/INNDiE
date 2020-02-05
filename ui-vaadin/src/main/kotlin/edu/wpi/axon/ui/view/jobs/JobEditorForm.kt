@@ -15,13 +15,17 @@ import com.github.mvysny.karibudsl.v10.div
 import com.github.mvysny.karibudsl.v10.formItem
 import com.github.mvysny.karibudsl.v10.formLayout
 import com.github.mvysny.karibudsl.v10.init
+import com.github.mvysny.karibudsl.v10.label
 import com.github.mvysny.karibudsl.v10.numberField
 import com.github.mvysny.karibudsl.v10.onLeftClick
 import com.github.mvysny.karibudsl.v10.setPrimary
+import com.github.mvysny.karibudsl.v10.tab
+import com.github.mvysny.karibudsl.v10.tabs
 import com.github.mvysny.karibudsl.v10.textField
 import com.github.mvysny.karibudsl.v10.toDouble
 import com.github.mvysny.karibudsl.v10.toInt
 import com.github.mvysny.karibudsl.v10.verticalLayout
+import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.button.Button
@@ -31,6 +35,9 @@ import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.listbox.ListBox
+import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.tabs.Tab
+import com.vaadin.flow.component.tabs.Tabs
 import com.vaadin.flow.data.binder.Result
 import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.converter.Converter
@@ -63,13 +70,15 @@ class JobEditorForm : KComposite(), KoinComponent {
     private val binder = beanValidationBinder<Job>()
     private var coralRepresentativeDatasetPercentage = 0.0
     private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
+    private lateinit var tabs: Tabs
+    private val tabMap = mutableMapOf<Tab, Component>()
 
     var job: Option<Job> = None
         set(value) {
             field = value
             isVisible = value is Some
-            form.isEnabled =
-                value.fold({ false }, { it.status == TrainingScriptProgress.NotStarted })
+            // form.isEnabled =
+            //     value.fold({ false }, { it.status == TrainingScriptProgress.NotStarted })
             value.map { binder.readBean(it) }
         }
 
@@ -77,73 +86,110 @@ class JobEditorForm : KComposite(), KoinComponent {
         ui {
             div {
                 className = "job-form"
-                verticalLayout {
-                    className = "job-form-content"
-                    setSizeUndefined()
-                    form = formLayout {
-                        responsiveSteps = listOf(
-                            FormLayout.ResponsiveStep(
-                                "0",
-                                1,
-                                FormLayout.ResponsiveStep.LabelsPosition.TOP
-                            ),
-                            FormLayout.ResponsiveStep(
-                                "550px",
-                                1,
-                                FormLayout.ResponsiveStep.LabelsPosition.ASIDE
-                            )
-                        )
-                        formItem("Name") {
-                            textField {
-                                setWidthFull()
-                                bind(binder).asRequired().bind(Job::name)
-                            }
-                        }
-                        formItem("Dataset") {
-                            comboBox<Dataset> {
-                                setWidthFull()
-                                setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
-                                    it.objectInstance
-                                })
-                                setItemLabelGenerator { it.displayName }
-                                bind(binder).asRequired().bind(Job::userDataset)
-                            }
-                        }
-                        formItem("Dataset Plugin") {
-                            comboBox<Plugin> {
-                                setWidthFull()
-                                setItems(datasetPluginManager.listPlugins())
-                                setItemLabelGenerator { it.name }
-                                bind(binder).asRequired().bind(Job::datasetPlugin)
-                            }
-                        }
-                        formItem("Epochs") {
-                            numberField {
-                                setWidthFull()
-                                setHasControls(true)
-                                min = 1.0
-                                step = 1.0
-                                bind(binder).toInt().asRequired().bind(Job::userEpochs)
-                            }
-                        }
-                        formItem("Generate Debug Comments") {
-                            checkBox {
-                                bind(binder).bind(Job::generateDebugComments)
-                            }
-                        }
-                        formItem("Target", configureTargetForm())
+
+                tabs = tabs {
+                    val basicTab = Tab("Basic")
+                    val basicPage = VerticalLayout().apply {
+                        isVisible = false
+                        configureBasicPage()
                     }
-                    verticalLayout {
-                        button("Save", Icon(VaadinIcon.CHECK), configureSaveButton())
-                        button("Delete", Icon(VaadinIcon.TRASH), configureDeleteButton())
-                        button("Run", Icon(VaadinIcon.PLAY), configureRunButton())
-                        button("Cancel", Icon(VaadinIcon.STOP), configureCancelButton())
+
+                    val inputTab = Tab("Input")
+                    val inputPage = VerticalLayout().apply {
+                        isVisible = false
+                        label("input content")
+                    }
+
+                    // Add all the tabs and pages to the map to associate them
+                    tabMap[basicTab] = basicPage
+                    tabMap[inputTab] = inputPage
+
+                    // Add the tabs to the tab bar
+                    tabMap.forEach { (tab, _) -> add(tab) }
+
+                    // Select and make visible the basic page (the first page)
+                    selectedTab = basicTab
+                    basicPage.isVisible = true
+
+                    // Each time the user changes their selection, change which page is visible
+                    addSelectedChangeListener {
+                        tabMap.forEach { (_, page) -> page.isVisible = false }
+                        it.selectedTab?.let { tabMap[it]!!.isVisible = true }
                     }
                 }
+
+                div { tabMap.forEach { (_, page) -> add(page) } }
             }
         }
 
         isVisible = false
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).configureBasicPage() {
+        verticalLayout {
+            className = "job-form-content"
+            setSizeUndefined()
+            form = formLayout {
+                responsiveSteps = listOf(
+                    FormLayout.ResponsiveStep(
+                        "0",
+                        1,
+                        FormLayout.ResponsiveStep.LabelsPosition.TOP
+                    ),
+                    FormLayout.ResponsiveStep(
+                        "550px",
+                        1,
+                        FormLayout.ResponsiveStep.LabelsPosition.ASIDE
+                    )
+                )
+                formItem("Name") {
+                    textField {
+                        setWidthFull()
+                        bind(binder).asRequired().bind(Job::name)
+                    }
+                }
+                formItem("Dataset") {
+                    comboBox<Dataset> {
+                        setWidthFull()
+                        setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
+                            it.objectInstance
+                        })
+                        setItemLabelGenerator { it.displayName }
+                        bind(binder).asRequired().bind(Job::userDataset)
+                    }
+                }
+                formItem("Dataset Plugin") {
+                    comboBox<Plugin> {
+                        setWidthFull()
+                        setItems(datasetPluginManager.listPlugins())
+                        setItemLabelGenerator { it.name }
+                        bind(binder).asRequired().bind(Job::datasetPlugin)
+                    }
+                }
+                formItem("Epochs") {
+                    numberField {
+                        setWidthFull()
+                        setHasControls(true)
+                        min = 1.0
+                        step = 1.0
+                        bind(binder).toInt().asRequired().bind(Job::userEpochs)
+                    }
+                }
+                formItem("Generate Debug Comments") {
+                    checkBox {
+                        bind(binder).bind(Job::generateDebugComments)
+                    }
+                }
+                formItem("Target", configureTargetForm())
+            }
+            verticalLayout {
+                button("Save", Icon(VaadinIcon.CHECK), configureSaveButton())
+                button("Delete", Icon(VaadinIcon.TRASH), configureDeleteButton())
+                button("Run", Icon(VaadinIcon.PLAY), configureRunButton())
+                button("Cancel", Icon(VaadinIcon.STOP), configureCancelButton())
+            }
+        }
     }
 
     private fun configureSaveButton(): (@VaadinDsl Button).() -> Unit = {
