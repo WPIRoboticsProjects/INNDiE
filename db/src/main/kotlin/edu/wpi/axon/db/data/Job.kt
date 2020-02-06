@@ -28,20 +28,20 @@ import edu.wpi.axon.util.allS3OrLocal
  * @param id The database-generated unique id. Do not modify.
  */
 data class Job internal constructor(
-    var name: String,
-    var status: TrainingScriptProgress,
-    var userOldModelPath: FilePath,
-    var userDataset: Dataset,
-    var userOptimizer: Optimizer,
-    var userLoss: Loss,
-    var userMetrics: Set<String>,
-    var userEpochs: Int,
-    var userNewModel: Model,
-    var generateDebugComments: Boolean,
-    var trainingMethod: JobTrainingMethod,
-    var target: ModelDeploymentTarget,
-    var datasetPlugin: Plugin,
-    var id: Int
+    val name: String,
+    val status: TrainingScriptProgress,
+    val userOldModelPath: FilePath,
+    val userDataset: Dataset,
+    val userOptimizer: Optimizer,
+    val userLoss: Loss,
+    val userMetrics: Set<String>,
+    val userEpochs: Int,
+    val userNewModel: Model,
+    val generateDebugComments: Boolean,
+    val trainingMethod: JobTrainingMethod,
+    val target: ModelDeploymentTarget,
+    val datasetPlugin: Plugin,
+    val id: Int
 ) {
 
     /**

@@ -225,6 +225,16 @@ class JobDb(private val database: Database) {
             .filter { it.status !is TrainingScriptProgress.Error }
     }
 
+    fun removeById(id: Int) {
+        val job = getById(id)!!
+
+        transaction(database) {
+            Jobs.deleteWhere { Jobs.id eq id }
+        }
+
+        observers.forEach { it(JobDbOp.Remove, job) }
+    }
+
     fun remove(job: Job) {
         transaction(database) {
             Jobs.deleteWhere { Jobs.id eq job.id }
