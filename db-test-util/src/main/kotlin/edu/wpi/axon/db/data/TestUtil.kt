@@ -1,6 +1,7 @@
 package edu.wpi.axon.db.data
 
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.examplemodel.ExampleModel
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -62,11 +63,34 @@ fun Random.nextPlugin(): Plugin {
     }
 }
 
+fun nextExampleModel() = ExampleModel(
+    name = RandomStringUtils.randomAlphanumeric(10),
+    fileName = "${RandomStringUtils.randomAlphanumeric(10)}.h5",
+    url = "https://${RandomStringUtils.randomAlphanumeric(10)}",
+    description = RandomStringUtils.randomAlphanumeric(10),
+    freezeLayers = emptyMap()
+)
+
+fun Random.nextFilePath(): FilePath =
+    when (nextInt(FilePath::class.sealedSubclasses.count())) {
+        0 -> FilePath.S3(RandomStringUtils.randomAlphanumeric(10))
+        1 -> FilePath.Local(RandomStringUtils.randomAlphanumeric(10))
+        else -> error("Missing a FilePath case.")
+    }
+
+fun Random.nextModelSource(): ModelSource =
+    when (nextInt(ModelSource::class.sealedSubclasses.count())) {
+        0 -> ModelSource.FromExample(nextExampleModel())
+        1 -> ModelSource.FromFile(nextFilePath())
+        2 -> ModelSource.FromJob(nextInt(1, Int.MAX_VALUE))
+        else -> error("Missing a ModelSource case.")
+    }
+
 fun Random.nextJob(
     jobDb: JobDb,
     name: String = RandomStringUtils.randomAlphanumeric(10),
     status: TrainingScriptProgress = nextTrainingScriptProgress(),
-    userOldModelPath: FilePath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
+    userOldModelPath: ModelSource = nextModelSource(),
     userDataset: Dataset = nextDataset(),
     userOptimizer: Optimizer = Optimizer.Adam(
         nextDouble(0.0, 1.0),

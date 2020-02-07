@@ -32,35 +32,39 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.tabs.Tab
 import com.vaadin.flow.component.tabs.Tabs
-import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Result
 import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.converter.Converter
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.examplemodel.ExampleModel
+import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
+import edu.wpi.axon.ui.ModelDownloader
 import edu.wpi.axon.ui.validateNotEmpty
 import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.allS3OrLocal
-import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
 import java.math.RoundingMode
 import java.text.DecimalFormat
-import kotlin.reflect.KClass
+import kotlinx.coroutines.CancellationException
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
 import org.koin.core.qualifier.named
+
+enum class UIModel {
+    Example, Custom, Job
+}
 
 enum class UIModelDeploymentTarget {
     Desktop, Coral
@@ -69,91 +73,102 @@ enum class UIModelDeploymentTarget {
 class UIJob(
     var name: String? = null,
     var status: TrainingScriptProgress? = null,
-    var userOldModelPath: FilePath? = null,
+    var model: UIModel? = null,
+    var exampleModel: ExampleModel? = null,
+    var customModel: FilePath? = null,
+    var jobModel: Int? = null,
     var userDataset: Dataset? = null,
     var userOptimizer: Optimizer? = null,
     var userLoss: Loss? = null,
     var userMetrics: Set<String>? = null,
     var userEpochs: Int? = null,
-    var userNewModel: Model? = null,
     var trainingMethod: JobTrainingMethod? = null,
     var target: UIModelDeploymentTarget? = null,
     var coralRepresentativeDatasetPercentage: Double? = null,
     var datasetPlugin: Plugin? = null,
     var id: Int? = null
-) {
+) : KoinComponent {
 
-    /**
-     * Whether the Job uses AWS for anything. Is [None] if the Job configuration is incorrect
-     * (mixing AWS and local). Is [Some] if the configuration is correct.
-     */
-    val usesAWS: Option<Boolean>
-        get() {
-            if (userOldModelPath == null || userOldModelPath == null) {
-                return None
-            }
+    private val modelDownloader by inject<ModelDownloader>()
 
-            val s3Check = when (val dataset = userDataset) {
-                null -> return None
-                is Dataset.ExampleDataset -> allS3OrLocal(userOldModelPath!!)
-                is Dataset.Custom -> allS3OrLocal(userOldModelPath!!, dataset.path)
-            }
-
-            return if (s3Check) {
-                // Just need to check one because of the check above
-                Some(userOldModelPath is FilePath.S3)
-            } else {
-                // If the check failed then the configuration is wrong
-                None
-            }
+    fun updateInDb(jobDb: JobDb) {
+        val modelSource = when (model!!) {
+            UIModel.Example -> ModelSource.FromExample(exampleModel!!)
+            UIModel.Custom -> ModelSource.FromFile(customModel!!)
+            UIModel.Job -> ModelSource.FromJob(jobModel!!)
         }
 
-    fun updateInDb(jobDb: JobDb) = jobDb.update(
-        id = id!!,
-        name = name!!,
-        status = status!!,
-        userOldModelPath = userOldModelPath!!,
-        userDataset = userDataset!!,
-        userOptimizer = userOptimizer!!,
-        userLoss = userLoss!!,
-        userMetrics = userMetrics!!,
-        userEpochs = userEpochs!!,
-        userNewModel = userNewModel!!,
-        generateDebugComments = false,
-        trainingMethod = trainingMethod!!,
-        target = when (target!!) {
-            UIModelDeploymentTarget.Desktop -> ModelDeploymentTarget.Desktop
-            UIModelDeploymentTarget.Coral -> ModelDeploymentTarget.Coral(
-                coralRepresentativeDatasetPercentage!!
-            )
-        },
-        datasetPlugin = datasetPlugin!!
-    )
+        // Force the new model to be the same as the old model for now
+        // TODO: Let the user configure the old model, then put their configured model in as the
+        //  new model
+        val (newModel, _) = modelDownloader.downloadModel(modelSource)
+
+        jobDb.update(
+            id = id!!,
+            name = name!!,
+            status = status!!,
+            userOldModelPath = modelSource,
+            userDataset = userDataset!!,
+            userOptimizer = userOptimizer!!,
+            userLoss = userLoss!!,
+            userMetrics = userMetrics!!,
+            userEpochs = userEpochs!!,
+            userNewModel = newModel,
+            generateDebugComments = false,
+            trainingMethod = trainingMethod!!,
+            target = when (target!!) {
+                UIModelDeploymentTarget.Desktop -> ModelDeploymentTarget.Desktop
+                UIModelDeploymentTarget.Coral -> ModelDeploymentTarget.Coral(
+                    coralRepresentativeDatasetPercentage!!
+                )
+            },
+            datasetPlugin = datasetPlugin!!
+        )
+    }
 
     companion object {
 
-        fun fromJob(job: Job) = UIJob(
-            name = job.name,
-            status = job.status,
-            userOldModelPath = job.userOldModelPath,
-            userDataset = job.userDataset,
-            userOptimizer = job.userOptimizer,
-            userLoss = job.userLoss,
-            userMetrics = job.userMetrics,
-            userEpochs = job.userEpochs,
-            userNewModel = job.userNewModel,
-            trainingMethod = job.trainingMethod,
-            target = when (job.target) {
-                is ModelDeploymentTarget.Desktop -> UIModelDeploymentTarget.Desktop
-                is ModelDeploymentTarget.Coral -> UIModelDeploymentTarget.Coral
-            },
-            coralRepresentativeDatasetPercentage = when (val target = job.target) {
-                is ModelDeploymentTarget.Desktop -> 0.0
-                is ModelDeploymentTarget.Coral -> target.representativeDatasetPercentage
-            },
-            datasetPlugin = job.datasetPlugin,
-            id = job.id
-        )
+        fun fromJob(job: Job): UIJob {
+            val uiJob = UIJob(
+                name = job.name,
+                status = job.status,
+                userDataset = job.userDataset,
+                userOptimizer = job.userOptimizer,
+                userLoss = job.userLoss,
+                userMetrics = job.userMetrics,
+                userEpochs = job.userEpochs,
+                trainingMethod = job.trainingMethod,
+                target = when (job.target) {
+                    is ModelDeploymentTarget.Desktop -> UIModelDeploymentTarget.Desktop
+                    is ModelDeploymentTarget.Coral -> UIModelDeploymentTarget.Coral
+                },
+                coralRepresentativeDatasetPercentage = when (val target = job.target) {
+                    is ModelDeploymentTarget.Desktop -> 0.0
+                    is ModelDeploymentTarget.Coral -> target.representativeDatasetPercentage
+                },
+                datasetPlugin = job.datasetPlugin,
+                id = job.id
+            )
+
+            when (val modelSource = job.userOldModelPath) {
+                is ModelSource.FromExample -> {
+                    uiJob.model = UIModel.Example
+                    uiJob.exampleModel = modelSource.exampleModel
+                }
+
+                is ModelSource.FromFile -> {
+                    uiJob.model = UIModel.Custom
+                    uiJob.customModel = modelSource.filePath
+                }
+
+                is ModelSource.FromJob -> {
+                    uiJob.model = UIModel.Job
+                    uiJob.jobModel = modelSource.jobId
+                }
+            }
+
+            return uiJob
+        }
     }
 }
 
@@ -167,6 +182,7 @@ class JobEditorForm : KComposite(), KoinComponent {
     private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
     private lateinit var tabs: Tabs
     private val tabMap = mutableMapOf<Tab, Component>()
+    private val exampleModelManager: ExampleModelManager by inject()
 
     var job: Option<UIJob> = None
         set(value) {
@@ -273,6 +289,50 @@ class JobEditorForm : KComposite(), KoinComponent {
     @VaadinDsl
     private fun (@VaadinDsl HasComponents).configureInputPage() {
         formLayout {
+            formItem("Model") {
+                lateinit var exampleModelFormItem: Component
+                lateinit var customModelFormItem: Component
+                lateinit var jobModelFormItem: Component
+
+                comboBox<UIModel> {
+                    setItems(UIModel.values().toList())
+                    value = UIModel.Example
+                    addValueChangeListener {
+                        exampleModelFormItem.isVisible = false
+                        customModelFormItem.isVisible = false
+                        jobModelFormItem.isVisible = false
+                        when (it.value) {
+                            UIModel.Example, null -> exampleModelFormItem.isVisible = true
+                            UIModel.Custom -> customModelFormItem.isVisible = true
+                            UIModel.Job -> jobModelFormItem.isVisible = true
+                        }
+                    }
+                    bind(binder)
+                        .asRequired()
+                        .withValidator(validateNotEmpty())
+                        .bind(UIJob::model)
+                }
+
+                exampleModelFormItem = comboBox<ExampleModel>("Example Model") {
+                    val exampleModels = exampleModelManager.getAllExampleModels().unsafeRunSync()
+                    setWidthFull()
+                    setItems(exampleModels)
+                    setItemLabelGenerator { it.name }
+                    bind(binder)
+                        .asRequired()
+                        .withValidator(validateNotEmpty())
+                        .bind(UIJob::exampleModel)
+                }
+
+                customModelFormItem = textField("Custom Model") {
+                    isEnabled = false
+                }
+
+                jobModelFormItem = textField("Model from a Job") {
+                    isEnabled = false
+                }
+            }
+
             formItem("Dataset") {
                 comboBox<Dataset> {
                     setWidthFull()
@@ -283,6 +343,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                     bind(binder).asRequired().bind(UIJob::userDataset)
                 }
             }
+
             formItem("Dataset Plugin") {
                 comboBox<Plugin> {
                     setWidthFull()
@@ -297,27 +358,26 @@ class JobEditorForm : KComposite(), KoinComponent {
     @VaadinDsl
     private fun (@VaadinDsl HasComponents).configureTargetPage() {
         formLayout {
-            lateinit var percentageField: TextField
-
             formItem("Target") {
+                lateinit var percentageField: Component
+
                 comboBox<UIModelDeploymentTarget> {
+                    setSizeUndefined()
                     setItems(UIModelDeploymentTarget.values().toList())
                     value = UIModelDeploymentTarget.Desktop
                     setItemLabelGenerator { it.name }
                     addValueChangeListener {
-                        percentageField.isEnabled = it.value == UIModelDeploymentTarget.Coral
+                        percentageField.isVisible = it.value == UIModelDeploymentTarget.Coral
                     }
                     bind(binder)
                         .asRequired()
                         .withValidator(validateNotEmpty())
                         .bind(UIJob::target)
                 }
-            }
 
-            formItem("Representative Dataset Percentage") {
-                percentageField = textField {
+                percentageField = textField("Representative Dataset Percentage") {
+                    isVisible = false
                     placeholder = "1.0"
-                    isEnabled = false
 
                     bind(binder)
                         .asRequired()
@@ -422,38 +482,8 @@ class JobEditorForm : KComposite(), KoinComponent {
                     false
                 },
                 {
-                    if (it.status != TrainingScriptProgress.NotStarted) {
-                        // Don't let the user run jobs that are currently
-                        // running
-                        return@fold false
-                    }
-
-                    val bucket = get<Option<String>>(named(axonBucketName))
-
-                    LOGGER.debug {
-                        """
-                        job=$it
-                        usesAWS=${it.usesAWS}
-                        bucket=$bucket
-                        """.trimIndent()
-                    }
-
-                    it.usesAWS.fold(
-                        {
-                            // The Job is configured incorrectly, don't let
-                            // it run
-                            false
-                        },
-                        { jobUsesAWS ->
-                            // The user can run the job if:
-                            //  1. They have AWS configured and the Job uses AWS
-                            //  2. They don't have AWS configured and the Job
-                            //      doesn't use AWS
-                            //  3. They have AWS configured and the Job doesn't
-                            //      use AWS
-                            bucket is Some || !jobUsesAWS
-                        }
-                    )
+                    // Don't let the user run jobs that are currently running
+                    it.status == TrainingScriptProgress.NotStarted
                 }
             )
         }
@@ -469,7 +499,16 @@ class JobEditorForm : KComposite(), KoinComponent {
                     // TODO: Handle errors here
                     saveJob().map {
                         IO {
-                            jobLifecycleManager.startJob(jobDb.getById(it.id!!)!!)
+                            val job = jobDb.getById(it.id!!)!!
+                            jobLifecycleManager.startJob(job).invokeOnCompletion {
+                                if (it != null && it !is CancellationException) {
+                                    // The coroutine ended exceptionally
+                                    jobDb.update(
+                                        job.id,
+                                        status = TrainingScriptProgress.Error(it.localizedMessage)
+                                    )
+                                }
+                            }
                         }.unsafeRunSync()
                     }
                 }

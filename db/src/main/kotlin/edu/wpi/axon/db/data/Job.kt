@@ -1,16 +1,11 @@
 package edu.wpi.axon.db.data
 
-import arrow.core.None
-import arrow.core.Option
-import arrow.core.Some
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.allS3OrLocal
 
 /**
  * @param userOldModelPath The path to the model to load.
@@ -30,7 +25,7 @@ import edu.wpi.axon.util.allS3OrLocal
 data class Job internal constructor(
     val name: String,
     val status: TrainingScriptProgress,
-    val userOldModelPath: FilePath,
+    val userOldModelPath: ModelSource,
     val userDataset: Dataset,
     val userOptimizer: Optimizer,
     val userLoss: Loss,
@@ -42,25 +37,4 @@ data class Job internal constructor(
     val target: ModelDeploymentTarget,
     val datasetPlugin: Plugin,
     val id: Int
-) {
-
-    /**
-     * Whether the Job uses AWS for anything. Is [None] if the Job configuration is incorrect
-     * (mixing AWS and local). Is [Some] if the configuration is correct.
-     */
-    val usesAWS: Option<Boolean>
-        get() {
-            val s3Check = when (val dataset = userDataset) {
-                is Dataset.ExampleDataset -> allS3OrLocal(userOldModelPath)
-                is Dataset.Custom -> allS3OrLocal(userOldModelPath, dataset.path)
-            }
-
-            return if (s3Check) {
-                // Just need to check one because of the check above
-                Some(userOldModelPath is FilePath.S3)
-            } else {
-                // If the check failed then the configuration is wrong
-                None
-            }
-        }
-}
+)

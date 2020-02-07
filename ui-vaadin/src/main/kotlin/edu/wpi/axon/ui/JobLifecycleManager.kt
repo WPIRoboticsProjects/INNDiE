@@ -48,20 +48,19 @@ class JobLifecycleManager internal constructor(
      * Generates the code for a job and starts it.
      *
      * @param job The [Job] to run.
+     * @return The coroutine Job that was started.
      */
-    fun startJob(job: Job) {
-        scope.launch {
-            jobDb.update(job.id, status = TrainingScriptProgress.Creating)
+    fun startJob(job: Job) = scope.launch {
+        jobDb.update(job.id, status = TrainingScriptProgress.Creating)
 
-            val trainingMethod = jobRunner.startJob(job)
-            jobDb.update(job.id, trainingMethod = trainingMethod)
-            LOGGER.debug { "Started job with id: ${job.id}" }
+        val trainingMethod = jobRunner.startJob(job)
+        jobDb.update(job.id, trainingMethod = trainingMethod)
+        LOGGER.debug { "Started job with id: ${job.id}" }
 
-            delay(waitAfterStartingJobMs)
+        delay(waitAfterStartingJobMs)
 
-            jobRunner.waitForFinish(job.id) {
-                jobDb.update(job.id, status = it)
-            }
+        jobRunner.waitForFinish(job.id) {
+            jobDb.update(job.id, status = it)
         }
     }
 

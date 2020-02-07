@@ -3,6 +3,7 @@ package edu.wpi.axon.db
 import com.beust.klaxon.Klaxon
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
@@ -10,7 +11,6 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
-import edu.wpi.axon.util.FilePath
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
@@ -29,7 +29,7 @@ internal object Jobs : IntIdTable() {
 
     val nameCol = varchar("name", 255).uniqueIndex()
     val statusCol = text("status")
-    val userOldModelPathCol = varchar("userOldModelPath", 255)
+    val userOldModelPathCol = text("userOldModelPath")
     val userDatasetCol = text("dataset")
     val userOptimizerCol = varchar("userOptimizer", 255)
     val userLossCol = varchar("userLoss", 255)
@@ -44,7 +44,7 @@ internal object Jobs : IntIdTable() {
     fun toDomain(row: ResultRow) = Job(
         name = row[nameCol],
         status = TrainingScriptProgress.deserialize(row[statusCol]),
-        userOldModelPath = FilePath.deserialize(row[userOldModelPathCol]),
+        userOldModelPath = ModelSource.deserialize(row[userOldModelPathCol]),
         userDataset = Dataset.deserialize(row[userDatasetCol]),
         userOptimizer = Optimizer.deserialize(row[userOptimizerCol]),
         userLoss = Loss.deserialize(row[userLossCol]),
@@ -87,7 +87,7 @@ class JobDb(private val database: Database) {
     fun create(
         name: String,
         status: TrainingScriptProgress,
-        userOldModelPath: FilePath,
+        userOldModelPath: ModelSource,
         userDataset: Dataset,
         userOptimizer: Optimizer,
         userLoss: Loss,
@@ -160,7 +160,7 @@ class JobDb(private val database: Database) {
         id: Int,
         name: String? = null,
         status: TrainingScriptProgress? = null,
-        userOldModelPath: FilePath? = null,
+        userOldModelPath: ModelSource? = null,
         userDataset: Dataset? = null,
         userOptimizer: Optimizer? = null,
         userLoss: Loss? = null,
