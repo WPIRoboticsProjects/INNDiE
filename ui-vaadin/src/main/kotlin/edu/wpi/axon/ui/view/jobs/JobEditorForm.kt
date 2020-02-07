@@ -324,10 +324,13 @@ class JobEditorForm : KComposite(), KoinComponent {
                         .bind(UIJob::exampleModel)
                 }
 
+                // TODO: Let the user select a model from S3. They should also be able to upload a
+                //  model first, and then select it.
                 customModelFormItem = textField("Custom Model") {
                     isEnabled = false
                 }
 
+                // TODO: Let the user see previous Jobs and select one by name.
                 jobModelFormItem = textField("Model from a Job") {
                     isEnabled = false
                 }
