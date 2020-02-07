@@ -9,6 +9,7 @@ import com.github.mvysny.karibudsl.v10.VaadinDsl
 import com.github.mvysny.karibudsl.v10.beanValidationBinder
 import com.github.mvysny.karibudsl.v10.bind
 import com.github.mvysny.karibudsl.v10.button
+import com.github.mvysny.karibudsl.v10.checkBox
 import com.github.mvysny.karibudsl.v10.comboBox
 import com.github.mvysny.karibudsl.v10.div
 import com.github.mvysny.karibudsl.v10.formItem
@@ -19,6 +20,7 @@ import com.github.mvysny.karibudsl.v10.onLeftClick
 import com.github.mvysny.karibudsl.v10.setPrimary
 import com.github.mvysny.karibudsl.v10.tabs
 import com.github.mvysny.karibudsl.v10.textField
+import com.github.mvysny.karibudsl.v10.toDouble
 import com.github.mvysny.karibudsl.v10.toInt
 import com.github.mvysny.karibudsl.v10.verticalLayout
 import com.vaadin.flow.component.Component
@@ -51,10 +53,12 @@ import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.ModelDownloader
 import edu.wpi.axon.ui.validateNotEmpty
+import edu.wpi.axon.ui.view.HasNotifications
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import kotlin.reflect.KClass
 import kotlinx.coroutines.CancellationException
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
@@ -78,7 +82,12 @@ class UIJob(
     var customModel: FilePath? = null,
     var jobModel: Int? = null,
     var userDataset: Dataset? = null,
-    var userOptimizer: Optimizer? = null,
+    var userOptimizer: KClass<out Optimizer>? = null,
+    var adamLearningRate: Double? = null,
+    var adamBeta1: Double? = null,
+    var adamBeta2: Double? = null,
+    var adamEpsilon: Double? = null,
+    var adamAmsGrad: Boolean? = null,
     var userLoss: Loss? = null,
     var userMetrics: Set<String>? = null,
     var userEpochs: Int? = null,
@@ -103,13 +112,25 @@ class UIJob(
         //  new model
         val (newModel, _) = modelDownloader.downloadModel(modelSource)
 
+        val optimizer = when (userOptimizer!!) {
+            Optimizer.Adam::class -> Optimizer.Adam(
+                learningRate = adamLearningRate!!,
+                beta1 = adamBeta1!!,
+                beta2 = adamBeta2!!,
+                epsilon = adamEpsilon!!,
+                amsGrad = adamAmsGrad!!
+            )
+
+            else -> error("Unhandled optimizer branch.")
+        }
+
         jobDb.update(
             id = id!!,
             name = name!!,
             status = status!!,
             userOldModelPath = modelSource,
             userDataset = userDataset!!,
-            userOptimizer = userOptimizer!!,
+            userOptimizer = optimizer,
             userLoss = userLoss!!,
             userMetrics = userMetrics!!,
             userEpochs = userEpochs!!,
@@ -133,7 +154,6 @@ class UIJob(
                 name = job.name,
                 status = job.status,
                 userDataset = job.userDataset,
-                userOptimizer = job.userOptimizer,
                 userLoss = job.userLoss,
                 userMetrics = job.userMetrics,
                 userEpochs = job.userEpochs,
@@ -167,13 +187,24 @@ class UIJob(
                 }
             }
 
+            when (val optimizer = job.userOptimizer) {
+                is Optimizer.Adam -> {
+                    uiJob.userOptimizer = Optimizer.Adam::class
+                    uiJob.adamLearningRate = optimizer.learningRate
+                    uiJob.adamBeta1 = optimizer.beta1
+                    uiJob.adamBeta2 = optimizer.beta2
+                    uiJob.adamEpsilon = optimizer.epsilon
+                    uiJob.adamAmsGrad = optimizer.amsGrad
+                }
+            }
+
             return uiJob
         }
     }
 }
 
 @StyleSheet("styles/job-form.css")
-class JobEditorForm : KComposite(), KoinComponent {
+class JobEditorForm : KComposite(), KoinComponent, HasNotifications {
 
     private val jobDb by inject<JobDb>()
     private val jobLifecycleManager by inject<JobLifecycleManager>()
@@ -211,6 +242,12 @@ class JobEditorForm : KComposite(), KoinComponent {
                         configureInputPage()
                     }
 
+                    val trainingTab = Tab("Training")
+                    val trainingPage = VerticalLayout().apply {
+                        isVisible = false
+                        configureTrainingPage()
+                    }
+
                     val targetTab = Tab("Target")
                     val targetPage = VerticalLayout().apply {
                         isVisible = false
@@ -220,6 +257,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                     // Add all the tabs and pages to the map to associate them
                     tabMap[basicTab] = basicPage
                     tabMap[inputTab] = inputPage
+                    tabMap[trainingTab] = trainingPage
                     tabMap[targetTab] = targetPage
 
                     // Add the tabs to the tab bar
@@ -265,15 +303,6 @@ class JobEditorForm : KComposite(), KoinComponent {
                     textField {
                         setWidthFull()
                         bind(binder).asRequired().bind(UIJob::name)
-                    }
-                }
-                formItem("Epochs") {
-                    numberField {
-                        setWidthFull()
-                        setHasControls(true)
-                        min = 1.0
-                        step = 1.0
-                        bind(binder).toInt().asRequired().bind(UIJob::userEpochs)
                     }
                 }
             }
@@ -359,6 +388,124 @@ class JobEditorForm : KComposite(), KoinComponent {
     }
 
     @VaadinDsl
+    private fun (@VaadinDsl HasComponents).configureTrainingPage() {
+        formLayout {
+            formItem("Epochs") {
+                numberField {
+                    setWidthFull()
+                    setHasControls(true)
+                    min = 1.0
+                    step = 1.0
+                    bind(binder).toInt().asRequired().bind(UIJob::userEpochs)
+                }
+            }
+
+            formItem("Optimizer") {
+                lateinit var adamFields: Component
+
+                comboBox<KClass<out Optimizer>> {
+                    setItems(Optimizer::class.sealedSubclasses)
+                    setItemLabelGenerator { it.simpleName }
+                    addValueChangeListener {
+                        adamFields.isVisible = false
+                        when (it.value) {
+                            Optimizer.Adam::class, null -> adamFields.isVisible = true
+                        }
+                    }
+                    bind(binder)
+                        .asRequired()
+                        .withValidator(validateNotEmpty())
+                        .bind(UIJob::userOptimizer)
+                }
+
+                adamFields = div {
+                    textField("Learning Rate") {
+                        placeholder = "0.001"
+                        value = "0.001"
+                        bind(binder).asRequired()
+                            .toDouble()
+                            .withValidator(validateNotEmpty())
+                            .bind(UIJob::adamLearningRate)
+                    }
+
+                    textField("Beta 1") {
+                        placeholder = "0.9"
+                        value = "0.9"
+                        bind(binder).asRequired()
+                            .toDouble()
+                            .withValidator(validateNotEmpty())
+                            .bind(UIJob::adamBeta1)
+                    }
+
+                    textField("Beta 2") {
+                        placeholder = "0.999"
+                        value = "0.999"
+                        bind(binder).asRequired()
+                            .toDouble()
+                            .withValidator(validateNotEmpty())
+                            .bind(UIJob::adamBeta2)
+                    }
+
+                    textField("Epsilon") {
+                        placeholder = "1E-7"
+                        value = "1E-7"
+                        bind(binder).asRequired()
+                            .toDouble()
+                            .withValidator(validateNotEmpty())
+                            .bind(UIJob::adamEpsilon)
+                    }
+
+                    checkBox("AMSGrad") {
+                        bind(binder).bind(UIJob::adamAmsGrad)
+                    }
+                }
+            }
+
+            formItem("Loss") {
+                comboBox<Loss> {
+                    setItems(Loss::class.sealedSubclasses.mapNotNull { it.objectInstance })
+                    setItemLabelGenerator { it::class.simpleName }
+                    bind(binder).asRequired().bind(UIJob::userLoss)
+                }
+            }
+
+            formItem("Metrics") {
+                textField {
+                    placeholder = "accuracy"
+                    bind(binder)
+                        .withConverter(
+                            Converter.from<String, Set<String>>(
+                                {
+                                    if (it == null) {
+                                        Result.ok(setOf())
+                                    } else {
+                                        Result.ok(it.split(Regex("\\s*,\\s*")).toSet())
+                                    }
+                                },
+                                {
+                                    it.joinToString()
+                                }
+                            )
+                        )
+                        .withValidator { value, _ ->
+                            val metricsWithNonAlphabeticChar =
+                                value.filter { it.contains(Regex("[^a-zA-Z]")) }
+                            if (metricsWithNonAlphabeticChar.isEmpty()) {
+                                ValidationResult.ok()
+                            } else {
+                                ValidationResult.error(
+                                    "Metrics must only contain alphabetic characters: " +
+                                        metricsWithNonAlphabeticChar.joinToString()
+                                )
+                            }
+                        }
+                        .bind(UIJob::userMetrics)
+                }
+            }
+        }
+    }
+
+    @VaadinDsl
     private fun (@VaadinDsl HasComponents).configureTargetPage() {
         formLayout {
             formItem("Target") {
@@ -426,6 +573,8 @@ class JobEditorForm : KComposite(), KoinComponent {
         if (binder.validate().isOk && binder.writeBeanIfValid(it)) {
             it.updateInDb(jobDb)
             JobsView.navigateTo()
+        } else {
+            showNotification("Could not save the Job because its configuration is invalid.")
         }
         it
     }
@@ -499,7 +648,6 @@ class JobEditorForm : KComposite(), KoinComponent {
                     }
                 },
                 {
-                    // TODO: Handle errors here
                     saveJob().map {
                         IO {
                             val job = jobDb.getById(it.id!!)!!
@@ -512,7 +660,7 @@ class JobEditorForm : KComposite(), KoinComponent {
                                     )
                                 }
                             }
-                        }.unsafeRunSync()
+                        }.unsafeRunSync() // TODO: Handle errors here
                     }
                 }
             )

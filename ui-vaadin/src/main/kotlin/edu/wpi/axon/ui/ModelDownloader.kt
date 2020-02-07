@@ -62,7 +62,12 @@ class ModelDownloader : KoinComponent {
                                 |file=$file
                                 """.trimMargin()
                             }
-                            it.uploadUntrainedModel(file)
+
+                            if (!it.listUntrainedModels().contains(file.name)) {
+                                // The model is not in S3 so we need to upload it
+                                it.uploadUntrainedModel(file)
+                            }
+
                             model to FilePath.S3(file.name)
                         }
                     )
