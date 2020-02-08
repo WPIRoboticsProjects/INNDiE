@@ -27,7 +27,7 @@ import edu.wpi.axon.util.allS3OrLocal
  * @param datasetPlugin The plugin used to process the dataset after it is loaded.
  * @param id The database-generated unique id. Do not modify.
  */
-data class Job internal constructor(
+data class Job(
     var name: String,
     var status: TrainingScriptProgress,
     var userOldModelPath: FilePath,
