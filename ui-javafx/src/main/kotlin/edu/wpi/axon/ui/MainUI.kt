@@ -4,6 +4,7 @@ import arrow.core.Either
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.plugin.DatasetPlugins
@@ -72,7 +73,7 @@ class MainUI : Application(), KoinComponent {
         get<JobDb>().create(
             name = "AWS Job",
             status = TrainingScriptProgress.NotStarted,
-            userOldModelPath = FilePath.S3(modelName),
+            userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(
                 learningRate = 0.001,

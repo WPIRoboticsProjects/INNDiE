@@ -21,19 +21,19 @@ import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlinx.coroutines.delay
+import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
+import org.koin.core.inject
 import org.koin.core.qualifier.named
 
 /**
@@ -44,6 +44,8 @@ internal class JobRunner : KoinComponent {
     private val runners = mutableMapOf<Int, TrainingScriptRunner>()
     private val progressReporters = mutableMapOf<Int, TrainingScriptProgressReporter>()
     private val cancellers = mutableMapOf<Int, TrainingScriptCanceller>()
+    private val bucketName by inject<Option<String>>(named(axonBucketName))
+    private val modelDownloader by inject<ModelDownloader>()
 
     /**
      * Generates the code for a job and starts it.
@@ -61,49 +63,32 @@ internal class JobRunner : KoinComponent {
             "The Job to start must not be running. Got a Job with state: ${job.status}"
         }
 
-        // Verify that usesAWS is configured correctly
-        val usesAWS = job.usesAWS
-        require(usesAWS is Some) {
-            "Cannot start a Job that is configured incorrectly (usesAWS failed)."
-        }
-
-        // TODO: Loading the old model will need to be done earlier by another part of Axon. This
-        //  code is temporary.
-        // If the model to start training from is in S3, we need to download it
-        val localOldModel = when (job.userOldModelPath) {
-            is FilePath.S3 -> {
-                val bucketName: Option<String> = get(named(axonBucketName))
-                check(bucketName is Some)
-
-                val s3Manager = S3Manager(bucketName.t)
-                s3Manager.downloadUntrainedModel(job.userOldModelPath.path)
+        val workingDir = bucketName.fold(
+            {
+                // The local runner can work out of any directory.
+                localScriptRunnerCache.resolve(job.id.toString()).apply { toFile().mkdirs() }
+            },
+            {
+                // The EC2 runner needs to output to a relative directory (and NOT just the current
+                // directory) because it runs the training script in a Docker container and maps the
+                // current directory with `-v`.
+                Paths.get(".").resolve("output")
             }
+        )
 
-            is FilePath.Local -> File(job.userOldModelPath.path)
-        }
-
-        val oldModel = ModelLoaderFactory().createModelLoader(localOldModel.name)
-            .load(localOldModel)
-            .unsafeRunSync()
-
-        val workingDir = if (usesAWS.t) {
-            // The EC2 runner needs to output to a relative directory (and NOT just the current
-            // directory) because it runs the training script in a Docker container and maps the
-            // current directory with `-v`.
-            Paths.get(".").resolve("output")
-        } else {
-            // The local runner can work out of any directory.
-            localScriptRunnerCache.resolve(job.id.toString()).apply { toFile().mkdirs() }
-        }
+        val (oldModel, modelPath) = modelDownloader.downloadModel(job.userOldModelPath)
 
         val trainModelScriptGenerator = when (job.userNewModel) {
             is Model.Sequential -> {
                 require(oldModel is Model.Sequential)
-                TrainSequentialModelScriptGenerator(toTrainState(job, workingDir), oldModel)
+                TrainSequentialModelScriptGenerator(
+                    toTrainState(job, modelPath, workingDir),
+                    oldModel
+                )
             }
             is Model.General -> {
                 require(oldModel is Model.General)
-                TrainGeneralModelScriptGenerator(toTrainState(job, workingDir), oldModel)
+                TrainGeneralModelScriptGenerator(toTrainState(job, modelPath, workingDir), oldModel)
             }
         }
 
@@ -121,23 +106,26 @@ internal class JobRunner : KoinComponent {
             { IO.just(it) }
         ).unsafeRunSync()
 
-        val config = createTrainingScriptConfiguration(job, script, workingDir)
+        val config = createTrainingScriptConfiguration(job, modelPath, script, workingDir)
 
         // Create the correct TrainingScriptRunner based on whether the Job needs to use AWS
-        val (scriptRunner, trainingMethod) = if (usesAWS.t) {
-            val runner = EC2TrainingScriptRunner(
-                // TODO: Allow overriding the default node type in the Job editor form
-                get<PreferencesManager>().get().defaultEC2NodeType,
-                EC2Manager(),
-                S3Manager(getBucket())
-            )
-            runner.startScript(config)
-            runner to JobTrainingMethod.EC2(runner.getInstanceId(config.id))
-        } else {
-            val runner = LocalTrainingScriptRunner()
-            runner.startScript(config)
-            runner to JobTrainingMethod.Local
-        }
+        val (scriptRunner, trainingMethod) = bucketName.fold(
+            {
+                val runner = LocalTrainingScriptRunner()
+                runner.startScript(config)
+                runner to JobTrainingMethod.Local
+            },
+            {
+                val runner = EC2TrainingScriptRunner(
+                    // TODO: Allow overriding the default node type in the Job editor form
+                    get<PreferencesManager>().get().defaultEC2NodeType,
+                    EC2Manager(),
+                    S3Manager(getBucket())
+                )
+                runner.startScript(config)
+                runner to JobTrainingMethod.EC2(runner.getInstanceId(config.id))
+            }
+        )
 
         runners[job.id] = scriptRunner
         progressReporters[job.id] = scriptRunner
@@ -194,8 +182,13 @@ internal class JobRunner : KoinComponent {
         require(runners[job.id] == null)
 
         // The script contents don't matter to the progress reporter. Set an empty
-        // string to avoid having to regenerate the script.
-        val config = createTrainingScriptConfiguration(job, "", Files.createTempDirectory(""))
+        // string to avoid having to regenerate the script. The model path doesn't matter either.
+        val config = createTrainingScriptConfiguration(
+            job,
+            FilePath.Local(""),
+            "",
+            Files.createTempDirectory("")
+        )
 
         when (val trainingMethod = job.trainingMethod) {
             is JobTrainingMethod.EC2 -> {
@@ -238,10 +231,11 @@ internal class JobRunner : KoinComponent {
 
     private fun createTrainingScriptConfiguration(
         job: Job,
+        modelPath: FilePath,
         script: String,
         workingDir: Path
     ) = RunTrainingScriptConfiguration(
-        oldModelName = job.userOldModelPath,
+        oldModelName = modelPath,
         dataset = job.userDataset,
         scriptContents = script,
         epochs = job.userEpochs,
@@ -250,8 +244,12 @@ internal class JobRunner : KoinComponent {
     )
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : Model> toTrainState(job: Job, workingDir: Path): TrainState<T> = TrainState(
-        userOldModelPath = job.userOldModelPath,
+    private fun <T : Model> toTrainState(
+        job: Job,
+        modelPath: FilePath,
+        workingDir: Path
+    ): TrainState<T> = TrainState(
+        userOldModelPath = modelPath,
         userDataset = job.userDataset,
         userOptimizer = job.userOptimizer,
         userLoss = job.userLoss,
@@ -267,4 +265,8 @@ internal class JobRunner : KoinComponent {
         datasetPlugin = job.datasetPlugin,
         jobId = job.id
     )
+
+    companion object {
+        private val LOGGER = KotlinLogging.logger { }
+    }
 }
