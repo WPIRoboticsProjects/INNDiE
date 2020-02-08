@@ -130,89 +130,132 @@ class JobDetailView(
                 alignment = Pos.CENTER_LEFT
 
                 children.add(Label("Dataset"))
-                children.add(ComboBox<Dataset>().apply {
-                    disableProperty().bind(jobInProgressProperty)
-                    cellFactory = Callback { DatasetCell() }
-                    buttonCell = DatasetCell()
-                    items.setAll(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
-                        it.objectInstance
-                    })
-                    selectionModel.select(job.userDataset)
-                    selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                        // Update our copy of the job and push it to the db when the user selects
-                        // a new dataset
-                        scope.launch {
-                            jobProperty.value = jobDb.update(
-                                jobProperty.value.id,
-                                userDataset = newValue
-                            )
+                children.add(ValidatedNode(
+                    ComboBox<Dataset>().apply {
+                        disableProperty().bind(jobInProgressProperty)
+                        cellFactory = Callback { DatasetCell() }
+                        buttonCell = DatasetCell()
+                        items.setAll(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
+                            it.objectInstance
+                        })
+                        selectionModel.select(job.userDataset)
+                        selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+                            // Update our copy of the job and push it to the db when the user selects
+                            // a new dataset
+                            scope.launch {
+                                jobProperty.value = jobDb.update(
+                                    jobProperty.value.id,
+                                    userDataset = newValue
+                                )
+                            }
+                        }
+                    },
+                    {
+                        if (it.selectionModel.selectedItem == null) {
+                            ValidationResult.Error("Must select a dataset.")
+                        } else {
+                            ValidationResult.Success
                         }
                     }
-                })
+                ))
             })
 
             children.add(VBox().apply {
                 spacing = 10.0
                 alignment = Pos.TOP_LEFT
 
-                lateinit var exampleModelForm: Node
-                lateinit var customModelForm: Node
-                lateinit var jobModelForm: Node
+                val exampleModelForm: ValidatedNode<out Node>
+                val customModelForm: ValidatedNode<out Node>
+                val jobModelForm: ValidatedNode<out Node>
 
-                children.add(HBox().apply {
+                val modelDetails = StackPane().apply {
+                    alignment = Pos.TOP_LEFT
+                    exampleModelForm = ValidatedNode(
+                        ComboBox<ExampleModel>().apply {
+                            disableProperty().bind(jobInProgressProperty)
+                            cellFactory = Callback { ExampleModelCell() }
+                            buttonCell = ExampleModelCell()
+                            items.setAll(exampleModels)
+                            selectionModel.select(exampleModels.first())
+                            selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+                                if (newValue != null) {
+                                    scope.launch {
+                                        jobProperty.value = jobDb.update(
+                                            jobProperty.value.id,
+                                            userOldModelPath = ModelSource.FromExample(newValue)
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            if (it.isVisible && it.selectionModel.selectedItem == null)
+                                ValidationResult.Error("Must select a model.")
+                            else ValidationResult.Success
+                        }
+                    )
+                    children.add(exampleModelForm)
+
+                    customModelForm = ValidatedNode(
+                        ComboBox<String>().apply {
+                            disableProperty().bind(jobInProgressProperty)
+                            isVisible = false
+                        },
+                        {
+                            if (it.isVisible && it.selectionModel.selectedItem == null)
+                                ValidationResult.Error("Must select a model.")
+                            else ValidationResult.Success
+                        }
+                    )
+                    children.add(customModelForm)
+
+                    jobModelForm = ValidatedNode(
+                        ComboBox<Job>().apply {
+                            disableProperty().bind(jobInProgressProperty)
+                            isVisible = false
+                        },
+                        {
+                            if (it.isVisible && it.selectionModel.selectedItem == null)
+                                ValidationResult.Error("Must select a model.")
+                            else ValidationResult.Success
+                        }
+                    )
+                    children.add(jobModelForm)
+                }
+
+                val modelComboBox = HBox().apply {
                     spacing = 5.0
                     alignment = Pos.CENTER_LEFT
 
                     children.add(Label("Model"))
-                    children.add(ComboBox<ModelChoice>().apply {
-                        disableProperty().bind(jobInProgressProperty)
-                        items.setAll(ModelChoice.values().toList())
-                        selectionModel.select(ModelChoice.Example)
-                        selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                            exampleModelForm.isVisible = false
-                            customModelForm.isVisible = false
-                            jobModelForm.isVisible = false
-                            when (newValue) {
-                                ModelChoice.Example, null -> exampleModelForm.isVisible = true
-                                ModelChoice.Custom -> customModelForm.isVisible = true
-                                ModelChoice.Job -> jobModelForm.isVisible = true
-                            }
-                        }
-                    })
-                })
-
-                children.add(StackPane().apply {
-                    alignment = Pos.TOP_LEFT
-                    children.add(ComboBox<ExampleModel>().apply {
-                        exampleModelForm = this
-                        disableProperty().bind(jobInProgressProperty)
-                        cellFactory = Callback { ExampleModelCell() }
-                        buttonCell = ExampleModelCell()
-                        items.setAll(exampleModels)
-                        selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                            if (newValue != null) {
-                                scope.launch {
-                                    jobProperty.value = jobDb.update(
-                                        jobProperty.value.id,
-                                        userOldModelPath = ModelSource.FromExample(newValue)
-                                    )
+                    val modelSelectionBox = ValidatedNode(
+                        ComboBox<ModelChoice>().apply {
+                            disableProperty().bind(jobInProgressProperty)
+                            items.setAll(ModelChoice.values().toList())
+                            selectionModel.select(ModelChoice.Example)
+                            selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+                                exampleModelForm.isVisible = false
+                                customModelForm.isVisible = false
+                                jobModelForm.isVisible = false
+                                when (newValue) {
+                                    ModelChoice.Example, null -> exampleModelForm.isVisible = true
+                                    ModelChoice.Custom -> customModelForm.isVisible = true
+                                    ModelChoice.Job -> jobModelForm.isVisible = true
                                 }
                             }
-                        }
-                    })
+                        },
+                        {
+                            if (it.selectionModel.selectedItem == null)
+                                ValidationResult.Error("Must select a model.")
+                            else ValidationResult.Success
+                        },
+                        setOf(exampleModelForm, customModelForm, jobModelForm)
+                    )
+                    children.add(modelSelectionBox)
+                }
 
-                    children.add(ComboBox<String>().apply {
-                        customModelForm = this
-                        disableProperty().bind(jobInProgressProperty)
-                        isVisible = false
-                    })
-
-                    children.add(ComboBox<Job>().apply {
-                        jobModelForm = this
-                        disableProperty().bind(jobInProgressProperty)
-                        isVisible = false
-                    })
-                })
+                children.add(modelComboBox)
+                children.add(modelDetails)
             })
         }
     }

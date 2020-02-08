@@ -77,6 +77,8 @@
     -confirmation-color-success: rgba(0, 195, 0, 0.76);
     -confirmation-color-warning: yellow;
     -confirmation-color-error: rgba(230, 0, 0, 0.75);
+    -validation-color-error-text: rgb(230, 0, 0);
+    -validation-color-error-border: rgb(230, 0, 0);
 }
 
 /*******************************************************************************
