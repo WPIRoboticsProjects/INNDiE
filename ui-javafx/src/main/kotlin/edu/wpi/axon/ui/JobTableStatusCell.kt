@@ -13,7 +13,6 @@ class JobTableStatusCell : TableCell<Job, TrainingScriptProgress>() {
     override fun updateItem(status: TrainingScriptProgress?, empty: Boolean) {
         super.updateItem(status, empty)
         if (empty || status == null) {
-            text = null
             graphic = null
         } else {
             alignment = Pos.CENTER_LEFT

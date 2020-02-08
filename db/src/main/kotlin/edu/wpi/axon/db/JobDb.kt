@@ -171,7 +171,7 @@ class JobDb(private val database: Database) {
         trainingMethod: JobTrainingMethod? = null,
         target: ModelDeploymentTarget? = null,
         datasetPlugin: Plugin? = null
-    ) {
+    ): Job {
         transaction(database) {
             Jobs.update({ Jobs.id eq id }) { row ->
                 name?.let { row[nameCol] = name }
@@ -190,7 +190,9 @@ class JobDb(private val database: Database) {
             }
         }
 
-        observers.forEach { it(JobDbOp.Update, getById(id)!!) }
+        val newJob = getById(id)!!
+        observers.forEach { it(JobDbOp.Update, newJob) }
+        return newJob
     }
 
     fun count(): Int = transaction(database) {

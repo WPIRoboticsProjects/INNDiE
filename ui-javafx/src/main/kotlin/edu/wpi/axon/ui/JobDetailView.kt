@@ -34,12 +34,8 @@ class JobDetailView(
     private val jobInProgressProperty = SimpleBooleanProperty()
 
     init {
-        jobProperty.addListener { _, oldValue: Job?, newValue ->
+        jobProperty.addListener { _, _, newValue ->
             jobInProgressProperty.value = (newValue.status != TrainingScriptProgress.NotStarted)
-            if (oldValue != null) {
-                // Skip the first update to avoid deadlock
-                scope.launch { jobDb.update(newValue) }
-            }
         }
 
         jobProperty.value = job
@@ -67,14 +63,24 @@ class JobDetailView(
                 selectionModel.selectedItemProperty().addListener { _, _, newValue ->
                     // Update our copy of the job and push it to the db when the user selects a new
                     // dataset
-                    jobProperty.value = job.copy(userDataset = newValue)
+                    scope.launch {
+                        jobProperty.value = jobDb.update(
+                            jobProperty.value.id,
+                            userDataset = newValue
+                        )
+                    }
                 }
             })
 
             children.add(Button("Run").apply {
                 disableProperty().bind(jobInProgressProperty)
                 setOnAction {
-                    jobProperty.value = job.copy(status = TrainingScriptProgress.Initializing)
+                    scope.launch {
+                        jobProperty.value = jobDb.update(
+                            jobProperty.value.id,
+                            status = TrainingScriptProgress.Initializing
+                        )
+                    }
                 }
             })
 
