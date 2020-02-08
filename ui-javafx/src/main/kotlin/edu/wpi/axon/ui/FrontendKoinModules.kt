@@ -113,5 +113,5 @@ fun defaultFrontendModule() = module {
 
     single { JobLifecycleManager(jobRunner = get(), jobDb = get(), waitAfterStartingJobMs = 5000L) }
     single { JobRunner() }
-    single<ExampleModelManager> { GitExampleModelManager() }
+    single<ExampleModelManager> { GitExampleModelManager().apply { updateCache().unsafeRunSync() } }
 }
