@@ -28,6 +28,7 @@ import com.vaadin.flow.data.converter.Converter
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModel
 import edu.wpi.axon.examplemodel.ExampleModelManager
@@ -67,7 +68,7 @@ data class JobData(
         return jobDb.create(
             name!!,
             TrainingScriptProgress.NotStarted,
-            FilePath.Local(file.path),
+            ModelSource.FromFile(FilePath.Local(file.path)),
             trainingDataset!!,
             optimizer!!,
             loss!!,

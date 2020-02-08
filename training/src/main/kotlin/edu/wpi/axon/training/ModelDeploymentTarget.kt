@@ -20,6 +20,7 @@ sealed class ModelDeploymentTarget {
     /**
      * The model is going to be deployed to a mobile system that uses the Coral Edge TPU.
      *
+     * // TODO: Rename this to representativeDatasetRatio because it's not really a percentage
      * @param representativeDatasetPercentage The percentage of the training dataset to use for the
      * representative dataset used for post-training quantization.
      */

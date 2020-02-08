@@ -85,7 +85,8 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
             form.job.map { currentJob ->
                 if (currentJob.id == jobFromDb.id) {
                     ui.access {
-                        form.job = if (op == JobDbOp.Remove) None else Some(jobFromDb)
+                        form.job =
+                            if (op == JobDbOp.Remove) None else Some(UIJob.fromJob(jobFromDb))
                     }
                 }
             }
@@ -93,7 +94,7 @@ class JobsView : KComposite(), HasUrlParameter<Int>, AfterNavigationObserver, En
     }
 
     override fun setParameter(event: BeforeEvent?, @OptionalParameter jobId: Int?) {
-        form.job = Option.fromNullable(jobId?.let { jobDb.getById(it) })
+        form.job = Option.fromNullable(jobId?.let { jobDb.getById(it) }).map { UIJob.fromJob(it) }
     }
 
     override fun afterNavigation(event: AfterNavigationEvent) {

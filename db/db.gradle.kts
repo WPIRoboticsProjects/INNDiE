@@ -4,6 +4,7 @@ dependencies {
     api(project(":tf-data"))
     api(project(":training"))
     api(project(":plugin"))
+    api(project(":example-models"))
 
     implementation(project(":util"))
 

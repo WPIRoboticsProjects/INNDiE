@@ -18,53 +18,204 @@ import com.github.mvysny.karibudsl.v10.init
 import com.github.mvysny.karibudsl.v10.numberField
 import com.github.mvysny.karibudsl.v10.onLeftClick
 import com.github.mvysny.karibudsl.v10.setPrimary
+import com.github.mvysny.karibudsl.v10.tabs
 import com.github.mvysny.karibudsl.v10.textField
 import com.github.mvysny.karibudsl.v10.toDouble
 import com.github.mvysny.karibudsl.v10.toInt
 import com.github.mvysny.karibudsl.v10.verticalLayout
+import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasComponents
-import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.dependency.StyleSheet
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.listbox.ListBox
+import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.tabs.Tab
+import com.vaadin.flow.component.tabs.Tabs
 import com.vaadin.flow.data.binder.Result
 import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.converter.Converter
-import com.vaadin.flow.data.renderer.TextRenderer
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.examplemodel.ExampleModel
+import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.loss.Loss
+import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
-import edu.wpi.axon.util.axonBucketName
+import edu.wpi.axon.ui.ModelDownloader
+import edu.wpi.axon.ui.validateNotEmpty
+import edu.wpi.axon.ui.view.HasNotifications
+import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.reflect.KClass
+import kotlinx.coroutines.CancellationException
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
 import org.koin.core.qualifier.named
 
+enum class UIModel {
+    Example, Custom, Job
+}
+
+enum class UIModelDeploymentTarget {
+    Desktop, Coral
+}
+
+class UIJob(
+    var name: String? = null,
+    var status: TrainingScriptProgress? = null,
+    var model: UIModel? = null,
+    var exampleModel: ExampleModel? = null,
+    var customModel: FilePath? = null,
+    var jobModel: Int? = null,
+    var userDataset: Dataset? = null,
+    var userOptimizer: KClass<out Optimizer>? = null,
+    var adamLearningRate: Double? = null,
+    var adamBeta1: Double? = null,
+    var adamBeta2: Double? = null,
+    var adamEpsilon: Double? = null,
+    var adamAmsGrad: Boolean? = null,
+    var userLoss: Loss? = null,
+    var userMetrics: Set<String>? = null,
+    var userEpochs: Int? = null,
+    var trainingMethod: JobTrainingMethod? = null,
+    var target: UIModelDeploymentTarget? = null,
+    var coralRepresentativeDatasetPercentage: Double? = null,
+    var datasetPlugin: Plugin? = null,
+    var id: Int? = null
+) : KoinComponent {
+
+    private val modelDownloader by inject<ModelDownloader>()
+
+    fun updateInDb(jobDb: JobDb) {
+        val modelSource = when (model!!) {
+            UIModel.Example -> ModelSource.FromExample(exampleModel!!)
+            UIModel.Custom -> ModelSource.FromFile(customModel!!)
+            UIModel.Job -> ModelSource.FromJob(jobModel!!)
+        }
+
+        // Force the new model to be the same as the old model for now
+        // TODO: Let the user configure the old model, then put their configured model in as the
+        //  new model
+        val (newModel, _) = modelDownloader.downloadModel(modelSource)
+
+        val optimizer = when (userOptimizer!!) {
+            Optimizer.Adam::class -> Optimizer.Adam(
+                learningRate = adamLearningRate!!,
+                beta1 = adamBeta1!!,
+                beta2 = adamBeta2!!,
+                epsilon = adamEpsilon!!,
+                amsGrad = adamAmsGrad!!
+            )
+
+            else -> error("Unhandled optimizer branch.")
+        }
+
+        jobDb.update(
+            id = id!!,
+            name = name!!,
+            status = status!!,
+            userOldModelPath = modelSource,
+            userDataset = userDataset!!,
+            userOptimizer = optimizer,
+            userLoss = userLoss!!,
+            userMetrics = userMetrics!!,
+            userEpochs = userEpochs!!,
+            userNewModel = newModel,
+            generateDebugComments = false,
+            trainingMethod = trainingMethod!!,
+            target = when (target!!) {
+                UIModelDeploymentTarget.Desktop -> ModelDeploymentTarget.Desktop
+                UIModelDeploymentTarget.Coral -> ModelDeploymentTarget.Coral(
+                    coralRepresentativeDatasetPercentage!!
+                )
+            },
+            datasetPlugin = datasetPlugin!!
+        )
+    }
+
+    companion object {
+
+        fun fromJob(job: Job): UIJob {
+            val uiJob = UIJob(
+                name = job.name,
+                status = job.status,
+                userDataset = job.userDataset,
+                userLoss = job.userLoss,
+                userMetrics = job.userMetrics,
+                userEpochs = job.userEpochs,
+                trainingMethod = job.trainingMethod,
+                target = when (job.target) {
+                    is ModelDeploymentTarget.Desktop -> UIModelDeploymentTarget.Desktop
+                    is ModelDeploymentTarget.Coral -> UIModelDeploymentTarget.Coral
+                },
+                coralRepresentativeDatasetPercentage = when (val target = job.target) {
+                    is ModelDeploymentTarget.Desktop -> 0.0
+                    is ModelDeploymentTarget.Coral -> target.representativeDatasetPercentage
+                },
+                datasetPlugin = job.datasetPlugin,
+                id = job.id
+            )
+
+            when (val modelSource = job.userOldModelPath) {
+                is ModelSource.FromExample -> {
+                    uiJob.model = UIModel.Example
+                    uiJob.exampleModel = modelSource.exampleModel
+                }
+
+                is ModelSource.FromFile -> {
+                    uiJob.model = UIModel.Custom
+                    uiJob.customModel = modelSource.filePath
+                }
+
+                is ModelSource.FromJob -> {
+                    uiJob.model = UIModel.Job
+                    uiJob.jobModel = modelSource.jobId
+                }
+            }
+
+            when (val optimizer = job.userOptimizer) {
+                is Optimizer.Adam -> {
+                    uiJob.userOptimizer = Optimizer.Adam::class
+                    uiJob.adamLearningRate = optimizer.learningRate
+                    uiJob.adamBeta1 = optimizer.beta1
+                    uiJob.adamBeta2 = optimizer.beta2
+                    uiJob.adamEpsilon = optimizer.epsilon
+                    uiJob.adamAmsGrad = optimizer.amsGrad
+                }
+            }
+
+            return uiJob
+        }
+    }
+}
+
 @StyleSheet("styles/job-form.css")
-class JobEditorForm : KComposite(), KoinComponent {
+class JobEditorForm : KComposite(), KoinComponent, HasNotifications {
 
     private val jobDb by inject<JobDb>()
     private val jobLifecycleManager by inject<JobLifecycleManager>()
     private lateinit var form: FormLayout
-    private val binder = beanValidationBinder<Job>()
-    private var coralRepresentativeDatasetPercentage = 0.0
+    private val binder = beanValidationBinder<UIJob>()
     private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
+    private lateinit var tabs: Tabs
+    private val tabMap = mutableMapOf<Tab, Component>()
+    private val exampleModelManager: ExampleModelManager by inject()
 
-    var job: Option<Job> = None
+    var job: Option<UIJob> = None
         set(value) {
             field = value
             isVisible = value is Some
@@ -77,73 +228,332 @@ class JobEditorForm : KComposite(), KoinComponent {
         ui {
             div {
                 className = "job-form"
-                verticalLayout {
-                    className = "job-form-content"
-                    setSizeUndefined()
-                    form = formLayout {
-                        responsiveSteps = listOf(
-                            FormLayout.ResponsiveStep(
-                                "0",
-                                1,
-                                FormLayout.ResponsiveStep.LabelsPosition.TOP
-                            ),
-                            FormLayout.ResponsiveStep(
-                                "550px",
-                                1,
-                                FormLayout.ResponsiveStep.LabelsPosition.ASIDE
-                            )
-                        )
-                        formItem("Name") {
-                            textField {
-                                setWidthFull()
-                                bind(binder).asRequired().bind(Job::name)
-                            }
-                        }
-                        formItem("Dataset") {
-                            comboBox<Dataset> {
-                                setWidthFull()
-                                setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
-                                    it.objectInstance
-                                })
-                                setItemLabelGenerator { it.displayName }
-                                bind(binder).asRequired().bind(Job::userDataset)
-                            }
-                        }
-                        formItem("Dataset Plugin") {
-                            comboBox<Plugin> {
-                                setWidthFull()
-                                setItems(datasetPluginManager.listPlugins())
-                                setItemLabelGenerator { it.name }
-                                bind(binder).asRequired().bind(Job::datasetPlugin)
-                            }
-                        }
-                        formItem("Epochs") {
-                            numberField {
-                                setWidthFull()
-                                setHasControls(true)
-                                min = 1.0
-                                step = 1.0
-                                bind(binder).toInt().asRequired().bind(Job::userEpochs)
-                            }
-                        }
-                        formItem("Generate Debug Comments") {
-                            checkBox {
-                                bind(binder).bind(Job::generateDebugComments)
-                            }
-                        }
-                        formItem("Target", configureTargetForm())
+
+                tabs = tabs {
+                    val basicTab = Tab("Basic")
+                    val basicPage = VerticalLayout().apply {
+                        isVisible = false
+                        configureBasicPage()
                     }
-                    verticalLayout {
-                        button("Save", Icon(VaadinIcon.CHECK), configureSaveButton())
-                        button("Delete", Icon(VaadinIcon.TRASH), configureDeleteButton())
-                        button("Run", Icon(VaadinIcon.PLAY), configureRunButton())
-                        button("Cancel", Icon(VaadinIcon.STOP), configureCancelButton())
+
+                    val inputTab = Tab("Input")
+                    val inputPage = VerticalLayout().apply {
+                        isVisible = false
+                        configureInputPage()
+                    }
+
+                    val trainingTab = Tab("Training")
+                    val trainingPage = VerticalLayout().apply {
+                        isVisible = false
+                        configureTrainingPage()
+                    }
+
+                    val targetTab = Tab("Target")
+                    val targetPage = VerticalLayout().apply {
+                        isVisible = false
+                        configureTargetPage()
+                    }
+
+                    // Add all the tabs and pages to the map to associate them
+                    tabMap[basicTab] = basicPage
+                    tabMap[inputTab] = inputPage
+                    tabMap[trainingTab] = trainingPage
+                    tabMap[targetTab] = targetPage
+
+                    // Add the tabs to the tab bar
+                    tabMap.forEach { (tab, _) -> add(tab) }
+
+                    // Select and make visible the basic page (the first page)
+                    selectedTab = basicTab
+                    basicPage.isVisible = true
+
+                    // Each time the user changes their selection, change which page is visible
+                    addSelectedChangeListener {
+                        tabMap.forEach { (_, page) -> page.isVisible = false }
+                        it.selectedTab?.let { tabMap[it]!!.isVisible = true }
                     }
                 }
+
+                div { tabMap.forEach { (_, page) -> add(page) } }
             }
         }
 
         isVisible = false
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).configureBasicPage() {
+        verticalLayout {
+            className = "job-form-content"
+            setSizeUndefined()
+            form = formLayout {
+                responsiveSteps = listOf(
+                    FormLayout.ResponsiveStep(
+                        "0",
+                        1,
+                        FormLayout.ResponsiveStep.LabelsPosition.TOP
+                    ),
+                    FormLayout.ResponsiveStep(
+                        "550px",
+                        1,
+                        FormLayout.ResponsiveStep.LabelsPosition.ASIDE
+                    )
+                )
+                formItem("Name") {
+                    textField {
+                        setWidthFull()
+                        bind(binder).asRequired().bind(UIJob::name)
+                    }
+                }
+            }
+            verticalLayout {
+                button("Save", Icon(VaadinIcon.CHECK), configureSaveButton())
+                button("Delete", Icon(VaadinIcon.TRASH), configureDeleteButton())
+                button("Run", Icon(VaadinIcon.PLAY), configureRunButton())
+                button("Cancel", Icon(VaadinIcon.STOP), configureCancelButton())
+            }
+        }
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).configureInputPage() {
+        formLayout {
+            formItem("Model") {
+                lateinit var exampleModelFormItem: Component
+                lateinit var customModelFormItem: Component
+                lateinit var jobModelFormItem: Component
+
+                comboBox<UIModel> {
+                    setItems(UIModel.values().toList())
+                    value = UIModel.Example
+                    addValueChangeListener {
+                        exampleModelFormItem.isVisible = false
+                        customModelFormItem.isVisible = false
+                        jobModelFormItem.isVisible = false
+                        when (it.value) {
+                            UIModel.Example, null -> exampleModelFormItem.isVisible = true
+                            UIModel.Custom -> customModelFormItem.isVisible = true
+                            UIModel.Job -> jobModelFormItem.isVisible = true
+                        }
+                    }
+                    bind(binder)
+                        .asRequired()
+                        .withValidator(validateNotEmpty())
+                        .bind(UIJob::model)
+                }
+
+                exampleModelFormItem = comboBox<ExampleModel>("Example Model") {
+                    val exampleModels = exampleModelManager.getAllExampleModels().unsafeRunSync()
+                    setWidthFull()
+                    setItems(exampleModels)
+                    setItemLabelGenerator { it.name }
+                    bind(binder)
+                        .asRequired()
+                        .withValidator(validateNotEmpty())
+                        .bind(UIJob::exampleModel)
+                }
+
+                // TODO: Let the user select a model from S3. They should also be able to upload a
+                //  model first, and then select it.
+                customModelFormItem = textField("Custom Model") {
+                    isEnabled = false
+                }
+
+                // TODO: Let the user see previous Jobs and select one by name.
+                jobModelFormItem = textField("Model from a Job") {
+                    isEnabled = false
+                }
+            }
+
+            formItem("Dataset") {
+                comboBox<Dataset> {
+                    setWidthFull()
+                    setItems(Dataset.ExampleDataset::class.sealedSubclasses.mapNotNull {
+                        it.objectInstance
+                    })
+                    setItemLabelGenerator { it.displayName }
+                    bind(binder).asRequired().bind(UIJob::userDataset)
+                }
+            }
+
+            formItem("Dataset Plugin") {
+                comboBox<Plugin> {
+                    setWidthFull()
+                    setItems(datasetPluginManager.listPlugins())
+                    setItemLabelGenerator { it.name }
+                    bind(binder).asRequired().bind(UIJob::datasetPlugin)
+                }
+            }
+        }
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).configureTrainingPage() {
+        formLayout {
+            formItem("Epochs") {
+                numberField {
+                    setWidthFull()
+                    setHasControls(true)
+                    min = 1.0
+                    step = 1.0
+                    bind(binder).toInt().asRequired().bind(UIJob::userEpochs)
+                }
+            }
+
+            formItem("Optimizer") {
+                lateinit var adamFields: Component
+
+                comboBox<KClass<out Optimizer>> {
+                    setItems(Optimizer::class.sealedSubclasses)
+                    setItemLabelGenerator { it.simpleName }
+                    addValueChangeListener {
+                        adamFields.isVisible = false
+                        when (it.value) {
+                            Optimizer.Adam::class, null -> adamFields.isVisible = true
+                        }
+                    }
+                    bind(binder)
+                        .asRequired()
+                        .withValidator(validateNotEmpty())
+                        .bind(UIJob::userOptimizer)
+                }
+
+                adamFields = div {
+                    textField("Learning Rate") {
+                        placeholder = "0.001"
+                        value = "0.001"
+                        bind(binder).asRequired()
+                            .toDouble()
+                            .withValidator(validateNotEmpty())
+                            .bind(UIJob::adamLearningRate)
+                    }
+
+                    textField("Beta 1") {
+                        placeholder = "0.9"
+                        value = "0.9"
+                        bind(binder).asRequired()
+                            .toDouble()
+                            .withValidator(validateNotEmpty())
+                            .bind(UIJob::adamBeta1)
+                    }
+
+                    textField("Beta 2") {
+                        placeholder = "0.999"
+                        value = "0.999"
+                        bind(binder).asRequired()
+                            .toDouble()
+                            .withValidator(validateNotEmpty())
+                            .bind(UIJob::adamBeta2)
+                    }
+
+                    textField("Epsilon") {
+                        placeholder = "1E-7"
+                        value = "1E-7"
+                        bind(binder).asRequired()
+                            .toDouble()
+                            .withValidator(validateNotEmpty())
+                            .bind(UIJob::adamEpsilon)
+                    }
+
+                    checkBox("AMSGrad") {
+                        bind(binder).bind(UIJob::adamAmsGrad)
+                    }
+                }
+            }
+
+            formItem("Loss") {
+                comboBox<Loss> {
+                    setItems(Loss::class.sealedSubclasses.mapNotNull { it.objectInstance })
+                    setItemLabelGenerator { it::class.simpleName }
+                    bind(binder).asRequired().bind(UIJob::userLoss)
+                }
+            }
+
+            formItem("Metrics") {
+                textField {
+                    placeholder = "accuracy"
+                    bind(binder)
+                        .withConverter(
+                            Converter.from<String, Set<String>>(
+                                {
+                                    if (it == null) {
+                                        Result.ok(setOf())
+                                    } else {
+                                        Result.ok(it.split(Regex("\\s*,\\s*")).toSet())
+                                    }
+                                },
+                                {
+                                    it.joinToString()
+                                }
+                            )
+                        )
+                        .withValidator { value, _ ->
+                            val metricsWithNonAlphabeticChar =
+                                value.filter { it.contains(Regex("[^a-zA-Z]")) }
+                            if (metricsWithNonAlphabeticChar.isEmpty()) {
+                                ValidationResult.ok()
+                            } else {
+                                ValidationResult.error(
+                                    "Metrics must only contain alphabetic characters: " +
+                                        metricsWithNonAlphabeticChar.joinToString()
+                                )
+                            }
+                        }
+                        .bind(UIJob::userMetrics)
+                }
+            }
+        }
+    }
+
+    @VaadinDsl
+    private fun (@VaadinDsl HasComponents).configureTargetPage() {
+        formLayout {
+            formItem("Target") {
+                lateinit var percentageField: Component
+
+                comboBox<UIModelDeploymentTarget> {
+                    setSizeUndefined()
+                    setItems(UIModelDeploymentTarget.values().toList())
+                    value = UIModelDeploymentTarget.Desktop
+                    setItemLabelGenerator { it.name }
+                    addValueChangeListener {
+                        percentageField.isVisible = it.value == UIModelDeploymentTarget.Coral
+                    }
+                    bind(binder)
+                        .asRequired()
+                        .withValidator(validateNotEmpty())
+                        .bind(UIJob::target)
+                }
+
+                percentageField = textField("Representative Dataset Percentage") {
+                    isVisible = false
+                    placeholder = "1.0"
+
+                    bind(binder)
+                        .asRequired()
+                        .withValidator(validateNotEmpty())
+                        .withConverter(Converter.from<String, Double>(
+                            {
+                                try {
+                                    Result.ok(it.toDouble() / 100)
+                                } catch (ex: NumberFormatException) {
+                                    Result.error<Double>(ex.localizedMessage)
+                                }
+                            },
+                            {
+                                DecimalFormat("#.####").apply {
+                                    roundingMode = RoundingMode.HALF_DOWN
+                                }.format(it * 100)
+                            }
+                        ))
+                        .withValidator { value, _ ->
+                            if (value in 0.0..100.0) ValidationResult.ok()
+                            else ValidationResult.error("Value outside range [0, 100]: $value")
+                        }
+                        .bind(UIJob::coralRepresentativeDatasetPercentage)
+                }
+            }
+        }
     }
 
     private fun configureSaveButton(): (@VaadinDsl Button).() -> Unit = {
@@ -155,13 +565,18 @@ class JobEditorForm : KComposite(), KoinComponent {
             isEnabled = binder.hasChanges() && !it.hasValidationErrors()
         }
         onLeftClick {
-            job.map {
-                if (binder.validate().isOk && binder.writeBeanIfValid(it)) {
-                    jobDb.update(it)
-                    JobsView.navigateTo()
-                }
-            }
+            saveJob()
         }
+    }
+
+    private fun saveJob() = job.map {
+        if (binder.validate().isOk && binder.writeBeanIfValid(it)) {
+            it.updateInDb(jobDb)
+            JobsView.navigateTo()
+        } else {
+            showNotification("Could not save the Job because its configuration is invalid.")
+        }
+        it
     }
 
     private fun configureDeleteButton(): (@VaadinDsl Button).() -> Unit = {
@@ -172,10 +587,10 @@ class JobEditorForm : KComposite(), KoinComponent {
             job.map { job ->
                 // TODO: Handle errors cancelling the Job
                 IO {
-                    jobLifecycleManager.cancelJob(job.id)
+                    jobLifecycleManager.cancelJob(job.id!!)
                 }.map {
                     // Only remove the Job if it was successfully cancelled
-                    jobDb.remove(job)
+                    jobDb.removeById(job.id!!)
                     JobsView.navigateTo()
                 }
             }
@@ -203,7 +618,7 @@ class JobEditorForm : KComposite(), KoinComponent {
             job.map { job ->
                 // TODO: Handle errors cancelling the Job
                 IO {
-                    jobLifecycleManager.cancelJob(job.id)
+                    jobLifecycleManager.cancelJob(job.id!!)
                 }.unsafeRunSync()
             }
         }
@@ -219,38 +634,8 @@ class JobEditorForm : KComposite(), KoinComponent {
                     false
                 },
                 {
-                    if (it.status != TrainingScriptProgress.NotStarted) {
-                        // Don't let the user run jobs that are currently
-                        // running
-                        return@fold false
-                    }
-
-                    val bucket = get<Option<String>>(named(axonBucketName))
-
-                    LOGGER.debug {
-                        """
-                        job=$it
-                        usesAWS=${it.usesAWS}
-                        bucket=$bucket
-                        """.trimIndent()
-                    }
-
-                    it.usesAWS.fold(
-                        {
-                            // The Job is configured incorrectly, don't let
-                            // it run
-                            false
-                        },
-                        { jobUsesAWS ->
-                            // The user can run the job if:
-                            //  1. They have AWS configured and the Job uses AWS
-                            //  2. They don't have AWS configured and the Job
-                            //      doesn't use AWS
-                            //  3. They have AWS configured and the Job doesn't
-                            //      use AWS
-                            bucket is Some || !jobUsesAWS
-                        }
-                    )
+                    // Don't let the user run jobs that are currently running
+                    it.status == TrainingScriptProgress.NotStarted
                 }
             )
         }
@@ -263,92 +648,22 @@ class JobEditorForm : KComposite(), KoinComponent {
                     }
                 },
                 {
-                    // TODO: Handle errors here
-                    IO {
-                        jobLifecycleManager.startJob(it)
-                    }.unsafeRunSync()
-                }
-            )
-        }
-    }
-
-    private fun configureTargetForm(): (@VaadinDsl FormLayout.FormItem).() -> Unit = {
-        verticalLayout {
-            val coralForm = FormLayout().apply {
-                isVisible = false
-                formItem("Representative Dataset Percentage") {
-                    textField {
-                        bind(binder).asRequired()
-                            .withConverter(Converter.from<String, Double>(
-                                {
-                                    try {
-                                        Result.ok(it.toDouble())
-                                    } catch (ex: NumberFormatException) {
-                                        Result.error<Double>(ex.localizedMessage)
-                                    }
-                                },
-                                {
-                                    DecimalFormat("#.####").apply {
-                                        roundingMode = RoundingMode.HALF_DOWN
-                                    }.format(it)
-                                }
-                            ))
-                            .withValidator { value, _ ->
-                                when (value) {
-                                    null -> ValidationResult.error("Outside range.")
-                                    in 0.0..1.0 -> ValidationResult.ok()
-                                    else -> ValidationResult.error("Outside range.")
+                    saveJob().map {
+                        IO {
+                            val job = jobDb.getById(it.id!!)!!
+                            jobLifecycleManager.startJob(job).invokeOnCompletion {
+                                if (it != null && it !is CancellationException) {
+                                    // The coroutine ended exceptionally
+                                    jobDb.update(
+                                        job.id,
+                                        status = TrainingScriptProgress.Error(it.localizedMessage)
+                                    )
                                 }
                             }
-                            .bind(
-                                { coralRepresentativeDatasetPercentage },
-                                { _, value ->
-                                    value?.let { coralRepresentativeDatasetPercentage = it }
-                                }
-                            )
+                        }.unsafeRunSync() // TODO: Handle errors here
                     }
                 }
-            }
-
-            val targetConverter = Converter.from<
-                KClass<out ModelDeploymentTarget>,
-                ModelDeploymentTarget>(
-                {
-                    when (it) {
-                        ModelDeploymentTarget.Desktop::class -> Result.ok(
-                            ModelDeploymentTarget.Desktop
-                        )
-
-                        ModelDeploymentTarget.Coral::class -> Result.ok(
-                            ModelDeploymentTarget.Coral(coralRepresentativeDatasetPercentage)
-                        )
-
-                        else -> Result.error<ModelDeploymentTarget>("Unknown selection.")
-                    }
-                },
-                { it::class }
             )
-
-            add(ListBox<KClass<out ModelDeploymentTarget>>().apply {
-                setItems(
-                    ModelDeploymentTarget.Desktop::class,
-                    ModelDeploymentTarget.Coral::class
-                )
-
-                value = ModelDeploymentTarget.Desktop::class
-
-                setRenderer(TextRenderer(ItemLabelGenerator { it.simpleName }))
-
-                bind(binder)
-                    .withConverter(targetConverter)
-                    .bind(Job::target)
-
-                addValueChangeListener {
-                    coralForm.isVisible = it.value == ModelDeploymentTarget.Coral::class
-                }
-            })
-
-            add(coralForm)
         }
     }
 
