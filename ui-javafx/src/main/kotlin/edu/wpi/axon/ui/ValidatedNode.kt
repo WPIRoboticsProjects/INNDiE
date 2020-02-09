@@ -18,6 +18,17 @@ sealed class ValidationResult {
     }
 }
 
+fun <T : Node> makeValidatedNode(
+    node: T,
+    validate: (T) -> ValidationResult,
+    configure: T.(ValidatedNode<T>) -> Unit,
+    dependencies: Set<ValidatedNode<out Node>> = emptySet()
+): ValidatedNode<T> {
+    val validatedNode = ValidatedNode(node, validate, dependencies)
+    node.configure(validatedNode)
+    return validatedNode
+}
+
 class ValidatedNode<T : Node>(
     private val node: T,
     private val validate: ((T) -> ValidationResult),
@@ -29,6 +40,8 @@ class ValidatedNode<T : Node>(
         spacing = 5.0
         children.add(node)
     }
+    var isValid: Boolean = false
+        private set
 
     init {
         children.add(container)
@@ -50,6 +63,7 @@ class ValidatedNode<T : Node>(
                 ValidationResult.Success
             ) { acc, elem -> acc * elem }
 
+        isValid = result is ValidationResult.Success
         errorMessage?.let { container.children.remove(it) }
         errorMessage = null
         node.style = ""

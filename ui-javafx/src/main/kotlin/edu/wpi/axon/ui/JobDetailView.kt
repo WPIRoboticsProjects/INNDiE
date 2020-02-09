@@ -6,7 +6,10 @@ import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModel
 import edu.wpi.axon.examplemodel.ExampleModelManager
+import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.util.datasetPluginManagerName
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Insets
@@ -29,6 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.core.KoinComponent
 import org.koin.core.inject
+import org.koin.core.qualifier.named
 
 enum class ModelChoice {
     Example, Custom, Job
@@ -41,6 +45,7 @@ class JobDetailView(
 
     private val jobDb by inject<JobDb>()
     private val exampleModelManager by inject<ExampleModelManager>()
+    private val pluginManager by inject<PluginManager>(named(datasetPluginManagerName))
     private val scope = CoroutineScope(Dispatchers.Default)
     private val jobProperty = SimpleObjectProperty<Job>()
     private val jobInProgressProperty = SimpleBooleanProperty()
@@ -82,6 +87,7 @@ class JobDetailView(
                         disableProperty().bind(jobInProgressProperty)
                         setOnAction {
                             scope.launch {
+                                // TODO: Actually run the Job
                                 jobProperty.value = jobDb.update(
                                     jobProperty.value.id,
                                     status = TrainingScriptProgress.Initializing
@@ -130,8 +136,16 @@ class JobDetailView(
                 alignment = Pos.CENTER_LEFT
 
                 children.add(Label("Dataset"))
-                children.add(ValidatedNode(
-                    ComboBox<Dataset>().apply {
+                children.add(makeValidatedNode(
+                    ComboBox<Dataset>(),
+                    {
+                        if (it.selectionModel.selectedItem == null) {
+                            ValidationResult.Error("Must select a dataset.")
+                        } else {
+                            ValidationResult.Success
+                        }
+                    },
+                    {
                         disableProperty().bind(jobInProgressProperty)
                         cellFactory = Callback { DatasetCell() }
                         buttonCell = DatasetCell()
@@ -140,21 +154,49 @@ class JobDetailView(
                         })
                         selectionModel.select(job.userDataset)
                         selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                            // Update our copy of the job and push it to the db when the user selects
-                            // a new dataset
-                            scope.launch {
-                                jobProperty.value = jobDb.update(
-                                    jobProperty.value.id,
-                                    userDataset = newValue
-                                )
+                            if (it.isValid) {
+                                scope.launch {
+                                    jobProperty.value = jobDb.update(
+                                        jobProperty.value.id,
+                                        userDataset = newValue
+                                    )
+                                }
                             }
+                        }
+                    }
+                ))
+            })
+
+            children.add(HBox().apply {
+                spacing = 5.0
+                alignment = Pos.CENTER_LEFT
+
+                children.add(Label("Dataset Plugin"))
+                children.add(makeValidatedNode(
+                    ComboBox<Plugin>(),
+                    {
+                        if (it.selectionModel.selectedItem == null) {
+                            ValidationResult.Error("Must select a dataset plugin.")
+                        } else {
+                            ValidationResult.Success
                         }
                     },
                     {
-                        if (it.selectionModel.selectedItem == null) {
-                            ValidationResult.Error("Must select a dataset.")
-                        } else {
-                            ValidationResult.Success
+                        disableProperty().bind(jobInProgressProperty)
+                        cellFactory = Callback { PluginCell() }
+                        buttonCell = PluginCell()
+                        val plugins = pluginManager.listPlugins()
+                        items.setAll(plugins)
+                        selectionModel.select(plugins.first())
+                        selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+                            if (it.isValid) {
+                                scope.launch {
+                                    jobProperty.value = jobDb.update(
+                                        jobProperty.value.id,
+                                        datasetPlugin = newValue
+                                    )
+                                }
+                            }
                         }
                     }
                 ))
@@ -170,15 +212,21 @@ class JobDetailView(
 
                 val modelDetails = StackPane().apply {
                     alignment = Pos.TOP_LEFT
-                    exampleModelForm = ValidatedNode(
-                        ComboBox<ExampleModel>().apply {
+                    exampleModelForm = makeValidatedNode(
+                        ComboBox<ExampleModel>(),
+                        {
+                            if (it.isVisible && it.selectionModel.selectedItem == null)
+                                ValidationResult.Error("Must select a model.")
+                            else ValidationResult.Success
+                        },
+                        {
                             disableProperty().bind(jobInProgressProperty)
                             cellFactory = Callback { ExampleModelCell() }
                             buttonCell = ExampleModelCell()
                             items.setAll(exampleModels)
                             selectionModel.select(exampleModels.first())
                             selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                                if (newValue != null) {
+                                if (it.isValid) {
                                     scope.launch {
                                         jobProperty.value = jobDb.update(
                                             jobProperty.value.id,
@@ -187,37 +235,34 @@ class JobDetailView(
                                     }
                                 }
                             }
-                        },
-                        {
-                            if (it.isVisible && it.selectionModel.selectedItem == null)
-                                ValidationResult.Error("Must select a model.")
-                            else ValidationResult.Success
                         }
                     )
                     children.add(exampleModelForm)
 
-                    customModelForm = ValidatedNode(
-                        ComboBox<String>().apply {
-                            disableProperty().bind(jobInProgressProperty)
-                            isVisible = false
-                        },
+                    customModelForm = makeValidatedNode(
+                        ComboBox<String>(),
                         {
                             if (it.isVisible && it.selectionModel.selectedItem == null)
                                 ValidationResult.Error("Must select a model.")
                             else ValidationResult.Success
+                        },
+                        {
+                            disableProperty().bind(jobInProgressProperty)
+                            isVisible = false
                         }
                     )
                     children.add(customModelForm)
 
-                    jobModelForm = ValidatedNode(
-                        ComboBox<Job>().apply {
-                            disableProperty().bind(jobInProgressProperty)
-                            isVisible = false
-                        },
+                    jobModelForm = makeValidatedNode(
+                        ComboBox<String>(),
                         {
                             if (it.isVisible && it.selectionModel.selectedItem == null)
                                 ValidationResult.Error("Must select a model.")
                             else ValidationResult.Success
+                        },
+                        {
+                            disableProperty().bind(jobInProgressProperty)
+                            isVisible = false
                         }
                     )
                     children.add(jobModelForm)
