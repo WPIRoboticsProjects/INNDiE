@@ -20,6 +20,8 @@ import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
+import javafx.scene.control.TextField
+import javafx.scene.control.TextFormatter
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
@@ -27,12 +29,14 @@ import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import javafx.util.Callback
+import javafx.util.converter.NumberStringConverter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import org.koin.core.qualifier.named
+import java.text.NumberFormat
 
 enum class ModelChoice {
     Example, Custom, Job
@@ -68,60 +72,45 @@ class JobDetailView(
             setBottomAnchor(this, 0.0)
             setLeftAnchor(this, 0.0)
 
-            tabs.add(Tab().apply {
-                isClosable = false
-                text = "Basic"
-                content = VBox().apply {
-                    spacing = 10.0
-                    padding = Insets(5.0)
-
-                    children.add(HBox().apply {
-                        maxWidth = Double.MAX_VALUE
-                        alignment = Pos.CENTER
-                        children.add(Label(job.name).apply {
-                            font = Font.font(Font.getDefault().family, FontWeight.BOLD, 15.0)
-                        })
-                    })
-
-                    children.add(Button("Run").apply {
-                        disableProperty().bind(jobInProgressProperty)
-                        setOnAction {
-                            scope.launch {
-                                // TODO: Actually run the Job
-                                jobProperty.value = jobDb.update(
-                                    jobProperty.value.id,
-                                    status = TrainingScriptProgress.Initializing
-                                )
-                            }
-                        }
-                    })
-
-                    children.add(Button("Close").apply {
-                        setOnAction { onClose() }
-                    })
-                }
-            })
-
+            tabs.add(createBasicTab(job, onClose))
             tabs.add(createInputTab(job))
-
-            tabs.add(Tab().apply {
-                isClosable = false
-                text = "Training"
-                content = VBox().apply {
-                    spacing = 10.0
-                    padding = Insets(5.0)
-                }
-            })
-
-            tabs.add(Tab().apply {
-                isClosable = false
-                text = "Output"
-                content = VBox().apply {
-                    spacing = 10.0
-                    padding = Insets(5.0)
-                }
-            })
+            tabs.add(createTrainingTab(job))
+            tabs.add(createOutputTab(job))
         })
+    }
+
+    private fun createBasicTab(job: Job, onClose: () -> Unit) = Tab().apply {
+        isClosable = false
+        text = "Basic"
+        content = VBox().apply {
+            spacing = 10.0
+            padding = Insets(5.0)
+
+            children.add(HBox().apply {
+                maxWidth = Double.MAX_VALUE
+                alignment = Pos.CENTER
+                children.add(Label(job.name).apply {
+                    font = Font.font(Font.getDefault().family, FontWeight.BOLD, 15.0)
+                })
+            })
+
+            children.add(Button("Run").apply {
+                disableProperty().bind(jobInProgressProperty)
+                setOnAction {
+                    scope.launch {
+                        // TODO: Actually run the Job
+                        jobProperty.value = jobDb.update(
+                            jobProperty.value.id,
+                            status = TrainingScriptProgress.Initializing
+                        )
+                    }
+                }
+            })
+
+            children.add(Button("Close").apply {
+                setOnAction { onClose() }
+            })
+        }
     }
 
     private fun createInputTab(job: Job) = Tab().apply {
@@ -187,7 +176,7 @@ class JobDetailView(
                         buttonCell = PluginCell()
                         val plugins = pluginManager.listPlugins()
                         items.setAll(plugins)
-                        selectionModel.select(plugins.first())
+                        selectionModel.select(job.datasetPlugin)
                         selectionModel.selectedItemProperty().addListener { _, _, newValue ->
                             if (it.isValid) {
                                 scope.launch {
@@ -224,7 +213,11 @@ class JobDetailView(
                             cellFactory = Callback { ExampleModelCell() }
                             buttonCell = ExampleModelCell()
                             items.setAll(exampleModels)
-                            selectionModel.select(exampleModels.first())
+                            when (val modelSource = job.userOldModelPath) {
+                                is ModelSource.FromExample ->
+                                    selectionModel.select(modelSource.exampleModel)
+                                else -> selectionModel.select(exampleModels.first())
+                            }
                             selectionModel.selectedItemProperty().addListener { _, _, newValue ->
                                 if (it.isValid) {
                                     scope.launch {
@@ -278,6 +271,12 @@ class JobDetailView(
                             disableProperty().bind(jobInProgressProperty)
                             items.setAll(ModelChoice.values().toList())
                             selectionModel.select(ModelChoice.Example)
+                            when (job.userOldModelPath) {
+                                is ModelSource.FromExample ->
+                                    selectionModel.select(ModelChoice.Example)
+                                is ModelSource.FromFile -> selectionModel.select(ModelChoice.Custom)
+                                is ModelSource.FromJob -> selectionModel.select(ModelChoice.Job)
+                            }
                             selectionModel.selectedItemProperty().addListener { _, _, newValue ->
                                 exampleModelForm.isVisible = false
                                 customModelForm.isVisible = false
@@ -302,6 +301,60 @@ class JobDetailView(
                 children.add(modelComboBox)
                 children.add(modelDetails)
             })
+        }
+    }
+
+    private fun createTrainingTab(job: Job) = Tab().apply {
+        isClosable = false
+        text = "Training"
+        content = VBox().apply {
+            spacing = 10.0
+            padding = Insets(5.0)
+
+            children.add(HBox().apply {
+                spacing = 5.0
+                alignment = Pos.CENTER_LEFT
+
+                children.add(Label("Epochs"))
+                children.add(makeValidatedNode(
+                    TextField(),
+                    {
+                        try {
+                            val value = it.text.toInt()
+                            if (value < 1) {
+                                ValidationResult.Error("Must be at least 1.")
+                            } else {
+                                ValidationResult.Success
+                            }
+                        } catch (ex: NumberFormatException) {
+                            ValidationResult.Error("Must be an integer.")
+                        }
+                    },
+                    {
+                        disableProperty().bind(jobInProgressProperty)
+                        text = job.userEpochs.toString()
+                        textProperty().addListener { _, _, newValue ->
+                            if (it.isValid) {
+                                scope.launch {
+                                    jobProperty.value = jobDb.update(
+                                        jobProperty.value.id,
+                                        userEpochs = newValue.toInt()
+                                    )
+                                }
+                            }
+                        }
+                    }
+                ))
+            })
+        }
+    }
+
+    private fun createOutputTab(job: Job) = Tab().apply {
+        isClosable = false
+        text = "Output"
+        content = VBox().apply {
+            spacing = 10.0
+            padding = Insets(5.0)
         }
     }
 }

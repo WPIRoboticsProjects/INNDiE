@@ -3,6 +3,7 @@ package edu.wpi.axon.ui
 import javafx.scene.Node
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
+import javafx.scene.control.TextField
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 
@@ -47,11 +48,11 @@ class ValidatedNode<T : Node>(
         children.add(container)
 
         when (node) {
-            is ComboBox<*> -> {
-                node.selectionModel.selectedItemProperty().addListener { _, _, _ ->
-                    performValidation()
-                }
+            is ComboBox<*> -> node.selectionModel.selectedItemProperty().addListener { _, _, _ ->
+                performValidation()
             }
+
+            is TextField -> node.textProperty().addListener { _, _, _ -> performValidation() }
         }
 
         performValidation()
