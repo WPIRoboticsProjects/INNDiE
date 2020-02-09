@@ -31,7 +31,7 @@ fun <T : Node> makeValidatedNode(
 }
 
 class ValidatedNode<T : Node>(
-    private val node: T,
+    val node: T,
     private val validate: ((T) -> ValidationResult),
     private val dependencies: Set<ValidatedNode<out Node>> = emptySet()
 ) : Region() {
