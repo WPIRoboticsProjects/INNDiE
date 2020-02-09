@@ -120,12 +120,8 @@ class JobDetailView(
             spacing = 10.0
             padding = Insets(5.0)
 
-            children.add(HBox().apply {
-                spacing = 5.0
-                alignment = Pos.CENTER_LEFT
-
-                children.add(Label("Dataset"))
-                children.add(makeValidatedNode(
+            createLabeledField("Dataset") {
+                makeValidatedNode(
                     ComboBox<Dataset>(),
                     {
                         if (it.selectionModel.selectedItem == null) {
@@ -153,15 +149,11 @@ class JobDetailView(
                             }
                         }
                     }
-                ))
-            })
+                )
+            }
 
-            children.add(HBox().apply {
-                spacing = 5.0
-                alignment = Pos.CENTER_LEFT
-
-                children.add(Label("Dataset Plugin"))
-                children.add(makeValidatedNode(
+            createLabeledField("Dataset Plugin") {
+                makeValidatedNode(
                     ComboBox<Plugin>(),
                     {
                         if (it.selectionModel.selectedItem == null) {
@@ -188,8 +180,8 @@ class JobDetailView(
                             }
                         }
                     }
-                ))
-            })
+                )
+            }
 
             children.add(VBox().apply {
                 spacing = 10.0
@@ -311,12 +303,8 @@ class JobDetailView(
             spacing = 10.0
             padding = Insets(5.0)
 
-            children.add(HBox().apply {
-                spacing = 5.0
-                alignment = Pos.CENTER_LEFT
-
-                children.add(Label("Epochs"))
-                children.add(makeValidatedNode(
+            createLabeledField("Epochs") {
+                makeValidatedNode(
                     TextField(),
                     {
                         try {
@@ -344,8 +332,8 @@ class JobDetailView(
                             }
                         }
                     }
-                ))
-            })
+                )
+            }
         }
     }
 
@@ -357,4 +345,13 @@ class JobDetailView(
             padding = Insets(5.0)
         }
     }
+
+    private fun VBox.createLabeledField(label: String, makeNode: HBox.() -> Node) =
+        children.add(HBox().apply {
+            spacing = 5.0
+            alignment = Pos.CENTER_LEFT
+
+            children.add(Label(label))
+            children.add(makeNode())
+        })
 }
