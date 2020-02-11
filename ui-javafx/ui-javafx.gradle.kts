@@ -31,9 +31,16 @@ dependencies {
     )
 
     implementation(
-            group = "no.tornado",
-            name = "tornadofx",
-            version = "2.0.0-SNAPSHOT")
+        group = "no.tornado",
+        name = "tornadofx",
+        version = "2.0.0-SNAPSHOT"
+    )
+
+    implementation(
+        group = "com.sirolf2009",
+        name = "fxgraph",
+        version = "0.0.3"
+    )
 
     testImplementation(project(":training-test-util"))
 }

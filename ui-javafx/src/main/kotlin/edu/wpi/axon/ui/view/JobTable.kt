@@ -9,7 +9,7 @@ import tornadofx.bindSelected
 import tornadofx.readonlyColumn
 import tornadofx.tableview
 
-class JobTable: Fragment() {
+class JobTable : Fragment() {
 
     private val database by di<JobDb>()
     private val model by inject<JobModel>()

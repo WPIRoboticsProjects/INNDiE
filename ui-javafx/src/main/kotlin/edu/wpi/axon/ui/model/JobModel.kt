@@ -3,7 +3,7 @@ package edu.wpi.axon.ui.model
 import edu.wpi.axon.db.data.Job
 import tornadofx.ItemViewModel
 
-class JobModel: ItemViewModel<Job>() {
+class JobModel : ItemViewModel<Job>() {
     val name = bind(Job::name)
     val status = bind(Job::status)
     val userOldModelPath = bind(Job::userOldModelPath)

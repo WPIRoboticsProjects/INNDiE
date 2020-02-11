@@ -52,8 +52,8 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.ModelDownloader
-import edu.wpi.axon.ui.validateNotEmpty
 import edu.wpi.axon.ui.controller.HasNotifications
+import edu.wpi.axon.ui.validateNotEmpty
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
 import java.math.RoundingMode

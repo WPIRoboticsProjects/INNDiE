@@ -1,7 +1,6 @@
 package edu.wpi.axon.ui
 
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.tfdata.Dataset
 import javafx.scene.control.ListCell
 
 class PluginCell : ListCell<Plugin>() {

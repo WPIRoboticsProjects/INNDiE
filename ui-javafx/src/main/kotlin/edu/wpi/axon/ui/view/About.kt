@@ -4,7 +4,7 @@ import tornadofx.View
 import tornadofx.text
 import tornadofx.vbox
 
-class About: View() {
+class About : View() {
     override val root = vbox {
         text("Axon")
     }
