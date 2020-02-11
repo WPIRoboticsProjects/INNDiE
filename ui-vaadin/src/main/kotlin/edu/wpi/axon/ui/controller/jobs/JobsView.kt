@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.jobs
+package edu.wpi.axon.ui.controller.jobs
 
 import arrow.core.None
 import arrow.core.Option
@@ -30,7 +30,7 @@ import edu.wpi.axon.db.JobDbOp
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.ui.MainLayout
 import edu.wpi.axon.ui.service.JobProvider
-import edu.wpi.axon.ui.view.EntityView
+import edu.wpi.axon.ui.controller.EntityView
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 

@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.preferences
+package edu.wpi.axon.ui.controller.preferences
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.beanValidationBinder
@@ -17,7 +17,7 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
-import edu.wpi.axon.ui.view.HasNotifications
+import edu.wpi.axon.ui.controller.HasNotifications
 
 class PluginEditorDialog(
     pluginManager: PluginManager,

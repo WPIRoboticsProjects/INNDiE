@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view
+package edu.wpi.axon.ui.controller
 
 import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.button.Button

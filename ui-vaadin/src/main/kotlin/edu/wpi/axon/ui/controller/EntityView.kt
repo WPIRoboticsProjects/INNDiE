@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view
+package edu.wpi.axon.ui.controller
 
 /**
  * A master / detail view for entities of the type `T`. The view

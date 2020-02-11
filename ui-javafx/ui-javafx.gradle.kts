@@ -30,6 +30,8 @@ dependencies {
         version = property("exposed.version") as String
     )
 
+    implementation("no.tornado:tornadofx:1.7.20")
+
     testImplementation(project(":training-test-util"))
 }
 
@@ -47,5 +49,5 @@ javafx {
 }
 
 application {
-    mainClassName = "edu.wpi.axon.ui.MainUI"
+    mainClassName = "edu.wpi.axon.ui.main.Axon"
 }

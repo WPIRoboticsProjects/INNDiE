@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.jobs
+package edu.wpi.axon.ui.controller.jobs
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.verticalLayout

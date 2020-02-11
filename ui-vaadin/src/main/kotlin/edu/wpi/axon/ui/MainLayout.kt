@@ -20,9 +20,9 @@ import com.vaadin.flow.router.RouterLink
 import com.vaadin.flow.server.PWA
 import com.vaadin.flow.theme.Theme
 import com.vaadin.flow.theme.lumo.Lumo
-import edu.wpi.axon.ui.view.about.AboutView
-import edu.wpi.axon.ui.view.jobs.JobsView
-import edu.wpi.axon.ui.view.preferences.PreferencesView
+import edu.wpi.axon.ui.controller.about.AboutView
+import edu.wpi.axon.ui.controller.jobs.JobsView
+import edu.wpi.axon.ui.controller.preferences.PreferencesView
 import kotlin.reflect.KClass
 
 /**

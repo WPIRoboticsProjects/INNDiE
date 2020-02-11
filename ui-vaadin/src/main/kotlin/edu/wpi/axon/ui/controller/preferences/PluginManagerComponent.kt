@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.preferences
+package edu.wpi.axon.ui.controller.preferences
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.VaadinDsl
@@ -26,7 +26,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.data.renderer.TextRenderer
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
-import edu.wpi.axon.ui.view.HasNotifications
+import edu.wpi.axon.ui.controller.HasNotifications
 import java.util.function.Predicate
 
 class PluginManagerComponent(

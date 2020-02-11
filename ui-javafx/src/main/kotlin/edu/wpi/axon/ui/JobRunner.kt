@@ -24,6 +24,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
+import edu.wpi.axon.ui.main.localScriptRunnerCache
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import java.nio.file.Files

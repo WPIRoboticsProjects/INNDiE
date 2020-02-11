@@ -199,6 +199,10 @@ class JobDb(private val database: Database) {
         Jobs.selectAll().count()
     }
 
+    fun fetchAll(): List<Job> = transaction(database) {
+        Jobs.selectAll().map { Jobs.toDomain(it) }
+    }
+
     fun fetch(limit: Int, offset: Int): List<Job> = transaction(database) {
         Jobs.selectAll()
             .limit(limit, offset)

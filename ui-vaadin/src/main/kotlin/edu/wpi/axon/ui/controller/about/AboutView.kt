@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.about
+package edu.wpi.axon.ui.controller.about
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.h1

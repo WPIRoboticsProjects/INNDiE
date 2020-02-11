@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui
+package edu.wpi.axon.ui.main
 
 import arrow.core.None
 import arrow.core.Option
@@ -15,6 +15,8 @@ import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.ui.JobLifecycleManager
+import edu.wpi.axon.ui.JobRunner
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.testPluginManagerName

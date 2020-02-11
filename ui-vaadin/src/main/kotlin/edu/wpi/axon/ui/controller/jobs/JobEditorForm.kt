@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.jobs
+package edu.wpi.axon.ui.controller.jobs
 
 import arrow.core.None
 import arrow.core.Option
@@ -53,7 +53,7 @@ import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.ModelDownloader
 import edu.wpi.axon.ui.validateNotEmpty
-import edu.wpi.axon.ui.view.HasNotifications
+import edu.wpi.axon.ui.controller.HasNotifications
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
 import java.math.RoundingMode
@@ -62,7 +62,6 @@ import kotlin.reflect.KClass
 import kotlinx.coroutines.CancellationException
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
-import org.koin.core.get
 import org.koin.core.inject
 import org.koin.core.qualifier.named
 

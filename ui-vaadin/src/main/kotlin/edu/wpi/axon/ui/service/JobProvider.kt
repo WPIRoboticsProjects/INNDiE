@@ -5,7 +5,7 @@ import com.vaadin.flow.data.provider.AbstractBackEndDataProvider
 import com.vaadin.flow.data.provider.Query
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.ui.view.HasNotifications
+import edu.wpi.axon.ui.controller.HasNotifications
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 

@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.jobs
+package edu.wpi.axon.ui.controller.jobs
 
 import com.vaadin.flow.component.progressbar.ProgressBar
 import com.vaadin.flow.component.progressbar.ProgressBarVariant

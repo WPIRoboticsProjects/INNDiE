@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view.preferences
+package edu.wpi.axon.ui.controller.preferences
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.github.mvysny.karibudsl.v10.VaadinDsl
@@ -22,7 +22,7 @@ import edu.wpi.axon.aws.preferences.Preferences
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.ui.MainLayout
-import edu.wpi.axon.ui.view.HasNotifications
+import edu.wpi.axon.ui.controller.HasNotifications
 import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.testPluginManagerName
 import mu.KotlinLogging
