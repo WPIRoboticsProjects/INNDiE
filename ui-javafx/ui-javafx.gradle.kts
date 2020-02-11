@@ -30,7 +30,10 @@ dependencies {
         version = property("exposed.version") as String
     )
 
-    implementation("no.tornado:tornadofx:1.7.20")
+    implementation(
+            group = "no.tornado",
+            name = "tornadofx",
+            version = "2.0.0-SNAPSHOT")
 
     testImplementation(project(":training-test-util"))
 }

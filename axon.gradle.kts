@@ -131,6 +131,7 @@ allprojects {
         maven("https://dl.bintray.com/jamesmudd/jhdf")
         maven("https://dl.bintray.com/kotlin/exposed")
         maven("https://dl.bintray.com/octogonapus/maven-artifacts")
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.

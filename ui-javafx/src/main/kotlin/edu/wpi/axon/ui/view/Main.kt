@@ -16,6 +16,7 @@ class Main: View() {
     init {
         with(root) {
             top = menubar {
+                isUseSystemMenuBar = true
                 menu("File") {
                     separator()
                     item("Exit").action {
