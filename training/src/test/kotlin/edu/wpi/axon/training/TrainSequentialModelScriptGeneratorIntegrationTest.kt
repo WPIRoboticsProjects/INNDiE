@@ -62,8 +62,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userNewModel = it.copy(
                         layers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
                             // Only train the last 3 layers
-                            if (it.layers.size - index <= 3) layer.layer.trainable()
-                            else layer.layer.trainable(false)
+                            if (it.layers.size - index <= 3) layer.layer.isTrainable()
+                            else layer.layer.isTrainable(false)
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,
@@ -108,8 +108,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userNewModel = it.copy(
                         layers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
                             // Only train the last 3 layers
-                            if (it.layers.size - index <= 3) layer.layer.trainable()
-                            else layer.layer.trainable(false)
+                            if (it.layers.size - index <= 3) layer.layer.isTrainable()
+                            else layer.layer.isTrainable(false)
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,
@@ -152,8 +152,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userNewModel = it.copy(
                         layers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
                             // Only train the last layer
-                            if (it.layers.size - index <= 1) layer.layer.trainable()
-                            else layer.layer.trainable(false)
+                            if (it.layers.size - index <= 1) layer.layer.isTrainable()
+                            else layer.layer.isTrainable(false)
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,
@@ -198,8 +198,8 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     userNewModel = it.copy(
                         layers = it.layers.mapIndexedTo(mutableSetOf()) { index, layer ->
                             // Only train the last layer
-                            if (it.layers.size - index <= 1) layer.layer.trainable()
-                            else layer.layer.trainable(false)
+                            if (it.layers.size - index <= 1) layer.layer.isTrainable()
+                            else layer.layer.isTrainable(false)
                         }),
                     userValidationSplit = None,
                     generateDebugComments = false,

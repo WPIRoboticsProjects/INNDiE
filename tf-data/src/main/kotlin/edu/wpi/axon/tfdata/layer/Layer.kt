@@ -28,7 +28,7 @@ sealed class Layer {
      * @param trainable Whether this layer should be trained.
      * @return A new [MetaLayer.TrainableLayer] that wraps this layer.
      */
-    fun trainable(trainable: Boolean = true) =
+    fun isTrainable(trainable: Boolean = true) =
         MetaLayer.TrainableLayer(name, inputs, this, trainable)
 
     /**
@@ -55,7 +55,7 @@ sealed class Layer {
             override val name: String,
             override val inputs: Set<String>?,
             override val layer: Layer,
-            val trainable: Boolean
+            var trainable: Boolean
         ) : MetaLayer() {
             init {
                 require(layer !is MetaLayer)
@@ -64,7 +64,7 @@ sealed class Layer {
 
         /**
          * A layer which is untrainable. This should not be confused with a [TrainableLayer]
-         * where [TrainableLayer.trainable] is `true`. An [UntrainableLayer] is IMPOSSIBLE to train.
+         * where [TrainableLayer.isTrainable] is `true`. An [UntrainableLayer] is IMPOSSIBLE to train.
          */
         @Serializable
         data class UntrainableLayer(

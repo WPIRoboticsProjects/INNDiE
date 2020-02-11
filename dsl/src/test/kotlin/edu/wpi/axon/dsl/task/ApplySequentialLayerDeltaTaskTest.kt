@@ -25,7 +25,7 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
     fun `keep all 1 layers`() {
         startKoin {}
 
-        val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable()
+        val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).isTrainable()
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
@@ -44,8 +44,8 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
     fun `keep all 2 layers`() {
         startKoin {}
 
-        val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable()
-        val layer2 = Layer.UnknownLayer("unknown_1", null).trainable()
+        val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).isTrainable()
+        val layer2 = Layer.UnknownLayer("unknown_1", null).isTrainable()
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
@@ -71,7 +71,7 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers =
-                setOf(Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable())
+                setOf(Layer.Dense("dense_1", null, 10, Activation.ReLu).isTrainable())
             newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
         }
@@ -89,8 +89,8 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
             oldLayers = setOf(
-                Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable(),
-                Layer.UnknownLayer("unknown_1", null).trainable()
+                Layer.Dense("dense_1", null, 10, Activation.ReLu).isTrainable(),
+                Layer.UnknownLayer("unknown_1", null).isTrainable()
             )
             newLayers = setOf()
             newModelOutput = configuredCorrectly("new_model")
@@ -104,7 +104,7 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `add one layer`() {
-        val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).trainable()
+        val layer1 = Layer.Dense("dense_1", null, 10, Activation.ReLu).isTrainable()
 
         startKoin {
             modules(module {
@@ -132,8 +132,8 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `add two layers`() {
-        val layer1 = Layer.Dense("dense_1", null, 128, Activation.ReLu).trainable()
-        val layer2 = Layer.Dense("dense_2", null, 10, Activation.SoftMax).trainable()
+        val layer1 = Layer.Dense("dense_1", null, 128, Activation.ReLu).isTrainable()
+        val layer2 = Layer.Dense("dense_2", null, 10, Activation.SoftMax).isTrainable()
 
         startKoin {
             modules(module {
@@ -166,9 +166,9 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
     @Test
     fun `remove the first layer and replace the second and swap them`() {
-        val layer1 = Layer.UnknownLayer("unknown_3", null).trainable()
-        val layer2Old = Layer.Dense("dense_2", null, 10, Activation.SoftMax).trainable()
-        val layer2New = Layer.Dense("dense_2", null, 3, Activation.SoftMax).trainable()
+        val layer1 = Layer.UnknownLayer("unknown_3", null).isTrainable()
+        val layer2Old = Layer.Dense("dense_2", null, 10, Activation.SoftMax).isTrainable()
+        val layer2New = Layer.Dense("dense_2", null, 3, Activation.SoftMax).isTrainable()
 
         startKoin {
             modules(module {
@@ -202,7 +202,7 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
     fun `copy an unknown layer`() {
         startKoin {}
 
-        val layer1 = Layer.UnknownLayer("unknown_1", null).trainable()
+        val layer1 = Layer.UnknownLayer("unknown_1", null).isTrainable()
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
             modelInput = configuredCorrectly("base_model")
@@ -221,7 +221,7 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
     fun `copy a layer with an unknown activation function`() {
         val layer1 =
             Layer.Dense("dense_1", null, 10, Activation.UnknownActivation("activation_1"))
-                .trainable()
+                .isTrainable()
         startKoin {}
 
         val task = ApplySequentialLayerDeltaTask("task1").apply {
@@ -247,8 +247,8 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplySequentialLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            oldLayers = setOf(Layer.UnknownLayer("", setOf()).trainable())
-            newLayers = setOf(Layer.UnknownLayer("", null).trainable())
+            oldLayers = setOf(Layer.UnknownLayer("", setOf()).isTrainable())
+            newLayers = setOf(Layer.UnknownLayer("", null).isTrainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -265,8 +265,8 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplySequentialLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            oldLayers = setOf(Layer.UnknownLayer("", null).trainable())
-            newLayers = setOf(Layer.UnknownLayer("", setOf()).trainable())
+            oldLayers = setOf(Layer.UnknownLayer("", null).isTrainable())
+            newLayers = setOf(Layer.UnknownLayer("", setOf()).isTrainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 
@@ -283,8 +283,8 @@ internal class ApplySequentialLayerDeltaTaskTest : KoinTestFixture() {
 
         val task = ApplySequentialLayerDeltaTask("").apply {
             modelInput = configuredCorrectly("base_model")
-            oldLayers = setOf(Layer.UnknownLayer("", null).trainable())
-            newLayers = setOf(Layer.UnknownLayer("", null).trainable())
+            oldLayers = setOf(Layer.UnknownLayer("", null).isTrainable())
+            newLayers = setOf(Layer.UnknownLayer("", null).isTrainable())
             newModelOutput = configuredCorrectly("new_model")
         }
 

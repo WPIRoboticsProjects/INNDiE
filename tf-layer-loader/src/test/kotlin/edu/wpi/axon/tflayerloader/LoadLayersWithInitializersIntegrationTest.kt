@@ -25,7 +25,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     1,
                     Activation.Linear,
                     kernelInitializer = Initializer.Constant(SerializableEitherDLd.Left(0.0))
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -42,7 +42,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -59,7 +59,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -76,7 +76,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -93,7 +93,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.Identity(1.2)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -110,7 +110,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.Orthogonal(1.2, 3)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -127,7 +127,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.RandomNormal(1.0, 0.5, null)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -144,7 +144,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.RandomUniform(SerializableEitherDLd.Left(-0.1), SerializableEitherDLd.Left(0.1), null)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -165,7 +165,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                         SerializableEitherDLd.Right(listOf(0.1, 0.2)),
                         null
                     )
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -182,7 +182,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.GlorotNormal(null)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -199,7 +199,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.GlorotUniform(null)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -216,7 +216,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     2,
                     Activation.Linear,
                     kernelInitializer = Initializer.TruncatedNormal(1.0, 2.0, null)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -238,7 +238,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                         Initializer.VarianceScaling.Distribution.Uniform,
                         null
                     )
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -260,7 +260,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                         Initializer.VarianceScaling.Distribution.Normal,
                         null
                     )
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -282,7 +282,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                         Initializer.VarianceScaling.Distribution.TruncatedNormal,
                         null
                     )
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -304,7 +304,7 @@ internal class LoadLayersWithInitializersIntegrationTest {
                         Initializer.VarianceScaling.Distribution.UntruncatedNormal,
                         null
                     )
-                ).trainable()
+                ).isTrainable()
             )
         }
     }

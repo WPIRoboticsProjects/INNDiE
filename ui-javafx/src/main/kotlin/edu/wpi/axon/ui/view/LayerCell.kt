@@ -7,15 +7,25 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.VBox
+import tornadofx.add
 import tornadofx.hbox
 import tornadofx.label
 
-fun createLayerCell(layer: Layer.MetaLayer) = when (layer) {
-    is Layer.MetaLayer.TrainableLayer -> LayerCell(layer, createBaseLayerCell(layer.layer))
-    is Layer.MetaLayer.UntrainableLayer -> LayerCell(layer, createBaseLayerCell(layer.layer))
+fun createLayerCell(layer: Layer.MetaLayer, openEditor: (LayerCell) -> Unit) = when (layer) {
+    is Layer.MetaLayer.TrainableLayer -> LayerCell(
+        layer,
+        createBaseLayerCell(layer.layer),
+        openEditor
+    )
+
+    is Layer.MetaLayer.UntrainableLayer -> LayerCell(
+        layer,
+        createBaseLayerCell(layer.layer),
+        openEditor
+    )
 }
 
-private fun createBaseLayerCell(layer: Layer) = when (layer) {
+fun createBaseLayerCell(layer: Layer): VBox = when (layer) {
     is Layer.MetaLayer -> error("This method only accepts Layer (not MetaLayer).")
     is Layer.UnknownLayer -> layerVBox { }
     is Layer.ModelLayer -> layerVBox { }
@@ -72,12 +82,18 @@ fun createLayerColor(layer: Layer): String = when (layer) {
 }
 
 class LayerCell(
-    private val layer: Layer.MetaLayer,
-    private val content: Node
+    var layer: Layer.MetaLayer,
+    var content: Node,
+    private val openEditor: (LayerCell) -> Unit
 ) : AbstractCell() {
 
-    override fun getGraphic(graph: Graph?) = BorderPane().apply {
+    override fun getGraphic(graph: Graph) = BorderPane().apply {
         style = "-fx-border-color: black; -fx-background-color: white;"
+
+        setOnMouseClicked {
+            openEditor(this@LayerCell)
+        }
+
         top = hbox {
             style = "-fx-background-color: ${createLayerColor(layer)};"
 

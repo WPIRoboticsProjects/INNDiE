@@ -64,7 +64,7 @@ fun downloadAndConfigureExampleModel(
     val freezeLayerTransform: (Layer.MetaLayer) -> Layer.MetaLayer = { layer ->
         exampleModel.freezeLayers[layer.name]?.let {
             when (val trainableFlag = it.toOption()) {
-                is Some -> layer.layer.trainable(trainableFlag.t)
+                is Some -> layer.layer.isTrainable(trainableFlag.t)
                 is None -> layer.layer.untrainable()
             }
         } ?: layer

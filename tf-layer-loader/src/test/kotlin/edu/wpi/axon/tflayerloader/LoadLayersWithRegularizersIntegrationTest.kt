@@ -22,7 +22,7 @@ internal class LoadLayersWithRegularizersIntegrationTest {
                     1,
                     Activation.Linear,
                     kernelRegularizer = Regularizer.L1L2(0.01, 0.0)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
