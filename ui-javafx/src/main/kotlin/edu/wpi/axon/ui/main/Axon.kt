@@ -25,11 +25,25 @@ class Axon: App(Main::class) {
                 return getKoin().get(clazz = type, qualifier = null, parameters = null)
             }
         }
+
+        importStylesheet("/material.css")
     }
 
     companion object {
         fun main() {
             tornadofx.launch<Axon>()
         }
+    }
+}
+
+/*
+ * https://github.com/edvin/tornadofx/issues/982
+ */
+private fun Any.importStylesheet(path: String) {
+    val css = javaClass.getResource(path)
+    if (css == null) {
+        throw IllegalArgumentException("Unable to find $path")
+    } else {
+        tornadofx.importStylesheet(css.toExternalForm()) // this one works
     }
 }

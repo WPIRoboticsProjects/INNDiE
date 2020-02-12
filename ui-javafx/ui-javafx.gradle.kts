@@ -33,7 +33,8 @@ dependencies {
     implementation(
             group = "no.tornado",
             name = "tornadofx",
-            version = "2.0.0-SNAPSHOT")
+            version = "2.0.0-SNAPSHOT"
+    )
 
     testImplementation(project(":training-test-util"))
 }
@@ -53,4 +54,10 @@ javafx {
 
 application {
     mainClassName = "edu.wpi.axon.ui.main.Axon"
+
+    // https://github.com/edvin/tornadofx/issues/899#issuecomment-569709223
+    applicationDefaultJvmArgs += "--add-opens=javafx.graphics/javafx.scene=ALL-UNNAMED"
+    applicationDefaultJvmArgs += "--add-opens=javafx.controls/javafx.scene.control=ALL-UNNAMED"
+
+    applicationDefaultJvmArgs += "--add-opens=javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED"
 }

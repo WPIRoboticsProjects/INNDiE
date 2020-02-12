@@ -1,24 +1,30 @@
 package edu.wpi.axon.ui.view
 
-import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.ui.controller.JobBoard
+import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
+import javafx.scene.layout.Priority
 import tornadofx.Fragment
-import tornadofx.asObservable
 import tornadofx.bindSelected
-import tornadofx.readonlyColumn
+import tornadofx.column
+import tornadofx.hgrow
+import tornadofx.smartResize
 import tornadofx.tableview
+import tornadofx.vgrow
 
 class JobTable: Fragment() {
-
-    private val database by di<JobDb>()
+    private val jobBoard by inject<JobBoard>()
     private val model by inject<JobModel>()
 
-    private val list = database.fetchAll().asObservable()
-
-    override val root = tableview(list) {
+    override val root = tableview(jobBoard.jobs) {
         bindSelected(model)
 
-        readonlyColumn("Name", Job::name)
+        vgrow = Priority.ALWAYS
+        hgrow = Priority.ALWAYS
+        smartResize()
+
+        column("ID", JobDto::idProperty)
+        column("Name", JobDto::nameProperty)
+        column("Status", JobDto::statusProperty).cellFragment(StatusCell::class)
     }
 }
