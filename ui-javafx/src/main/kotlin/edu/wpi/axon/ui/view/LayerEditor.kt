@@ -1,12 +1,12 @@
 package edu.wpi.axon.ui.view
 
+import arrow.core.getOrHandle
 import com.fxgraph.edges.Edge
 import com.fxgraph.graph.Graph
 import com.fxgraph.layout.AbegoTreeLayout
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.ui.MainUI
-import javafx.scene.layout.VBox
+import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import org.abego.treelayout.Configuration
 import tornadofx.Fragment
 import tornadofx.ItemViewModel
@@ -18,23 +18,22 @@ import tornadofx.enableWhen
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.form
-import tornadofx.label
 import tornadofx.splitpane
 import tornadofx.textfield
 
 @Suppress("UnstableApiUsage")
-class LayerEditor : Fragment("My View") {
+class LayerEditor(
+    private val initialModel: Model
+) : Fragment("My View") {
+
+    private val graph = Graph()
 
     override val root = borderpane {
-        val modelName = "network_with_add.h5"
-        val (model, _) = MainUI.loadModel(modelName)
-
-        val graph = Graph()
         graph.beginUpdate()
 
-        when (model) {
+        when (initialModel) {
             is Model.Sequential -> {
-                model.layers.fold<Layer.MetaLayer, LayerCell?>(null) { prevCell, layer ->
+                initialModel.layers.fold<Layer.MetaLayer, LayerCell?>(null) { prevCell, layer ->
                     val cell = createLayerCell(layer, ::openEditor)
                     graph.model.addCell(cell)
                     prevCell?.let { graph.model.addEdge(it, cell) }
@@ -44,8 +43,10 @@ class LayerEditor : Fragment("My View") {
 
             is Model.General -> {
                 val cells =
-                    model.layers.nodes().map { it to createLayerCell(it, ::openEditor) }.toMap()
-                val edges = model.layers.edges().map { Edge(cells[it.nodeU()], cells[it.nodeV()]) }
+                    initialModel.layers.nodes().map { it to createLayerCell(it, ::openEditor) }
+                        .toMap()
+                val edges =
+                    initialModel.layers.edges().map { Edge(cells[it.nodeU()], cells[it.nodeV()]) }
                 cells.values.forEach { graph.model.addCell(it) }
                 edges.forEach { graph.model.addEdge(it) }
             }
@@ -57,6 +58,26 @@ class LayerEditor : Fragment("My View") {
             // The canvas has to be in a splitpane, or else it could draw the graph on top of other
             // UI elements
             add(graph.canvas)
+        }
+    }
+
+    fun getNewModel(): Model {
+        val layers = graph.model.allCells.mapTo(mutableSetOf()) { (it as LayerCell).layer }
+        val edges =
+            graph.model.allEdges.map {
+                (it.source as LayerCell).layer to (it.target as LayerCell).layer
+            }
+
+        val newLayers = layers.mapTo(mutableSetOf()) { layer ->
+            val inputs = edges.filter { it.second == layer }.mapTo(mutableSetOf()) { it.first.name }
+            layer.copyWithNewInputs(inputs)
+        }
+
+        return when (initialModel) {
+            is Model.Sequential -> initialModel.copy(layers = newLayers)
+            is Model.General -> initialModel.copy(
+                layers = DefaultLayersToGraph().convertToGraph(newLayers).getOrHandle { error(it) }
+            )
         }
     }
 
@@ -84,6 +105,7 @@ class LayerEditor : Fragment("My View") {
                             model.commit()
                             val newLayer = model.item
                             println(newLayer)
+                            println(getNewModel())
                             layerCell.layer = newLayer
                             layerCell.content = createBaseLayerCell(newLayer.layer)
                         }
@@ -135,5 +157,4 @@ class TrainableLayerModel(layer: Layer.MetaLayer.TrainableLayer) :
 }
 
 class UntrainableLayerModel(layer: Layer.MetaLayer.UntrainableLayer) :
-    ItemViewModel<Layer.MetaLayer.UntrainableLayer>(layer) {
-}
+    ItemViewModel<Layer.MetaLayer.UntrainableLayer>(layer)

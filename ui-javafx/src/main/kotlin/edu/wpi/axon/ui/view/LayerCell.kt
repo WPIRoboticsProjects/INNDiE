@@ -7,7 +7,6 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.VBox
-import tornadofx.add
 import tornadofx.hbox
 import tornadofx.label
 

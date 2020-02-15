@@ -1,5 +1,6 @@
 package edu.wpi.axon.ui.view
 
+import edu.wpi.axon.ui.MainUI
 import tornadofx.View
 import tornadofx.action
 import tornadofx.borderpane
@@ -29,7 +30,9 @@ class Main : View() {
         center = vbox {
             setPrefSize(500.0, 400.0)
             // add<JobTable>()
-            add<LayerEditor>()
+            val modelName = "network_with_add.h5"
+            val (model, _) = MainUI.loadModel(modelName)
+            add(LayerEditor(model))
         }
     }
 }
