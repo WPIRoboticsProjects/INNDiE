@@ -9,8 +9,10 @@ import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
+import javafx.event.EventTarget
 import javafx.geometry.Pos
 import javafx.scene.control.TabPane
+import javafx.scene.control.TitledPane
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
 import org.koin.core.qualifier.named
@@ -27,6 +29,7 @@ import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.fold
 import tornadofx.form
+import tornadofx.getDefaultConverter
 import tornadofx.group
 import tornadofx.hbox
 import tornadofx.label
@@ -93,49 +96,49 @@ class JobConfiguration : Fragment("Configuration") {
             }
         }
         squeezebox {
-            fold("Inputs", expanded = true) {
-                form {
-                    fieldset("Dataset") {
-                        add(find<DatasetPicker>().apply {
-                            itemProperty.bind(job.userDataset)
-                        })
-                        field("Plugin") {
-                            combobox(job.datasetPlugin) {
-                                items =
-                                    datasetPluginManager.listPlugins().toList().toObservable()
-                                cellFormat {
-                                    text = it.name.toLowerCase().capitalize()
-                                }
-                            }
-                        }
+            fold("Inputs", expanded = true) { makeInputsFold() }
+            fold("Training", expanded = true) { makeTrainingFold() }
+        }
+    }
+
+    private fun TitledPane.makeInputsFold() = form {
+        fieldset("Dataset") {
+            add(find<DatasetPicker>().apply {
+                itemProperty.bind(job.userDataset)
+            })
+            field("Plugin") {
+                combobox(job.datasetPlugin) {
+                    items =
+                        datasetPluginManager.listPlugins().toList().toObservable()
+                    cellFormat {
+                        text = it.name.toLowerCase().capitalize()
                     }
                 }
             }
-            fold("Training", expanded = true) {
-                form {
-                    fieldset {
-                        field("Epochs") {
-                            spinner(
-                                1,
-                                amountToStepBy = 1,
-                                editable = true,
-                                property = job.userEpochs
-                            ) {
-                                valueFactory.converter = object : StringConverter<Number>() {
-                                    override fun toString(obj: Number?) = obj?.toString() ?: ""
+        }
+    }
 
-                                    override fun fromString(string: String?) = try {
-                                        string?.toInt() ?: 1
-                                    } catch (ex: NumberFormatException) {
-                                        1
-                                    }
-                                }
+    private fun TitledPane.makeTrainingFold() = form {
+        fieldset {
+            field("Epochs") {
+                spinner(
+                    1,
+                    amountToStepBy = 1,
+                    editable = true,
+                    property = job.userEpochs
+                ) {
+                    valueFactory.converter = object : StringConverter<Number>() {
+                        override fun toString(obj: Number?) = obj?.toString() ?: ""
 
-                                validator {
-                                    if (it == null) error("The epochs field is required.") else null
-                                }
-                            }
+                        override fun fromString(string: String?) = try {
+                            string?.toInt() ?: 1
+                        } catch (ex: NumberFormatException) {
+                            1
                         }
+                    }
+
+                    validator {
+                        if (it == null) error("The epochs field is required.") else null
                     }
                 }
             }
