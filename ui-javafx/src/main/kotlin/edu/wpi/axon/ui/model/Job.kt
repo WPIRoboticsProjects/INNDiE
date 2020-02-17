@@ -24,7 +24,10 @@ data class JobDto(val job: Job) {
     //    val userOptimizer = bind(Job::userOptimizer)
     //    val userLoss = bind(Job::userLoss)
     //    val userMetrics = bind(Job::userMetrics)
-    //    val userEpochs = bind(Job::userEpochs)
+
+    val userEpochsProperty = SimpleIntegerProperty(job.userEpochs)
+    var userEpochs by userEpochsProperty
+
     //    val userNewModel = bind(Job::userNewModel)
     //    val generateDebugComments = bind(Job::generateDebugComments)
 
@@ -38,7 +41,12 @@ data class JobDto(val job: Job) {
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
 
+
 //    fun getDbObject(): Job = job.copy(name, status, userDataset)
+
+    override fun toString(): String {
+        return "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userDatasetProperty=$userDatasetProperty, userEpochsProperty=$userEpochsProperty, trainingMethodProperty=$trainingMethodProperty, idProperty=$idProperty)"
+    }
 }
 
 class JobModel : ItemViewModel<JobDto>() {
@@ -49,7 +57,7 @@ class JobModel : ItemViewModel<JobDto>() {
 //    val userOptimizer = bind(Job::userOptimizer)
 //    val userLoss = bind(Job::userLoss)
 //    val userMetrics = bind(Job::userMetrics)
-//    val userEpochs = bind(Job::userEpochs)
+    val userEpochs = bind(JobDto::userEpochsProperty)
 //    val userNewModel = bind(Job::userNewModel)
 //    val generateDebugComments = bind(Job::generateDebugComments)
     val trainingMethod = bind(JobDto::trainingMethodProperty)
@@ -64,6 +72,6 @@ class JobModel : ItemViewModel<JobDto>() {
 //    }
 
     override fun onCommit() {
-        println(userDataset.value)
+        println(item)
     }
 }

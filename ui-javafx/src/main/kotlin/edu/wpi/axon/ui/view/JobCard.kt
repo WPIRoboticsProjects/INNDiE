@@ -11,10 +11,10 @@ import javafx.stage.FileChooser
 import javafx.util.StringConverter
 import tornadofx.Fragment
 import tornadofx.ItemFragment
-import tornadofx.bindSelected
 import tornadofx.bindTo
 import tornadofx.booleanBinding
 import tornadofx.button
+import tornadofx.buttonbar
 import tornadofx.chooseFile
 import tornadofx.combobox
 import tornadofx.field
@@ -23,6 +23,7 @@ import tornadofx.fold
 import tornadofx.form
 import tornadofx.hbox
 import tornadofx.label
+import tornadofx.spinner
 import tornadofx.squeezebox
 import tornadofx.tabpane
 import tornadofx.toObservable
@@ -53,20 +54,9 @@ class JobCardContent : Fragment() {
     override val root = tabpane {
         tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
 
-        tab<JobDetails>()
         tab<JobConfiguration>()
-    }
-}
-
-class JobDetails : Fragment("Details") {
-    private val job by inject<JobModel>()
-
-    override val root = squeezebox {
-        fold("Details", expanded = true) {
-            vbox {
-                label("Nothing here")
-            }
-        }
+        tab<JobTraining>()
+        tab<JobTesting>()
     }
 }
 
@@ -74,6 +64,18 @@ class JobConfiguration : Fragment("Configuration") {
     private val job by inject<JobModel>()
 
     override val root = vbox {
+        buttonbar {
+            button("Cancel") {
+                setOnAction {
+                    job.rollback()
+                }
+            }
+            button("Save") {
+                setOnAction {
+                    job.commit()
+                }
+            }
+        }
         squeezebox {
             fold("Inputs", expanded = true) {
                 form {
@@ -82,15 +84,40 @@ class JobConfiguration : Fragment("Configuration") {
                     })
                 }
             }
-            fold("Training") {
-                label("Nothing here")
+            fold("Training", expanded = true) {
+                form {
+                    fieldset {
+                        field("Epochs") {
+                            spinner(1, amountToStepBy = 1, editable = true, property = job.userEpochs)
+                            // TODO: Handle number format exception
+                        }
+                    }
+                }
             }
         }
-        button("Save") {
-            setOnAction {
-                job.commit()
+    }
+}
+
+class JobTraining : Fragment("Training") {
+    private val job by inject<JobModel>()
+
+    override val root = vbox {
+        buttonbar {
+            button("Cancel") {
+
+            }
+            button("Run") {
+
             }
         }
+    }
+}
+
+class JobTesting : Fragment("Testing") {
+    private val job by inject<JobModel>()
+
+    override val root = vbox {
+        label("Nothing yet!")
     }
 }
 
