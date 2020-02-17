@@ -24,12 +24,15 @@ import tornadofx.fold
 import tornadofx.form
 import tornadofx.hbox
 import tornadofx.label
+import tornadofx.required
 import tornadofx.spinner
 import tornadofx.squeezebox
 import tornadofx.tabpane
 import tornadofx.toObservable
+import tornadofx.validator
 import tornadofx.vbox
 import tornadofx.visibleWhen
+import java.lang.NumberFormatException
 
 class JobCard : Fragment() {
     private val job by inject<JobModel>()
@@ -92,8 +95,26 @@ class JobConfiguration : Fragment("Configuration") {
                 form {
                     fieldset {
                         field("Epochs") {
-                            spinner(1, amountToStepBy = 1, editable = true, property = job.userEpochs)
-                            // TODO: Handle number format exception
+                            spinner(
+                                1,
+                                amountToStepBy = 1,
+                                editable = true,
+                                property = job.userEpochs
+                            ) {
+                                valueFactory.converter = object : StringConverter<Number>() {
+                                    override fun toString(obj: Number?) = obj?.toString() ?: ""
+
+                                    override fun fromString(string: String?) = try {
+                                        string?.toInt() ?: 1
+                                    } catch (ex: NumberFormatException) {
+                                        1
+                                    }
+                                }
+
+                                validator {
+                                    if (it == null) error("The epochs field is required.") else null
+                                }
+                            }
                         }
                     }
                 }
@@ -141,7 +162,8 @@ class DatasetPicker : ItemFragment<Dataset>() {
         field("Selection") {
             combobox<Dataset>(job.userDataset) {
                 visibleWhen(dataset.type.booleanBinding { it == DatasetType.EXAMPLE })
-                items = Dataset.ExampleDataset::class.sealedSubclasses.map { it.objectInstance }.toObservable()
+                items = Dataset.ExampleDataset::class.sealedSubclasses.map { it.objectInstance }
+                    .toObservable()
                 cellFormat {
                     text = it.displayName
                 }
@@ -150,13 +172,14 @@ class DatasetPicker : ItemFragment<Dataset>() {
                 visibleWhen(dataset.type.booleanBinding { it == DatasetType.CUSTOM })
                 button {
                     setOnAction {
-                        val file = chooseFile("Pick", arrayOf(FileChooser.ExtensionFilter("Any", "*.*")))
+                        val file =
+                            chooseFile("Pick", arrayOf(FileChooser.ExtensionFilter("Any", "*.*")))
                         file.firstOrNull()?.let {
                             job.userDataset.value = Dataset.Custom(FilePath.Local(it.path), it.name)
                         }
                     }
                 }
-                label(job.userDataset, converter = object: StringConverter<Dataset>() {
+                label(job.userDataset, converter = object : StringConverter<Dataset>() {
                     override fun toString(obj: Dataset?) = obj?.displayName ?: ""
                     override fun fromString(string: String) = null
                 })
