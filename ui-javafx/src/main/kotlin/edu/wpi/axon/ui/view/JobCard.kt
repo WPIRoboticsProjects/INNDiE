@@ -3,51 +3,36 @@ package edu.wpi.axon.ui.view
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.ui.model.DatasetModel
 import edu.wpi.axon.ui.model.DatasetType
-import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.model.ModelSourceModel
 import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
-import javafx.beans.Observable
-import javafx.beans.property.SimpleObjectProperty
-import javafx.event.EventTarget
+import java.lang.NumberFormatException
 import javafx.geometry.Pos
-import javafx.scene.Parent
 import javafx.scene.control.TabPane
 import javafx.scene.control.TitledPane
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
-import org.koin.core.qualifier.named
 import tornadofx.Fragment
 import tornadofx.ItemFragment
-import tornadofx.bindSelected
 import tornadofx.bindTo
 import tornadofx.booleanBinding
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.chooseFile
-import tornadofx.cleanBind
 import tornadofx.combobox
 import tornadofx.enableWhen
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.fold
 import tornadofx.form
-import tornadofx.getDefaultConverter
-import tornadofx.group
 import tornadofx.hbox
 import tornadofx.label
-import tornadofx.objectBinding
-import tornadofx.observable
-import tornadofx.required
-import tornadofx.select
 import tornadofx.spinner
 import tornadofx.squeezebox
 import tornadofx.tabpane
@@ -55,7 +40,6 @@ import tornadofx.toObservable
 import tornadofx.validator
 import tornadofx.vbox
 import tornadofx.visibleWhen
-import java.lang.NumberFormatException
 
 class JobCard : Fragment() {
     private val job by inject<JobModel>()
@@ -172,10 +156,8 @@ class JobTraining : Fragment("Training") {
     override val root = vbox {
         buttonbar {
             button("Cancel") {
-
             }
             button("Run") {
-
             }
         }
     }
