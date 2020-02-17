@@ -1,8 +1,8 @@
 package edu.wpi.axon.ui.view
 
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.State
-import edu.wpi.axon.ui.model.TrainingScriptProgressDto
 import edu.wpi.axon.ui.model.TrainingScriptProgressModel
 import tornadofx.TableCellFragment
 import tornadofx.bindTo
@@ -11,7 +11,7 @@ import tornadofx.onChange
 import tornadofx.progressbar
 import tornadofx.vbox
 
-class StatusCell: TableCellFragment<JobDto, TrainingScriptProgressDto>() {
+class StatusCell: TableCellFragment<JobDto, TrainingScriptProgress>() {
     private val status = TrainingScriptProgressModel().bindTo(this)
 
     override val root = vbox {

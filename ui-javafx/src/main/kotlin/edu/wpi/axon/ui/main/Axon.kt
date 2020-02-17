@@ -1,6 +1,7 @@
 package edu.wpi.axon.ui.main
 
 import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.axon.ui.view.AxonStylesheet
 import edu.wpi.axon.ui.view.Main
 import org.koin.core.KoinComponent
 import org.koin.core.context.startKoin
@@ -9,7 +10,7 @@ import tornadofx.DIContainer
 import tornadofx.FX
 import kotlin.reflect.KClass
 
-class Axon: App(Main::class) {
+class Axon: App(Main::class, AxonStylesheet::class) {
     init {
         startKoin {
             modules(

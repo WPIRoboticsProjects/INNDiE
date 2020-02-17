@@ -29,8 +29,8 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.JobDbOp
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.ui.MainLayout
-import edu.wpi.axon.ui.service.JobProvider
 import edu.wpi.axon.ui.controller.EntityView
+import edu.wpi.axon.ui.service.JobProvider
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 

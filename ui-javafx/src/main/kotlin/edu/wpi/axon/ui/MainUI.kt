@@ -71,7 +71,7 @@ class MainUI : Application(), KoinComponent {
         val (model, path) = loadModel(modelName)
 
         get<JobDb>().create(
-            name = "AWS Job",
+            name = "AWS Job6",
             status = TrainingScriptProgress.NotStarted,
             userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
             userDataset = Dataset.ExampleDataset.FashionMnist,

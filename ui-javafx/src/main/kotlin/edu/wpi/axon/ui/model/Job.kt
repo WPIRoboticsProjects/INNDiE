@@ -13,12 +13,16 @@ data class JobDto(val job: Job) {
     val nameProperty = SimpleStringProperty(job.name)
     var name by nameProperty
 
-    val statusProperty = SimpleObjectProperty(TrainingScriptProgressDto(job.status))
+    val statusProperty = SimpleObjectProperty(job.status)
     var status by statusProperty
 
 
+
     //    val userOldModelPath = bind(Job::userOldModelPath)
-    //    val userDataset = bind(Job::userDataset)
+
+    val userDatasetProperty = SimpleObjectProperty(job.userDataset)
+    var userDataset by userDatasetProperty
+
     //    val userOptimizer = bind(Job::userOptimizer)
     //    val userLoss = bind(Job::userLoss)
     //    val userMetrics = bind(Job::userMetrics)
@@ -41,7 +45,7 @@ class JobModel: ItemViewModel<JobDto>() {
     val name = bind(JobDto::nameProperty)
     val status = bind(JobDto::statusProperty)
     //    val userOldModelPath = bind(Job::userOldModelPath)
-//    val userDataset = bind(Job::userDataset)
+    val userDataset = bind(JobDto::userDatasetProperty)
 //    val userOptimizer = bind(Job::userOptimizer)
 //    val userLoss = bind(Job::userLoss)
 //    val userMetrics = bind(Job::userMetrics)

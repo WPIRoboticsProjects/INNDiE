@@ -8,20 +8,25 @@ import tornadofx.Fragment
 import tornadofx.bindSelected
 import tornadofx.column
 import tornadofx.hgrow
+import tornadofx.onUserSelect
 import tornadofx.smartResize
 import tornadofx.tableview
 import tornadofx.vgrow
 
 class JobTable: Fragment() {
     private val jobBoard by inject<JobBoard>()
-    private val model by inject<JobModel>()
+    private val selectedJob by inject<JobModel>()
 
     override val root = tableview(jobBoard.jobs) {
-        bindSelected(model)
+        bindSelected(selectedJob)
 
         vgrow = Priority.ALWAYS
         hgrow = Priority.ALWAYS
         smartResize()
+
+        onUserSelect {
+            find<JobCard>().openWindow()
+        }
 
         column("ID", JobDto::idProperty)
         column("Name", JobDto::nameProperty)

@@ -23,7 +23,6 @@ import javafx.scene.control.Label
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.control.TextField
-import javafx.scene.control.TextFormatter
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
@@ -31,15 +30,13 @@ import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import javafx.util.Callback
-import javafx.util.converter.NumberStringConverter
+import kotlin.reflect.KClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import org.koin.core.qualifier.named
-import java.text.NumberFormat
-import kotlin.reflect.KClass
 
 enum class ModelChoice {
     Example, Custom, Job

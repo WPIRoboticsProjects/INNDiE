@@ -5,7 +5,7 @@ import edu.wpi.axon.ui.model.JobDto
 import tornadofx.Controller
 import tornadofx.asObservable
 
-class JobBoard: Controller() {
+class JobBoard : Controller() {
     private val database by di<JobDb>()
 
     val jobs by lazy {
