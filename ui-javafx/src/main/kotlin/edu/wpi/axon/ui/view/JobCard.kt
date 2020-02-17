@@ -1,16 +1,25 @@
 package edu.wpi.axon.ui.view
 
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.ui.model.DatasetModel
 import edu.wpi.axon.ui.model.DatasetType
+import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
+import edu.wpi.axon.ui.model.ModelSourceModel
+import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
+import javafx.beans.Observable
+import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventTarget
 import javafx.geometry.Pos
+import javafx.scene.Parent
 import javafx.scene.control.TabPane
 import javafx.scene.control.TitledPane
 import javafx.stage.FileChooser
@@ -18,11 +27,13 @@ import javafx.util.StringConverter
 import org.koin.core.qualifier.named
 import tornadofx.Fragment
 import tornadofx.ItemFragment
+import tornadofx.bindSelected
 import tornadofx.bindTo
 import tornadofx.booleanBinding
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.chooseFile
+import tornadofx.cleanBind
 import tornadofx.combobox
 import tornadofx.enableWhen
 import tornadofx.field
@@ -33,7 +44,10 @@ import tornadofx.getDefaultConverter
 import tornadofx.group
 import tornadofx.hbox
 import tornadofx.label
+import tornadofx.objectBinding
+import tornadofx.observable
 import tornadofx.required
+import tornadofx.select
 import tornadofx.spinner
 import tornadofx.squeezebox
 import tornadofx.tabpane
@@ -116,6 +130,12 @@ class JobConfiguration : Fragment("Configuration") {
                 }
             }
         }
+
+        fieldset("Model") {
+            add(find<ModelPicker>().apply {
+                itemProperty.bind(job.userOldModelPath)
+            })
+        }
     }
 
     private fun TitledPane.makeTrainingFold() = form {
@@ -175,7 +195,7 @@ class DatasetPicker : ItemFragment<Dataset>() {
 
     override val root = vbox {
         field("Type") {
-            combobox<DatasetType>(dataset.type) {
+            combobox(dataset.type) {
                 items = DatasetType.values().toList().toObservable()
                 cellFormat {
                     text = it.name.toLowerCase().capitalize()
@@ -183,7 +203,7 @@ class DatasetPicker : ItemFragment<Dataset>() {
             }
         }
         field("Selection") {
-            combobox<Dataset>(job.userDataset) {
+            combobox(job.userDataset) {
                 visibleWhen(dataset.type.booleanBinding { it == DatasetType.EXAMPLE })
                 items = Dataset.ExampleDataset::class.sealedSubclasses.map { it.objectInstance }
                     .toObservable()
@@ -205,6 +225,42 @@ class DatasetPicker : ItemFragment<Dataset>() {
                 label(job.userDataset, converter = object : StringConverter<Dataset>() {
                     override fun toString(obj: Dataset?) = obj?.displayName ?: ""
                     override fun fromString(string: String) = null
+                })
+            }
+        }
+    }
+}
+
+class ModelPicker : ItemFragment<ModelSource>() {
+    private val job by inject<JobModel>()
+    private val modelSource = ModelSourceModel().bindTo(this)
+    private val exampleModelManager by di<ExampleModelManager>()
+
+    override val root = vbox {
+        field("Source") {
+            combobox(modelSource.type) {
+                items = ModelSourceType.values().toList().toObservable()
+                cellFormat {
+                    text = it.name.toLowerCase().capitalize()
+                }
+            }
+        }
+        field("Selection") {
+            combobox(job.userOldModelPath) {
+                visibleWhen(modelSource.type.booleanBinding { it == ModelSourceType.EXAMPLE })
+                items = exampleModelManager.getAllExampleModels().unsafeRunSync().map {
+                    ModelSource.FromExample(it)
+                }.toObservable()
+                cellFormat {
+                    text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
+                }
+            }
+            vbox {
+                visibleWhen(modelSource.type.booleanBinding { it == ModelSourceType.FILE })
+                label(job.userOldModelPath, converter = object : StringConverter<ModelSource>() {
+                    override fun toString(obj: ModelSource?) =
+                        (obj as? ModelSource.FromFile)?.filePath?.toString() ?: ""
+                    override fun fromString(string: String?) = null
                 })
             }
         }

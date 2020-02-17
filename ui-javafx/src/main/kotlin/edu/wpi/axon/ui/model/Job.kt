@@ -17,7 +17,8 @@ data class JobDto(val job: Job) {
     val statusProperty = SimpleObjectProperty(job.status)
     var status by statusProperty
 
-//        val userOldModelPath = bind(Job::userOldModelPath)
+    val userOldModelPathProperty = SimpleObjectProperty(job.userOldModelPath)
+    var userOldModelPath by userOldModelPathProperty
 
     val userDatasetProperty = SimpleObjectProperty(job.userDataset)
     var userDataset by userDatasetProperty
@@ -38,7 +39,7 @@ data class JobDto(val job: Job) {
     //    val trainingMethod = bind(Job::trainingMethod)
     //    val target = bind(Job::target)
     val datasetPluginProperty = SimpleObjectProperty<Plugin>(job.datasetPlugin)
-    val datasetPlugin by datasetPluginProperty
+    var datasetPlugin by datasetPluginProperty
 
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
@@ -46,14 +47,14 @@ data class JobDto(val job: Job) {
 //    fun getDbObject(): Job = job.copy(name, status, userDataset)
 
     override fun toString(): String {
-        return "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userDatasetProperty=$userDatasetProperty, userEpochsProperty=$userEpochsProperty, trainingMethodProperty=$trainingMethodProperty, idProperty=$idProperty)"
+        return "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userEpochsProperty=$userEpochsProperty, trainingMethodProperty=$trainingMethodProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
     }
 }
 
 class JobModel : ItemViewModel<JobDto>() {
     val name = bind(JobDto::nameProperty)
     val status = bind(JobDto::statusProperty)
-    //    val userOldModelPath = bind(Job::userOldModelPath)
+    val userOldModelPath = bind(JobDto::userOldModelPathProperty)
     val userDataset = bind(JobDto::userDatasetProperty)
     //    val userOptimizer = bind(Job::userOptimizer)
 //    val userLoss = bind(Job::userLoss)

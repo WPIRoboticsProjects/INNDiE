@@ -1,6 +1,8 @@
 package edu.wpi.axon.ui.model
 
 import edu.wpi.axon.tfdata.Dataset
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.ItemViewModel
 
