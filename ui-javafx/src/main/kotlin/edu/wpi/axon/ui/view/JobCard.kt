@@ -4,12 +4,18 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.model.DatasetModel
 import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.JobModel
+import edu.wpi.axon.util.FilePath
 import javafx.geometry.Pos
 import javafx.scene.control.TabPane
+import javafx.stage.FileChooser
+import javafx.util.StringConverter
 import tornadofx.Fragment
 import tornadofx.ItemFragment
+import tornadofx.bindSelected
 import tornadofx.bindTo
 import tornadofx.booleanBinding
+import tornadofx.button
+import tornadofx.chooseFile
 import tornadofx.combobox
 import tornadofx.field
 import tornadofx.fieldset
@@ -67,21 +73,29 @@ class JobDetails : Fragment("Details") {
 class JobConfiguration : Fragment("Configuration") {
     private val job by inject<JobModel>()
 
-    override val root = squeezebox {
-        fold("Inputs", expanded = true) {
-            form {
-                add(find<DatasetPicker>().apply {
-                    itemProperty.bind(job.userDataset)
-                })
+    override val root = vbox {
+        squeezebox {
+            fold("Inputs", expanded = true) {
+                form {
+                    add(find<DatasetPicker>().apply {
+                        itemProperty.bind(job.userDataset)
+                    })
+                }
+            }
+            fold("Training") {
+                label("Nothing here")
             }
         }
-        fold("Training") {
-            label("Nothing here")
+        button("Save") {
+            setOnAction {
+                job.commit()
+            }
         }
     }
 }
 
 class DatasetPicker : ItemFragment<Dataset>() {
+    private val job by inject<JobModel>()
     private val dataset = DatasetModel().bindTo(this)
 
     override val root = fieldset("Dataset") {
@@ -94,12 +108,27 @@ class DatasetPicker : ItemFragment<Dataset>() {
             }
         }
         field("Selection") {
-            combobox<Dataset>(dataset.itemProperty) {
+            combobox<Dataset>(job.userDataset) {
                 visibleProperty().bind(dataset.type.booleanBinding { it == DatasetType.EXAMPLE })
                 items = Dataset.ExampleDataset::class.sealedSubclasses.map { it.objectInstance }.toObservable()
                 cellFormat {
                     text = it.displayName
                 }
+            }
+            vbox {
+                visibleProperty().bind(dataset.type.booleanBinding { it == DatasetType.CUSTOM })
+                button {
+                    setOnAction {
+                        val file = chooseFile("Pick", arrayOf(FileChooser.ExtensionFilter("Any", "*.*")))
+                        file.firstOrNull()?.let {
+                            job.userDataset.value = Dataset.Custom(FilePath.Local(it.path), it.name)
+                        }
+                    }
+                }
+                label(job.userDataset, converter = object: StringConverter<Dataset>() {
+                    override fun toString(obj: Dataset?) = obj?.displayName ?: ""
+                    override fun fromString(string: String) = null
+                })
             }
         }
     }

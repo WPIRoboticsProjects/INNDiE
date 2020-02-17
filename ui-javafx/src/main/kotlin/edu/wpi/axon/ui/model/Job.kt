@@ -16,7 +16,7 @@ data class JobDto(val job: Job) {
     val statusProperty = SimpleObjectProperty(job.status)
     var status by statusProperty
 
-    //    val userOldModelPath = bind(Job::userOldModelPath)
+//        val userOldModelPath = bind(Job::userOldModelPath)
 
     val userDatasetProperty = SimpleObjectProperty(job.userDataset)
     var userDataset by userDatasetProperty
@@ -37,6 +37,8 @@ data class JobDto(val job: Job) {
 
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
+
+//    fun getDbObject(): Job = job.copy(name, status, userDataset)
 }
 
 class JobModel : ItemViewModel<JobDto>() {
@@ -54,4 +56,14 @@ class JobModel : ItemViewModel<JobDto>() {
     //    val target = bind(Job::target)
 //    val datasetPlugin = bind(Job::datasetPlugin)
     val id = bind(JobDto::idProperty)
+
+//    init {
+//        userDataset.addListener { obs, old, new ->
+//            println(new)
+//        }
+//    }
+
+    override fun onCommit() {
+        println(userDataset.value)
+    }
 }
