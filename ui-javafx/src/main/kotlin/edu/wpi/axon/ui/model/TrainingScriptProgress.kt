@@ -7,21 +7,21 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.ProgressBar
 import tornadofx.ItemViewModel
 
-class TrainingScriptProgressModel: ItemViewModel<TrainingScriptProgress>() {
+class TrainingScriptProgressModel : ItemViewModel<TrainingScriptProgress>() {
     val text = bind { SimpleStringProperty(item?.let { it::class.simpleName }) }
     val progress = bind { SimpleDoubleProperty(
         item.let {
             when (it) {
                 TrainingScriptProgress.NotStarted -> 0.0
                 TrainingScriptProgress.Creating -> ProgressBar.INDETERMINATE_PROGRESS
-                 TrainingScriptProgress.Initializing -> ProgressBar.INDETERMINATE_PROGRESS
-                 is TrainingScriptProgress.InProgress -> it.percentComplete
-                 TrainingScriptProgress.Completed -> 1.0
-                 is TrainingScriptProgress.Error -> 1.0
-                 else -> 0.0
+                TrainingScriptProgress.Initializing -> ProgressBar.INDETERMINATE_PROGRESS
+                is TrainingScriptProgress.InProgress -> it.percentComplete
+                TrainingScriptProgress.Completed -> 1.0
+                is TrainingScriptProgress.Error -> 1.0
+                else -> 0.0
             }
         }
-    )}
+    ) }
     val state = bind { SimpleObjectProperty(
             item.let {
                 when (it) {

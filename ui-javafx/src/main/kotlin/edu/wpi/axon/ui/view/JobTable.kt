@@ -13,7 +13,7 @@ import tornadofx.smartResize
 import tornadofx.tableview
 import tornadofx.vgrow
 
-class JobTable: Fragment() {
+class JobTable : Fragment() {
     private val jobBoard by inject<JobBoard>()
     private val selectedJob by inject<JobModel>()
 

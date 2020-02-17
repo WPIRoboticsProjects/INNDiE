@@ -11,7 +11,7 @@ import tornadofx.onChange
 import tornadofx.progressbar
 import tornadofx.vbox
 
-class StatusCell: TableCellFragment<JobDto, TrainingScriptProgress>() {
+class StatusCell : TableCellFragment<JobDto, TrainingScriptProgress>() {
     private val status = TrainingScriptProgressModel().bindTo(this)
 
     override val root = vbox {

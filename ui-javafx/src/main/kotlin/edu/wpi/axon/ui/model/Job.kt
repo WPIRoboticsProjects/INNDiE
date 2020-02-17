@@ -16,8 +16,6 @@ data class JobDto(val job: Job) {
     val statusProperty = SimpleObjectProperty(job.status)
     var status by statusProperty
 
-
-
     //    val userOldModelPath = bind(Job::userOldModelPath)
 
     val userDatasetProperty = SimpleObjectProperty(job.userDataset)
@@ -41,7 +39,7 @@ data class JobDto(val job: Job) {
     var id by idProperty
 }
 
-class JobModel: ItemViewModel<JobDto>() {
+class JobModel : ItemViewModel<JobDto>() {
     val name = bind(JobDto::nameProperty)
     val status = bind(JobDto::statusProperty)
     //    val userOldModelPath = bind(Job::userOldModelPath)

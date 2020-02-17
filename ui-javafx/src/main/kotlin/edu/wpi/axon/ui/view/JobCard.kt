@@ -22,7 +22,7 @@ import tornadofx.tabpane
 import tornadofx.toObservable
 import tornadofx.vbox
 
-class JobCard: Fragment() {
+class JobCard : Fragment() {
     private val job by inject<JobModel>()
 
     override val root = vbox {
@@ -31,7 +31,7 @@ class JobCard: Fragment() {
     }
 }
 
-class JobCardHeader: Fragment() {
+class JobCardHeader : Fragment() {
     private val job by inject<JobModel>()
 
     override val root = hbox {
@@ -41,7 +41,7 @@ class JobCardHeader: Fragment() {
     }
 }
 
-class JobCardContent: Fragment() {
+class JobCardContent : Fragment() {
     private val job by inject<JobModel>()
 
     override val root = tabpane {
@@ -52,7 +52,7 @@ class JobCardContent: Fragment() {
     }
 }
 
-class JobDetails: Fragment("Details") {
+class JobDetails : Fragment("Details") {
     private val job by inject<JobModel>()
 
     override val root = squeezebox {
@@ -64,7 +64,7 @@ class JobDetails: Fragment("Details") {
     }
 }
 
-class JobConfiguration: Fragment("Configuration") {
+class JobConfiguration : Fragment("Configuration") {
     private val job by inject<JobModel>()
 
     override val root = squeezebox {
@@ -81,7 +81,7 @@ class JobConfiguration: Fragment("Configuration") {
     }
 }
 
-class DatasetPicker: ItemFragment<Dataset>() {
+class DatasetPicker : ItemFragment<Dataset>() {
     private val dataset = DatasetModel().bindTo(this)
 
     override val root = fieldset("Dataset") {

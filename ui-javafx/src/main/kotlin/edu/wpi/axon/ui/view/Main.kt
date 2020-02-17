@@ -9,7 +9,7 @@ import tornadofx.menubar
 import tornadofx.separator
 import tornadofx.vbox
 
-class Main: View() {
+class Main : View() {
     override val root = BorderPane()
 
     init {
@@ -19,7 +19,6 @@ class Main: View() {
                 menu("File") {
                     separator()
                     item("Exit").action {
-
                     }
                 }
                 menu("Help") {
