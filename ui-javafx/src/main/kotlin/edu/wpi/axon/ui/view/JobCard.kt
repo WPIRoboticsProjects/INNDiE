@@ -1,14 +1,19 @@
 package edu.wpi.axon.ui.view
 
+import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.ui.model.DatasetModel
 import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.datasetPluginManagerName
 import javafx.geometry.Pos
 import javafx.scene.control.TabPane
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
+import org.koin.core.qualifier.named
 import tornadofx.Fragment
 import tornadofx.ItemFragment
 import tornadofx.bindTo
@@ -22,6 +27,7 @@ import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.fold
 import tornadofx.form
+import tornadofx.group
 import tornadofx.hbox
 import tornadofx.label
 import tornadofx.required
@@ -67,6 +73,7 @@ class JobCardContent : Fragment() {
 
 class JobConfiguration : Fragment("Configuration") {
     private val job by inject<JobModel>()
+    private val datasetPluginManager by di<PluginManager>(datasetPluginManagerName)
 
     override val root = vbox {
         buttonbar {
@@ -77,7 +84,9 @@ class JobConfiguration : Fragment("Configuration") {
                 }
             }
             button("Save") {
-                enableWhen(job.dirty)
+                enableWhen(job.status.booleanBinding {
+                    it == TrainingScriptProgress.NotStarted
+                }.and(job.dirty))
                 setOnAction {
                     job.commit()
                 }
@@ -86,9 +95,20 @@ class JobConfiguration : Fragment("Configuration") {
         squeezebox {
             fold("Inputs", expanded = true) {
                 form {
-                    add(find<DatasetPicker>().apply {
-                        itemProperty.bind(job.userDataset)
-                    })
+                    fieldset("Dataset") {
+                        add(find<DatasetPicker>().apply {
+                            itemProperty.bind(job.userDataset)
+                        })
+                        field("Plugin") {
+                            combobox(job.datasetPlugin) {
+                                items =
+                                    datasetPluginManager.listPlugins().toList().toObservable()
+                                cellFormat {
+                                    text = it.name.toLowerCase().capitalize()
+                                }
+                            }
+                        }
+                    }
                 }
             }
             fold("Training", expanded = true) {
@@ -150,7 +170,7 @@ class DatasetPicker : ItemFragment<Dataset>() {
     private val job by inject<JobModel>()
     private val dataset = DatasetModel().bindTo(this)
 
-    override val root = fieldset("Dataset") {
+    override val root = vbox {
         field("Type") {
             combobox<DatasetType>(dataset.type) {
                 items = DatasetType.values().toList().toObservable()

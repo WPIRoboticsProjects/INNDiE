@@ -70,7 +70,7 @@ fun defaultFrontendModule() = module {
 
             create(
                     name = "AWS Job",
-                    status = TrainingScriptProgress.InProgress(0.5),
+                    status = TrainingScriptProgress.NotStarted,
                     userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
                     userDataset = Dataset.ExampleDataset.FashionMnist,
                     userOptimizer = Optimizer.Adam(

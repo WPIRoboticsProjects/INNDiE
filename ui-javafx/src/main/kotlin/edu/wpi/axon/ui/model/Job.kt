@@ -2,6 +2,7 @@ package edu.wpi.axon.ui.model
 
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.plugin.Plugin
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -36,11 +37,11 @@ data class JobDto(val job: Job) {
 
     //    val trainingMethod = bind(Job::trainingMethod)
     //    val target = bind(Job::target)
-    //    val datasetPlugin = bind(Job::datasetPlugin)
+    val datasetPluginProperty = SimpleObjectProperty<Plugin>(job.datasetPlugin)
+    val datasetPlugin by datasetPluginProperty
 
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
-
 
 //    fun getDbObject(): Job = job.copy(name, status, userDataset)
 
@@ -54,15 +55,15 @@ class JobModel : ItemViewModel<JobDto>() {
     val status = bind(JobDto::statusProperty)
     //    val userOldModelPath = bind(Job::userOldModelPath)
     val userDataset = bind(JobDto::userDatasetProperty)
-//    val userOptimizer = bind(Job::userOptimizer)
+    //    val userOptimizer = bind(Job::userOptimizer)
 //    val userLoss = bind(Job::userLoss)
 //    val userMetrics = bind(Job::userMetrics)
     val userEpochs = bind(JobDto::userEpochsProperty)
-//    val userNewModel = bind(Job::userNewModel)
+    //    val userNewModel = bind(Job::userNewModel)
 //    val generateDebugComments = bind(Job::generateDebugComments)
     val trainingMethod = bind(JobDto::trainingMethodProperty)
     //    val target = bind(Job::target)
-//    val datasetPlugin = bind(Job::datasetPlugin)
+    val datasetPlugin = bind(JobDto::datasetPluginProperty)
     val id = bind(JobDto::idProperty)
 
 //    init {

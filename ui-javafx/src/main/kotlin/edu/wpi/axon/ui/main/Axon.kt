@@ -6,6 +6,7 @@ import edu.wpi.axon.ui.view.Main
 import kotlin.reflect.KClass
 import org.koin.core.KoinComponent
 import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
 import tornadofx.App
 import tornadofx.DIContainer
 import tornadofx.FX
@@ -22,9 +23,11 @@ class Axon : App(Main::class, AxonStylesheet::class) {
         }
 
         FX.dicontainer = object : DIContainer, KoinComponent {
-            override fun <T : Any> getInstance(type: KClass<T>): T {
-                return getKoin().get(clazz = type, qualifier = null, parameters = null)
-            }
+            override fun <T : Any> getInstance(type: KClass<T>): T =
+                getKoin().get(clazz = type, qualifier = null, parameters = null)
+
+            override fun <T : Any> getInstance(type: KClass<T>, name: String): T =
+                getKoin().get(clazz = type, qualifier = named(name), parameters = null)
         }
 
         importStylesheet("/material.css")
