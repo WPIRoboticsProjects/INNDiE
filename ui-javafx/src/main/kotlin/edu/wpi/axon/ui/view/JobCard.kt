@@ -17,6 +17,7 @@ import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.chooseFile
 import tornadofx.combobox
+import tornadofx.enableWhen
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.fold
@@ -28,6 +29,7 @@ import tornadofx.squeezebox
 import tornadofx.tabpane
 import tornadofx.toObservable
 import tornadofx.vbox
+import tornadofx.visibleWhen
 
 class JobCard : Fragment() {
     private val job by inject<JobModel>()
@@ -65,12 +67,14 @@ class JobConfiguration : Fragment("Configuration") {
 
     override val root = vbox {
         buttonbar {
-            button("Cancel") {
+            button("Revert") {
+                enableWhen(job.dirty)
                 setOnAction {
                     job.rollback()
                 }
             }
             button("Save") {
+                enableWhen(job.dirty)
                 setOnAction {
                     job.commit()
                 }
@@ -136,14 +140,14 @@ class DatasetPicker : ItemFragment<Dataset>() {
         }
         field("Selection") {
             combobox<Dataset>(job.userDataset) {
-                visibleProperty().bind(dataset.type.booleanBinding { it == DatasetType.EXAMPLE })
+                visibleWhen(dataset.type.booleanBinding { it == DatasetType.EXAMPLE })
                 items = Dataset.ExampleDataset::class.sealedSubclasses.map { it.objectInstance }.toObservable()
                 cellFormat {
                     text = it.displayName
                 }
             }
             vbox {
-                visibleProperty().bind(dataset.type.booleanBinding { it == DatasetType.CUSTOM })
+                visibleWhen(dataset.type.booleanBinding { it == DatasetType.CUSTOM })
                 button {
                     setOnAction {
                         val file = chooseFile("Pick", arrayOf(FileChooser.ExtensionFilter("Any", "*.*")))
