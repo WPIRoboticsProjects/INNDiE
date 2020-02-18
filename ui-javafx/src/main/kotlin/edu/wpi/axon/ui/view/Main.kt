@@ -27,8 +27,11 @@ class Main : View() {
                     }
                 }
             }
-            center = vbox {
+            left = vbox {
                 add<JobTable>()
+            }
+            center = vbox {
+                add<JobCard>()
             }
         }
     }
