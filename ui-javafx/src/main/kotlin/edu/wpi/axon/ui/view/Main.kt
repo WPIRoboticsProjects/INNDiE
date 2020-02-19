@@ -28,7 +28,7 @@ class Main : View() {
                 }
             }
             left = vbox {
-                add<JobTable>()
+                add<JobList>()
             }
             center = vbox {
                 add<JobCard>()
