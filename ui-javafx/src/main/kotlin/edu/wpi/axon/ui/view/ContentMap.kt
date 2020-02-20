@@ -25,7 +25,7 @@ class ContentMap<T : Any>: Pane() {
     init {
         valueProperty.onChange {
             it?.let {
-                children.setAll(map[it]!!)
+                children.setAll(map[it])
             }
         }
     }

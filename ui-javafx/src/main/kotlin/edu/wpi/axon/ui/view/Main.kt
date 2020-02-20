@@ -1,9 +1,12 @@
 package edu.wpi.axon.ui.view
 
+import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.ui.model.JobModel
 import javafx.scene.layout.BorderPane
 import tornadofx.View
 import tornadofx.action
 import tornadofx.item
+import tornadofx.label
 import tornadofx.menu
 import tornadofx.menubar
 import tornadofx.separator
@@ -11,6 +14,8 @@ import tornadofx.vbox
 
 class Main : View() {
     override val root = BorderPane()
+
+    private val job by inject<JobModel>()
 
     init {
         with(root) {
@@ -30,8 +35,13 @@ class Main : View() {
             left = vbox {
                 add<JobList>()
             }
-            center = vbox {
-                add<JobEditor>()
+            center = contentMap(job.status) {
+                item(TrainingScriptProgress.NotStarted) {
+                    add<JobEditor>()
+                }
+                item(TrainingScriptProgress.Completed) {
+                    label("Done")
+                }
             }
         }
     }
