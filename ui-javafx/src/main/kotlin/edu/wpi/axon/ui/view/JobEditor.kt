@@ -12,8 +12,10 @@ import edu.wpi.axon.ui.model.ModelSourceModel
 import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
+import javafx.scene.control.TextFormatter
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
+import tornadofx.DefaultErrorHandler.Companion.filter
 import tornadofx.Fragment
 import tornadofx.ItemFragment
 import tornadofx.bindTo
@@ -27,15 +29,16 @@ import tornadofx.combobox
 import tornadofx.enableWhen
 import tornadofx.field
 import tornadofx.fieldset
+import tornadofx.filterInput
 import tornadofx.form
 import tornadofx.hbox
+import tornadofx.isInt
 import tornadofx.label
 import tornadofx.separator
 import tornadofx.spinner
 import tornadofx.toObservable
 import tornadofx.validator
 import tornadofx.vbox
-import tornadofx.visibleWhen
 
 class JobEditor : Fragment() {
     private val job by inject<JobModel>()
@@ -64,59 +67,42 @@ class JobEditor : Fragment() {
 }
 
 class JobConfiguration : Fragment("Configuration") {
-    override val root = hbox(20) {
-        add<JobConfigurationInputs>()
-        add<JobConfigurationTraining>()
-    }
-}
-
-class JobConfigurationInputs : Fragment() {
     private val job by inject<JobModel>()
     private val datasetPluginManager by di<PluginManager>(datasetPluginManagerName)
 
     override val root = form {
-        fieldset("Dataset") {
-            add<DatasetPicker>()
-            field("Plugin") {
-                combobox(job.datasetPlugin) {
-                    items = datasetPluginManager.listPlugins().toList().toObservable()
-                    cellFormat {
-                        text = it.name.toLowerCase().capitalize()
-                    }
-                }
-            }
-        }
-        separator()
-        fieldset("Model") {
-            add<ModelPicker>()
-        }
-    }
-}
-
-class JobConfigurationTraining : Fragment() {
-    private val job by inject<JobModel>()
-
-    override val root = form {
-        fieldset {
-            field("Epochs") {
-                spinner(
-                    1,
-                    amountToStepBy = 1,
-                    editable = true,
-                    property = job.userEpochs
-                ) {
-                    valueFactory.converter = object : StringConverter<Number>() {
-                        override fun toString(obj: Number?) = obj?.toString() ?: ""
-
-                        override fun fromString(string: String?) = try {
-                            string?.toInt() ?: 1
-                        } catch (ex: NumberFormatException) {
-                            1
+        hbox(20) {
+            vbox(20) {
+                fieldset("Dataset") {
+                    add<DatasetPicker>()
+                    field("Plugin") {
+                        combobox(job.datasetPlugin) {
+                            items = datasetPluginManager.listPlugins().toList().toObservable()
+                            cellFormat {
+                                text = it.name.toLowerCase().capitalize()
+                            }
                         }
                     }
+                }
+                separator()
+                fieldset("Model") {
+                    add<ModelPicker>()
+                }
+            }
+            vbox(20) {
+                fieldset {
+                    field("Epochs") {
+                        spinner(1, amountToStepBy = 1, editable = true, property = job.userEpochs) {
+                            editor.apply {
+                                filterInput {
+                                    it.controlNewText.isInt()
+                                }
+                            }
 
-                    validator {
-                        if (it == null) error("The epochs field is required.") else null
+                            validator {
+                                if (it == null) error("The epochs field is required.") else null
+                            }
+                        }
                     }
                 }
             }
