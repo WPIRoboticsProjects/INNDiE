@@ -6,8 +6,8 @@ import tornadofx.px
 class AxonStylesheet : Stylesheet() {
     init {
         root {
-            prefHeight = 600.px
-            prefWidth = 800.px
+            prefHeight = 768.px
+            prefWidth = 1024.px
         }
     }
 }

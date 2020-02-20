@@ -31,7 +31,7 @@ class Main : View() {
                 add<JobList>()
             }
             center = vbox {
-                add<JobCard>()
+                add<JobEditor>()
             }
         }
     }

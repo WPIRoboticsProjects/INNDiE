@@ -13,17 +13,16 @@ import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
 import java.lang.NumberFormatException
-import javafx.geometry.Pos
-import javafx.scene.control.TabPane
-import javafx.scene.control.TitledPane
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
 import tornadofx.Fragment
 import tornadofx.ItemFragment
 import tornadofx.bindTo
 import tornadofx.booleanBinding
+import tornadofx.borderpane
 import tornadofx.button
 import tornadofx.buttonbar
+import tornadofx.center
 import tornadofx.chooseFile
 import tornadofx.combobox
 import tornadofx.enableWhen
@@ -33,51 +32,24 @@ import tornadofx.fold
 import tornadofx.form
 import tornadofx.hbox
 import tornadofx.label
+import tornadofx.pane
+import tornadofx.separator
 import tornadofx.spinner
 import tornadofx.squeezebox
-import tornadofx.tabpane
+import tornadofx.textfield
 import tornadofx.toObservable
 import tornadofx.validator
 import tornadofx.vbox
 import tornadofx.visibleWhen
 
-class JobCard : Fragment() {
+class JobEditor : Fragment() {
     private val job by inject<JobModel>()
 
-    override val root = vbox {
-        add<JobCardHeader>()
-        add<JobCardContent>()
-    }
-}
-
-class JobCardHeader : Fragment() {
-    private val job by inject<JobModel>()
-
-    override val root = hbox {
-        label(job.name) {
-            alignment = Pos.CENTER_LEFT
+    override val root = borderpane {
+        center {
+            add<JobConfiguration>()
         }
-    }
-}
-
-class JobCardContent : Fragment() {
-    private val job by inject<JobModel>()
-
-    override val root = tabpane {
-        tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
-
-        tab<JobConfiguration>()
-        tab<JobTraining>()
-        tab<JobTesting>()
-    }
-}
-
-class JobConfiguration : Fragment("Configuration") {
-    private val job by inject<JobModel>()
-    private val datasetPluginManager by di<PluginManager>(datasetPluginManagerName)
-
-    override val root = vbox {
-        buttonbar {
+        bottom = buttonbar {
             button("Revert") {
                 enableWhen(job.dirty)
                 setOnAction {
@@ -93,36 +65,46 @@ class JobConfiguration : Fragment("Configuration") {
                 }
             }
         }
-        squeezebox {
-            fold("Inputs", expanded = true) { makeInputsFold() }
-            fold("Training", expanded = true) { makeTrainingFold() }
-        }
     }
+}
 
-    private fun TitledPane.makeInputsFold() = form {
+class JobConfiguration : Fragment("Configuration") {
+    override val root = hbox(20) {
+        add<JobConfigurationInputs>()
+    }
+}
+
+class JobConfigurationInputs : Fragment() {
+    private val job by inject<JobModel>()
+    private val datasetPluginManager by di<PluginManager>(datasetPluginManagerName)
+
+    override val root = form {
         fieldset("Dataset") {
             add(find<DatasetPicker>().apply {
                 itemProperty.bind(job.userDataset)
             })
             field("Plugin") {
                 combobox(job.datasetPlugin) {
-                    items =
-                        datasetPluginManager.listPlugins().toList().toObservable()
+                    items = datasetPluginManager.listPlugins().toList().toObservable()
                     cellFormat {
                         text = it.name.toLowerCase().capitalize()
                     }
                 }
             }
         }
-
+        separator()
         fieldset("Model") {
             add(find<ModelPicker>().apply {
                 itemProperty.bind(job.userOldModelPath)
             })
         }
     }
+}
 
-    private fun TitledPane.makeTrainingFold() = form {
+class JobConfigurationTraining : Fragment() {
+    private val job by inject<JobModel>()
+
+    override val root = form {
         fieldset {
             field("Epochs") {
                 spinner(
@@ -151,8 +133,6 @@ class JobConfiguration : Fragment("Configuration") {
 }
 
 class JobTraining : Fragment("Training") {
-    private val job by inject<JobModel>()
-
     override val root = vbox {
         buttonbar {
             button("Cancel") {
@@ -164,8 +144,6 @@ class JobTraining : Fragment("Training") {
 }
 
 class JobTesting : Fragment("Testing") {
-    private val job by inject<JobModel>()
-
     override val root = vbox {
         label("Nothing yet!")
     }

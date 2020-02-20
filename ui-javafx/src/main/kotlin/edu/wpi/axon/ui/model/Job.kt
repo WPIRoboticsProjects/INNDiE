@@ -3,6 +3,7 @@ package edu.wpi.axon.ui.model
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.training.ModelDeploymentTarget
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -36,15 +37,14 @@ data class JobDto(val job: Job) {
     val trainingMethodProperty = SimpleObjectProperty<JobTrainingMethod>(job.trainingMethod)
     var trainingMethod by trainingMethodProperty
 
-    //    val trainingMethod = bind(Job::trainingMethod)
-    //    val target = bind(Job::target)
+    val targetProperty = SimpleObjectProperty<ModelDeploymentTarget>(job.target)
+    var target by targetProperty
+
     val datasetPluginProperty = SimpleObjectProperty<Plugin>(job.datasetPlugin)
     var datasetPlugin by datasetPluginProperty
 
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
-
-//    fun getDbObject(): Job = job.copy(name, status, userDataset)
 
     override fun toString(): String {
         return "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userEpochsProperty=$userEpochsProperty, trainingMethodProperty=$trainingMethodProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
