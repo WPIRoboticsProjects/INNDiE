@@ -1,5 +1,7 @@
 package edu.wpi.axon.ui.view
 
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobDto
@@ -9,7 +11,10 @@ import tornadofx.ListCellFragment
 import tornadofx.View
 import tornadofx.bindSelected
 import tornadofx.bindTo
+import tornadofx.button
+import tornadofx.buttonbar
 import tornadofx.doubleBinding
+import tornadofx.enableWhen
 import tornadofx.label
 import tornadofx.listview
 import tornadofx.onChange
@@ -20,10 +25,25 @@ class JobList : View() {
     private val jobBoard by inject<JobBoard>()
     private val job by inject<JobModel>()
 
-    override val root = listview(jobBoard.jobs) {
-        bindSelected(job)
+    override val root = vbox {
+        listview(jobBoard.jobs) {
+            bindSelected(job)
 
-        cellFragment(JobListFragment::class)
+            cellFragment(JobListFragment::class)
+        }
+        buttonbar {
+            button(graphic = FontAwesomeIconView(FontAwesomeIcon.MINUS)) {
+                enableWhen(job.empty.not())
+                setOnAction {
+                    jobBoard.jobs.remove(job.item)
+                }
+            }
+            button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
+                setOnAction {
+
+                }
+            }
+        }
     }
 }
 
