@@ -20,8 +20,7 @@ class CoralModel(private val coralToSet: Property<ModelDeploymentTarget.Coral>) 
     ItemViewModel<CoralDto>() {
     val representativeDatasetPercentage = bind(CoralDto::representativeDatasetPercentage)
 
-    override fun onCommit(commits: List<Commit>) {
-        super.onCommit(commits)
+    override fun onCommit() {
         coralToSet.value = coralToSet.value.copy(
             representativeDatasetPercentage = representativeDatasetPercentage.value
         )

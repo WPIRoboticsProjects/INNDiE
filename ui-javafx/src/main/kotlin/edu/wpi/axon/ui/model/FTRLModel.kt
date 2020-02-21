@@ -34,8 +34,7 @@ class FTRLModel(private val optToSet: Property<Optimizer.FTRL>) : ItemViewModel<
     val l2RegularizationStrength = bind(FTRLDto::l2RegularizationStrength)
     val l2ShrinkageRegularizationStrength = bind(FTRLDto::l2ShrinkageRegularizationStrength)
 
-    override fun onCommit(commits: List<Commit>) {
-        super.onCommit(commits)
+    override fun onCommit() {
         optToSet.value = optToSet.value.copy(
             learningRate = learningRate.value,
             learningRatePower = learningRatePower.value,
