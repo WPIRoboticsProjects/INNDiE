@@ -112,6 +112,23 @@ class JobConfiguration : Fragment("Configuration") {
                 fieldset("Model") {
                     add<ModelPicker>()
                 }
+            }
+            vbox(20) {
+                fieldset {
+                    field("Epochs") {
+                        spinner(1, amountToStepBy = 1, editable = true, property = job.userEpochs) {
+                            editor.apply {
+                                filterInput {
+                                    it.controlNewText.isInt()
+                                }
+                            }
+
+                            validator {
+                                if (it == null) error("The epochs field is required.") else null
+                            }
+                        }
+                    }
+                }
                 separator()
                 fieldset("Optimizer") {
                     field("Type") {
@@ -126,23 +143,6 @@ class JobConfiguration : Fragment("Configuration") {
                         button {
                             action {
                                 find<OptimizerFragment>().openModal(modality = Modality.WINDOW_MODAL)
-                            }
-                        }
-                    }
-                }
-            }
-            vbox(20) {
-                fieldset {
-                    field("Epochs") {
-                        spinner(1, amountToStepBy = 1, editable = true, property = job.userEpochs) {
-                            editor.apply {
-                                filterInput {
-                                    it.controlNewText.isInt()
-                                }
-                            }
-
-                            validator {
-                                if (it == null) error("The epochs field is required.") else null
                             }
                         }
                     }
