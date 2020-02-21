@@ -7,8 +7,11 @@ import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.model.AdamDto
 import edu.wpi.axon.ui.model.AdamModel
+import edu.wpi.axon.ui.model.CoralDto
+import edu.wpi.axon.ui.model.CoralModel
 import edu.wpi.axon.ui.model.DatasetModel
 import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.FTRLDto
@@ -29,7 +32,6 @@ import tornadofx.Fieldset
 import tornadofx.Fragment
 import tornadofx.ItemFragment
 import tornadofx.ItemViewModel
-import tornadofx.ValidationContext
 import tornadofx.ValidationMessage
 import tornadofx.ValidationSeverity
 import tornadofx.action
@@ -174,6 +176,30 @@ class JobConfiguration : Fragment("Configuration") {
                         button {
                             action {
                                 find<LossFragment>().openModal(modality = Modality.WINDOW_MODAL)
+                            }
+                        }
+                    }
+                }
+            }
+            vbox(20) {
+                fieldset("Target") {
+                    field("Type") {
+                        combobox(job.targetType) {
+                            items = ModelDeploymentTarget::class.sealedSubclasses.toObservable()
+                            cellFormat {
+                                text = it.simpleName ?: "UNKNOWN"
+                            }
+                            valueProperty().addListener { _, _, newValue ->
+                                if (newValue != null) {
+                                    job.target.value = newValue.objectInstanceOrEmptyCtor()
+                                }
+                            }
+                        }
+                    }
+                    field("Edit") {
+                        button {
+                            action {
+                                find<TargetFragment>().openModal(modality = Modality.WINDOW_MODAL)
                             }
                         }
                     }
@@ -361,7 +387,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.learningRatePower) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    doubleLessThanOrEqualToZero(it)
+                    isDoubleLessThanOrEqualToZero(it)
                 }
             }
         }
@@ -369,7 +395,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.initialAccumulatorValue) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    doubleGreaterThanOrEqualToZero(it)
+                    isDoubleGreaterThanOrEqualToZero(it)
                 }
             }
         }
@@ -377,7 +403,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l1RegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    doubleGreaterThanOrEqualToZero(it)
+                    isDoubleGreaterThanOrEqualToZero(it)
                 }
             }
         }
@@ -385,7 +411,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l2RegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    doubleGreaterThanOrEqualToZero(it)
+                    isDoubleGreaterThanOrEqualToZero(it)
                 }
             }
         }
@@ -393,7 +419,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l2ShrinkageRegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    doubleGreaterThanOrEqualToZero(it)
+                    isDoubleGreaterThanOrEqualToZero(it)
                 }
             }
         }
@@ -401,28 +427,6 @@ class OptimizerFragment : Fragment() {
         return ftrlModel
     }
 }
-
-fun doubleLessThanOrEqualToZero(value: String?) =
-    if (value == null) {
-        ValidationMessage("Must not be null.", ValidationSeverity.Error)
-    } else {
-        if (value.toDouble() <= 0.0) {
-            null
-        } else {
-            ValidationMessage("Must be less than or equal to zero.", ValidationSeverity.Error)
-        }
-    }
-
-fun doubleGreaterThanOrEqualToZero(value: String?) =
-    if (value == null) {
-        ValidationMessage("Must not be null.", ValidationSeverity.Error)
-    } else {
-        if (value.toDouble() >= 0.0) {
-            null
-        } else {
-            ValidationMessage("Must be greater than or equal to zero.", ValidationSeverity.Error)
-        }
-    }
 
 class LossFragment : Fragment() {
     private val job by inject<JobModel>()
@@ -459,9 +463,96 @@ class LossFragment : Fragment() {
     }
 }
 
+class TargetFragment : Fragment() {
+    private val job by inject<JobModel>()
+    lateinit var model: ItemViewModel<*>
+
+    override val root = form {
+        fieldset("Edit Loss") {
+            println("Loaded with target type: ${job.targetType.value}")
+            println("Loaded with target: ${job.target.value}")
+            model = when (val target = job.target.value) {
+                is ModelDeploymentTarget.Desktop -> {
+                    field {
+                        label("Desktop has no data.")
+                    }
+                    object : ItemViewModel<Unit>() {}
+                }
+
+                is ModelDeploymentTarget.Coral -> createCoralFields(target)
+            }
+        }
+
+        button("Save") {
+            action {
+                model.commit {
+                    close()
+                }
+            }
+        }
+    }
+
+    private fun Fieldset.createCoralFields(target: ModelDeploymentTarget.Coral): ItemViewModel<*> {
+        @Suppress("UNCHECKED_CAST")
+        val coralModel = CoralModel(job.target as Property<ModelDeploymentTarget.Coral>).apply {
+            item = CoralDto(target)
+        }
+
+        field("Representative Dataset Percentage") {
+            textfield(
+                coralModel.representativeDatasetPercentage,
+                converter = object : StringConverter<Double>() {
+                    override fun toString(obj: Double?) = obj?.let { it * 100 }?.toString()
+                    override fun fromString(string: String?) =
+                        string?.toDoubleOrNull()?.let { it / 100 }
+                }) {
+                filterInput { it.controlNewText.isDouble() }
+                validator {
+                    isDoubleInRange(it, 0.0..100.0)
+                }
+            }
+        }
+
+        return coralModel
+    }
+}
+
 @JvmName("textfieldDouble")
 fun EventTarget.textfield(property: ObservableValue<Double>, op: TextField.() -> Unit = {}) =
     textfield().apply {
         bind(property)
         op(this)
+    }
+
+fun isDoubleLessThanOrEqualToZero(value: String?) =
+    if (value == null) {
+        ValidationMessage("Must not be null.", ValidationSeverity.Error)
+    } else {
+        if (value.toDouble() <= 0.0) {
+            null
+        } else {
+            ValidationMessage("Must be less than or equal to zero.", ValidationSeverity.Error)
+        }
+    }
+
+fun isDoubleGreaterThanOrEqualToZero(value: String?) =
+    if (value == null) {
+        ValidationMessage("Must not be null.", ValidationSeverity.Error)
+    } else {
+        if (value.toDouble() >= 0.0) {
+            null
+        } else {
+            ValidationMessage("Must be greater than or equal to zero.", ValidationSeverity.Error)
+        }
+    }
+
+fun isDoubleInRange(value: String?, range: ClosedRange<Double>) =
+    if (value == null) {
+        ValidationMessage("Must not be null.", ValidationSeverity.Error)
+    } else {
+        if (value.toDouble() in range) {
+            null
+        } else {
+            ValidationMessage("Must be in the range $range.", ValidationSeverity.Error)
+        }
     }

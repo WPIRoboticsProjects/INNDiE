@@ -57,6 +57,9 @@ data class JobDto(val job: Job) {
     val targetProperty = SimpleObjectProperty<ModelDeploymentTarget>(job.target)
     var target by targetProperty
 
+    val targetTypeProperty = SimpleObjectProperty(job.target::class)
+    var targetType by targetTypeProperty
+
     val datasetPluginProperty = SimpleObjectProperty<Plugin>(job.datasetPlugin)
     var datasetPlugin by datasetPluginProperty
 
@@ -83,6 +86,7 @@ class JobModel : ItemViewModel<JobDto>() {
     val generateDebugComments = bind(JobDto::generateDebugCommentsProperty)
     val trainingMethod = bind(JobDto::trainingMethodProperty)
     val target = bind(JobDto::targetProperty)
+    val targetType = bind(JobDto::targetTypeProperty)
     val datasetPlugin = bind(JobDto::datasetPluginProperty)
     val id = bind(JobDto::idProperty)
 
