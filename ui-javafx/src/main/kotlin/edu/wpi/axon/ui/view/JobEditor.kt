@@ -16,21 +16,16 @@ import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
 import javafx.beans.property.Property
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
-import javafx.scene.Parent
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
 import javafx.stage.Modality
 import javafx.util.StringConverter
-import tornadofx.Commit
 import tornadofx.Fieldset
 import tornadofx.Fragment
 import tornadofx.ItemFragment
 import tornadofx.ItemViewModel
-import tornadofx.Scope
 import tornadofx.action
 import tornadofx.bind
 import tornadofx.bindTo
@@ -46,23 +41,17 @@ import tornadofx.enableWhen
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.filterInput
-import tornadofx.find
 import tornadofx.form
 import tornadofx.hbox
+import tornadofx.isDouble
 import tornadofx.isInt
 import tornadofx.label
-import tornadofx.pane
 import tornadofx.separator
 import tornadofx.spinner
+import tornadofx.textfield
 import tornadofx.toObservable
 import tornadofx.validator
 import tornadofx.vbox
-import tornadofx.getValue
-import tornadofx.integerBinding
-import tornadofx.isDouble
-import tornadofx.setValue
-import tornadofx.textfield
-import tornadofx.visibleWhen
 
 class JobEditor : Fragment() {
     private val job by inject<JobModel>()
