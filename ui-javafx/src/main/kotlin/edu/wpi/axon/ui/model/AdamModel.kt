@@ -8,6 +8,7 @@ import tornadofx.Commit
 import tornadofx.ItemViewModel
 import tornadofx.getValue
 import tornadofx.setValue
+import kotlin.reflect.KClass
 
 class AdamDto(adam: Optimizer.Adam) {
     private val learningRateProperty = SimpleDoubleProperty(adam.learningRate)

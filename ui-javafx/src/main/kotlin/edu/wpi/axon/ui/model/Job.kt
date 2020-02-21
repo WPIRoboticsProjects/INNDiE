@@ -36,6 +36,9 @@ data class JobDto(val job: Job) {
     val userLossProperty = SimpleObjectProperty(job.userLoss)
     var userLoss by userLossProperty
 
+    val lossTypeProperty = SimpleObjectProperty(job.userLoss::class)
+    var lossType by lossTypeProperty
+
     val userMetricsProperty = SimpleSetProperty(job.userMetrics.asObservable())
     var userMetrics by userMetricsProperty
 
@@ -73,6 +76,7 @@ class JobModel : ItemViewModel<JobDto>() {
     val userOptimizer = bind(JobDto::userOptimizerProperty)
     val optimizerType = bind(JobDto::optimizerTypeProperty)
     val userLoss = bind(JobDto::userLossProperty)
+    val lossType = bind(JobDto::lossTypeProperty)
     val userMetrics = bind(JobDto::userMetricsProperty)
     val userEpochs = bind(JobDto::userEpochsProperty)
     val userNewModel = bind(JobDto::userNewModelProperty)

@@ -5,11 +5,14 @@ import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.ui.model.AdamDto
 import edu.wpi.axon.ui.model.AdamModel
 import edu.wpi.axon.ui.model.DatasetModel
 import edu.wpi.axon.ui.model.DatasetType
+import edu.wpi.axon.ui.model.FTRLDto
+import edu.wpi.axon.ui.model.FTRLModel
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.model.ModelSourceModel
 import edu.wpi.axon.ui.model.ModelSourceType
@@ -26,6 +29,9 @@ import tornadofx.Fieldset
 import tornadofx.Fragment
 import tornadofx.ItemFragment
 import tornadofx.ItemViewModel
+import tornadofx.ValidationContext
+import tornadofx.ValidationMessage
+import tornadofx.ValidationSeverity
 import tornadofx.action
 import tornadofx.bind
 import tornadofx.bindTo
@@ -52,6 +58,7 @@ import tornadofx.textfield
 import tornadofx.toObservable
 import tornadofx.validator
 import tornadofx.vbox
+import kotlin.reflect.KClass
 
 class JobEditor : Fragment() {
     private val job by inject<JobModel>()
@@ -78,6 +85,9 @@ class JobEditor : Fragment() {
         }
     }
 }
+
+fun <T : Any> KClass<T>.objectInstanceOrEmptyCtor(): T =
+    objectInstance ?: constructors.first { it.parameters.isEmpty() }.call()
 
 class JobConfiguration : Fragment("Configuration") {
     private val job by inject<JobModel>()
@@ -126,12 +136,44 @@ class JobConfiguration : Fragment("Configuration") {
                             cellFormat {
                                 text = it.simpleName ?: "UNKNOWN"
                             }
+                            valueProperty().addListener { _, _, newValue ->
+                                if (newValue != null) {
+                                    // Make an empty optimizer of the new type for the
+                                    // OptimizerFragment to edit
+                                    job.userOptimizer.value = newValue.objectInstanceOrEmptyCtor()
+                                }
+                            }
                         }
                     }
                     field("Edit") {
                         button {
                             action {
                                 find<OptimizerFragment>().openModal(modality = Modality.WINDOW_MODAL)
+                            }
+                        }
+                    }
+                }
+                separator()
+                fieldset("Loss") {
+                    field("Type") {
+                        combobox(job.lossType) {
+                            items = Loss::class.sealedSubclasses.toObservable()
+                            cellFormat {
+                                text = it.simpleName ?: "UNKNOWN"
+                            }
+                            valueProperty().addListener { _, _, newValue ->
+                                if (newValue != null) {
+                                    // Make an empty optimizer of the new type for the
+                                    // LossFragment to edit
+                                    job.userLoss.value = newValue.objectInstanceOrEmptyCtor()
+                                }
+                            }
+                        }
+                    }
+                    field("Edit") {
+                        button {
+                            action {
+                                find<LossFragment>().openModal(modality = Modality.WINDOW_MODAL)
                             }
                         }
                     }
@@ -251,11 +293,14 @@ class OptimizerFragment : Fragment() {
 
     override val root = form {
         fieldset("Edit Optimizer") {
+            println("Loaded with opt type: ${job.optimizerType.value}")
             println("Loaded with opt: ${job.userOptimizer.value}")
-            when (val opt = job.userOptimizer.value) {
-                is Optimizer.Adam -> createAdamFields(opt)
 
-                else -> Unit
+            require(job.optimizerType.value == job.userOptimizer.value::class)
+
+            model = when (val opt = job.userOptimizer.value) {
+                is Optimizer.Adam -> createAdamFields(opt)
+                is Optimizer.FTRL -> createFTRLFields(opt)
             }
         }
 
@@ -268,12 +313,12 @@ class OptimizerFragment : Fragment() {
         }
     }
 
-    private fun Fieldset.createAdamFields(opt: Optimizer.Adam) {
+    private fun Fieldset.createAdamFields(opt: Optimizer.Adam): ItemViewModel<*> {
         @Suppress("UNCHECKED_CAST")
         val adamModel = AdamModel(job.userOptimizer as Property<Optimizer.Adam>).apply {
             item = AdamDto(opt)
         }
-        model = adamModel
+
         field("Learning Rate") {
             textfield(adamModel.learningRate) {
                 filterInput { it.controlNewText.isDouble() }
@@ -296,6 +341,120 @@ class OptimizerFragment : Fragment() {
         }
         field("AMS Grad") {
             checkbox(property = adamModel.amsGrad)
+        }
+
+        return adamModel
+    }
+
+    private fun Fieldset.createFTRLFields(opt: Optimizer.FTRL): ItemViewModel<*> {
+        @Suppress("UNCHECKED_CAST")
+        val ftrlModel = FTRLModel(job.userOptimizer as Property<Optimizer.FTRL>).apply {
+            item = FTRLDto(opt)
+        }
+
+        field("Learning Rate") {
+            textfield(ftrlModel.learningRate) {
+                filterInput { it.controlNewText.isDouble() }
+            }
+        }
+        field("Learning Rate Power") {
+            textfield(ftrlModel.learningRatePower) {
+                filterInput { it.controlNewText.isDouble() }
+                validator {
+                    doubleLessThanOrEqualToZero(it)
+                }
+            }
+        }
+        field("Initial Accumulator Value") {
+            textfield(ftrlModel.initialAccumulatorValue) {
+                filterInput { it.controlNewText.isDouble() }
+                validator {
+                    doubleGreaterThanOrEqualToZero(it)
+                }
+            }
+        }
+        field("L1 Regularization Strength") {
+            textfield(ftrlModel.l1RegularizationStrength) {
+                filterInput { it.controlNewText.isDouble() }
+                validator {
+                    doubleGreaterThanOrEqualToZero(it)
+                }
+            }
+        }
+        field("L2 Regularization Strength") {
+            textfield(ftrlModel.l2RegularizationStrength) {
+                filterInput { it.controlNewText.isDouble() }
+                validator {
+                    doubleGreaterThanOrEqualToZero(it)
+                }
+            }
+        }
+        field("L2 Shrinkage Regularization Strength") {
+            textfield(ftrlModel.l2ShrinkageRegularizationStrength) {
+                filterInput { it.controlNewText.isDouble() }
+                validator {
+                    doubleGreaterThanOrEqualToZero(it)
+                }
+            }
+        }
+
+        return ftrlModel
+    }
+}
+
+fun doubleLessThanOrEqualToZero(value: String?) =
+    if (value == null) {
+        ValidationMessage("Must not be null.", ValidationSeverity.Error)
+    } else {
+        if (value.toDouble() <= 0.0) {
+            null
+        } else {
+            ValidationMessage("Must be less than or equal to zero.", ValidationSeverity.Error)
+        }
+    }
+
+fun doubleGreaterThanOrEqualToZero(value: String?) =
+    if (value == null) {
+        ValidationMessage("Must not be null.", ValidationSeverity.Error)
+    } else {
+        if (value.toDouble() >= 0.0) {
+            null
+        } else {
+            ValidationMessage("Must be greater than or equal to zero.", ValidationSeverity.Error)
+        }
+    }
+
+class LossFragment : Fragment() {
+    private val job by inject<JobModel>()
+    lateinit var model: ItemViewModel<*>
+
+    override val root = form {
+        fieldset("Edit Loss") {
+            println("Loaded with loss type: ${job.lossType.value}")
+            println("Loaded with loss: ${job.userLoss.value}")
+            model = when (val loss = job.userLoss.value) {
+                is Loss.SparseCategoricalCrossentropy -> {
+                    field {
+                        label("SparseCategoricalCrossentropy has no data.")
+                    }
+                    object : ItemViewModel<Unit>() {}
+                }
+
+                is Loss.MeanSquaredError -> {
+                    field {
+                        label("MeanSquaredError has no data.")
+                    }
+                    object : ItemViewModel<Unit>() {}
+                }
+            }
+        }
+
+        button("Save") {
+            action {
+                model.commit {
+                    close()
+                }
+            }
         }
     }
 }

@@ -6,5 +6,6 @@ class DefaultLossToCode : LossToCode {
 
     override fun makeNewLoss(loss: Loss) = when (loss) {
         is Loss.SparseCategoricalCrossentropy -> "tf.keras.losses.sparse_categorical_crossentropy"
+        is Loss.MeanSquaredError -> "tf.keras.losses.mean_squared_error"
     }
 }
