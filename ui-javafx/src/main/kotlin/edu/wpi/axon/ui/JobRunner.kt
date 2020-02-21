@@ -110,6 +110,7 @@ internal class JobRunner : KoinComponent {
         val config = createTrainingScriptConfiguration(job, modelPath, script, workingDir)
 
         // Create the correct TrainingScriptRunner based on whether the Job needs to use AWS
+        // TODO: Let the user start a Job that runs locally even if they have a bucket configured
         val (scriptRunner, trainingMethod) = bucketName.fold(
             {
                 val runner = LocalTrainingScriptRunner()
