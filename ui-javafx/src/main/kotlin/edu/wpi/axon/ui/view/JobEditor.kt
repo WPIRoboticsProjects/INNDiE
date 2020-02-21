@@ -147,8 +147,8 @@ class JobConfiguration : Fragment("Configuration") {
                             }
                         }
                     }
-                    field("Edit") {
-                        button {
+                    field {
+                        button("Edit") {
                             action {
                                 find<OptimizerFragment>().openModal(modality = Modality.WINDOW_MODAL)
                             }
@@ -172,8 +172,8 @@ class JobConfiguration : Fragment("Configuration") {
                             }
                         }
                     }
-                    field("Edit") {
-                        button {
+                    field {
+                        button("Edit") {
                             action {
                                 find<LossFragment>().openModal(modality = Modality.WINDOW_MODAL)
                             }
@@ -196,8 +196,8 @@ class JobConfiguration : Fragment("Configuration") {
                             }
                         }
                     }
-                    field("Edit") {
-                        button {
+                    field {
+                        button("Edit") {
                             action {
                                 find<TargetFragment>().openModal(modality = Modality.WINDOW_MODAL)
                             }
