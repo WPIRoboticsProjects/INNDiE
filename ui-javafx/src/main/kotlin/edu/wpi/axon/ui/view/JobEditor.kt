@@ -12,10 +12,8 @@ import edu.wpi.axon.ui.model.ModelSourceModel
 import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.datasetPluginManagerName
-import javafx.scene.control.TextFormatter
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
-import tornadofx.DefaultErrorHandler.Companion.filter
 import tornadofx.Fragment
 import tornadofx.ItemFragment
 import tornadofx.bindTo

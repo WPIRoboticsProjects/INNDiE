@@ -4,6 +4,7 @@ import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.training.ModelDeploymentTarget
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -24,15 +25,23 @@ data class JobDto(val job: Job) {
     val userDatasetProperty = SimpleObjectProperty(job.userDataset)
     var userDataset by userDatasetProperty
 
-    //    val userOptimizer = bind(Job::userOptimizer)
-    //    val userLoss = bind(Job::userLoss)
-    //    val userMetrics = bind(Job::userMetrics)
+    val userOptimizerProperty = SimpleObjectProperty(job.userOptimizer)
+    var userOptimizer by userOptimizerProperty
+
+    val userLossProperty = SimpleObjectProperty(job.userLoss)
+    var userLoss by userLossProperty
+
+    val userMetricsProperty = SimpleObjectProperty(job.userMetrics)
+    var userMetrics by userMetricsProperty
 
     val userEpochsProperty = SimpleIntegerProperty(job.userEpochs)
     var userEpochs by userEpochsProperty
 
-    //    val userNewModel = bind(Job::userNewModel)
-    //    val generateDebugComments = bind(Job::generateDebugComments)
+    val userNewModelProperty = SimpleObjectProperty(job.userNewModel)
+    var userNewModel by userNewModelProperty
+
+    val generateDebugCommentsProperty = SimpleBooleanProperty(job.generateDebugComments)
+    var generateDebugComments by generateDebugCommentsProperty
 
     val trainingMethodProperty = SimpleObjectProperty<JobTrainingMethod>(job.trainingMethod)
     var trainingMethod by trainingMethodProperty
@@ -47,7 +56,7 @@ data class JobDto(val job: Job) {
     var id by idProperty
 
     override fun toString(): String {
-        return "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userEpochsProperty=$userEpochsProperty, trainingMethodProperty=$trainingMethodProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
+        return "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userOptimizerProperty=$userOptimizerProperty, userLossProperty=$userLossProperty, userMetricsProperty=$userMetricsProperty, userEpochsProperty=$userEpochsProperty, userNewModelProperty=$userNewModelProperty, generateDebugCommentsProperty=$generateDebugCommentsProperty, trainingMethodProperty=$trainingMethodProperty, targetProperty=$targetProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
     }
 }
 
@@ -56,22 +65,16 @@ class JobModel : ItemViewModel<JobDto>() {
     val status = bind(JobDto::statusProperty)
     val userOldModelPath = bind(JobDto::userOldModelPathProperty)
     val userDataset = bind(JobDto::userDatasetProperty)
-    //    val userOptimizer = bind(Job::userOptimizer)
-//    val userLoss = bind(Job::userLoss)
-//    val userMetrics = bind(Job::userMetrics)
+    val userOptimizer = bind(JobDto::userOptimizerProperty)
+    val userLoss = bind(JobDto::userLossProperty)
+    val userMetrics = bind(JobDto::userMetricsProperty)
     val userEpochs = bind(JobDto::userEpochsProperty)
-    //    val userNewModel = bind(Job::userNewModel)
-//    val generateDebugComments = bind(Job::generateDebugComments)
+    val userNewModel = bind(JobDto::userNewModelProperty)
+    val generateDebugComments = bind(JobDto::generateDebugCommentsProperty)
     val trainingMethod = bind(JobDto::trainingMethodProperty)
-    //    val target = bind(Job::target)
+    val target = bind(JobDto::targetProperty)
     val datasetPlugin = bind(JobDto::datasetPluginProperty)
     val id = bind(JobDto::idProperty)
-
-//    init {
-//        userDataset.addListener { obs, old, new ->
-//            println(new)
-//        }
-//    }
 
     override fun onCommit() {
         println(item)
