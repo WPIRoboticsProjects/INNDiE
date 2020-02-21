@@ -125,9 +125,7 @@ class JobConfiguration : Fragment("Configuration") {
                     field("Edit") {
                         button {
                             action {
-                                find<OptimizerFragment>().let {
-                                    it.openModal(modality = Modality.WINDOW_MODAL)
-                                }
+                                find<OptimizerFragment>().openModal(modality = Modality.WINDOW_MODAL)
                             }
                         }
                     }
