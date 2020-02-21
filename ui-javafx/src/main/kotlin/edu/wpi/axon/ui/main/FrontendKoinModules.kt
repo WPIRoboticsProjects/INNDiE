@@ -91,6 +91,22 @@ fun defaultFrontendModule() = module {
             )
 
             create(
+                    name = "AWS Jobasdas",
+                    status = TrainingScriptProgress.NotStarted,
+                    userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
+                    userDataset = Dataset.ExampleDataset.FashionMnist,
+                    userOptimizer = Optimizer.FTRL(),
+                    userLoss = Loss.SparseCategoricalCrossentropy,
+                    userMetrics = setOf("accuracy, val_acc"),
+                    userEpochs = 6,
+                    userNewModel = model,
+                    generateDebugComments = false,
+                    datasetPlugin = datasetPassthroughPlugin,
+                    trainingMethod = JobTrainingMethod.Untrained,
+                    target = ModelDeploymentTarget.Coral()
+            )
+
+            create(
                     name = "AWS Job1",
                     status = TrainingScriptProgress.Completed,
                     userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),

@@ -117,16 +117,9 @@ class JobConfiguration : Fragment("Configuration") {
             vbox(20) {
                 fieldset {
                     field("Epochs") {
-                        spinner(1, amountToStepBy = 1, editable = true, property = job.userEpochs) {
-                            editor.apply {
-                                filterInput {
-                                    it.controlNewText.isInt()
-                                }
-                            }
-
-                            validator {
-                                if (it == null) error("The epochs field is required.") else null
-                            }
+                        textfield(job.userEpochs) {
+                            filterInput { it.controlNewText.isInt() }
+                            validator { isNotNull(it) }
                         }
                     }
                 }
@@ -522,6 +515,13 @@ fun EventTarget.textfield(property: ObservableValue<Double>, op: TextField.() ->
     textfield().apply {
         bind(property)
         op(this)
+    }
+
+fun isNotNull(value: String?) =
+    if (value == null) {
+        ValidationMessage("Must not be null.", ValidationSeverity.Error)
+    } else {
+        null
     }
 
 fun isDoubleLessThanOrEqualToZero(value: String?) =

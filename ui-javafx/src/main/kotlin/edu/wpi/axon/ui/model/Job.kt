@@ -66,9 +66,8 @@ data class JobDto(val job: Job) {
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
 
-    override fun toString(): String {
-        return "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userOptimizerProperty=$userOptimizerProperty, userLossProperty=$userLossProperty, userMetricsProperty=$userMetricsProperty, userEpochsProperty=$userEpochsProperty, userNewModelProperty=$userNewModelProperty, generateDebugCommentsProperty=$generateDebugCommentsProperty, trainingMethodProperty=$trainingMethodProperty, targetProperty=$targetProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
-    }
+    override fun toString() =
+        "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userOptimizerProperty=$userOptimizerProperty, optimizerTypeProperty=$optimizerTypeProperty, userLossProperty=$userLossProperty, lossTypeProperty=$lossTypeProperty, userMetricsProperty=$userMetricsProperty, userEpochsProperty=$userEpochsProperty, userNewModelProperty=$userNewModelProperty, generateDebugCommentsProperty=$generateDebugCommentsProperty, trainingMethodProperty=$trainingMethodProperty, targetProperty=$targetProperty, targetTypeProperty=$targetTypeProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
 }
 
 class JobModel : ItemViewModel<JobDto>() {
@@ -93,4 +92,6 @@ class JobModel : ItemViewModel<JobDto>() {
     override fun onCommit() {
         println(item)
     }
+
+    override fun toString() = "JobModel($item)"
 }
