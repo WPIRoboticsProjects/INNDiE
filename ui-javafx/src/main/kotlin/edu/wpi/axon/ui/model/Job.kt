@@ -7,8 +7,10 @@ import edu.wpi.axon.training.ModelDeploymentTarget
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleSetProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.ItemViewModel
+import tornadofx.asObservable
 import tornadofx.getValue
 import tornadofx.setValue
 
@@ -31,7 +33,7 @@ data class JobDto(val job: Job) {
     val userLossProperty = SimpleObjectProperty(job.userLoss)
     var userLoss by userLossProperty
 
-    val userMetricsProperty = SimpleObjectProperty(job.userMetrics)
+    val userMetricsProperty = SimpleSetProperty(job.userMetrics.asObservable())
     var userMetrics by userMetricsProperty
 
     val userEpochsProperty = SimpleIntegerProperty(job.userEpochs)
