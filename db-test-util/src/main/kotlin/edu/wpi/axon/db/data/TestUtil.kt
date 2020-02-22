@@ -39,11 +39,11 @@ fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
         else -> error("Missing a TrainingScriptProgress case.")
     }
 
-fun Random.nextTrainingMethod(): JobTrainingMethod =
-    when (nextInt(JobTrainingMethod::class.sealedSubclasses.count())) {
-        0 -> JobTrainingMethod.EC2(RandomStringUtils.randomAlphabetic(10))
-        1 -> JobTrainingMethod.Local
-        2 -> JobTrainingMethod.Untrained
+fun Random.nextTrainingMethod(): InternalJobTrainingMethod =
+    when (nextInt(InternalJobTrainingMethod::class.sealedSubclasses.count())) {
+        0 -> InternalJobTrainingMethod.EC2(RandomStringUtils.randomAlphabetic(10))
+        1 -> InternalJobTrainingMethod.Local
+        2 -> InternalJobTrainingMethod.Untrained
         else -> error("Missing a JobTrainingMethod case.")
     }
 
@@ -121,7 +121,7 @@ fun Random.nextJob(
         )
     ),
     generateDebugComments: Boolean = nextBoolean(),
-    trainingMethod: JobTrainingMethod = nextTrainingMethod(),
+    trainingMethod: InternalJobTrainingMethod = nextTrainingMethod(),
     target: ModelDeploymentTarget = nextTarget(),
     datasetPlugin: Plugin = nextPlugin()
 ) = jobDb.create(

@@ -1,8 +1,9 @@
 package edu.wpi.axon.db
 
 import com.beust.klaxon.Klaxon
+import edu.wpi.axon.db.data.DesiredJobTrainingMethod
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.plugin.Plugin
@@ -37,7 +38,7 @@ internal object Jobs : IntIdTable() {
     val userEpochsCol = integer("userEpochs")
     val userModelCol = text("userModel")
     val generateDebugCommentsCol = bool("generateDebugComments")
-    val trainingMethodCol = varchar("trainingMethod", 255)
+    val internalTrainingMethodCol = varchar("internalTrainingMethod", 255)
     val targetCol = varchar("target", 255)
     val datasetPluginCol = text("datasetPlugin")
 
@@ -52,7 +53,9 @@ internal object Jobs : IntIdTable() {
         userEpochs = row[userEpochsCol],
         generateDebugComments = row[generateDebugCommentsCol],
         userNewModel = Model.deserialize(row[userModelCol]),
-        trainingMethod = JobTrainingMethod.deserialize(row[trainingMethodCol]),
+        internalTrainingMethod = InternalJobTrainingMethod.deserialize(
+            row[internalTrainingMethodCol]
+        ),
         target = ModelDeploymentTarget.deserialize(row[targetCol]),
         datasetPlugin = Plugin.deserialize(row[datasetPluginCol]),
         id = row[id].value
@@ -95,7 +98,7 @@ class JobDb(private val database: Database) {
         userEpochs: Int,
         userNewModel: Model,
         generateDebugComments: Boolean,
-        trainingMethod: JobTrainingMethod,
+        internalTrainingMethod: InternalJobTrainingMethod,
         target: ModelDeploymentTarget,
         datasetPlugin: Plugin
     ): Job {
@@ -111,7 +114,7 @@ class JobDb(private val database: Database) {
                 row[userEpochsCol] = userEpochs
                 row[userModelCol] = userNewModel.serialize()
                 row[generateDebugCommentsCol] = generateDebugComments
-                row[trainingMethodCol] = trainingMethod.serialize()
+                row[internalTrainingMethodCol] = internalTrainingMethod.serialize()
                 row[targetCol] = target.serialize()
                 row[datasetPluginCol] = datasetPlugin.serialize()
             }.value
@@ -128,7 +131,7 @@ class JobDb(private val database: Database) {
             userEpochs = userEpochs,
             userNewModel = userNewModel,
             generateDebugComments = generateDebugComments,
-            trainingMethod = trainingMethod,
+            internalTrainingMethod = internalTrainingMethod,
             target = target,
             datasetPlugin = datasetPlugin,
             id = newId
@@ -151,7 +154,7 @@ class JobDb(private val database: Database) {
         job.userEpochs,
         job.userNewModel,
         job.generateDebugComments,
-        job.trainingMethod,
+        job.internalTrainingMethod,
         job.target,
         job.datasetPlugin
     )
@@ -168,7 +171,7 @@ class JobDb(private val database: Database) {
         userEpochs: Int? = null,
         userNewModel: Model? = null,
         generateDebugComments: Boolean? = null,
-        trainingMethod: JobTrainingMethod? = null,
+        internalJobTrainingMethod: InternalJobTrainingMethod? = null,
         target: ModelDeploymentTarget? = null,
         datasetPlugin: Plugin? = null
     ): Job {
@@ -184,7 +187,9 @@ class JobDb(private val database: Database) {
                 userEpochs?.let { row[userEpochsCol] = userEpochs }
                 userNewModel?.let { row[userModelCol] = userNewModel.serialize() }
                 generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
-                trainingMethod?.let { row[trainingMethodCol] = trainingMethod.serialize() }
+                internalJobTrainingMethod?.let {
+                    row[internalTrainingMethodCol] = internalJobTrainingMethod.serialize()
+                }
                 target?.let { row[targetCol] = target.serialize() }
                 datasetPlugin?.let { row[datasetPluginCol] = datasetPlugin.serialize() }
             }

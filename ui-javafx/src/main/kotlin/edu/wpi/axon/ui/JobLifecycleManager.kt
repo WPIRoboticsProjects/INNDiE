@@ -1,10 +1,13 @@
 package edu.wpi.axon.ui
 
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.db.data.DesiredJobTrainingMethod
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
@@ -47,20 +50,39 @@ class JobLifecycleManager internal constructor(
     /**
      * Generates the code for a job and starts it.
      *
+     * @param jobId The [Job.id] of the Job to start.
+     * @return The coroutine Job that was started.
+     */
+    fun startJob(jobId: Int, desiredJobTrainingMethod: DesiredJobTrainingMethod) =
+        startJob(jobDb.getById(jobId)!!, desiredJobTrainingMethod)
+
+    /**
+     * Generates the code for a job and starts it.
+     *
      * @param job The [Job] to run.
      * @return The coroutine Job that was started.
      */
-    fun startJob(job: Job) = scope.launch {
-        jobDb.update(job.id, status = TrainingScriptProgress.Creating)
+    fun startJob(job: Job, desiredJobTrainingMethod: DesiredJobTrainingMethod) {
+        scope.launch {
+            jobDb.update(job.id, status = TrainingScriptProgress.Creating)
 
-        val trainingMethod = jobRunner.startJob(job)
-        jobDb.update(job.id, trainingMethod = trainingMethod)
-        LOGGER.debug { "Started job with id: ${job.id}" }
+            val trainingMethod = jobRunner.startJob(job, desiredJobTrainingMethod)
+            jobDb.update(job.id, internalJobTrainingMethod = trainingMethod)
+            LOGGER.debug { "Started job with id: ${job.id}" }
 
-        delay(waitAfterStartingJobMs)
+            delay(waitAfterStartingJobMs)
 
-        jobRunner.waitForFinish(job.id) {
-            jobDb.update(job.id, status = it)
+            jobRunner.waitForFinish(job.id) {
+                jobDb.update(job.id, status = it)
+            }
+        }.invokeOnCompletion {
+            if (it != null && it !is CancellationException) {
+                // The coroutine ended exceptionally
+                jobDb.update(
+                    job.id,
+                    status = TrainingScriptProgress.Error(it.localizedMessage)
+                )
+            }
         }
     }
 

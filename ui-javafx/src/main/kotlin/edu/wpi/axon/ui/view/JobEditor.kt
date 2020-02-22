@@ -1,5 +1,9 @@
 package edu.wpi.axon.ui.view
 
+import arrow.core.Option
+import edu.wpi.axon.aws.findAxonS3Bucket
+import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.db.data.DesiredJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
@@ -8,6 +12,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.model.AdamDto
 import edu.wpi.axon.ui.model.AdamModel
 import edu.wpi.axon.ui.model.CoralDto
@@ -20,14 +25,19 @@ import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.model.ModelSourceModel
 import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
+import javafx.beans.binding.Binding
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
 import javafx.stage.Modality
 import javafx.util.StringConverter
+import org.koin.core.inject
+import org.koin.core.qualifier.named
 import tornadofx.Fieldset
 import tornadofx.Fragment
 import tornadofx.ItemFragment
@@ -54,16 +64,22 @@ import tornadofx.hbox
 import tornadofx.isDouble
 import tornadofx.isInt
 import tornadofx.label
+import tornadofx.objectBinding
+import tornadofx.observable
+import tornadofx.property
 import tornadofx.separator
 import tornadofx.spinner
 import tornadofx.textfield
 import tornadofx.toObservable
+import tornadofx.toProperty
 import tornadofx.validator
 import tornadofx.vbox
 import kotlin.reflect.KClass
 
 class JobEditor : Fragment() {
     private val job by inject<JobModel>()
+    private val jobLifecycleManager by di<JobLifecycleManager>()
+    private val bucketName by di<Option<String>>(axonBucketName)
 
     override val root = borderpane {
         center {
@@ -82,6 +98,47 @@ class JobEditor : Fragment() {
                 }.and(job.dirty))
                 setOnAction {
                     job.commit()
+                }
+            }
+            button("Run") {
+                enableWhen(job.status.booleanBinding {
+                    it == TrainingScriptProgress.NotStarted
+                })
+
+                val desiredTrainingMethod = SimpleObjectProperty(
+                    bucketName.fold(
+                        { DesiredJobTrainingMethod.LOCAL },
+                        { DesiredJobTrainingMethod.EC2 }
+                    )
+                )
+
+                combobox<DesiredJobTrainingMethod> {
+                    bind(desiredTrainingMethod)
+                    items = DesiredJobTrainingMethod.values().toList().toObservable()
+                    cellFormat {
+                        text = it.name.toLowerCase().capitalize()
+                    }
+                    setOnAction { it.consume() }
+                }
+
+                action {
+                    job.commit {
+                        jobLifecycleManager.startJob(
+                            job.id.value.toInt(),
+                            desiredTrainingMethod.value
+                        )
+                    }
+                }
+            }
+            button("Cancel") {
+                enableWhen(job.status.booleanBinding {
+                    it == TrainingScriptProgress.Creating ||
+                        it == TrainingScriptProgress.Initializing ||
+                        it is TrainingScriptProgress.InProgress
+                })
+
+                action {
+                    jobLifecycleManager.cancelJob(job.id.value.toInt())
                 }
             }
         }
