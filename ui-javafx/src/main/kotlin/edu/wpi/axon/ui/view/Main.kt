@@ -1,13 +1,10 @@
 package edu.wpi.axon.ui.view
 
-import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.ui.model.JobModel
-import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import tornadofx.View
 import tornadofx.action
 import tornadofx.item
-import tornadofx.label
 import tornadofx.menu
 import tornadofx.menubar
 import tornadofx.separator
@@ -27,7 +24,7 @@ class Main : View() {
                 isUseSystemMenuBar = true
                 menu("File") {
                     item("Preferences", "Shortcut+,").action {
-                        find<Preferences>().openWindow()
+                        find<AwsPreferences>().openWindow()
                     }
                     separator()
                     item("Exit").action {
