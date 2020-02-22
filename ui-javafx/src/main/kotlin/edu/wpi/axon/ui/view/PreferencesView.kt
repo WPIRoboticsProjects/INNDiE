@@ -1,7 +1,6 @@
 package edu.wpi.axon.ui.view
 
-import edu.wpi.axon.aws.preferences.Preferences
-import edu.wpi.axon.ui.model.AwsPreferencesModel
+import edu.wpi.axon.ui.model.PreferencesModel
 import javafx.scene.control.ButtonBar
 import software.amazon.awssdk.services.ec2.model.InstanceType
 import tornadofx.View
@@ -15,13 +14,14 @@ import tornadofx.fieldset
 import tornadofx.filterInput
 import tornadofx.form
 import tornadofx.isLong
-import tornadofx.observable
 import tornadofx.required
 import tornadofx.textfield
 import tornadofx.toObservable
+import tornadofx.validator
 
-class AwsPreferences: View("AWS Preferences") {
-    val model by inject<AwsPreferencesModel>()
+class PreferencesView : View("Preferences") {
+
+    private val model by inject<PreferencesModel>()
 
     override val root = form {
         fieldset("AWS") {
@@ -33,8 +33,8 @@ class AwsPreferences: View("AWS Preferences") {
             }
             field("Polling Rate (ms)") {
                 textfield(model.statusPollingDelayProperty) {
-                    filterInput { it.controlNewText.isLong() && it.controlNewText.toLong() > 0 }
-                    required()
+                    filterInput { it.controlNewText.isLong() }
+                    validator { isLongInRange(it, 5000L..60_000L) }
                 }
             }
         }
@@ -45,17 +45,12 @@ class AwsPreferences: View("AWS Preferences") {
                     close()
                 }
             }
-            button("Apply", ButtonBar.ButtonData.APPLY) {
-                enableWhen(model.dirty.and(model.valid))
-                action {
-                    model.commit()
-                }
-            }
             button("Ok", ButtonBar.ButtonData.OK_DONE) {
                 enableWhen(model.valid)
                 action {
-                    model.commit()
-                    close()
+                    model.commit {
+                        close()
+                    }
                 }
             }
         }

@@ -208,7 +208,7 @@ class S3Manager(
      */
     @UseExperimental(ExperimentalStdlibApi::class)
     internal fun downloadPreferences(): File {
-        val data = s3.getObject { it.key(preferencesFilename) }.readAllBytes()
+        val data = s3.getObject { it.bucket(bucketName).key(preferencesFilename) }.readAllBytes()
         val file = Files.createTempFile("", "").toFile()
         file.writeBytes(data)
         return file

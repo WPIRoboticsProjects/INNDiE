@@ -6,7 +6,8 @@ import javafx.beans.property.SimpleLongProperty
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.ItemViewModel
 
-class AwsPreferencesModel: ItemViewModel<Preferences>() {
+class PreferencesModel : ItemViewModel<Preferences>() {
+
     private val preferencesManager by di<PreferencesManager>()
 
     init {
@@ -17,7 +18,10 @@ class AwsPreferencesModel: ItemViewModel<Preferences>() {
     val statusPollingDelayProperty = bind { SimpleLongProperty(item.statusPollingDelay) }
 
     override fun onCommit() {
-        item = Preferences(defaultEC2NodeTypeProperty.value, statusPollingDelayProperty.value.toLong())
+        item = Preferences(
+            defaultEC2NodeType = defaultEC2NodeTypeProperty.value,
+            statusPollingDelay = statusPollingDelayProperty.value.toLong()
+        )
         preferencesManager.put(item)
     }
 }

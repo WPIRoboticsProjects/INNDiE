@@ -24,7 +24,7 @@ class Main : View() {
                 isUseSystemMenuBar = true
                 menu("File") {
                     item("Preferences", "Shortcut+,").action {
-                        find<AwsPreferences>().openWindow()
+                        find<PreferencesView>().openWindow()
                     }
                     separator()
                     item("Exit", "Shortcut+W").action {
