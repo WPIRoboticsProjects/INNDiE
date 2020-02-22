@@ -19,6 +19,9 @@ class Main : View() {
 
     init {
         with(root) {
+            prefWidth = 1200.0
+            prefHeight = 768.0
+
             top = menubar {
                 isUseSystemMenuBar = true
                 menu("File") {

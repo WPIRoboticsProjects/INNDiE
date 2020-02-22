@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.Pane
 import tornadofx.attachTo
 import tornadofx.onChange
@@ -15,11 +16,6 @@ class ContentMap<T : Any?> : Pane() {
 
     private val map = mutableMapOf<T, Lazy<Node>>()
 
-    fun item(type: T, op: Parent.() -> Unit) {
-        val pane = lazy { Pane().apply(op) }
-        map[type] = pane
-    }
-
     val valueProperty: ObjectProperty<T> = SimpleObjectProperty(this, "value")
 
     init {
@@ -28,6 +24,20 @@ class ContentMap<T : Any?> : Pane() {
                 it?.let { map[it]?.value ?: Pane() } ?: Pane()
             )
         }
+    }
+
+    fun item(type: T, op: Parent.() -> Unit) {
+        val pane = lazy {
+            val pane = Pane()
+            // pane.apply {
+            //     setTopAnchor(pane, 0.0)
+            //     setRightAnchor(pane, 0.0)
+            //     setBottomAnchor(pane, 0.0)
+            //     setLeftAnchor(pane, 0.0)
+            // }
+            pane.apply(op)
+        }
+        map[type] = pane
     }
 }
 
