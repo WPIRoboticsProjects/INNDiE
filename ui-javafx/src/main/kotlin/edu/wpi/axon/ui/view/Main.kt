@@ -27,7 +27,8 @@ class Main : View() {
                         find<AwsPreferences>().openWindow()
                     }
                     separator()
-                    item("Exit").action {
+                    item("Exit", "Shortcut+W").action {
+                        close()
                     }
                 }
                 menu("Help") {
