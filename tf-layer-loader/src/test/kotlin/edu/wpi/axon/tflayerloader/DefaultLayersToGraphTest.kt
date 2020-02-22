@@ -26,7 +26,7 @@ internal class DefaultLayersToGraphTest {
 
     @Test
     fun `one layer makes a graph with one unconnected node`() {
-        val layer1 = Layer.UnknownLayer("layer1", emptySet()).trainable()
+        val layer1 = Layer.UnknownLayer("layer1", emptySet()).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1))
         graph.shouldBeRight {
             it.nodes().shouldContainExactly(layer1)
@@ -36,24 +36,24 @@ internal class DefaultLayersToGraphTest {
 
     @Test
     fun `islands are not allowed`() {
-        val layer1 = Layer.UnknownLayer("layer1", emptySet()).trainable()
-        val layer2 = Layer.UnknownLayer("layer2", emptySet()).trainable()
+        val layer1 = Layer.UnknownLayer("layer1", emptySet()).isTrainable()
+        val layer2 = Layer.UnknownLayer("layer2", emptySet()).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
         graph.shouldBeLeft()
     }
 
     @Test
     fun `two Sequential layers`() {
-        val layer1 = Layer.UnknownLayer("layer1", null).trainable()
-        val layer2 = Layer.UnknownLayer("layer2", null).trainable()
+        val layer1 = Layer.UnknownLayer("layer1", null).isTrainable()
+        val layer2 = Layer.UnknownLayer("layer2", null).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
         graph.shouldBeLeft()
     }
 
     @Test
     fun `two layers with a connection`() {
-        val layer1 = Layer.UnknownLayer("layer1", emptySet()).trainable()
-        val layer2 = Layer.UnknownLayer("layer2", setOf("layer1")).trainable()
+        val layer1 = Layer.UnknownLayer("layer1", emptySet()).isTrainable()
+        val layer2 = Layer.UnknownLayer("layer2", setOf("layer1")).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
         graph.shouldBeRight {
             it.nodes().shouldContainExactly(layer1, layer2)
@@ -63,9 +63,9 @@ internal class DefaultLayersToGraphTest {
 
     @Test
     fun `two connections to a layer`() {
-        val layer1 = Layer.UnknownLayer("layer1", emptySet()).trainable()
-        val layer2 = Layer.UnknownLayer("layer2", emptySet()).trainable()
-        val layer3 = Layer.UnknownLayer("layer3", setOf("layer1", "layer2")).trainable()
+        val layer1 = Layer.UnknownLayer("layer1", emptySet()).isTrainable()
+        val layer2 = Layer.UnknownLayer("layer2", emptySet()).isTrainable()
+        val layer3 = Layer.UnknownLayer("layer3", setOf("layer1", "layer2")).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1, layer2, layer3))
         graph.shouldBeRight {
             it.nodes().shouldContainExactly(layer1, layer2, layer3)
@@ -78,23 +78,23 @@ internal class DefaultLayersToGraphTest {
 
     @Test
     fun `duplicate layer names fails`() {
-        val layer1 = Layer.UnknownLayer("layer1", emptySet()).trainable()
-        val layer2 = Layer.UnknownLayer("layer1", setOf("layer2")).trainable()
+        val layer1 = Layer.UnknownLayer("layer1", emptySet()).isTrainable()
+        val layer2 = Layer.UnknownLayer("layer1", setOf("layer2")).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
         graph.shouldBeLeft()
     }
 
     @Test
     fun `layers missing inputs fails`() {
-        val layer1 = Layer.UnknownLayer("layer1", emptySet()).trainable()
-        val layer2 = Layer.UnknownLayer("layer2", null).trainable()
+        val layer1 = Layer.UnknownLayer("layer1", emptySet()).isTrainable()
+        val layer2 = Layer.UnknownLayer("layer2", null).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1, layer2))
         graph.shouldBeLeft()
     }
 
     @Test
     fun `self loop fails`() {
-        val layer1 = Layer.UnknownLayer("layer1", setOf("layer1")).trainable()
+        val layer1 = Layer.UnknownLayer("layer1", setOf("layer1")).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1))
         graph.shouldBeLeft()
     }
@@ -102,8 +102,8 @@ internal class DefaultLayersToGraphTest {
     @Test
     fun `inputs not in previous layers fails`() {
         val layer1 = Layer.InputLayer("l1", listOf())
-        val layer2 = Layer.UnknownLayer("l2", setOf(layer1.name)).trainable()
-        val layer3 = Layer.UnknownLayer("l3", setOf(layer2.name)).trainable()
+        val layer2 = Layer.UnknownLayer("l2", setOf(layer1.name)).isTrainable()
+        val layer3 = Layer.UnknownLayer("l3", setOf(layer2.name)).isTrainable()
         val graph = layersToGraph.convertToGraph(setOf(layer1, layer3))
         graph.shouldBeLeft()
     }

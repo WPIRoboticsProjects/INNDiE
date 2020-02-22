@@ -2,7 +2,7 @@ package edu.wpi.axon.ui
 
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -20,7 +20,7 @@ internal class JobLifecycleManagerTest {
     @Test
     fun `test starting job`() {
         val jobRunner = mockk<JobRunner> {
-            every { startJob(any()) } returns JobTrainingMethod.Local
+            every { startJob(any()) } returns InternalJobTrainingMethod.Local
             coEvery { waitForFinish(any(), any()) } returns Unit
         }
 

@@ -18,7 +18,7 @@ import edu.wpi.axon.aws.TrainingScriptProgressReporter
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
@@ -53,7 +53,7 @@ internal class JobRunner : KoinComponent {
      * @param job The [Job] to run.
      * @return An [IO] for continuation.
      */
-    internal fun startJob(job: Job): JobTrainingMethod {
+    internal fun startJob(job: Job): InternalJobTrainingMethod {
         // Verify that we can start the job. No sense in starting a Job that is already running.
         require(
             job.status == TrainingScriptProgress.NotStarted ||
@@ -113,7 +113,7 @@ internal class JobRunner : KoinComponent {
             {
                 val runner = LocalTrainingScriptRunner()
                 runner.startScript(config)
-                runner to JobTrainingMethod.Local
+                runner to InternalJobTrainingMethod.Local
             },
             {
                 val runner = EC2TrainingScriptRunner(
@@ -123,7 +123,7 @@ internal class JobRunner : KoinComponent {
                     S3Manager(getBucket())
                 )
                 runner.startScript(config)
-                runner to JobTrainingMethod.EC2(runner.getInstanceId(config.id))
+                runner to InternalJobTrainingMethod.EC2(runner.getInstanceId(config.id))
             }
         )
 
@@ -190,8 +190,8 @@ internal class JobRunner : KoinComponent {
             Files.createTempDirectory("")
         )
 
-        when (val trainingMethod = job.trainingMethod) {
-            is JobTrainingMethod.EC2 -> {
+        when (val trainingMethod = job.internalTrainingMethod) {
+            is InternalJobTrainingMethod.EC2 -> {
                 progressReporters[job.id] = EC2TrainingScriptProgressReporter(
                     EC2Manager(),
                     S3Manager(getBucket())
@@ -204,7 +204,7 @@ internal class JobRunner : KoinComponent {
                 }
             }
 
-            is JobTrainingMethod.Local -> {
+            is InternalJobTrainingMethod.Local -> {
                 progressReporters[job.id] = LocalTrainingScriptProgressReporter().apply {
                     addJobAfterRestart(config)
                 }
@@ -216,7 +216,7 @@ internal class JobRunner : KoinComponent {
                 }
             }
 
-            is JobTrainingMethod.Untrained ->
+            is InternalJobTrainingMethod.Untrained ->
                 error("Cannot resume training for a Job that has not started training.")
         }
     }

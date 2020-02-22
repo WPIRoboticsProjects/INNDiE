@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonConfiguration
  * The method used to train a Job. Used to resume progress reporting after Axon is restarted.
  */
 @Serializable
-sealed class JobTrainingMethod {
+sealed class InternalJobTrainingMethod {
 
     /**
      * Training on an EC2 instance.
@@ -16,19 +16,19 @@ sealed class JobTrainingMethod {
      * @param instanceId The ID of the EC2 instance the Job was being trained on.
      */
     @Serializable
-    data class EC2(val instanceId: String) : JobTrainingMethod()
+    data class EC2(val instanceId: String) : InternalJobTrainingMethod()
 
     /**
      * Training on the local computer.
      */
     @Serializable
-    object Local : JobTrainingMethod()
+    object Local : InternalJobTrainingMethod()
 
     /**
      * The Job has not been trained yet. Jobs should start in this state.
      */
     @Serializable
-    object Untrained : JobTrainingMethod()
+    object Untrained : InternalJobTrainingMethod()
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable

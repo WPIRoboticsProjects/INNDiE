@@ -17,8 +17,10 @@ import edu.wpi.axon.aws.TrainingScriptCanceller
 import edu.wpi.axon.aws.TrainingScriptProgressReporter
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.preferences.PreferencesManager
+import edu.wpi.axon.db.data.DesiredJobTrainingMethod
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
@@ -54,7 +56,10 @@ internal class JobRunner : KoinComponent {
      * @param job The [Job] to run.
      * @return An [IO] for continuation.
      */
-    internal fun startJob(job: Job): JobTrainingMethod {
+    internal fun startJob(
+        job: Job,
+        desiredJobTrainingMethod: DesiredJobTrainingMethod
+    ): InternalJobTrainingMethod {
         // Verify that we can start the job. No sense in starting a Job that is already running.
         require(
             job.status == TrainingScriptProgress.NotStarted ||
@@ -64,19 +69,68 @@ internal class JobRunner : KoinComponent {
             "The Job to start must not be running. Got a Job with state: ${job.status}"
         }
 
-        val workingDir = bucketName.fold(
-            {
-                // The local runner can work out of any directory.
-                localScriptRunnerCache.resolve(job.id.toString()).apply { toFile().mkdirs() }
-            },
-            {
-                // The EC2 runner needs to output to a relative directory (and NOT just the current
-                // directory) because it runs the training script in a Docker container and maps the
-                // current directory with `-v`.
-                Paths.get(".").resolve("output")
+        return when (desiredJobTrainingMethod) {
+            DesiredJobTrainingMethod.LOCAL -> {
+                when (val path = job.userOldModelPath) {
+                    is ModelSource.FromFile -> check(path.filePath is FilePath.Local)
+                    is ModelSource.FromJob -> TODO("Not implemented.")
+                }
+                startLocalJob(job)
+                InternalJobTrainingMethod.Local
             }
-        )
 
+            DesiredJobTrainingMethod.EC2 -> {
+                when (val path = job.userOldModelPath) {
+                    is ModelSource.FromFile -> check(path.filePath is FilePath.S3)
+                    is ModelSource.FromJob -> TODO("Not implemented.")
+                }
+                check(bucketName is Some)
+                startEC2Job(job)
+            }
+        }
+    }
+
+    private fun startLocalJob(job: Job) {
+        // The local runner can work out of any directory so just use the cache dir.
+        val workingDir = localScriptRunnerCache
+            .resolve(job.id.toString())
+            .apply { toFile().mkdirs() }
+
+        val config = generateScriptAndCreateConfig(job, workingDir)
+
+        val scriptRunner = LocalTrainingScriptRunner().apply { startScript(config) }
+        setScriptRunner(job.id, scriptRunner)
+    }
+
+    private fun startEC2Job(job: Job): InternalJobTrainingMethod.EC2 {
+        // The EC2 runner needs to output to a relative directory (and NOT just the current
+        // directory) because it runs the training script in a Docker container and maps the
+        // current directory with `-v`.
+        val workingDir = Paths.get(".").resolve("output")
+
+        val config = generateScriptAndCreateConfig(job, workingDir)
+
+        val scriptRunner = EC2TrainingScriptRunner(
+            // TODO: Allow overriding the default node type in the Job editor form
+            get<PreferencesManager>().get().defaultEC2NodeType,
+            EC2Manager(),
+            S3Manager(getBucket())
+        ).apply { startScript(config) }
+
+        setScriptRunner(job.id, scriptRunner)
+        return InternalJobTrainingMethod.EC2(scriptRunner.getInstanceId(config.id))
+    }
+
+    private fun setScriptRunner(jobId: Int, scriptRunner: TrainingScriptRunner) {
+        runners[jobId] = scriptRunner
+        progressReporters[jobId] = scriptRunner
+        cancellers[jobId] = scriptRunner
+    }
+
+    private fun generateScriptAndCreateConfig(
+        job: Job,
+        workingDir: Path
+    ): RunTrainingScriptConfiguration {
         val (oldModel, modelPath) = modelDownloader.downloadModel(job.userOldModelPath)
 
         val trainModelScriptGenerator = when (job.userNewModel) {
@@ -87,6 +141,7 @@ internal class JobRunner : KoinComponent {
                     oldModel
                 )
             }
+
             is Model.General -> {
                 require(oldModel is Model.General)
                 TrainGeneralModelScriptGenerator(toTrainState(job, modelPath, workingDir), oldModel)
@@ -107,32 +162,7 @@ internal class JobRunner : KoinComponent {
             { IO.just(it) }
         ).unsafeRunSync()
 
-        val config = createTrainingScriptConfiguration(job, modelPath, script, workingDir)
-
-        // Create the correct TrainingScriptRunner based on whether the Job needs to use AWS
-        // TODO: Let the user start a Job that runs locally even if they have a bucket configured
-        val (scriptRunner, trainingMethod) = bucketName.fold(
-            {
-                val runner = LocalTrainingScriptRunner()
-                runner.startScript(config)
-                runner to JobTrainingMethod.Local
-            },
-            {
-                val runner = EC2TrainingScriptRunner(
-                    // TODO: Allow overriding the default node type in the Job editor form
-                    get<PreferencesManager>().get().defaultEC2NodeType,
-                    EC2Manager(),
-                    S3Manager(getBucket())
-                )
-                runner.startScript(config)
-                runner to JobTrainingMethod.EC2(runner.getInstanceId(config.id))
-            }
-        )
-
-        runners[job.id] = scriptRunner
-        progressReporters[job.id] = scriptRunner
-        cancellers[job.id] = scriptRunner
-        return trainingMethod
+        return createRunTrainingScriptConfiguration(job, modelPath, script, workingDir)
     }
 
     /**
@@ -185,15 +215,15 @@ internal class JobRunner : KoinComponent {
 
         // The script contents don't matter to the progress reporter. Set an empty
         // string to avoid having to regenerate the script. The model path doesn't matter either.
-        val config = createTrainingScriptConfiguration(
+        val config = createRunTrainingScriptConfiguration(
             job,
             FilePath.Local(""),
             "",
             Files.createTempDirectory("")
         )
 
-        when (val trainingMethod = job.trainingMethod) {
-            is JobTrainingMethod.EC2 -> {
+        when (val trainingMethod = job.internalTrainingMethod) {
+            is InternalJobTrainingMethod.EC2 -> {
                 progressReporters[job.id] = EC2TrainingScriptProgressReporter(
                     EC2Manager(),
                     S3Manager(getBucket())
@@ -206,7 +236,7 @@ internal class JobRunner : KoinComponent {
                 }
             }
 
-            is JobTrainingMethod.Local -> {
+            is InternalJobTrainingMethod.Local -> {
                 progressReporters[job.id] = LocalTrainingScriptProgressReporter().apply {
                     addJobAfterRestart(config)
                 }
@@ -218,7 +248,7 @@ internal class JobRunner : KoinComponent {
                 }
             }
 
-            is JobTrainingMethod.Untrained ->
+            is InternalJobTrainingMethod.Untrained ->
                 error("Cannot resume training for a Job that has not started training.")
         }
     }
@@ -231,7 +261,7 @@ internal class JobRunner : KoinComponent {
         return bucket.t
     }
 
-    private fun createTrainingScriptConfiguration(
+    private fun createRunTrainingScriptConfiguration(
         job: Job,
         modelPath: FilePath,
         script: String,

@@ -62,7 +62,7 @@ internal class DefaultLayerToCodeTest : KoinTestFixture() {
                 null
             ),
             Arguments.of(
-                Layer.Dense("name", null, 3, Activation.ReLu).trainable(),
+                Layer.Dense("name", null, 3, Activation.ReLu).isTrainable(),
                 ("tf.keras.layers.Dense(units=3, activation=tf.keras.activations.relu, " +
                     "name=\"name\")").right(),
                 null

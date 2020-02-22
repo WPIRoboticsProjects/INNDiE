@@ -17,14 +17,14 @@ internal class ModelTest {
             RandomStringUtils.randomAlphanumeric(10),
             (1..3).map { Random.nextInt(128) },
             setOf(
-                Layer.Dense(RandomStringUtils.randomAlphanumeric(10), null, 10).trainable(),
+                Layer.Dense(RandomStringUtils.randomAlphanumeric(10), null, 10).isTrainable(),
                 Layer.Conv2D(
                     RandomStringUtils.randomAlphanumeric(10),
                     null,
                     9,
                     SerializableTuple2II(3, 3),
                     Activation.SoftMax
-                ).trainable(),
+                ).isTrainable(),
                 Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
             )
         )
@@ -38,14 +38,14 @@ internal class ModelTest {
         val graph = GraphBuilder.directed().allowsSelfLoops(false).build<Layer.MetaLayer>()
 
         setOf(
-            Layer.Dense(RandomStringUtils.randomAlphanumeric(10), null, 10).trainable(),
+            Layer.Dense(RandomStringUtils.randomAlphanumeric(10), null, 10).isTrainable(),
             Layer.Conv2D(
                 RandomStringUtils.randomAlphanumeric(10),
                 null,
                 9,
                 SerializableTuple2II(3, 3),
                 Activation.SoftMax
-            ).trainable(),
+            ).isTrainable(),
             Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
         ).reduce { acc, layer ->
             graph.putEdge(acc, layer)

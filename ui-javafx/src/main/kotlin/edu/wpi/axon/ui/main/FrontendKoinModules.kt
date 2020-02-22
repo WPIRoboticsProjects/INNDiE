@@ -10,7 +10,7 @@ import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.plugin.S3PluginManager
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
@@ -27,6 +27,7 @@ import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.JobRunner
+import edu.wpi.axon.ui.ModelDownloader
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
@@ -49,7 +50,7 @@ fun loadModel(modelName: String): Pair<Model, String> {
             Paths.get("/Users/austinshalit/git/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
                     .toString()
     val layers =
-            ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
+        ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
     val model = layers.attempt().unsafeRunSync()
     check(model is Either.Right)
     return model.b to localModelPath
@@ -69,107 +70,41 @@ fun defaultFrontendModule() = module {
             val (model, path) = loadModel(modelName)
 
             create(
-                    name = "AWS Job",
-                    status = TrainingScriptProgress.NotStarted,
-                    userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
-                    userDataset = Dataset.ExampleDataset.FashionMnist,
-                    userOptimizer = Optimizer.Adam(
-                            learningRate = 0.001,
-                            beta1 = 0.9,
-                            beta2 = 0.999,
-                            epsilon = 1e-7,
-                            amsGrad = false
-                    ),
-                    userLoss = Loss.SparseCategoricalCrossentropy,
-                    userMetrics = setOf("accuracy"),
-                    userEpochs = 1,
-                    userNewModel = model,
-                    generateDebugComments = false,
-                    datasetPlugin = datasetPassthroughPlugin,
-                    trainingMethod = JobTrainingMethod.Untrained,
-                    target = ModelDeploymentTarget.Desktop
+                name = "AWS Job",
+                status = TrainingScriptProgress.NotStarted,
+                userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
+                userDataset = Dataset.ExampleDataset.FashionMnist,
+                userOptimizer = Optimizer.Adam(
+                    learningRate = 0.001,
+                    beta1 = 0.9,
+                    beta2 = 0.999,
+                    epsilon = 1e-7,
+                    amsGrad = false
+                ),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 1,
+                userNewModel = model,
+                generateDebugComments = false,
+                datasetPlugin = datasetPassthroughPlugin,
+                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+                target = ModelDeploymentTarget.Desktop
             )
 
             create(
-                    name = "AWS Jobasdas",
-                    status = TrainingScriptProgress.NotStarted,
-                    userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
-                    userDataset = Dataset.ExampleDataset.FashionMnist,
-                    userOptimizer = Optimizer.FTRL(),
-                    userLoss = Loss.SparseCategoricalCrossentropy,
-                    userMetrics = setOf("accuracy, val_acc"),
-                    userEpochs = 6,
-                    userNewModel = model,
-                    generateDebugComments = false,
-                    datasetPlugin = datasetPassthroughPlugin,
-                    trainingMethod = JobTrainingMethod.Untrained,
-                    target = ModelDeploymentTarget.Coral()
-            )
-
-            create(
-                    name = "AWS Job1",
-                    status = TrainingScriptProgress.Completed,
-                    userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
-                    userDataset = Dataset.ExampleDataset.FashionMnist,
-                    userOptimizer = Optimizer.Adam(
-                            learningRate = 0.001,
-                            beta1 = 0.9,
-                            beta2 = 0.999,
-                            epsilon = 1e-7,
-                            amsGrad = false
-                    ),
-                    userLoss = Loss.SparseCategoricalCrossentropy,
-                    userMetrics = setOf("accuracy"),
-                    userEpochs = 1,
-                    userNewModel = model,
-                    generateDebugComments = false,
-                    datasetPlugin = datasetPassthroughPlugin,
-                    trainingMethod = JobTrainingMethod.Untrained,
-                    target = ModelDeploymentTarget.Desktop
-            )
-
-            create(
-                    name = "AWS Job2",
-                    status = TrainingScriptProgress.Initializing,
-                    userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
-                    userDataset = Dataset.ExampleDataset.FashionMnist,
-                    userOptimizer = Optimizer.Adam(
-                            learningRate = 0.001,
-                            beta1 = 0.9,
-                            beta2 = 0.999,
-                            epsilon = 1e-7,
-                            amsGrad = false
-                    ),
-                    userLoss = Loss.SparseCategoricalCrossentropy,
-                    userMetrics = setOf("accuracy"),
-                    userEpochs = 1,
-                    userNewModel = model,
-                    generateDebugComments = false,
-                    datasetPlugin = datasetPassthroughPlugin,
-                    trainingMethod = JobTrainingMethod.Untrained,
-                    target = ModelDeploymentTarget.Desktop
-            )
-
-            create(
-                    name = "AWS Job3",
-                    status = TrainingScriptProgress.Error("Blah blah"),
-                    userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
-                    userDataset = Dataset.ExampleDataset.FashionMnist,
-                    userOptimizer = Optimizer.Adam(
-                            learningRate = 0.001,
-                            beta1 = 0.9,
-                            beta2 = 0.999,
-                            epsilon = 1e-7,
-                            amsGrad = false
-                    ),
-                    userLoss = Loss.SparseCategoricalCrossentropy,
-                    userMetrics = setOf("accuracy"),
-                    userEpochs = 1,
-                    userNewModel = model,
-                    generateDebugComments = false,
-                    datasetPlugin = datasetPassthroughPlugin,
-                    trainingMethod = JobTrainingMethod.Untrained,
-                    target = ModelDeploymentTarget.Desktop
+                name = "Local Job",
+                status = TrainingScriptProgress.NotStarted,
+                userOldModelPath = ModelSource.FromFile(FilePath.Local(path)),
+                userDataset = Dataset.ExampleDataset.FashionMnist,
+                userOptimizer = Optimizer.Adam(),
+                userLoss = Loss.SparseCategoricalCrossentropy,
+                userMetrics = setOf("accuracy"),
+                userEpochs = 1,
+                userNewModel = model,
+                generateDebugComments = false,
+                datasetPlugin = processMnistTypePlugin,
+                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+                target = ModelDeploymentTarget.Desktop
             )
         }
     }
@@ -243,7 +178,15 @@ fun defaultFrontendModule() = module {
         }
     }
 
-    single { JobLifecycleManager(jobRunner = get(), jobDb = get(), waitAfterStartingJobMs = 5000L) }
+    single {
+        JobLifecycleManager(
+            jobRunner = get(),
+            jobDb = get(),
+            waitAfterStartingJobMs = 5000L
+        ).apply { initialize() }
+    }
+
+    single { ModelDownloader() }
     single { JobRunner() }
     single<ExampleModelManager> { GitExampleModelManager().apply { updateCache().unsafeRunSync() } }
 }

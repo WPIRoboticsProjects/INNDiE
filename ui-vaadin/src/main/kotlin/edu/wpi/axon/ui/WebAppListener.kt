@@ -2,7 +2,7 @@ package edu.wpi.axon.ui
 
 import arrow.core.Either
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
@@ -60,7 +60,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userNewModel = model,
             generateDebugComments = false,
             datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
-            trainingMethod = JobTrainingMethod.Untrained,
+            trainingMethod = InternalJobTrainingMethod.Untrained,
             target = ModelDeploymentTarget.Desktop
         )
 
@@ -82,7 +82,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userNewModel = model,
             generateDebugComments = false,
             datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
-            trainingMethod = JobTrainingMethod.Untrained,
+            trainingMethod = InternalJobTrainingMethod.Untrained,
             target = ModelDeploymentTarget.Desktop
         )
 
@@ -104,7 +104,7 @@ class WebAppListener : ServletContextListener, KoinComponent {
             userNewModel = model,
             generateDebugComments = false,
             datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
-            trainingMethod = JobTrainingMethod.Untrained,
+            trainingMethod = InternalJobTrainingMethod.Untrained,
             target = ModelDeploymentTarget.Desktop
         )
 

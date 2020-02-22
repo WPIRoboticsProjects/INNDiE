@@ -39,7 +39,7 @@ import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.converter.Converter
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModel
@@ -90,7 +90,7 @@ class UIJob(
     var userLoss: Loss? = null,
     var userMetrics: Set<String>? = null,
     var userEpochs: Int? = null,
-    var trainingMethod: JobTrainingMethod? = null,
+    var trainingMethod: InternalJobTrainingMethod? = null,
     var target: UIModelDeploymentTarget? = null,
     var coralRepresentativeDatasetPercentage: Double? = null,
     var datasetPlugin: Plugin? = null,
@@ -156,7 +156,7 @@ class UIJob(
                 userLoss = job.userLoss,
                 userMetrics = job.userMetrics,
                 userEpochs = job.userEpochs,
-                trainingMethod = job.trainingMethod,
+                trainingMethod = job.internalTrainingMethod,
                 target = when (job.target) {
                     is ModelDeploymentTarget.Desktop -> UIModelDeploymentTarget.Desktop
                     is ModelDeploymentTarget.Coral -> UIModelDeploymentTarget.Coral

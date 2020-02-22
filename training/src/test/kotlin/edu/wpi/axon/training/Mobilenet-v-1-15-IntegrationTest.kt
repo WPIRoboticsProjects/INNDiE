@@ -40,14 +40,14 @@ internal class `Mobilenet-v-1-15-IntegrationTest` : KoinTestFixture() {
                     "global_average_pooling2d",
                     null,
                     DataFormat.ChannelsLast
-                ).trainable()
+                ).isTrainable()
 
                 it[2] shouldBe Layer.Dense(
                     "dense",
                     null,
                     10,
                     activation = Activation.SoftMax
-                ).trainable()
+                ).isTrainable()
             }
         }
     }

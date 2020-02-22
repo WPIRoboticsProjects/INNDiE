@@ -27,7 +27,7 @@ import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.converter.Converter
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModel
@@ -76,7 +76,7 @@ data class JobData(
             epochs!!,
             model,
             false,
-            JobTrainingMethod.Untrained,
+            InternalJobTrainingMethod.Untrained,
             ModelDeploymentTarget.Desktop,
             datasetPlugin!!
         )

@@ -1,14 +1,14 @@
 package edu.wpi.axon.ui.model
 
+import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.JobTrainingMethod
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.training.ModelDeploymentTarget
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleSetProperty
 import javafx.beans.property.SimpleStringProperty
+import tornadofx.Commit
 import tornadofx.ItemViewModel
 import tornadofx.asObservable
 import tornadofx.getValue
@@ -48,12 +48,6 @@ data class JobDto(val job: Job) {
     val userNewModelProperty = SimpleObjectProperty(job.userNewModel)
     var userNewModel by userNewModelProperty
 
-    val generateDebugCommentsProperty = SimpleBooleanProperty(job.generateDebugComments)
-    var generateDebugComments by generateDebugCommentsProperty
-
-    val trainingMethodProperty = SimpleObjectProperty<JobTrainingMethod>(job.trainingMethod)
-    var trainingMethod by trainingMethodProperty
-
     val targetProperty = SimpleObjectProperty<ModelDeploymentTarget>(job.target)
     var target by targetProperty
 
@@ -65,12 +59,11 @@ data class JobDto(val job: Job) {
 
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
-
-    override fun toString() =
-        "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userOptimizerProperty=$userOptimizerProperty, optimizerTypeProperty=$optimizerTypeProperty, userLossProperty=$userLossProperty, lossTypeProperty=$lossTypeProperty, userMetricsProperty=$userMetricsProperty, userEpochsProperty=$userEpochsProperty, userNewModelProperty=$userNewModelProperty, generateDebugCommentsProperty=$generateDebugCommentsProperty, trainingMethodProperty=$trainingMethodProperty, targetProperty=$targetProperty, targetTypeProperty=$targetTypeProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
 }
 
 class JobModel : ItemViewModel<JobDto>() {
+    private val jobDb by di<JobDb>()
+
     val name = bind(JobDto::nameProperty)
     val status = bind(JobDto::statusProperty)
     val userOldModelPath = bind(JobDto::userOldModelPathProperty)
@@ -82,15 +75,27 @@ class JobModel : ItemViewModel<JobDto>() {
     val userMetrics = bind(JobDto::userMetricsProperty)
     val userEpochs = bind(JobDto::userEpochsProperty)
     val userNewModel = bind(JobDto::userNewModelProperty)
-    val generateDebugComments = bind(JobDto::generateDebugCommentsProperty)
-    val trainingMethod = bind(JobDto::trainingMethodProperty)
     val target = bind(JobDto::targetProperty)
     val targetType = bind(JobDto::targetTypeProperty)
     val datasetPlugin = bind(JobDto::datasetPluginProperty)
     val id = bind(JobDto::idProperty)
 
-    override fun onCommit() {
-        println(item)
+    override fun onCommit(commits: List<Commit>) {
+        super.onCommit(commits)
+        jobDb.update(
+            id.value.toInt(),
+            name = name.value,
+            status = status.value,
+            userOldModelPath = userOldModelPath.value,
+            userDataset = userDataset.value,
+            userOptimizer = userOptimizer.value,
+            userLoss = userLoss.value,
+            userMetrics = userMetrics.value,
+            userEpochs = userEpochs.value.toInt(),
+            userNewModel = userNewModel.value,
+            target = target.value,
+            datasetPlugin = datasetPlugin.value
+        )
     }
 
     override fun toString() = "JobModel($item)"

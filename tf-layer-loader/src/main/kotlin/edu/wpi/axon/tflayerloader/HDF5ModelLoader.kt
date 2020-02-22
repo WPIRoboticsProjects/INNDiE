@@ -118,7 +118,7 @@ internal class HDF5ModelLoader(
 
             else -> when (val trainable = json["trainable"] as Boolean?) {
                 null -> layer.untrainable()
-                else -> layer.trainable(trainable)
+                else -> layer.isTrainable(trainable)
             }
         }
     }

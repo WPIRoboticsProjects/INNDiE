@@ -74,14 +74,14 @@ internal class HDF5ModelLoaderIntegrationTest {
                         32,
                         SerializableTuple2II(3, 3),
                         Activation.ReLu
-                    ).trainable(),
+                    ).isTrainable(),
                     Layer.Conv2D(
                         "conv2d_17",
                         null,
                         64,
                         SerializableTuple2II(3, 3),
                         Activation.ReLu
-                    ).trainable(),
+                    ).isTrainable(),
                     Layer.MaxPooling2D(
                         "max_pooling2d_8",
                         null,
@@ -89,34 +89,34 @@ internal class HDF5ModelLoaderIntegrationTest {
                         SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
                         PoolingPadding.Valid,
                         DataFormat.ChannelsLast
-                    ).trainable(),
+                    ).isTrainable(),
                     Layer.Dropout(
                         "dropout_19",
                         null,
                         0.25
-                    ).trainable(),
+                    ).isTrainable(),
                     Layer.Flatten(
                         "flatten_8",
                         null,
                         DataFormat.ChannelsLast
-                    ).trainable(),
+                    ).isTrainable(),
                     Layer.Dense(
                         "dense_22",
                         null,
                         128,
                         Activation.ReLu
-                    ).trainable(),
+                    ).isTrainable(),
                     Layer.Dropout(
                         "dropout_20",
                         null,
                         0.5
-                    ).trainable(),
+                    ).isTrainable(),
                     Layer.Dense(
                         "dense_23",
                         null,
                         10,
                         Activation.SoftMax
-                    ).trainable()
+                    ).isTrainable()
                 )
             )
         }
@@ -136,12 +136,12 @@ internal class HDF5ModelLoaderIntegrationTest {
                 setOf("input_2"),
                 4,
                 Activation.ReLu
-            ).trainable(), Layer.Dense(
+            ).isTrainable(), Layer.Dense(
                 "dense_3",
                 setOf("dense_2"),
                 5,
                 Activation.SoftMax
-            ).trainable()
+            ).isTrainable()
         )
 
         loadModel<Model.General>("nonSequentialModel1.h5") {
@@ -166,13 +166,13 @@ internal class HDF5ModelLoaderIntegrationTest {
             it.layers.nodes().shouldContainExactly(
                 // TODO: Add an RNN layer class
                 Layer.InputLayer("input_15", listOf(null, null, 5)),
-                Layer.UnknownLayer("rnn_12", setOf("input_15")).trainable(),
+                Layer.UnknownLayer("rnn_12", setOf("input_15")).isTrainable(),
                 Layer.Dense(
                     "dense_1",
                     setOf("rnn_12"),
                     10,
                     Activation.SoftMax
-                ).trainable()
+                ).isTrainable()
             )
         }
     }

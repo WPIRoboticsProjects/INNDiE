@@ -28,7 +28,7 @@ sealed class Layer {
      * @param trainable Whether this layer should be trained.
      * @return A new [MetaLayer.TrainableLayer] that wraps this layer.
      */
-    fun trainable(trainable: Boolean = true) =
+    fun isTrainable(trainable: Boolean = true) =
         MetaLayer.TrainableLayer(name, inputs, this, trainable)
 
     /**
@@ -37,6 +37,8 @@ sealed class Layer {
     fun untrainable() =
         MetaLayer.UntrainableLayer(name, inputs, this)
 
+    abstract fun copyWithNewInputs(inputs: Set<String>): Layer
+
     /**
      * Adds some information and delegates to another [Layer].
      */
@@ -44,6 +46,8 @@ sealed class Layer {
     sealed class MetaLayer : Layer() {
 
         abstract val layer: Layer
+
+        abstract override fun copyWithNewInputs(inputs: Set<String>): MetaLayer
 
         /**
          * A layer which is trainable.
@@ -55,16 +59,19 @@ sealed class Layer {
             override val name: String,
             override val inputs: Set<String>?,
             override val layer: Layer,
-            val trainable: Boolean
+            var trainable: Boolean
         ) : MetaLayer() {
             init {
                 require(layer !is MetaLayer)
             }
+
+            override fun copyWithNewInputs(inputs: Set<String>) =
+                copy(inputs = inputs, layer = layer.copyWithNewInputs(inputs))
         }
 
         /**
          * A layer which is untrainable. This should not be confused with a [TrainableLayer]
-         * where [TrainableLayer.trainable] is `true`. An [UntrainableLayer] is IMPOSSIBLE to train.
+         * where [TrainableLayer.isTrainable] is `true`. An [UntrainableLayer] is IMPOSSIBLE to train.
          */
         @Serializable
         data class UntrainableLayer(
@@ -75,6 +82,9 @@ sealed class Layer {
             init {
                 require(layer !is MetaLayer)
             }
+
+            override fun copyWithNewInputs(inputs: Set<String>) =
+                copy(inputs = inputs, layer = layer.copyWithNewInputs(inputs))
         }
     }
 
@@ -85,7 +95,10 @@ sealed class Layer {
     data class UnknownLayer(
         override val name: String,
         override val inputs: Set<String>?
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * A layer that contains an entire model inside it.
@@ -97,7 +110,10 @@ sealed class Layer {
         override val name: String,
         override val inputs: Set<String>?,
         val model: Model
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * A layer that accepts input data and has no parameters.
@@ -118,6 +134,8 @@ sealed class Layer {
 
         fun toInputData(): Model.General.InputData =
             Model.General.InputData(name, batchInputShape, batchSize, dtype, sparse)
+
+        override fun copyWithNewInputs(inputs: Set<String>) = error("An input layer has no inputs.")
 
         companion object {
             operator fun invoke(
@@ -157,7 +175,10 @@ sealed class Layer {
         val renormMomentum: Double? = 0.99,
         val fused: Boolean? = null,
         val virtualBatchSize: Int? = null
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/AveragePooling2D
@@ -171,7 +192,10 @@ sealed class Layer {
         val strides: SerializableEitherITii? = null,
         val padding: PoolingPadding = PoolingPadding.Valid,
         val dataFormat: DataFormat? = null
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/Conv2D
@@ -183,7 +207,10 @@ sealed class Layer {
         val filters: Int,
         val kernel: SerializableTuple2II,
         val activation: Activation
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/Dense
@@ -202,7 +229,10 @@ sealed class Layer {
         val activityRegularizer: Regularizer? = null,
         val kernelConstraint: Constraint? = null,
         val biasConstraint: Constraint? = null
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/Dropout
@@ -221,6 +251,8 @@ sealed class Layer {
                 "rate ($rate) was outside the allowed range of [0, 1]."
             }
         }
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
     }
 
     /**
@@ -231,7 +263,10 @@ sealed class Layer {
         override val name: String,
         override val inputs: Set<String>?,
         val dataFormat: DataFormat? = null
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/GlobalAveragePooling2D
@@ -241,7 +276,10 @@ sealed class Layer {
         override val name: String,
         override val inputs: Set<String>?,
         val dataFormat: DataFormat?
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/GlobalMaxPool2D
@@ -251,7 +289,10 @@ sealed class Layer {
         override val name: String,
         override val inputs: Set<String>?,
         val dataFormat: DataFormat? = null
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/MaxPool2D
@@ -265,7 +306,10 @@ sealed class Layer {
         val strides: SerializableEitherITii? = null,
         val padding: PoolingPadding = PoolingPadding.Valid,
         val dataFormat: DataFormat? = null
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 
     /**
      * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/keras/layers/SpatialDropout2D
@@ -283,6 +327,8 @@ sealed class Layer {
                 "rate ($rate) was outside the allowed range of [0, 1]."
             }
         }
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
     }
 
     /**
@@ -298,5 +344,8 @@ sealed class Layer {
             SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
         val dataFormat: DataFormat? = null,
         val interpolation: Interpolation = Interpolation.Nearest
-    ) : Layer()
+    ) : Layer() {
+
+        override fun copyWithNewInputs(inputs: Set<String>) = copy(inputs = inputs)
+    }
 }
