@@ -1,5 +1,6 @@
 package edu.wpi.axon.ui.view
 
+import arrow.core.None
 import arrow.core.Option
 import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.db.JobDb
@@ -13,6 +14,7 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
+import edu.wpi.axon.ui.ModelDownloader
 import edu.wpi.axon.ui.model.AdamDto
 import edu.wpi.axon.ui.model.AdamModel
 import edu.wpi.axon.ui.model.CoralDto
@@ -32,6 +34,7 @@ import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
+import javafx.scene.Parent
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
 import javafx.stage.Modality
@@ -66,6 +69,7 @@ import tornadofx.isInt
 import tornadofx.label
 import tornadofx.objectBinding
 import tornadofx.observable
+import tornadofx.pane
 import tornadofx.property
 import tornadofx.separator
 import tornadofx.spinner
@@ -327,32 +331,40 @@ class ModelPicker : ItemFragment<ModelSource>() {
                 }
             }
         }
-        contentMap(modelSource.type) {
-            item(ModelSourceType.EXAMPLE) {
-                combobox(job.userOldModelPath) {
-                    items = exampleModelManager.getAllExampleModels().unsafeRunSync().map {
-                        ModelSource.FromExample(it)
-                    }.toObservable()
-                    cellFormat {
-                        text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
+        field {
+            contentMap(modelSource.type) {
+                item(ModelSourceType.EXAMPLE) {
+                    combobox(job.userOldModelPath) {
+                        items = exampleModelManager.getAllExampleModels().unsafeRunSync().map {
+                            ModelSource.FromExample(it)
+                        }.toObservable()
+                        cellFormat {
+                            text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
+                        }
+                    }
+                }
+                item(ModelSourceType.FILE) {
+                    vbox {
+                        label(
+                            job.userOldModelPath,
+                            converter = object : StringConverter<ModelSource>() {
+                                override fun toString(obj: ModelSource?) =
+                                    (obj as? ModelSource.FromFile)?.filePath?.toString() ?: ""
+
+                                override fun fromString(string: String?) = null
+                            })
+                    }
+                }
+                item(ModelSourceType.JOB) {
+                    vbox {
+                        label("Job")
                     }
                 }
             }
-            item(ModelSourceType.FILE) {
-                vbox {
-                    label(
-                        job.userOldModelPath,
-                        converter = object : StringConverter<ModelSource>() {
-                            override fun toString(obj: ModelSource?) =
-                                (obj as? ModelSource.FromFile)?.filePath?.toString() ?: ""
-
-                            override fun fromString(string: String?) = null
-                        })
-                }
-            }
-            item(ModelSourceType.JOB) {
-                vbox {
-                    label("Job")
+        }
+        field {
+            button("Edit") {
+                action {
                 }
             }
         }
