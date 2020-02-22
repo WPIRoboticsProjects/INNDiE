@@ -39,13 +39,8 @@ class Main : View() {
             left = vbox {
                 add<JobList>()
             }
-            center = contentMap(job.status) {
-                item(TrainingScriptProgress.NotStarted) {
-                    add<JobEditor>()
-                }
-                item(TrainingScriptProgress.Completed) {
-                    label("Done")
-                }
+            center = vbox {
+                add<JobManager>()
             }
         }
     }
