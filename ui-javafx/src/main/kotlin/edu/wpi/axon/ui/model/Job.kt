@@ -36,6 +36,9 @@ data class JobDto(val job: Job) {
     val userLossProperty = SimpleObjectProperty(job.userLoss)
     var userLoss by userLossProperty
 
+    val lossTypeProperty = SimpleObjectProperty(job.userLoss::class)
+    var lossType by lossTypeProperty
+
     val userMetricsProperty = SimpleSetProperty(job.userMetrics.asObservable())
     var userMetrics by userMetricsProperty
 
@@ -54,15 +57,17 @@ data class JobDto(val job: Job) {
     val targetProperty = SimpleObjectProperty<ModelDeploymentTarget>(job.target)
     var target by targetProperty
 
+    val targetTypeProperty = SimpleObjectProperty(job.target::class)
+    var targetType by targetTypeProperty
+
     val datasetPluginProperty = SimpleObjectProperty<Plugin>(job.datasetPlugin)
     var datasetPlugin by datasetPluginProperty
 
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
 
-    override fun toString(): String {
-        return "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userOptimizerProperty=$userOptimizerProperty, userLossProperty=$userLossProperty, userMetricsProperty=$userMetricsProperty, userEpochsProperty=$userEpochsProperty, userNewModelProperty=$userNewModelProperty, generateDebugCommentsProperty=$generateDebugCommentsProperty, trainingMethodProperty=$trainingMethodProperty, targetProperty=$targetProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
-    }
+    override fun toString() =
+        "JobDto(nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, userDatasetProperty=$userDatasetProperty, userOptimizerProperty=$userOptimizerProperty, optimizerTypeProperty=$optimizerTypeProperty, userLossProperty=$userLossProperty, lossTypeProperty=$lossTypeProperty, userMetricsProperty=$userMetricsProperty, userEpochsProperty=$userEpochsProperty, userNewModelProperty=$userNewModelProperty, generateDebugCommentsProperty=$generateDebugCommentsProperty, trainingMethodProperty=$trainingMethodProperty, targetProperty=$targetProperty, targetTypeProperty=$targetTypeProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
 }
 
 class JobModel : ItemViewModel<JobDto>() {
@@ -73,16 +78,20 @@ class JobModel : ItemViewModel<JobDto>() {
     val userOptimizer = bind(JobDto::userOptimizerProperty)
     val optimizerType = bind(JobDto::optimizerTypeProperty)
     val userLoss = bind(JobDto::userLossProperty)
+    val lossType = bind(JobDto::lossTypeProperty)
     val userMetrics = bind(JobDto::userMetricsProperty)
     val userEpochs = bind(JobDto::userEpochsProperty)
     val userNewModel = bind(JobDto::userNewModelProperty)
     val generateDebugComments = bind(JobDto::generateDebugCommentsProperty)
     val trainingMethod = bind(JobDto::trainingMethodProperty)
     val target = bind(JobDto::targetProperty)
+    val targetType = bind(JobDto::targetTypeProperty)
     val datasetPlugin = bind(JobDto::datasetPluginProperty)
     val id = bind(JobDto::idProperty)
 
     override fun onCommit() {
         println(item)
     }
+
+    override fun toString() = "JobModel($item)"
 }

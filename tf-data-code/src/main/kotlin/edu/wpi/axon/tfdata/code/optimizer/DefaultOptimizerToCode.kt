@@ -9,5 +9,10 @@ class DefaultOptimizerToCode : OptimizerToCode {
         is Optimizer.Adam -> "tf.keras.optimizers.Adam(${optimizer.learningRate}, " +
             "${optimizer.beta1}, ${optimizer.beta2}, ${optimizer.epsilon}, " +
             "${pythonString(optimizer.amsGrad)})"
+
+        is Optimizer.FTRL -> "tf.keras.optimizers.Ftrl(${optimizer.learningRate}, " +
+            "${optimizer.learningRatePower}, ${optimizer.initialAccumulatorValue}, " +
+            "${optimizer.l1RegularizationStrength}, ${optimizer.l2RegularizationStrength}, " +
+            "'Ftrl', ${optimizer.l2ShrinkageRegularizationStrength})"
     }
 }

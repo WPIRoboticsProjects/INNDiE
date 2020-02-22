@@ -14,7 +14,34 @@ sealed class Optimizer {
         val beta2: Double,
         val epsilon: Double,
         val amsGrad: Boolean
-    ) : Optimizer()
+    ) : Optimizer() {
+        constructor() : this(
+            learningRate = 0.001,
+            beta1 = 0.9,
+            beta2 = 0.999,
+            epsilon = 1.0E-7,
+            amsGrad = false
+        )
+    }
+
+    @Serializable
+    data class FTRL(
+        val learningRate: Double,
+        val learningRatePower: Double,
+        val initialAccumulatorValue: Double,
+        val l1RegularizationStrength: Double,
+        val l2RegularizationStrength: Double,
+        val l2ShrinkageRegularizationStrength: Double
+    ) : Optimizer() {
+        constructor() : this(
+            learningRate = 0.001,
+            learningRatePower = -0.5,
+            initialAccumulatorValue = 0.1,
+            l1RegularizationStrength = 0.0,
+            l2RegularizationStrength = 0.0,
+            l2ShrinkageRegularizationStrength = 0.0
+        )
+    }
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable

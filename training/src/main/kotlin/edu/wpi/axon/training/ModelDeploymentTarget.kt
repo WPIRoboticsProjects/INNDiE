@@ -25,7 +25,9 @@ sealed class ModelDeploymentTarget {
      * representative dataset used for post-training quantization.
      */
     @Serializable
-    data class Coral(val representativeDatasetPercentage: Double) : ModelDeploymentTarget()
+    data class Coral(val representativeDatasetPercentage: Double) : ModelDeploymentTarget() {
+        constructor() : this(representativeDatasetPercentage = 0.2)
+    }
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable

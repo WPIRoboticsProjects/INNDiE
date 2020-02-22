@@ -8,6 +8,7 @@ import tornadofx.Commit
 import tornadofx.ItemViewModel
 import tornadofx.getValue
 import tornadofx.setValue
+import kotlin.reflect.KClass
 
 class AdamDto(adam: Optimizer.Adam) {
     private val learningRateProperty = SimpleDoubleProperty(adam.learningRate)
@@ -29,8 +30,7 @@ class AdamModel(private val optToSet: Property<Optimizer.Adam>) : ItemViewModel<
     val epsilon = bind(AdamDto::epsilon)
     val amsGrad = bind(AdamDto::amsGrad)
 
-    override fun onCommit(commits: List<Commit>) {
-        super.onCommit(commits)
+    override fun onCommit() {
         optToSet.value = optToSet.value.copy(
             learningRate = learningRate.value,
             beta1 = beta1.value,
