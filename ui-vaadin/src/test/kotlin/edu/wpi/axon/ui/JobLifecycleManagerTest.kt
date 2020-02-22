@@ -1,8 +1,8 @@
 package edu.wpi.axon.ui
 
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
+import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import io.mockk.coEvery
 import io.mockk.coVerify

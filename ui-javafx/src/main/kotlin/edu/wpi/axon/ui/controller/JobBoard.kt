@@ -4,8 +4,6 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.JobDbOp
 import edu.wpi.axon.ui.model.JobDto
 import javafx.application.Platform
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import tornadofx.Controller
 import tornadofx.asObservable
 import tornadofx.toObservable

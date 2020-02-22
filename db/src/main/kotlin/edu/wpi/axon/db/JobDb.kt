@@ -1,9 +1,8 @@
 package edu.wpi.axon.db
 
 import com.beust.klaxon.Klaxon
-import edu.wpi.axon.db.data.DesiredJobTrainingMethod
-import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
+import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.plugin.Plugin

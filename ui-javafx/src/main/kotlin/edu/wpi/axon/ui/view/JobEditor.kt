@@ -27,18 +27,14 @@ import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ObservableValue
-import javafx.event.EventTarget
-import javafx.scene.control.TextField
 import javafx.stage.FileChooser
 import javafx.stage.Modality
 import javafx.util.StringConverter
+import kotlin.reflect.KClass
 import tornadofx.Fieldset
 import tornadofx.Fragment
 import tornadofx.ItemFragment
 import tornadofx.ItemViewModel
-import tornadofx.ValidationMessage
-import tornadofx.ValidationSeverity
 import tornadofx.action
 import tornadofx.bind
 import tornadofx.bindTo
@@ -64,7 +60,6 @@ import tornadofx.textfield
 import tornadofx.toObservable
 import tornadofx.validator
 import tornadofx.vbox
-import kotlin.reflect.KClass
 
 class JobEditor : Fragment() {
     private val job by inject<JobModel>()

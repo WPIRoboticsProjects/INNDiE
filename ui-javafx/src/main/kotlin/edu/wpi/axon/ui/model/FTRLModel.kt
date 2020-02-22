@@ -3,10 +3,9 @@ package edu.wpi.axon.ui.model
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleDoubleProperty
-import tornadofx.Commit
 import tornadofx.ItemViewModel
-import tornadofx.setValue
 import tornadofx.getValue
+import tornadofx.setValue
 
 class FTRLDto(ftrl: Optimizer.FTRL) {
     private val learningRateProperty = SimpleDoubleProperty(ftrl.learningRate)

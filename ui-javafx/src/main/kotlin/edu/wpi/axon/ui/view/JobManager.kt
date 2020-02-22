@@ -5,7 +5,7 @@ import tornadofx.Fragment
 import tornadofx.tab
 import tornadofx.tabpane
 
-class JobManager: Fragment() {
+class JobManager : Fragment() {
     override val root = tabpane {
         tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
 

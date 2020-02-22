@@ -40,14 +40,13 @@ class JobList : View() {
             }
             button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
                 setOnAction {
-
                 }
             }
         }
     }
 }
 
-class JobListFragment: ListCellFragment<JobDto>() {
+class JobListFragment : ListCellFragment<JobDto>() {
     private val job = JobModel().bindTo(this)
 
     override val root = vbox {

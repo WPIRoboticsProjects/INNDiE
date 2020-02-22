@@ -6,11 +6,9 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.Parent
-import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.Pane
 import tornadofx.attachTo
 import tornadofx.onChange
-import tornadofx.opcr
 
 class ContentMap<T : Any?> : Pane() {
 

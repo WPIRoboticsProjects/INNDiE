@@ -4,11 +4,9 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
-import tornadofx.Commit
 import tornadofx.ItemViewModel
 import tornadofx.getValue
 import tornadofx.setValue
-import kotlin.reflect.KClass
 
 class AdamDto(adam: Optimizer.Adam) {
     private val learningRateProperty = SimpleDoubleProperty(adam.learningRate)
