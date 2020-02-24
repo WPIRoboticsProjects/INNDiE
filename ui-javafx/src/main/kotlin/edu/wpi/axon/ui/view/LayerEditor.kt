@@ -24,6 +24,7 @@ import tornadofx.form
 import tornadofx.splitpane
 import tornadofx.textfield
 
+// TODO: Unit test getNewModel
 @Suppress("UnstableApiUsage")
 class LayerEditor(
     private val initialModel: Model
