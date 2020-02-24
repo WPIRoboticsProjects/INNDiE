@@ -190,7 +190,7 @@ internal class JobRunnerIntegTest : KoinTestFixture() {
         }.unsafeRunSync()
 
         // Need to upload the example model so that EC2 can pull it back down
-        S3Manager(get(named(axonBucketName))).uploadUntrainedModel(file)
+        S3Manager(get(named(axonBucketName))).uploadModel(file)
 
         val db = get<JobDb>()
         val job = Random.nextJob(

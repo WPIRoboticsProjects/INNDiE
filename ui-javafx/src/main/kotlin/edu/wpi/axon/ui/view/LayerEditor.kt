@@ -7,12 +7,15 @@ import com.fxgraph.layout.AbegoTreeLayout
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
+import javafx.scene.layout.BorderPane
 import org.abego.treelayout.Configuration
 import tornadofx.Fragment
 import tornadofx.ItemViewModel
 import tornadofx.action
+import tornadofx.add
 import tornadofx.borderpane
 import tornadofx.button
+import tornadofx.buttonbar
 import tornadofx.checkbox
 import tornadofx.enableWhen
 import tornadofx.field
@@ -24,11 +27,11 @@ import tornadofx.textfield
 @Suppress("UnstableApiUsage")
 class LayerEditor(
     private val initialModel: Model
-) : Fragment("My View") {
+) : BorderPane() {
 
     private val graph = Graph()
 
-    override val root = borderpane {
+    init {
         graph.beginUpdate()
 
         when (initialModel) {
@@ -62,27 +65,39 @@ class LayerEditor(
     }
 
     fun getNewModel(): Model {
-        val layers = graph.model.allCells.mapTo(mutableSetOf()) { (it as LayerCell).layer }
-        val edges =
-            graph.model.allEdges.map {
-                (it.source as LayerCell).layer to (it.target as LayerCell).layer
+        return when (initialModel) {
+            is Model.Sequential -> {
+                val newLayers = graph.model.allCells.mapTo(mutableSetOf()) {
+                    (it as LayerCell).layer
+                }
+
+                initialModel.copy(layers = newLayers)
             }
 
-        val newLayers = layers.mapTo(mutableSetOf()) { layer ->
-            val inputs = edges.filter { it.second == layer }.mapTo(mutableSetOf()) { it.first.name }
-            layer.copyWithNewInputs(inputs)
-        }
+            is Model.General -> {
+                val layers = graph.model.allCells.mapTo(mutableSetOf()) { (it as LayerCell).layer }
+                val edges = graph.model.allEdges.map {
+                    (it.source as LayerCell).layer to (it.target as LayerCell).layer
+                }
 
-        return when (initialModel) {
-            is Model.Sequential -> initialModel.copy(layers = newLayers)
-            is Model.General -> initialModel.copy(
-                layers = DefaultLayersToGraph().convertToGraph(newLayers).getOrHandle { error(it) }
-            )
+                val newLayers = layers.mapTo(mutableSetOf()) { layer ->
+                    val inputs = edges.filter { it.second == layer }.mapTo(mutableSetOf()) {
+                        it.first.name
+                    }
+                    layer.copyWithNewInputs(inputs)
+                }
+
+                initialModel.copy(
+                    layers = DefaultLayersToGraph()
+                        .convertToGraph(newLayers)
+                        .getOrHandle { error(it) }
+                )
+            }
         }
     }
 
     private fun openEditor(layerCell: LayerCell) {
-        root.right = when (val layer = layerCell.layer) {
+        right = when (val layer = layerCell.layer) {
             is Layer.MetaLayer.TrainableLayer -> form {
                 val model = TrainableLayerModel(layer)
                 fieldset("Edit Layer") {
@@ -112,7 +127,7 @@ class LayerEditor(
                     }
                     button("Close") {
                         action {
-                            root.right = null
+                            right = null
                         }
                     }
                 }
@@ -131,18 +146,21 @@ class LayerEditor(
                             isEditable = false
                         }
                     }
-                    button("Save") {
-                        enableWhen(model.dirty)
-                        action {
-                            model.commit()
-                            val newLayer = model.item
-                            layerCell.layer = newLayer
-                            layerCell.content = createBaseLayerCell(newLayer)
+                    buttonbar {
+                        button("Save") {
+                            enableWhen(model.dirty)
+                            action {
+                                model.commit {
+                                    val newLayer = model.item
+                                    layerCell.layer = newLayer
+                                    layerCell.content = createBaseLayerCell(newLayer)
+                                }
+                            }
                         }
-                    }
-                    button("Close") {
-                        action {
-                            root.right = null
+                        button("Close") {
+                            action {
+                                right = null
+                            }
                         }
                     }
                 }

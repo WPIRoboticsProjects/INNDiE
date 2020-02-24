@@ -1,6 +1,7 @@
 package edu.wpi.axon.examplemodel
 
 import arrow.fx.IO
+import edu.wpi.axon.util.localCacheDir
 import java.io.File
 import java.net.URL
 import java.nio.file.Paths
@@ -15,9 +16,7 @@ class GitExampleModelManager : ExampleModelManager {
      * The directory the example model cache lives in. Modify this to set a different cache
      * directory.
      */
-    var cacheDir: File =
-        Paths.get(System.getProperty("user.home"), ".wpilib", "Axon", "example-model-cache")
-            .toFile()
+    var cacheDir: File = localCacheDir.resolve("example-model-cache").toFile()
 
     /**
      * The example models metadata file.

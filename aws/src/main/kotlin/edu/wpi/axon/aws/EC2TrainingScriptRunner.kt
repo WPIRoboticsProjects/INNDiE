@@ -81,10 +81,10 @@ class EC2TrainingScriptRunner(
             |apt-cache policy docker-ce
             |apt install -y docker-ce
             |systemctl status docker
-            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.15/axon-0.1.15-py2.py3-none-any.whl
+            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.16/axon-0.1.16-py2.py3-none-any.whl
             |axon create-heartbeat ${config.id}
             |axon update-training-progress ${config.id} "initializing"
-            |axon download-untrained-model "${config.oldModelName.path}"
+            |axon download-model "${config.oldModelName.path}"
             |$downloadDatasetString
             |axon download-training-script "$scriptFileName"
             |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6" "/home/$scriptFileName"

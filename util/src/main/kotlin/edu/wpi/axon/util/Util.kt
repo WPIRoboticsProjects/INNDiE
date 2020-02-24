@@ -6,6 +6,14 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import mu.KotlinLogging
+import java.nio.file.Path
+import java.nio.file.Paths
+
+val localCacheDir: Path = Paths.get(
+    System.getProperty("user.home"),
+    ".wpilib",
+    "Axon"
+)
 
 infix fun <E> Iterable<E>.anyIn(other: Iterable<E>) = any { it in other }
 

@@ -13,6 +13,7 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.examplemodel.ExampleModel
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
@@ -27,28 +28,25 @@ import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.JobRunner
-import edu.wpi.axon.ui.ModelDownloader
+import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
+import edu.wpi.axon.util.localCacheDir
 import edu.wpi.axon.util.testPluginManagerName
 import java.io.File
 import java.nio.file.Paths
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import java.nio.file.Path
 
-val localScriptRunnerCache = Paths.get(
-    System.getProperty("user.home"),
-    ".wpilib",
-    "Axon",
-    "local-script-runner-cache"
-)
+val localScriptRunnerCache: Path = localCacheDir.resolve("local-script-runner-cache")
 
 fun loadModel(modelName: String): Pair<Model, String> {
     val localModelPath =
-            Paths.get("/Users/austinshalit/git/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
-                    .toString()
+        Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
+            .toString()
     val layers =
         ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
     val model = layers.attempt().unsafeRunSync()
@@ -113,12 +111,7 @@ fun defaultFrontendModule() = module {
         when (val bucketName = get<Option<String>>(named(axonBucketName))) {
             is Some -> S3PreferencesManager(S3Manager(bucketName.t)).apply { initialize() }
             is None -> LocalPreferencesManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "preferences.json"
-                )
+                localCacheDir.resolve("preferences.json")
             ).apply { initialize() }
         }
     }
@@ -140,12 +133,7 @@ fun defaultFrontendModule() = module {
             }
 
             is None -> LocalPluginManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "dataset_plugin_cache.json"
-                ).toFile(),
+                localCacheDir.resolve("dataset_plugin_cache.json").toFile(),
                 officialPlugins
             ).apply { initialize() }
         }
@@ -167,12 +155,7 @@ fun defaultFrontendModule() = module {
             }
 
             is None -> LocalPluginManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "test_plugin_cache.json"
-                ).toFile(),
+                localCacheDir.resolve("test_plugin_cache.json").toFile(),
                 officialPlugins
             ).apply { initialize() }
         }
@@ -186,7 +169,7 @@ fun defaultFrontendModule() = module {
         ).apply { initialize() }
     }
 
-    single { ModelDownloader() }
+    single { ModelManager() }
     single { JobRunner() }
     single<ExampleModelManager> { GitExampleModelManager().apply { updateCache().unsafeRunSync() } }
 }

@@ -48,7 +48,7 @@ internal class JobRunner : KoinComponent {
     private val progressReporters = mutableMapOf<Int, TrainingScriptProgressReporter>()
     private val cancellers = mutableMapOf<Int, TrainingScriptCanceller>()
     private val bucketName by inject<Option<String>>(named(axonBucketName))
-    private val modelDownloader by inject<ModelDownloader>()
+    private val modelManager by inject<ModelManager>()
 
     /**
      * Generates the code for a job and starts it.
@@ -71,21 +71,15 @@ internal class JobRunner : KoinComponent {
 
         return when (desiredJobTrainingMethod) {
             DesiredJobTrainingMethod.LOCAL -> {
-                when (val path = job.userOldModelPath) {
-                    is ModelSource.FromFile -> check(path.filePath is FilePath.Local)
-                    is ModelSource.FromJob -> TODO("Not implemented.")
-                }
-                startLocalJob(job)
+                val localFile = modelManager.downloadModel(job.userOldModelPath)
+                startLocalJob(job.copy(userOldModelPath = ModelSource.FromFile(localFile)))
                 InternalJobTrainingMethod.Local
             }
 
             DesiredJobTrainingMethod.EC2 -> {
-                when (val path = job.userOldModelPath) {
-                    is ModelSource.FromFile -> check(path.filePath is FilePath.S3)
-                    is ModelSource.FromJob -> TODO("Not implemented.")
-                }
                 check(bucketName is Some)
-                startEC2Job(job)
+                val s3File = modelManager.uploadModel(job.userOldModelPath)
+                startEC2Job(job.copy(userOldModelPath = ModelSource.FromFile(s3File)))
             }
         }
     }
@@ -131,7 +125,9 @@ internal class JobRunner : KoinComponent {
         job: Job,
         workingDir: Path
     ): RunTrainingScriptConfiguration {
-        val (oldModel, modelPath) = modelDownloader.downloadModel(job.userOldModelPath)
+        require(job.userOldModelPath is ModelSource.FromFile)
+        val modelPath = (job.userOldModelPath as ModelSource.FromFile).filePath
+        val oldModel = modelManager.loadModel(job.userOldModelPath)
 
         val trainModelScriptGenerator = when (job.userNewModel) {
             is Model.Sequential -> {

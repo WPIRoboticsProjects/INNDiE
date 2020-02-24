@@ -11,6 +11,7 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
+import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.model.AdamDto
 import edu.wpi.axon.ui.model.AdamModel
 import edu.wpi.axon.ui.model.CoralDto
@@ -52,9 +53,12 @@ import tornadofx.fieldset
 import tornadofx.filterInput
 import tornadofx.form
 import tornadofx.hbox
+import tornadofx.isDirty
 import tornadofx.isDouble
 import tornadofx.isInt
 import tornadofx.label
+import tornadofx.onChange
+import tornadofx.onChangeOnce
 import tornadofx.separator
 import tornadofx.textfield
 import tornadofx.toObservable
@@ -302,6 +306,7 @@ class ModelPicker : ItemFragment<ModelSource>() {
     private val job by inject<JobModel>()
     private val modelSource = ModelSourceModel().bindTo(this)
     private val exampleModelManager by di<ExampleModelManager>()
+    private val modelManager by di<ModelManager>()
 
     override val root = vbox {
         field("Source") {
@@ -309,6 +314,9 @@ class ModelPicker : ItemFragment<ModelSource>() {
                 items = ModelSourceType.values().toList().toObservable()
                 cellFormat {
                     text = it.name.toLowerCase().capitalize()
+                }
+                valueProperty().onChange {
+                    job.userNewModel.value = null
                 }
             }
         }
@@ -321,6 +329,10 @@ class ModelPicker : ItemFragment<ModelSource>() {
                         }.toObservable()
                         cellFormat {
                             text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
+                        }
+                        valueProperty().onChange {
+                            job.userNewModel.value =
+                                modelManager.loadModel(job.userOldModelPath.value)
                         }
                     }
                 }
@@ -346,6 +358,7 @@ class ModelPicker : ItemFragment<ModelSource>() {
         field {
             button("Edit") {
                 action {
+                    find<LayerEditorFragment>().openModal(modality = Modality.WINDOW_MODAL)
                 }
             }
         }
@@ -353,6 +366,48 @@ class ModelPicker : ItemFragment<ModelSource>() {
 
     init {
         itemProperty.bind(job.userOldModelPath)
+    }
+}
+
+class LayerEditorFragment : Fragment() {
+
+    private val job by inject<JobModel>()
+    private val modelManager by di<ModelManager>()
+
+    override val root = borderpane {
+        // TODO: Race condition accessing job.userOldModelPath
+        Thread.sleep(20)
+        val layerEditor = LayerEditor(
+            if (job.userOldModelPath.isDirty) {
+                // Need to download the new model because the old model path has changed.
+                // The model downloader will cache the model source, which will do the job
+                // of preserving edits for us here (we need this because the dirty property
+                // will still be true until the user saves the job, so if they select a new
+                // model, edit it, close this editor, and then edit it again without saving
+                // the job, the dirty property will still be true so we will download the
+                // model again).
+                val model = modelManager.loadModel(job.userOldModelPath.value)
+                job.userNewModel.value = model
+                model
+            } else {
+                job.userNewModel.value
+            }
+        )
+        center = layerEditor
+
+        bottom = buttonbar {
+            button("Save") {
+                action {
+                    job.userNewModel.value = layerEditor.getNewModel()
+                    close()
+                }
+            }
+            button("Cancel") {
+                action {
+                    close()
+                }
+            }
+        }
     }
 }
 
