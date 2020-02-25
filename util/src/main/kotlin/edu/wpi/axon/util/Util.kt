@@ -5,9 +5,9 @@ import arrow.fx.IO
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import mu.KotlinLogging
 import java.nio.file.Path
 import java.nio.file.Paths
+import mu.KotlinLogging
 
 val localCacheDir: Path = Paths.get(
     System.getProperty("user.home"),

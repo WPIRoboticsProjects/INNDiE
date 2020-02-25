@@ -7,9 +7,7 @@ import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
 import javafx.geometry.Orientation
-import javafx.scene.Parent
 import javafx.scene.control.ProgressBar
-import tornadofx.Fragment
 import tornadofx.ListCellFragment
 import tornadofx.View
 import tornadofx.action

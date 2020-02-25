@@ -4,7 +4,6 @@ import arrow.fx.IO
 import edu.wpi.axon.util.localCacheDir
 import java.io.File
 import java.net.URL
-import java.nio.file.Paths
 import org.apache.commons.io.FileUtils
 
 /**

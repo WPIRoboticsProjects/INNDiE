@@ -13,7 +13,6 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.examplemodel.ExampleModel
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
@@ -35,11 +34,11 @@ import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.localCacheDir
 import edu.wpi.axon.util.testPluginManagerName
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import java.nio.file.Path
 
 val localScriptRunnerCache: Path = localCacheDir.resolve("local-script-runner-cache")
 

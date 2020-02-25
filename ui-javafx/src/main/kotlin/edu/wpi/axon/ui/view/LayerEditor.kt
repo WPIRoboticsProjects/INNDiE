@@ -9,11 +9,9 @@ import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
 import javafx.scene.layout.BorderPane
 import org.abego.treelayout.Configuration
-import tornadofx.Fragment
 import tornadofx.ItemViewModel
 import tornadofx.action
 import tornadofx.add
-import tornadofx.borderpane
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.checkbox

@@ -53,12 +53,10 @@ import tornadofx.fieldset
 import tornadofx.filterInput
 import tornadofx.form
 import tornadofx.hbox
-import tornadofx.isDirty
 import tornadofx.isDouble
 import tornadofx.isInt
 import tornadofx.label
 import tornadofx.onChange
-import tornadofx.onChangeOnce
 import tornadofx.separator
 import tornadofx.textfield
 import tornadofx.toObservable
@@ -300,9 +298,9 @@ class DatasetPicker : ItemFragment<Dataset>() {
                             Example datasets are simple, easy ways to test a model before curating a real dataset.
                             """.trimIndent()
                         )
-                        items =
-                            Dataset.ExampleDataset::class.sealedSubclasses.map { it.objectInstance }
-                                .toObservable()
+                        items = Dataset.ExampleDataset::class.sealedSubclasses
+                            .map { it.objectInstance }
+                            .toObservable()
                         cellFormat {
                             text = it.displayName
                         }

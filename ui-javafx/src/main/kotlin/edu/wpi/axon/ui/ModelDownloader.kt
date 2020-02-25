@@ -5,13 +5,11 @@ import arrow.core.getOrElse
 import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.examplemodel.downloadAndConfigureExampleModel
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import java.io.File
-import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
