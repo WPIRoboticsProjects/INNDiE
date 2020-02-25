@@ -330,9 +330,10 @@ class ModelPicker : ItemFragment<ModelSource>() {
                         cellFormat {
                             text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
                         }
-                        valueProperty().onChange {
-                            job.userNewModel.value =
-                                modelManager.loadModel(job.userOldModelPath.value)
+                        valueProperty().addListener { _, oldValue, newValue ->
+                            println(oldValue)
+                            println(newValue)
+                            // job.userNewModel.value = modelManager.loadModel(job.userOldModelPath.value)
                         }
                     }
                 }
@@ -375,23 +376,24 @@ class LayerEditorFragment : Fragment() {
     private val modelManager by di<ModelManager>()
 
     override val root = borderpane {
-        // TODO: Race condition accessing job.userOldModelPath
-        Thread.sleep(20)
-        val layerEditor = LayerEditor(
-            if (job.userOldModelPath.isDirty) {
-                // Need to download the new model because the old model path has changed.
-                // The model downloader will cache the model source, which will do the job
-                // of preserving edits for us here (we need this because the dirty property
-                // will still be true until the user saves the job, so if they select a new
-                // model, edit it, close this editor, and then edit it again without saving
-                // the job, the dirty property will still be true so we will download the
-                // model again).
-                val model = modelManager.loadModel(job.userOldModelPath.value)
-                job.userNewModel.value = model
-                model
-            } else {
-                job.userNewModel.value
-            }
+        // // TODO: Race condition accessing job.userOldModelPath
+        // Thread.sleep(20)
+
+        val layerEditor = LayerEditor(job.userNewModel.value
+            // if (job.userOldModelPath.isDirty) {
+            //     // Need to download the new model because the old model path has changed.
+            //     // The model downloader will cache the model source, which will do the job
+            //     // of preserving edits for us here (we need this because the dirty property
+            //     // will still be true until the user saves the job, so if they select a new
+            //     // model, edit it, close this editor, and then edit it again without saving
+            //     // the job, the dirty property will still be true so we will download the
+            //     // model again).
+            //     val model = modelManager.loadModel(job.userOldModelPath.value)
+            //     job.userNewModel.value = model
+            //     model
+            // } else {
+            //     job.userNewModel.value
+            // }
         )
         center = layerEditor
 
