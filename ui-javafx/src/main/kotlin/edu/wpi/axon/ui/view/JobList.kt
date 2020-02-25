@@ -6,19 +6,28 @@ import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
+import javafx.geometry.Orientation
+import javafx.scene.Parent
 import javafx.scene.control.ProgressBar
+import tornadofx.Fragment
 import tornadofx.ListCellFragment
 import tornadofx.View
+import tornadofx.action
 import tornadofx.bindSelected
 import tornadofx.bindTo
+import tornadofx.booleanBinding
 import tornadofx.button
 import tornadofx.buttonbar
+import tornadofx.contextmenu
 import tornadofx.doubleBinding
 import tornadofx.enableWhen
+import tornadofx.field
+import tornadofx.item
 import tornadofx.label
 import tornadofx.listview
 import tornadofx.onChange
 import tornadofx.progressbar
+import tornadofx.textarea
 import tornadofx.vbox
 
 class JobList : View() {
@@ -67,15 +76,39 @@ class JobListFragment : ListCellFragment<JobDto>() {
             maxWidth = Double.MAX_VALUE
 
             job.status.onChange {
-                styleClass.setAll(when (it) {
-                    TrainingScriptProgress.NotStarted -> listOf("progress-bar")
-                    TrainingScriptProgress.Creating -> listOf("progress-bar")
-                    TrainingScriptProgress.Initializing -> listOf("progress-bar")
-                    is TrainingScriptProgress.InProgress -> listOf("progress-bar")
-                    TrainingScriptProgress.Completed -> listOf("progress-bar-success", "progress-bar")
-                    is TrainingScriptProgress.Error -> listOf("progress-bar-error", "progress-bar")
-                    else -> listOf("progress-bar-error", "progress-bar")
-                })
+                styleClass.setAll(
+                    when (it) {
+                        TrainingScriptProgress.NotStarted -> listOf("progress-bar")
+                        TrainingScriptProgress.Creating -> listOf("progress-bar")
+                        TrainingScriptProgress.Initializing -> listOf("progress-bar")
+                        is TrainingScriptProgress.InProgress -> listOf("progress-bar")
+                        TrainingScriptProgress.Completed -> listOf(
+                            "progress-bar-success",
+                            "progress-bar"
+                        )
+                        is TrainingScriptProgress.Error -> listOf(
+                            "progress-bar-error",
+                            "progress-bar"
+                        )
+                        else -> listOf("progress-bar-error", "progress-bar")
+                    }
+                )
+            }
+        }
+        contextmenu {
+            item("View Error") {
+                enableWhen(job.status.booleanBinding { it is TrainingScriptProgress.Error })
+                action {
+                    dialog(labelPosition = Orientation.VERTICAL) {
+                        field("Error Log") {
+                            textarea {
+                                text = (job.status.value as TrainingScriptProgress.Error).log
+                                isEditable = false
+                                isWrapText = true
+                            }
+                        }
+                    }
+                }
             }
         }
     }
