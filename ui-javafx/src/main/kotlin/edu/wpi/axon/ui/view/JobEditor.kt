@@ -62,6 +62,7 @@ import tornadofx.onChangeOnce
 import tornadofx.separator
 import tornadofx.textfield
 import tornadofx.toObservable
+import tornadofx.tooltip
 import tornadofx.validator
 import tornadofx.vbox
 
@@ -147,6 +148,12 @@ class JobConfiguration : Fragment("Configuration") {
                 fieldset("Dataset") {
                     add<DatasetPicker>()
                     field("Plugin") {
+                        tooltip(
+                            """
+                            The plugin used to process the dataset before giving it to the model for training.
+                            Add new plugins in the plugin editor.
+                            """.trimIndent()
+                        )
                         combobox(job.datasetPlugin) {
                             items = datasetPluginManager.listPlugins().toList().toObservable()
                             cellFormat {
@@ -163,6 +170,12 @@ class JobConfiguration : Fragment("Configuration") {
             vbox(20) {
                 fieldset {
                     field("Epochs") {
+                        tooltip(
+                            """
+                            The number of iterations over the dataset preformed when training the model.
+                            More epochs takes longer but usually produces a more accurate model.
+                            """.trimIndent()
+                        )
                         textfield(job.userEpochs) {
                             filterInput { it.controlNewText.isInt() }
                             validator { isNotNull(it) }
@@ -173,6 +186,12 @@ class JobConfiguration : Fragment("Configuration") {
                 fieldset("Optimizer") {
                     field("Type") {
                         combobox(job.optimizerType) {
+                            tooltip(
+                                """
+                                The type of the optimizer to use when training the model.
+                                Different optimizers are better for different models.
+                                """.trimIndent()
+                            )
                             items = Optimizer::class.sealedSubclasses.toObservable()
                             cellFormat {
                                 text = it.simpleName ?: "UNKNOWN"
@@ -198,6 +217,12 @@ class JobConfiguration : Fragment("Configuration") {
                 fieldset("Loss") {
                     field("Type") {
                         combobox(job.lossType) {
+                            tooltip(
+                                """
+                                The type of the loss function to use.
+                                Different loss functions are better for different models and tasks.
+                                """.trimIndent()
+                            )
                             items = Loss::class.sealedSubclasses.toObservable()
                             cellFormat {
                                 text = it.simpleName ?: "UNKNOWN"
@@ -224,6 +249,11 @@ class JobConfiguration : Fragment("Configuration") {
                 fieldset("Target") {
                     field("Type") {
                         combobox(job.targetType) {
+                            tooltip(
+                                """
+                                The target machine that the model will run on.
+                                """.trimIndent()
+                            )
                             items = ModelDeploymentTarget::class.sealedSubclasses.toObservable()
                             cellFormat {
                                 text = it.simpleName ?: "UNKNOWN"
@@ -265,6 +295,11 @@ class DatasetPicker : ItemFragment<Dataset>() {
             contentMap(dataset.type) {
                 item(DatasetType.EXAMPLE) {
                     combobox(job.userDataset) {
+                        tooltip(
+                            """
+                            Example datasets are simple, easy ways to test a model before curating a real dataset.
+                            """.trimIndent()
+                        )
                         items =
                             Dataset.ExampleDataset::class.sealedSubclasses.map { it.objectInstance }
                                 .toObservable()
@@ -379,7 +414,8 @@ class LayerEditorFragment : Fragment() {
         // // TODO: Race condition accessing job.userOldModelPath
         // Thread.sleep(20)
 
-        val layerEditor = LayerEditor(job.userNewModel.value
+        val layerEditor = LayerEditor(
+            job.userNewModel.value
             // if (job.userOldModelPath.isDirty) {
             //     // Need to download the new model because the old model path has changed.
             //     // The model downloader will cache the model source, which will do the job
