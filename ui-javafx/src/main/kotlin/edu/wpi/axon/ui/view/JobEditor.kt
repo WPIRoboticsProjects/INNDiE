@@ -21,7 +21,6 @@ import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.FTRLDto
 import edu.wpi.axon.ui.model.FTRLModel
 import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.model.ModelSourceModel
 import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
@@ -56,7 +55,6 @@ import tornadofx.hbox
 import tornadofx.isDouble
 import tornadofx.isInt
 import tornadofx.label
-import tornadofx.onChange
 import tornadofx.separator
 import tornadofx.textfield
 import tornadofx.toObservable
@@ -336,25 +334,35 @@ class DatasetPicker : ItemFragment<Dataset>() {
 }
 
 class ModelPicker : ItemFragment<ModelSource>() {
+
     private val job by inject<JobModel>()
-    private val modelSource = ModelSourceModel().bindTo(this)
     private val exampleModelManager by di<ExampleModelManager>()
     private val modelManager by di<ModelManager>()
 
+    init {
+        job.oldModelType.addListener { _, _, newValue ->
+            val newOldModelType = when (newValue) {
+                ModelSourceType.EXAMPLE -> if (job.userOldModelPath.value !is ModelSource.FromExample) null else job.userOldModelPath.value
+                ModelSourceType.FILE -> if (job.userOldModelPath.value !is ModelSource.FromFile) null else job.userOldModelPath.value
+                ModelSourceType.JOB -> if (job.userOldModelPath.value !is ModelSource.FromJob) null else job.userOldModelPath.value
+                null -> null
+            }
+
+            job.userOldModelPath.value = newOldModelType
+        }
+    }
+
     override val root = vbox {
         field("Source") {
-            combobox(modelSource.type) {
+            combobox(job.oldModelType) {
                 items = ModelSourceType.values().toList().toObservable()
                 cellFormat {
                     text = it.name.toLowerCase().capitalize()
                 }
-                valueProperty().onChange {
-                    job.userNewModel.value = null
-                }
             }
         }
         field {
-            contentMap(modelSource.type) {
+            contentMap(job.oldModelType) {
                 item(ModelSourceType.EXAMPLE) {
                     combobox(job.userOldModelPath) {
                         items = exampleModelManager.getAllExampleModels().unsafeRunSync().map {
@@ -363,10 +371,18 @@ class ModelPicker : ItemFragment<ModelSource>() {
                         cellFormat {
                             text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
                         }
+
+                        var isDownloading = false
                         valueProperty().addListener { _, oldValue, newValue ->
-                            println(oldValue)
-                            println(newValue)
-                            // job.userNewModel.value = modelManager.loadModel(job.userOldModelPath.value)
+                            if (oldValue == null && newValue != null) {
+                                isDownloading = true
+                            } else if (newValue == null) {
+                                isDownloading = false
+                            }
+
+                            if (isDownloading) {
+                                job.userNewModel.value = modelManager.loadModel(newValue)
+                            }
                         }
                     }
                 }
@@ -434,7 +450,9 @@ class LayerEditorFragment : Fragment() {
         bottom = buttonbar {
             button("Save") {
                 action {
-                    job.userNewModel.value = layerEditor.getNewModel()
+                    val newModel = layerEditor.getNewModel()
+                    job.userNewModel.value = null
+                    job.userNewModel.value = newModel
                     close()
                 }
             }

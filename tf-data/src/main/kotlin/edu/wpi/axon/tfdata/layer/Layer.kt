@@ -59,7 +59,7 @@ sealed class Layer {
             override val name: String,
             override val inputs: Set<String>?,
             override val layer: Layer,
-            var trainable: Boolean
+            val trainable: Boolean
         ) : MetaLayer() {
             init {
                 require(layer !is MetaLayer)

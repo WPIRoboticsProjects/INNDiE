@@ -7,6 +7,7 @@ import com.fxgraph.layout.AbegoTreeLayout
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.scene.layout.BorderPane
 import org.abego.treelayout.Configuration
 import tornadofx.ItemViewModel
@@ -19,6 +20,8 @@ import tornadofx.enableWhen
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.form
+import tornadofx.getValue
+import tornadofx.setValue
 import tornadofx.splitpane
 import tornadofx.textfield
 
@@ -62,42 +65,40 @@ class LayerEditor(
         }
     }
 
-    fun getNewModel(): Model {
-        return when (initialModel) {
-            is Model.Sequential -> {
-                val newLayers = graph.model.allCells.mapTo(mutableSetOf()) {
-                    (it as LayerCell).layer
-                }
-
-                initialModel.copy(layers = newLayers)
+    fun getNewModel(): Model = when (initialModel) {
+        is Model.Sequential -> {
+            val newLayers = graph.model.allCells.mapTo(mutableSetOf()) {
+                (it as LayerCell).layer.item
             }
 
-            is Model.General -> {
-                val layers = graph.model.allCells.mapTo(mutableSetOf()) { (it as LayerCell).layer }
-                val edges = graph.model.allEdges.map {
-                    (it.source as LayerCell).layer to (it.target as LayerCell).layer
-                }
+            initialModel.copy(layers = newLayers)
+        }
 
-                val newLayers = layers.mapTo(mutableSetOf()) { layer ->
-                    val inputs = edges.filter { it.second == layer }.mapTo(mutableSetOf()) {
-                        it.first.name
-                    }
-                    layer.copyWithNewInputs(inputs)
-                }
-
-                initialModel.copy(
-                    layers = DefaultLayersToGraph()
-                        .convertToGraph(newLayers)
-                        .getOrHandle { error(it) }
-                )
+        is Model.General -> {
+            val layers = graph.model.allCells.mapTo(mutableSetOf()) { (it as LayerCell).layer }
+            val edges = graph.model.allEdges.map {
+                (it.source as LayerCell).layer to (it.target as LayerCell).layer
             }
+
+            val newLayers = layers.mapTo(mutableSetOf()) { layer ->
+                val inputs = edges.filter { it.second == layer }.mapTo(mutableSetOf()) {
+                    it.first.item.name
+                }
+                layer.item.copyWithNewInputs(inputs)
+            }
+
+            initialModel.copy(
+                layers = DefaultLayersToGraph()
+                    .convertToGraph(newLayers)
+                    .getOrHandle { error(it) }
+            )
         }
     }
 
     private fun openEditor(layerCell: LayerCell) {
-        right = when (val layer = layerCell.layer) {
+        right = when (val layer = layerCell.layer.item) {
             is Layer.MetaLayer.TrainableLayer -> form {
-                val model = TrainableLayerModel(layer)
+                val model = layerCell.layer as TrainableLayerModel
                 fieldset("Edit Layer") {
                     field("Type") {
                         textfield(layer.layer::class.simpleName) {
@@ -110,17 +111,13 @@ class LayerEditor(
                         }
                     }
                     field("Trainable") {
-                        checkbox(property = model.trainable)
+                        checkbox(property = model.trainableProperty)
                     }
                     button("Save") {
                         enableWhen(model.dirty)
                         action {
                             model.commit()
-                            val newLayer = model.item
-                            println(newLayer)
-                            println(getNewModel())
-                            layerCell.layer = newLayer
-                            layerCell.content = createBaseLayerCell(newLayer.layer)
+                            layerCell.content = createBaseLayerCell(model.item.layer)
                         }
                     }
                     button("Close") {
@@ -148,11 +145,8 @@ class LayerEditor(
                         button("Save") {
                             enableWhen(model.dirty)
                             action {
-                                model.commit {
-                                    val newLayer = model.item
-                                    layerCell.layer = newLayer
-                                    layerCell.content = createBaseLayerCell(newLayer)
-                                }
+                                model.commit()
+                                layerCell.content = createBaseLayerCell(model.item.layer)
                             }
                         }
                         button("Close") {
@@ -168,8 +162,18 @@ class LayerEditor(
 }
 
 class TrainableLayerModel(layer: Layer.MetaLayer.TrainableLayer) :
-    ItemViewModel<Layer.MetaLayer.TrainableLayer>(layer) {
-    val trainable = bind(Layer.MetaLayer.TrainableLayer::trainable)
+    ItemViewModel<Layer.MetaLayer.TrainableLayer>() {
+
+    init {
+        itemProperty.set(layer)
+    }
+
+    val trainableProperty = bind { SimpleBooleanProperty(item.trainable) }
+    var trainable by trainableProperty
+
+    override fun onCommit() {
+        itemProperty.set(item.copy(trainable = trainable))
+    }
 }
 
 class UntrainableLayerModel(layer: Layer.MetaLayer.UntrainableLayer) :
