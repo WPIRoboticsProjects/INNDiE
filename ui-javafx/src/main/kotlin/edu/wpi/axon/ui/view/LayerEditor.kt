@@ -46,11 +46,15 @@ class LayerEditor(
             }
 
             is Model.General -> {
-                val cells =
-                    initialModel.layers.nodes().map { it to createLayerCell(it, ::openEditor) }
-                        .toMap()
-                val edges =
-                    initialModel.layers.edges().map { Edge(cells[it.nodeU()], cells[it.nodeV()]) }
+                val cells = initialModel.layers
+                    .nodes()
+                    .map { it to createLayerCell(it, ::openEditor) }
+                    .toMap()
+
+                val edges = initialModel.layers.edges().map {
+                    Edge(cells[it.nodeU()], cells[it.nodeV()])
+                }
+
                 cells.values.forEach { graph.model.addCell(it) }
                 edges.forEach { graph.model.addEdge(it) }
             }
