@@ -171,7 +171,7 @@ internal class JobRunner : KoinComponent {
         cancellers[id]!!.cancelScript(id)
     }
 
-    internal fun listResults(id: Int) = runners[id]!!.listResults(id)
+    internal fun listResults(id: Int) = runners[id]?.listResults(id) ?: emptyList()
 
     internal fun getResult(id: Int, filename: String) = runners[id]!!.getResult(id, filename)
 

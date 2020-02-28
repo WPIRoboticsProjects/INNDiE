@@ -12,5 +12,9 @@ class JobManager : Fragment() {
         tab("Editor") {
             add<JobEditor>()
         }
+
+        tab("Results") {
+            add<JobResultsView>()
+        }
     }
 }

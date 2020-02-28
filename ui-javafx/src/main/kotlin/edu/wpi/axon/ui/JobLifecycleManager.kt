@@ -93,6 +93,10 @@ class JobLifecycleManager internal constructor(
      */
     fun cancelJob(id: Int) = jobRunner.cancelJob(id)
 
+    fun listResults(id: Int) = jobRunner.listResults(id)
+
+    fun getResult(id: Int, filename: String) = jobRunner.getResult(id, filename)
+
     companion object {
         private val LOGGER = KotlinLogging.logger { }
     }

@@ -63,6 +63,7 @@ import tornadofx.validator
 import tornadofx.vbox
 
 class JobEditor : Fragment() {
+
     private val job by inject<JobModel>()
     private val jobLifecycleManager by di<JobLifecycleManager>()
     private val bucketName by di<Option<String>>(axonBucketName)
@@ -342,9 +343,15 @@ class ModelPicker : ItemFragment<ModelSource>() {
     init {
         job.oldModelType.addListener { _, _, newValue ->
             val newOldModelType = when (newValue) {
-                ModelSourceType.EXAMPLE -> if (job.userOldModelPath.value !is ModelSource.FromExample) null else job.userOldModelPath.value
-                ModelSourceType.FILE -> if (job.userOldModelPath.value !is ModelSource.FromFile) null else job.userOldModelPath.value
-                ModelSourceType.JOB -> if (job.userOldModelPath.value !is ModelSource.FromJob) null else job.userOldModelPath.value
+                ModelSourceType.EXAMPLE -> if (job.userOldModelPath
+                        .value !is ModelSource.FromExample
+                ) null else job.userOldModelPath.value
+                ModelSourceType.FILE -> if (job.userOldModelPath
+                        .value !is ModelSource.FromFile
+                ) null else job.userOldModelPath.value
+                ModelSourceType.JOB -> if (job.userOldModelPath
+                        .value !is ModelSource.FromJob
+                ) null else job.userOldModelPath.value
                 null -> null
             }
 
