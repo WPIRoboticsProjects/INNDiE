@@ -2,18 +2,42 @@ package edu.wpi.axon.ui.view
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.ui.JobLifecycleManager
+import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.model.JobModel
+import javafx.scene.Parent
 import javafx.scene.control.Label
 import javafx.scene.control.SelectionMode
 import javafx.scene.layout.VBox
 import tornadofx.Fragment
 import tornadofx.borderpane
+import tornadofx.bottom
+import tornadofx.center
 import tornadofx.label
 import tornadofx.listview
 import tornadofx.objectBinding
 import tornadofx.paddingAll
 import tornadofx.textarea
 import tornadofx.toObservable
+import java.io.File
+
+class ResultFragment : Fragment() {
+
+    val data: File by param()
+
+    override val root = borderpane {
+        center {
+            when (data.extension) {
+                "txt", "log" -> textarea {
+                    text = data.readText()
+                    isEditable = false
+                    isWrapText = true
+                }
+
+                else -> label("Cannot visualize data format: ${data.extension}")
+            }
+        }
+    }
+}
 
 class JobResultsView : Fragment() {
 
@@ -40,9 +64,22 @@ class JobResultsView : Fragment() {
                         selectionModel.selectionMode = SelectionMode.SINGLE
                         isEditable = false
                         selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                            println(newValue)
+                            bottom {
+                                add(
+                                    find<ResultFragment>(
+                                        mapOf(
+                                            ResultFragment::data to jobLifecycleManager.getResult(
+                                                job.id.value.toInt(),
+                                                newValue
+                                            )
+                                        )
+                                    )
+                                )
+                            }
                         }
                     }
+
+                    Unit
                 }
 
                 is TrainingScriptProgress.Error -> VBox().apply {

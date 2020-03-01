@@ -167,9 +167,8 @@ internal class JobRunner : KoinComponent {
      *
      * @param id The id of the Job to cancel.
      */
-    internal fun cancelJob(id: Int) {
-        cancellers[id]!!.cancelScript(id)
-    }
+    internal fun cancelJob(id: Int): Boolean =
+        cancellers[id]?.let { it.cancelScript(id); true } ?: false
 
     internal fun listResults(id: Int) = runners[id]?.listResults(id) ?: emptyList()
 
