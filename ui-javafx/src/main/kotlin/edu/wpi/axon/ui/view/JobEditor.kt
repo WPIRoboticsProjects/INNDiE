@@ -2,16 +2,13 @@ package edu.wpi.axon.ui.view
 
 import arrow.core.Option
 import edu.wpi.axon.db.data.DesiredJobTrainingMethod
-import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
-import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.model.AdamDto
 import edu.wpi.axon.ui.model.AdamModel
 import edu.wpi.axon.ui.model.CoralDto
@@ -21,7 +18,6 @@ import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.FTRLDto
 import edu.wpi.axon.ui.model.FTRLModel
 import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
@@ -341,90 +337,6 @@ class DatasetPicker : ItemFragment<Dataset>() {
 
     init {
         itemProperty.bind(job.userDataset)
-    }
-}
-
-class ModelPicker : ItemFragment<ModelSource>() {
-
-    private val job by inject<JobModel>()
-    private val exampleModelManager by di<ExampleModelManager>()
-    private val modelManager by di<ModelManager>()
-
-    init {
-        job.oldModelType.addListener { _, _, newValue ->
-            val newOldModelType = when (newValue) {
-                ModelSourceType.EXAMPLE -> if (job.userOldModelPath
-                        .value !is ModelSource.FromExample
-                ) null else job.userOldModelPath.value
-                ModelSourceType.FILE -> if (job.userOldModelPath
-                        .value !is ModelSource.FromFile
-                ) null else job.userOldModelPath.value
-                ModelSourceType.JOB -> if (job.userOldModelPath
-                        .value !is ModelSource.FromJob
-                ) null else job.userOldModelPath.value
-                null -> null
-            }
-
-            job.userOldModelPath.value = newOldModelType
-        }
-    }
-
-    override val root = vbox {
-        field("Source") {
-            combobox(job.oldModelType) {
-                items = ModelSourceType.values().toList().toObservable()
-                cellFormat {
-                    text = it.name.toLowerCase().capitalize()
-                }
-            }
-        }
-        field {
-            contentMap(job.oldModelType) {
-                item(ModelSourceType.EXAMPLE) {
-                    combobox(job.userOldModelPath) {
-                        items = exampleModelManager.getAllExampleModels().unsafeRunSync().map {
-                            ModelSource.FromExample(it)
-                        }.toObservable()
-                        cellFormat {
-                            text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
-                        }
-                        valueProperty().addListener { _, _, newValue ->
-                            if (newValue != null && job.isDirty) {
-                                job.userNewModel.value = modelManager.loadModel(newValue)
-                            }
-                        }
-                    }
-                }
-                item(ModelSourceType.FILE) {
-                    vbox {
-                        label(
-                            job.userOldModelPath,
-                            converter = object : StringConverter<ModelSource>() {
-                                override fun toString(obj: ModelSource?) =
-                                    (obj as? ModelSource.FromFile)?.filePath?.toString() ?: ""
-
-                                override fun fromString(string: String?) = null
-                            })
-                    }
-                }
-                item(ModelSourceType.JOB) {
-                    vbox {
-                        label("Job")
-                    }
-                }
-            }
-        }
-        field {
-            button("Edit") {
-                action {
-                    find<LayerEditorFragment>().openModal(modality = Modality.WINDOW_MODAL)
-                }
-            }
-        }
-    }
-
-    init {
-        itemProperty.bind(job.userOldModelPath)
     }
 }
 
