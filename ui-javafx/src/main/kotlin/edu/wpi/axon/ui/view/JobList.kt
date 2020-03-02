@@ -33,6 +33,7 @@ import tornadofx.contextmenu
 import tornadofx.doubleBinding
 import tornadofx.enableWhen
 import tornadofx.field
+import tornadofx.insets
 import tornadofx.item
 import tornadofx.label
 import tornadofx.listview
@@ -53,6 +54,8 @@ class JobList : View() {
     private val modelManager by di<ModelManager>()
 
     override val root = vbox {
+        padding = insets(5)
+
         listview(jobBoard.jobs) {
             vgrow = Priority.ALWAYS
             bindSelected(job)

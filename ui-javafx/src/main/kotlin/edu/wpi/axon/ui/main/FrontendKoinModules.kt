@@ -16,6 +16,7 @@ import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
+import edu.wpi.axon.plugin.DatasetPlugins.divideByTwoFiveFivePlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypeForMobilenetPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.plugin.LocalPluginManager
@@ -121,7 +122,8 @@ fun defaultFrontendModule() = module {
         val officialPlugins = setOf(
             datasetPassthroughPlugin,
             processMnistTypePlugin,
-            processMnistTypeForMobilenetPlugin
+            processMnistTypeForMobilenetPlugin,
+            divideByTwoFiveFivePlugin
         )
 
         when (val bucketName = get<Option<String>>(named(axonBucketName))) {

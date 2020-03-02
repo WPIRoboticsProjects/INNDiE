@@ -9,6 +9,16 @@ object DatasetPlugins {
         """.trimMargin()
     )
 
+    val divideByTwoFiveFivePlugin = Plugin.Official(
+        "Divide Elements by 255",
+        """
+        |def process_dataset(x, y):
+        |    newX = tf.cast(x / 255.0, tf.float32)
+        |    newY = tf.cast(y / 255.0, tf.float32)
+        |    return (newX, newY)
+        """.trimMargin()
+    )
+
     val processMnistTypePlugin = Plugin.Official(
         "Process MNIST-type Dataset",
         """

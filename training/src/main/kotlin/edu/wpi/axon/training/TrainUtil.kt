@@ -9,6 +9,7 @@ import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
 import edu.wpi.axon.dsl.running
+import edu.wpi.axon.dsl.task.CSVLoggerCallbackTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
@@ -223,6 +224,12 @@ internal fun ScriptGenerator.compileTrainSave(
         }
     }
 
+    val csvLoggerCallback: Variable = variables.create(Variable::class)
+    tasks.run(CSVLoggerCallbackTask::class) {
+        logFilePath = "${trainState.workingDir}/trainingLog.csv"
+        output = csvLoggerCallback
+    }
+
     val trainModelTask by tasks.running(TrainTask::class) {
         modelInput = newModel
         trainInputData = loadedDataset.train.first
@@ -235,7 +242,12 @@ internal fun ScriptGenerator.compileTrainSave(
             validationOutputData = Some(it.second)
         }
 
-        callbacks = setOf(checkpointCallback, earlyStoppingCallback, progressReportingCallback)
+        callbacks = setOf(
+            checkpointCallback,
+            earlyStoppingCallback,
+            csvLoggerCallback,
+            progressReportingCallback
+        )
 
         epochs = trainState.userEpochs
         dependencies += compileModelTask

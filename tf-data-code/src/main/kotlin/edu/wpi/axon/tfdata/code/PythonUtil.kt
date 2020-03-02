@@ -26,6 +26,7 @@ fun pythonString(value: Any?): String = when (value) {
     null -> "None"
     is Unquoted -> value.value
     is String -> """"$value""""
+    is Char -> "'$value'"
     is Boolean -> if (value) "True" else "False"
     is Tuple2<*, *> -> "(${pythonString(value.a)}, ${pythonString(value.b)})"
     is SerializableTuple2<*, *> -> pythonString(value.toTuple2())

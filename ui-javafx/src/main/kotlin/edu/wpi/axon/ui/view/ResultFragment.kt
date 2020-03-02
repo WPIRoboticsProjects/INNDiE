@@ -21,7 +21,7 @@ class ResultFragment : Fragment() {
     override val root = borderpane {
         center {
             when (val extension = data.filename.substringAfterLast('.', "")) {
-                "txt", "log", "py" -> textarea {
+                "txt", "log", "py", "csv" -> textarea {
                     text = data.file.value.readText()
                     isEditable = false
                     isWrapText = true
