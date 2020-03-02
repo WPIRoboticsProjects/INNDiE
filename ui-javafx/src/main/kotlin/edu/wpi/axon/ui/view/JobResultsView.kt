@@ -16,7 +16,6 @@ import tornadofx.listview
 import tornadofx.multiseries
 import tornadofx.objectBinding
 import tornadofx.paddingAll
-import tornadofx.series
 import tornadofx.textarea
 import tornadofx.toObservable
 
