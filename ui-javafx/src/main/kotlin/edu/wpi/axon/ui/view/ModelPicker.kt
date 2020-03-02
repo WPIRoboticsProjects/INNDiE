@@ -6,11 +6,13 @@ import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
+import java.io.File
 import javafx.stage.FileChooser
 import javafx.stage.Modality
 import javafx.util.StringConverter
 import tornadofx.ItemFragment
 import tornadofx.action
+import tornadofx.bind
 import tornadofx.button
 import tornadofx.chooseFile
 import tornadofx.combobox
@@ -18,7 +20,6 @@ import tornadofx.field
 import tornadofx.label
 import tornadofx.toObservable
 import tornadofx.vbox
-import java.io.File
 
 class ModelPicker : ItemFragment<ModelSource>() {
 
@@ -61,26 +62,36 @@ class ModelPicker : ItemFragment<ModelSource>() {
                         items = exampleModelManager.getAllExampleModels().unsafeRunSync().map {
                             ModelSource.FromExample(it)
                         }.toObservable()
+
                         cellFormat {
                             text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
                         }
+
                         valueProperty().addListener { _, _, newValue ->
-                            if (newValue != null && job.isDirty) {
+                            if (newValue != null && newValue is ModelSource.FromExample && job.isDirty) {
                                 job.userNewModel.value = modelManager.loadModel(newValue)
                             }
                         }
                     }
                 }
+
                 item(ModelSourceType.FILE) {
                     vbox(10) {
                         label(
                             job.userOldModelPath,
                             converter = object : StringConverter<ModelSource>() {
                                 override fun toString(obj: ModelSource?) =
-                                    (obj as? ModelSource.FromFile)?.filePath?.toString() ?: ""
+                                    when (val path = (obj as? ModelSource.FromFile)?.filePath) {
+                                        is FilePath.Local -> "Local: ${path.path}"
+                                        is FilePath.S3 -> "S3: ${path.path}"
+                                        else -> ""
+                                    }
 
                                 override fun fromString(string: String?) = null
-                            })
+                            }) {
+                            isWrapText = true
+                            maxWidth = 450.0
+                        }
 
                         button("Choose a Local File") {
                             action {
@@ -105,6 +116,7 @@ class ModelPicker : ItemFragment<ModelSource>() {
                         }
                     }
                 }
+
                 item(ModelSourceType.JOB) {
                     vbox {
                         label("Job")
@@ -112,8 +124,9 @@ class ModelPicker : ItemFragment<ModelSource>() {
                 }
             }
         }
+
         field {
-            button("Edit") {
+            button("Edit Model") {
                 action {
                     find<LayerEditorFragment>().openModal(modality = Modality.WINDOW_MODAL)
                 }

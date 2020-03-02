@@ -38,6 +38,7 @@ import tornadofx.label
 import tornadofx.listview
 import tornadofx.onChange
 import tornadofx.progressbar
+import tornadofx.stringBinding
 import tornadofx.textarea
 import tornadofx.textfield
 import tornadofx.vbox
@@ -120,7 +121,7 @@ class JobListFragment : ListCellFragment<JobDto>() {
     private val job = JobModel().bindTo(this)
 
     override val root = vbox {
-        label(job.name)
+        label(job.name.stringBinding(job.id) { "$it (${job.id.value})" })
         progressbar(doubleBinding(job.status) {
             value.let {
                 when (it) {
