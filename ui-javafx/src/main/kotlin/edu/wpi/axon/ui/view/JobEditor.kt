@@ -40,6 +40,7 @@ import tornadofx.bind
 import tornadofx.bindTo
 import tornadofx.booleanBinding
 import tornadofx.borderpane
+import tornadofx.bottom
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.center
@@ -55,6 +56,7 @@ import tornadofx.hbox
 import tornadofx.isDouble
 import tornadofx.isInt
 import tornadofx.label
+import tornadofx.scrollpane
 import tornadofx.separator
 import tornadofx.textfield
 import tornadofx.toObservable
@@ -70,62 +72,66 @@ class JobEditor : Fragment() {
 
     override val root = borderpane {
         center {
-            add<JobConfiguration>()
+            scrollpane {
+                add<JobConfiguration>()
+            }
         }
-        bottom = buttonbar {
-            button("Revert") {
-                enableWhen(job.dirty)
-                setOnAction {
-                    job.rollback()
-                }
-            }
-            button("Save") {
-                enableWhen(job.status.booleanBinding {
-                    it == TrainingScriptProgress.NotStarted
-                }.and(job.dirty))
-                setOnAction {
-                    job.commit()
-                }
-            }
-            button("Run") {
-                enableWhen(job.status.booleanBinding {
-                    it == TrainingScriptProgress.NotStarted
-                })
-
-                val desiredTrainingMethod = SimpleObjectProperty(
-                    bucketName.fold(
-                        { DesiredJobTrainingMethod.LOCAL },
-                        { DesiredJobTrainingMethod.EC2 }
-                    )
-                )
-
-                combobox<DesiredJobTrainingMethod> {
-                    bind(desiredTrainingMethod)
-                    items = DesiredJobTrainingMethod.values().toList().toObservable()
-                    cellFormat {
-                        text = it.name.toLowerCase().capitalize()
+        bottom {
+            buttonbar {
+                button("Revert") {
+                    enableWhen(job.dirty)
+                    setOnAction {
+                        job.rollback()
                     }
-                    setOnAction { it.consume() }
                 }
+                button("Save") {
+                    enableWhen(job.status.booleanBinding {
+                        it == TrainingScriptProgress.NotStarted
+                    }.and(job.dirty))
+                    setOnAction {
+                        job.commit()
+                    }
+                }
+                button("Run") {
+                    enableWhen(job.status.booleanBinding {
+                        it == TrainingScriptProgress.NotStarted
+                    })
 
-                action {
-                    job.commit {
-                        jobLifecycleManager.startJob(
-                            job.id.value.toInt(),
-                            desiredTrainingMethod.value
+                    val desiredTrainingMethod = SimpleObjectProperty(
+                        bucketName.fold(
+                            { DesiredJobTrainingMethod.LOCAL },
+                            { DesiredJobTrainingMethod.EC2 }
                         )
+                    )
+
+                    combobox<DesiredJobTrainingMethod> {
+                        bind(desiredTrainingMethod)
+                        items = DesiredJobTrainingMethod.values().toList().toObservable()
+                        cellFormat {
+                            text = it.name.toLowerCase().capitalize()
+                        }
+                        setOnAction { it.consume() }
+                    }
+
+                    action {
+                        job.commit {
+                            jobLifecycleManager.startJob(
+                                job.id.value.toInt(),
+                                desiredTrainingMethod.value
+                            )
+                        }
                     }
                 }
-            }
-            button("Cancel") {
-                enableWhen(job.status.booleanBinding {
-                    it == TrainingScriptProgress.Creating ||
-                        it == TrainingScriptProgress.Initializing ||
-                        it is TrainingScriptProgress.InProgress
-                })
+                button("Cancel") {
+                    enableWhen(job.status.booleanBinding {
+                        it == TrainingScriptProgress.Creating ||
+                            it == TrainingScriptProgress.Initializing ||
+                            it is TrainingScriptProgress.InProgress
+                    })
 
-                action {
-                    jobLifecycleManager.cancelJob(job.id.value.toInt())
+                    action {
+                        jobLifecycleManager.cancelJob(job.id.value.toInt())
+                    }
                 }
             }
         }
@@ -143,7 +149,17 @@ class JobConfiguration : Fragment("Configuration") {
         hbox(20) {
             vbox(20) {
                 fieldset("Dataset") {
+                    label("This is the data the model will be trained with.")
                     add<DatasetPicker>()
+                }
+                separator()
+                fieldset("Model") {
+                    label("This is the model that will be trained.")
+                    add<ModelPicker>()
+                }
+                separator()
+                fieldset("Dataset Plugin") {
+                    label("This adapts the shape of the dataset to the shape the model requires.")
                     field("Plugin") {
                         tooltip(
                             """
@@ -159,13 +175,9 @@ class JobConfiguration : Fragment("Configuration") {
                         }
                     }
                 }
-                separator()
-                fieldset("Model") {
-                    add<ModelPicker>()
-                }
             }
             vbox(20) {
-                fieldset {
+                fieldset("General") {
                     field("Epochs") {
                         tooltip(
                             """
@@ -175,7 +187,7 @@ class JobConfiguration : Fragment("Configuration") {
                         )
                         textfield(job.userEpochs) {
                             filterInput { it.controlNewText.isInt() }
-                            validator { isNotNull(it) }
+                            validator { it.isIntGreaterThanOrEqualTo(1) }
                         }
                     }
                 }
@@ -241,8 +253,6 @@ class JobConfiguration : Fragment("Configuration") {
                         }
                     }
                 }
-            }
-            vbox(20) {
                 fieldset("Target") {
                     field("Type") {
                         combobox(job.targetType) {
@@ -518,7 +528,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.learningRatePower) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleLessThanOrEqualToZero(it)
+                    it.isDoubleLessThanOrEqualToZero()
                 }
             }
         }
@@ -526,7 +536,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.initialAccumulatorValue) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleGreaterThanOrEqualToZero(it)
+                    it.isDoubleGreaterThanOrEqualToZero()
                 }
             }
         }
@@ -534,7 +544,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l1RegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleGreaterThanOrEqualToZero(it)
+                    it.isDoubleGreaterThanOrEqualToZero()
                 }
             }
         }
@@ -542,7 +552,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l2RegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleGreaterThanOrEqualToZero(it)
+                    it.isDoubleGreaterThanOrEqualToZero()
                 }
             }
         }
@@ -550,7 +560,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l2ShrinkageRegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleGreaterThanOrEqualToZero(it)
+                    it.isDoubleGreaterThanOrEqualToZero()
                 }
             }
         }
@@ -639,7 +649,7 @@ class TargetFragment : Fragment() {
                 }) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleInRange(it, 0.0..100.0)
+                    it.isDoubleInRange(0.0..100.0)
                 }
             }
         }

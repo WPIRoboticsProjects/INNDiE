@@ -34,7 +34,7 @@ class PreferencesView : View("Preferences") {
             field("Polling Rate (ms)") {
                 textfield(model.statusPollingDelayProperty) {
                     filterInput { it.controlNewText.isLong() }
-                    validator { isLongInRange(it, 5000L..60_000L) }
+                    validator { it.isLongInRange(5000L..60_000L) }
                 }
             }
         }

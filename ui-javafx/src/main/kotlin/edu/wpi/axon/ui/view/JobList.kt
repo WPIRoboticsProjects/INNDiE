@@ -19,6 +19,7 @@ import edu.wpi.axon.ui.model.JobModel
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Orientation
 import javafx.scene.control.ProgressBar
+import javafx.scene.layout.Priority
 import org.koin.core.inject
 import tornadofx.ListCellFragment
 import tornadofx.View
@@ -40,6 +41,7 @@ import tornadofx.progressbar
 import tornadofx.textarea
 import tornadofx.textfield
 import tornadofx.vbox
+import tornadofx.vgrow
 
 class JobList : View() {
 
@@ -51,6 +53,7 @@ class JobList : View() {
 
     override val root = vbox {
         listview(jobBoard.jobs) {
+            vgrow = Priority.ALWAYS
             bindSelected(job)
             cellFragment(JobListFragment::class)
         }
