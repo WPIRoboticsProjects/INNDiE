@@ -22,8 +22,8 @@ class JobResultsView : Fragment() {
     private val jobLifecycleManager by di<JobLifecycleManager>()
 
     override val root = borderpane {
-        centerProperty().bind(job.status.objectBinding {
-            when (it) {
+        centerProperty().bind(job.status.objectBinding { progress ->
+            when (progress) {
                 TrainingScriptProgress.Completed -> VBox().apply {
                     spacing = 10.0
                     label("Job completed successfully.")
@@ -48,11 +48,15 @@ class JobResultsView : Fragment() {
                                     add(
                                         find<ResultFragment>(
                                             mapOf(
-                                                ResultFragment::data to
-                                                    jobLifecycleManager.getResult(
-                                                        job.id.value.toInt(),
-                                                        newValue
-                                                    )
+                                                ResultFragment::data to LazyResult(
+                                                    newValue,
+                                                    lazy {
+                                                        jobLifecycleManager.getResult(
+                                                            job.id.value.toInt(),
+                                                            newValue
+                                                        )
+                                                    }
+                                                )
                                             )
                                         )
                                     )
@@ -60,15 +64,13 @@ class JobResultsView : Fragment() {
                             }
                         }
                     }
-
-                    Unit
                 }
 
                 is TrainingScriptProgress.Error -> VBox().apply {
                     spacing = 10.0
                     label("Job completed erroneously. Error Log:")
                     textarea {
-                        text = it.log
+                        text = progress.log
                         isEditable = false
                         isWrapText = true
                     }

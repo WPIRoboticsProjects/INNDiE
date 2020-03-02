@@ -7,7 +7,6 @@ import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
@@ -18,12 +17,9 @@ import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
 import javafx.beans.property.SimpleStringProperty
-import javafx.beans.property.StringProperty
 import javafx.geometry.Orientation
-import javafx.scene.Parent
 import javafx.scene.control.ProgressBar
 import org.koin.core.inject
-import tornadofx.Fragment
 import tornadofx.ListCellFragment
 import tornadofx.View
 import tornadofx.action
@@ -36,7 +32,6 @@ import tornadofx.contextmenu
 import tornadofx.doubleBinding
 import tornadofx.enableWhen
 import tornadofx.field
-import tornadofx.form
 import tornadofx.item
 import tornadofx.label
 import tornadofx.listview

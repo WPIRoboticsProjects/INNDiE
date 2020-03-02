@@ -1,26 +1,49 @@
 package edu.wpi.axon.ui.view
 
 import tornadofx.Fragment
+import tornadofx.action
 import tornadofx.borderpane
+import tornadofx.bottom
+import tornadofx.button
+import tornadofx.buttonbar
 import tornadofx.center
 import tornadofx.label
+import tornadofx.removeFromParent
 import tornadofx.textarea
-import java.io.File
 
+/**
+ * Visualizes a training or testing result.
+ */
 class ResultFragment : Fragment() {
 
-    val data: File by param()
+    val data: LazyResult by param()
 
     override val root = borderpane {
         center {
-            when (data.extension) {
+            when (val extension = data.filename.substringAfterLast('.', "")) {
                 "txt", "log", "py" -> textarea {
-                    text = data.readText()
+                    text = data.file.value.readText()
                     isEditable = false
                     isWrapText = true
                 }
 
-                else -> label("Cannot visualize data format: ${data.extension}")
+                else -> label("Cannot visualize data format: $extension")
+            }
+        }
+
+        bottom {
+            buttonbar {
+                button("Show File") {
+                    action {
+                        TODO("Show the file in the native file browser.")
+                    }
+                }
+
+                button("Close") {
+                    action {
+                        this@ResultFragment.removeFromParent()
+                    }
+                }
             }
         }
     }
