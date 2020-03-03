@@ -17,6 +17,7 @@ import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.ListChangeListener
 import javafx.geometry.Orientation
 import javafx.scene.control.ProgressBar
 import javafx.scene.layout.Priority
@@ -60,6 +61,13 @@ class JobList : View() {
             vgrow = Priority.ALWAYS
             bindSelected(job)
             cellFragment(JobListFragment::class)
+
+            // Select a Job when it is added
+            jobBoard.jobs.addListener(ListChangeListener {
+                if (it.next()) {
+                    it.addedSubList.lastOrNull()?.let { selectionModel.select(it) }
+                }
+            })
         }
 
         buttonbar {
@@ -75,34 +83,18 @@ class JobList : View() {
                     dialog("Create New Job", labelPosition = Orientation.VERTICAL) {
                         val nameProp = SimpleStringProperty()
                         field("Job Name") {
-                            textfield(nameProp)
+                            textfield(nameProp) {
+                                action {
+                                    createNewJob(nameProp.value)
+                                    close()
+                                }
+                            }
                         }
 
                         buttonbar {
                             button("Save") {
                                 action {
-                                    val modelSource = ModelSource.FromExample(
-                                        exampleModelManager.getAllExampleModels()
-                                            .unsafeRunSync()
-                                            .first()
-                                    )
-
-                                    database.create(
-                                        name = nameProp.value,
-                                        status = TrainingScriptProgress.NotStarted,
-                                        userOldModelPath = modelSource,
-                                        userDataset = Dataset.ExampleDataset.FashionMnist,
-                                        userOptimizer = Optimizer.Adam(),
-                                        userLoss = Loss.SparseCategoricalCrossentropy,
-                                        userMetrics = setOf("accuracy"),
-                                        userEpochs = 1,
-                                        userNewModel = modelManager.loadModel(modelSource),
-                                        generateDebugComments = false,
-                                        internalTrainingMethod = InternalJobTrainingMethod.Untrained,
-                                        target = ModelDeploymentTarget.Desktop,
-                                        datasetPlugin = processMnistTypePlugin
-                                    )
-
+                                    createNewJob(nameProp.value)
                                     close()
                                 }
                             }
@@ -117,6 +109,30 @@ class JobList : View() {
                 }
             }
         }
+    }
+
+    private fun createNewJob(name: String) {
+        val modelSource = ModelSource.FromExample(
+            exampleModelManager.getAllExampleModels()
+                .unsafeRunSync()
+                .first()
+        )
+
+        database.create(
+            name = name,
+            status = TrainingScriptProgress.NotStarted,
+            userOldModelPath = modelSource,
+            userDataset = Dataset.ExampleDataset.FashionMnist,
+            userOptimizer = Optimizer.Adam(),
+            userLoss = Loss.SparseCategoricalCrossentropy,
+            userMetrics = setOf("accuracy"),
+            userEpochs = 1,
+            userNewModel = modelManager.loadModel(modelSource),
+            generateDebugComments = false,
+            internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+            target = ModelDeploymentTarget.Desktop,
+            datasetPlugin = processMnistTypePlugin
+        )
     }
 }
 
