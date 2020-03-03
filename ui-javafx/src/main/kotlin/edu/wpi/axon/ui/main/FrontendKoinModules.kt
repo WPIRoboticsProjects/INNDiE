@@ -10,9 +10,6 @@ import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.plugin.S3PluginManager
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.InternalJobTrainingMethod
-import edu.wpi.axon.db.data.ModelSource
-import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
@@ -21,16 +18,11 @@ import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypeForMobilenetPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
-import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.JobRunner
 import edu.wpi.axon.ui.ModelManager
-import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.localCacheDir
