@@ -1,6 +1,7 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.util.localCacheDir
+import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Files
 import software.amazon.awssdk.core.sync.RequestBody
@@ -47,8 +48,11 @@ class S3Manager(
      * @param jobId The ID of the Job.
      * @return The filenames of the results.
      */
-    fun listTrainingResults(jobId: Int): List<String> =
-        listObjectsWithPrefixAndRemovePrefix("axon-training-results/$jobId/")
+    fun listTrainingResults(jobId: Int): List<String> {
+        val out = listObjectsWithPrefixAndRemovePrefix("axon-training-results/$jobId/")
+        LOGGER.debug { "Training results:\n$out" }
+        return out
+    }
 
     /**
      * Downloads a training result to a local file.
@@ -275,7 +279,7 @@ class S3Manager(
      */
     private fun listObjectsWithPrefixAndRemovePrefix(prefix: String) =
         s3.listObjects {
-            it.bucket(bucketName).prefix(prefix)
+            it.bucket(bucketName).prefix(prefix).maxKeys(1000)
         }.contents().map { it.key().substring(prefix.length) }
 
     private fun createTrainingProgressPrefix(id: Int) = "axon-training-progress/$id"
@@ -287,6 +291,7 @@ class S3Manager(
         "${createTrainingProgressPrefix(id)}/heartbeat.txt"
 
     companion object {
+        private val LOGGER = KotlinLogging.logger { }
         private const val preferencesFilename = "axon-preferences.json"
     }
 }

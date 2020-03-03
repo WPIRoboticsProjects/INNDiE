@@ -38,14 +38,18 @@ class JobLifecycleManager internal constructor(
      */
     fun initialize() {
         val runningJobs = jobDb.fetchRunningJobs()
+        LOGGER.debug { "Running jobs:\n${runningJobs.joinToString("\n")}" }
         runningJobs.forEach { job ->
-            scope.launch {
+            val jobJob = scope.launch {
                 jobRunner.startProgressReporting(job)
                 LOGGER.debug { "Waiting for Job ${job.id} to finish." }
                 jobRunner.waitForFinish(job.id) {
                     jobDb.update(job.id, status = it)
                 }
             }
+
+            setInvokeOnCompletion(jobJob, job)
+            jobJobs[job.id] = jobJob
         }
     }
 
@@ -73,6 +77,13 @@ class JobLifecycleManager internal constructor(
             }
         }
 
+        setInvokeOnCompletion(jobJob, job)
+
+        LOGGER.debug { "Started job with id ${job.id}" }
+        jobJobs[job.id] = jobJob
+    }
+
+    private fun setInvokeOnCompletion(jobJob: kotlinx.coroutines.Job, job: Job) {
         jobJob.invokeOnCompletion {
             if (it == null) {
                 LOGGER.debug { "Job ${job.id} completed." }
@@ -90,9 +101,6 @@ class JobLifecycleManager internal constructor(
                 )
             }
         }
-
-        LOGGER.debug { "Started job with id ${job.id}" }
-        jobJobs[job.id] = jobJob
     }
 
     /**

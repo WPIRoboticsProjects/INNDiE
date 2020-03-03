@@ -61,50 +61,50 @@ fun defaultFrontendModule() = module {
     single {
         JobDb(
             Database.connect(
-                url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+                url = "jdbc:h2:~/.wpilib/Axon/db;DB_CLOSE_DELAY=-1",
                 driver = "org.h2.Driver"
             )
         ).apply {
-            val modelName = "32_32_1_conv_sequential.h5"
-            val (model, path) = loadModel(modelName)
-
-            create(
-                name = "AWS Job",
-                status = TrainingScriptProgress.NotStarted,
-                userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
-                userDataset = Dataset.ExampleDataset.FashionMnist,
-                userOptimizer = Optimizer.Adam(
-                    learningRate = 0.001,
-                    beta1 = 0.9,
-                    beta2 = 0.999,
-                    epsilon = 1e-7,
-                    amsGrad = false
-                ),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 1,
-                userNewModel = model,
-                generateDebugComments = false,
-                datasetPlugin = datasetPassthroughPlugin,
-                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
-                target = ModelDeploymentTarget.Desktop
-            )
-
-            create(
-                name = "Local Job",
-                status = TrainingScriptProgress.NotStarted,
-                userOldModelPath = ModelSource.FromFile(FilePath.Local(path)),
-                userDataset = Dataset.ExampleDataset.FashionMnist,
-                userOptimizer = Optimizer.Adam(),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 1,
-                userNewModel = model,
-                generateDebugComments = false,
-                datasetPlugin = processMnistTypePlugin,
-                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
-                target = ModelDeploymentTarget.Desktop
-            )
+            // val modelName = "32_32_1_conv_sequential.h5"
+            // val (model, path) = loadModel(modelName)
+            //
+            // create(
+            //     name = "AWS Job",
+            //     status = TrainingScriptProgress.NotStarted,
+            //     userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
+            //     userDataset = Dataset.ExampleDataset.FashionMnist,
+            //     userOptimizer = Optimizer.Adam(
+            //         learningRate = 0.001,
+            //         beta1 = 0.9,
+            //         beta2 = 0.999,
+            //         epsilon = 1e-7,
+            //         amsGrad = false
+            //     ),
+            //     userLoss = Loss.SparseCategoricalCrossentropy,
+            //     userMetrics = setOf("accuracy"),
+            //     userEpochs = 1,
+            //     userNewModel = model,
+            //     generateDebugComments = false,
+            //     datasetPlugin = datasetPassthroughPlugin,
+            //     internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+            //     target = ModelDeploymentTarget.Desktop
+            // )
+            //
+            // create(
+            //     name = "Local Job",
+            //     status = TrainingScriptProgress.NotStarted,
+            //     userOldModelPath = ModelSource.FromFile(FilePath.Local(path)),
+            //     userDataset = Dataset.ExampleDataset.FashionMnist,
+            //     userOptimizer = Optimizer.Adam(),
+            //     userLoss = Loss.SparseCategoricalCrossentropy,
+            //     userMetrics = setOf("accuracy"),
+            //     userEpochs = 1,
+            //     userNewModel = model,
+            //     generateDebugComments = false,
+            //     datasetPlugin = processMnistTypePlugin,
+            //     internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+            //     target = ModelDeploymentTarget.Desktop
+            // )
         }
     }
 
@@ -164,7 +164,8 @@ fun defaultFrontendModule() = module {
         }
     }
 
-    single {
+    single(createdAtStart = true) {
+        // This needs to be eager so we eagerly resume tracking in-progress Jobs
         JobLifecycleManager(
             jobRunner = get(),
             jobDb = get(),

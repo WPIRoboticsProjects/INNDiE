@@ -26,6 +26,7 @@ class LocalTrainingScriptRunner(
     private val scriptThreadMap = mutableMapOf<Int, Thread>()
     private val progressReporter = LocalTrainingScriptProgressReporter(progressReportingDirPrefix)
     private val canceller = LocalTrainingScriptCanceller()
+    private val resultSupplier = LocalTrainingResultSupplier()
 
     override fun startScript(config: RunTrainingScriptConfiguration) {
         require(config.oldModelName is FilePath.Local) {
@@ -99,17 +100,12 @@ class LocalTrainingScriptRunner(
         canceller.addJob(config.id, scriptThreadMap[config.id]!!) {
             scriptProgressMap[config.id] = it
         }
+        resultSupplier.addJob(config.id, config.workingDir)
     }
 
-    override fun listResults(id: Int): List<String> {
-        requireJobIsInMaps(id)
-        return scriptDataMap[id]!!.workingDir.toFile().listFiles()!!.map { it.name }
-    }
+    override fun listResults(id: Int) = resultSupplier.listResults(id)
 
-    override fun getResult(id: Int, filename: String): File {
-        requireJobIsInMaps(id)
-        return scriptDataMap[id]!!.workingDir.resolve(filename).toFile()
-    }
+    override fun getResult(id: Int, filename: String) = resultSupplier.getResult(id, filename)
 
     override fun getTrainingProgress(jobId: Int) = progressReporter.getTrainingProgress(jobId)
 
@@ -117,12 +113,6 @@ class LocalTrainingScriptRunner(
         progressReporter.overrideTrainingProgress(jobId, progress)
 
     override fun cancelScript(jobId: Int) = canceller.cancelScript(jobId)
-
-    private fun requireJobIsInMaps(jobId: Int) {
-        require(jobId in scriptDataMap.keys)
-        require(jobId in scriptThreadMap.keys)
-        require(jobId in scriptProgressMap.keys)
-    }
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }

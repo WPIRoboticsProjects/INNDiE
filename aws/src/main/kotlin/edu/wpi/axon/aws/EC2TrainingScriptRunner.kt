@@ -29,6 +29,7 @@ class EC2TrainingScriptRunner(
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
     private val progressReporter = EC2TrainingScriptProgressReporter(ec2Manager, s3Manager)
     private val canceller = EC2TrainingScriptCanceller(ec2Manager)
+    private val resultSupplier = EC2TrainingResultSupplier(s3Manager)
 
     override fun startScript(
         config: RunTrainingScriptConfiguration
@@ -110,10 +111,9 @@ class EC2TrainingScriptRunner(
         canceller.addJob(config.id, instanceId)
     }
 
-    override fun listResults(id: Int): List<String> = s3Manager.listTrainingResults(id)
+    override fun listResults(id: Int) = resultSupplier.listResults(id)
 
-    override fun getResult(id: Int, filename: String): File =
-        s3Manager.downloadTrainingResult(id, filename)
+    override fun getResult(id: Int, filename: String) = resultSupplier.getResult(id, filename)
 
     fun getInstanceId(jobId: Int): String {
         requireJobIsInMaps(jobId)
