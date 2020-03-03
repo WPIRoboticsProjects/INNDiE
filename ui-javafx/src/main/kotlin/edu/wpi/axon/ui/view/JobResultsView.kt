@@ -37,6 +37,7 @@ class JobResultsView : Fragment() {
             val trainingLogLines = trainingLogData.lines()
             val colNames = trainingLogLines.first().split(',')
 
+            @Suppress("SpreadOperator")
             multiseries(
                 names = *colNames.mapNotNull {
                     if (it == "epoch") null else it
@@ -46,6 +47,7 @@ class JobResultsView : Fragment() {
                 trainingLogLines.drop(1).forEach {
                     if (it.isNotBlank()) {
                         val values = it.split(',')
+                        @Suppress("SpreadOperator")
                         data(
                             values[epochIndex].toInt(),
                             *values.mapIndexedNotNull { index, data ->
