@@ -17,13 +17,23 @@ internal class LocalTrainingScriptProgressReporterTest {
         val id = 1
 
         // Initialize the progress file
-        File(createLocalProgressFilepath(tempDir.path, id)).apply {
+        createLocalProgressFilepath(tempDir.toPath()).toFile().apply {
             parentFile.mkdirs()
             createNewFile()
-            writeText("5")
+            writeText(
+                """
+                epoch
+                0
+                1
+                2
+                3
+                4
+                5
+            """.trimIndent()
+            )
         }
 
-        val reporter = LocalTrainingScriptProgressReporter(tempDir.path)
+        val reporter = LocalTrainingScriptProgressReporter(tempDir.toPath())
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),
@@ -35,7 +45,20 @@ internal class LocalTrainingScriptProgressReporterTest {
             )
         )
 
-        reporter.getTrainingProgress(id).shouldBe(TrainingScriptProgress.InProgress(0.5))
+        reporter.getTrainingProgress(id).shouldBe(
+            TrainingScriptProgress.InProgress(
+                0.5,
+                """
+                epoch
+                0
+                1
+                2
+                3
+                4
+                5
+                """.trimIndent()
+            )
+        )
     }
 
     @Test
@@ -43,13 +66,19 @@ internal class LocalTrainingScriptProgressReporterTest {
         val id = 1
 
         // Initialize the progress file
-        File(createLocalProgressFilepath(tempDir.path, id)).apply {
+        createLocalProgressFilepath(tempDir.toPath()).toFile().apply {
             parentFile.mkdirs()
             createNewFile()
-            writeText("10")
+            writeText(
+                """
+                epoch
+                4
+                10
+                """.trimIndent()
+            )
         }
 
-        val reporter = LocalTrainingScriptProgressReporter(tempDir.path)
+        val reporter = LocalTrainingScriptProgressReporter(tempDir.toPath())
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),
@@ -69,13 +98,13 @@ internal class LocalTrainingScriptProgressReporterTest {
         val id = 1
 
         // Initialize the progress file
-        File(createLocalProgressFilepath(tempDir.path, id)).apply {
+        createLocalProgressFilepath(tempDir.toPath()).toFile().apply {
             parentFile.mkdirs()
             createNewFile()
             writeText(RandomStringUtils.randomAlphanumeric(10))
         }
 
-        val reporter = LocalTrainingScriptProgressReporter(tempDir.path)
+        val reporter = LocalTrainingScriptProgressReporter(tempDir.toPath())
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),

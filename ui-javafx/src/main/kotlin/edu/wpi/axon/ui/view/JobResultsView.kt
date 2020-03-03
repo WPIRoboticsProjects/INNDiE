@@ -3,6 +3,7 @@ package edu.wpi.axon.ui.view
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.model.JobModel
+import javafx.event.EventTarget
 import javafx.scene.chart.NumberAxis
 import javafx.scene.control.Label
 import javafx.scene.control.SelectionMode
@@ -24,6 +25,38 @@ class JobResultsView : Fragment() {
 
     private val job by inject<JobModel>()
     private val jobLifecycleManager by di<JobLifecycleManager>()
+
+    private fun EventTarget.trainingLogLineChart(trainingLogData: String) =
+        linechart(
+            "Training Results",
+            x = NumberAxis(),
+            y = NumberAxis()
+        ) {
+            xAxis.label = "Epoch"
+
+            val trainingLogLines = trainingLogData.lines()
+            val colNames = trainingLogLines.first().split(',')
+
+            multiseries(
+                names = *colNames.mapNotNull {
+                    if (it == "epoch") null else it
+                }.toTypedArray()
+            ) {
+                val epochIndex = colNames.indexOf("epoch")
+                trainingLogLines.drop(1).forEach {
+                    if (it.isNotBlank()) {
+                        val values = it.split(',')
+                        data(
+                            values[epochIndex].toInt(),
+                            *values.mapIndexedNotNull { index, data ->
+                                if (index == epochIndex) null
+                                else data.toDouble()
+                            }.toTypedArray()
+                        )
+                    }
+                }
+            }
+        }
 
     override val root = borderpane {
         centerProperty().bind(job.itemProperty.objectBinding(job.status) { jobDto ->
@@ -47,34 +80,10 @@ class JobResultsView : Fragment() {
                         val trainingLogResult = jobResults.firstOrNull { it == "trainingLog.csv" }
 
                         if (trainingLogResult != null) {
-                            linechart(
-                                "Training Results",
-                                x = NumberAxis(),
-                                y = NumberAxis()
-                            ) {
-                                xAxis.label = "Epoch"
-
-                                val trainingLogData = jobLifecycleManager.getResult(jobDto.id, trainingLogResult).readLines()
-                                val colNames = trainingLogData.first().split(',')
-
-                                multiseries(
-                                    names = *colNames.mapNotNull {
-                                        if (it == "epoch") null else it
-                                    }.toTypedArray()
-                                ) {
-                                    val epochIndex = colNames.indexOf("epoch")
-                                    trainingLogData.drop(1).forEach {
-                                        val values = it.split(',')
-                                        data(
-                                            values[epochIndex].toInt(),
-                                            *values.mapIndexedNotNull { index, data ->
-                                                if (index == epochIndex) null
-                                                else data.toDouble()
-                                            }.toTypedArray()
-                                        )
-                                    }
-                                }
-                            }
+                            trainingLogLineChart(
+                                jobLifecycleManager.getResult(jobDto.id, trainingLogResult)
+                                    .readText()
+                            )
                         }
 
                         listview<String> {
@@ -118,8 +127,14 @@ class JobResultsView : Fragment() {
                     }
 
                     TrainingScriptProgress.NotStarted -> Label("Job has not been started yet.")
-                    TrainingScriptProgress.Creating, TrainingScriptProgress.Initializing -> Label("Job is starting.")
-                    is TrainingScriptProgress.InProgress -> Label("Job has not finished training yet.")
+
+                    TrainingScriptProgress.Creating, TrainingScriptProgress.Initializing ->
+                        Label("Job is starting.")
+
+                    is TrainingScriptProgress.InProgress -> VBox().apply {
+                        trainingLogLineChart(status.progressLog)
+                    }
+
                     null -> Label("No Job selected.")
                 }.apply {
                     paddingAll = 10

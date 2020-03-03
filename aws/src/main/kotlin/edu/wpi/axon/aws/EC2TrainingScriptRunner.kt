@@ -106,7 +106,7 @@ class EC2TrainingScriptRunner(
         val instanceId = ec2Manager.startTrainingInstance(scriptForEC2, instanceType)
         instanceIds[config.id] = instanceId
         scriptDataMap[config.id] = config
-        progressReporter.addJob(config, instanceId)
+        progressReporter.addJob(config.id, instanceId, config.epochs)
         canceller.addJob(config.id, instanceId)
     }
 

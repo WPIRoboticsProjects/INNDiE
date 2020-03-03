@@ -17,7 +17,6 @@ import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
-import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.PostTrainingQuantizationTask
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.dsl.task.RunPluginTask
@@ -30,6 +29,7 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.util.trainingLogCsvFilename
 
 /**
  * Loads a model in to a variable using. Assumes the model is on disk.
@@ -211,22 +211,23 @@ internal fun ScriptGenerator.compileTrainSave(
         output = earlyStoppingCallback
     }
 
-    val progressReportingCallback: Variable = variables.create(Variable::class)
-    if (trainState.usesAWS) {
+    val trainingLogCsvPath = "${trainState.workingDir}/$trainingLogCsvFilename"
+
+    val awsProgressReportingCallback = if (trainState.usesAWS) {
+        val variable = variables.create(Variable::class)
         tasks.run(S3ProgressReportingCallbackTask::class) {
             jobId = trainState.jobId
-            output = progressReportingCallback
+            csvLogFile = trainingLogCsvPath
+            output = variable
         }
+        variable
     } else {
-        tasks.run(LocalProgressReportingCallbackTask::class) {
-            jobId = trainState.jobId
-            output = progressReportingCallback
-        }
+        null
     }
 
     val csvLoggerCallback: Variable = variables.create(Variable::class)
     tasks.run(CSVLoggerCallbackTask::class) {
-        logFilePath = "${trainState.workingDir}/trainingLog.csv"
+        logFilePath = trainingLogCsvPath
         output = csvLoggerCallback
     }
 
@@ -245,9 +246,11 @@ internal fun ScriptGenerator.compileTrainSave(
         callbacks = setOf(
             checkpointCallback,
             earlyStoppingCallback,
-            csvLoggerCallback,
-            progressReportingCallback
+            csvLoggerCallback
         )
+        if (awsProgressReportingCallback != null) {
+            callbacks = callbacks + awsProgressReportingCallback
+        }
 
         epochs = trainState.userEpochs
         dependencies += compileModelTask

@@ -30,10 +30,9 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
-import edu.wpi.axon.ui.main.localScriptRunnerCache
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
-import java.nio.file.Files
+import edu.wpi.axon.util.getLocalTrainingScriptRunnerWorkingDir
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlinx.coroutines.delay
@@ -241,21 +240,11 @@ internal class JobRunner : KoinComponent {
 
         when (val trainingMethod = job.internalTrainingMethod) {
             is InternalJobTrainingMethod.EC2 -> {
-                // The script contents don't matter to the progress reporter. Set an empty
-                // string to avoid having to regenerate the script. The model path and working dir
-                // don't matter either.
-                val config = createRunTrainingScriptConfiguration(
-                    job,
-                    FilePath.Local(""),
-                    "",
-                    Files.createTempDirectory("")
-                )
-
                 val ec2Manager = EC2Manager()
                 val s3Manager = S3Manager(getBucket())
                 progressReporters[job.id] =
                     EC2TrainingScriptProgressReporter(ec2Manager, s3Manager).apply {
-                        addJob(config, trainingMethod.instanceId)
+                        addJob(job.id, trainingMethod.instanceId, job.userEpochs)
                     }
 
                 cancellers[job.id] = EC2TrainingScriptCanceller(ec2Manager).apply {
@@ -303,9 +292,6 @@ internal class JobRunner : KoinComponent {
         }
         return bucket.t
     }
-
-    private fun getLocalTrainingScriptRunnerWorkingDir(jobId: Int) =
-        localScriptRunnerCache.resolve(jobId.toString()).apply { toFile().mkdirs() }
 
     private fun createRunTrainingScriptConfiguration(
         job: Job,

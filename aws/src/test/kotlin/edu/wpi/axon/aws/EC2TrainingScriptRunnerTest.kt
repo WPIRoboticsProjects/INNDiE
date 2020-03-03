@@ -52,7 +52,10 @@ internal class EC2TrainingScriptRunnerTest {
             )
             every { getTrainingProgress(any()) } returnsMany listOf(
                 "not started", // Call 1
-                "1", // Call 2
+                """
+                    epoch
+                    1
+                """.trimIndent(), // Call 2
                 "completed" // Call 3
             )
         }
@@ -76,7 +79,15 @@ internal class EC2TrainingScriptRunnerTest {
                 it == TrainingScriptProgress.Initializing
         }
         runner.getTrainingProgress(config.id)
-            .shouldBe(TrainingScriptProgress.InProgress(1 / config.epochs.toDouble()))
+            .shouldBe(
+                TrainingScriptProgress.InProgress(
+                    1 / config.epochs.toDouble(),
+                    """
+                    epoch
+                    1
+                    """.trimIndent()
+                )
+            )
         runner.getTrainingProgress(config.id).shouldBe(TrainingScriptProgress.Completed)
 
         verify(atLeast = 3) {

@@ -28,13 +28,10 @@ import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.localCacheDir
 import edu.wpi.axon.util.testPluginManagerName
 import java.io.File
-import java.nio.file.Path
 import java.nio.file.Paths
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-
-val localScriptRunnerCache: Path = localCacheDir.resolve("local-script-runner-cache")
 
 fun loadModel(modelName: String): Pair<Model, String> {
     val localModelPath =

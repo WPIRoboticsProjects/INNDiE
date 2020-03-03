@@ -23,13 +23,19 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
     var jobId by singleAssign<Int>()
 
     /**
+     * The CSV log file to read progress data from.
+     */
+    var csvLogFile by singleAssign<String>()
+
+    /**
      * Where to save the callback to.
      */
     var output: Variable by singleAssign()
 
     override val imports: Set<Import> = setOf(
         makeImport("import tensorflow as tf"),
-        makeImport("import axon.client")
+        makeImport("import axon.client"),
+        makeImport("import os.path")
     )
 
     override val inputs: Set<Variable> = setOf()
@@ -53,9 +59,11 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
         return """
         |class $callbackClassName(tf.keras.callbacks.Callback):
         |    def on_epoch_end(self, epoch, logs=None):
-        |        axon.client.impl_update_training_progress($jobId, str(epoch + 1),
-        |                                                  "${(bucketName as Some<String>).t}",
-        |                                                  None)
+        |        if os.path.isfile("$csvLogFile"):
+        |            with open("$csvLogFile", "r") as f:
+        |                axon.client.impl_update_training_progress($jobId, f.read(),
+        |                                                          "${(bucketName as Some<String>).t}",
+        |                                                          None)
         |
         |${output.name} = $callbackClassName()
         """.trimMargin()

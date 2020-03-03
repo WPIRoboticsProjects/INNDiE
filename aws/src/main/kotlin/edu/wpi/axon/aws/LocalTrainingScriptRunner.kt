@@ -4,9 +4,11 @@ import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.createLocalProgressFilepath
+import edu.wpi.axon.util.getLocalTrainingScriptRunnerWorkingDir
 import edu.wpi.axon.util.getOutputModelName
 import edu.wpi.axon.util.runCommand
 import java.io.File
+import java.nio.file.Path
 import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
@@ -18,7 +20,7 @@ import org.apache.commons.lang3.RandomStringUtils
  * @param progressReportingDirPrefix The prefix for the local progress reporting directory.
  */
 class LocalTrainingScriptRunner(
-    private val progressReportingDirPrefix: String = "/tmp/progress_reporting"
+    private val progressReportingDirPrefix: Path? = null
 ) : TrainingScriptRunner {
 
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
@@ -48,7 +50,9 @@ class LocalTrainingScriptRunner(
         }
 
         // Clear the progress file if there was a previous run
-        File(createLocalProgressFilepath(progressReportingDirPrefix, config.id)).apply {
+        createLocalProgressFilepath(
+            progressReportingDirPrefix ?: getLocalTrainingScriptRunnerWorkingDir(config.id)
+        ).toFile().apply {
             parentFile.mkdirs()
             createNewFile()
             writeText("initializing")
