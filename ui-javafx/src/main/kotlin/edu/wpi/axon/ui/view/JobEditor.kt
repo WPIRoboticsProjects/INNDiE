@@ -535,7 +535,7 @@ class TargetFragment : Fragment() {
     lateinit var model: ItemViewModel<*>
 
     override val root = form {
-        fieldset("Edit Loss") {
+        fieldset("Edit Target") {
             println("Loaded with target type: ${job.targetType.value}")
             println("Loaded with target: ${job.target.value}")
             model = when (val target = job.target.value) {
