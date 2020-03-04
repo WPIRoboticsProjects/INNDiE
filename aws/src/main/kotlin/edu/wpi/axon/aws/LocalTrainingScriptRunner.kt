@@ -114,7 +114,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
                     scriptProgressMap[config.id] = TrainingScriptProgress.Error(it.localizedMessage)
                 },
                 { (exitCode, stdOut, stdErr) ->
-                    LOGGER.debug {
+                    LOGGER.info {
                         """
                         |Training script completed.
                         |Process exit code: $exitCode
