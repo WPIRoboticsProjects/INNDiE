@@ -23,6 +23,9 @@ import javafx.scene.control.ProgressBar
 import javafx.scene.layout.Priority
 import org.koin.core.inject
 import tornadofx.ListCellFragment
+import tornadofx.ValidationContext
+import tornadofx.ValidationMessage
+import tornadofx.ValidationSeverity
 import tornadofx.View
 import tornadofx.action
 import tornadofx.bindSelected
@@ -43,6 +46,7 @@ import tornadofx.progressbar
 import tornadofx.stringBinding
 import tornadofx.textarea
 import tornadofx.textfield
+import tornadofx.validator
 import tornadofx.vbox
 import tornadofx.vgrow
 
@@ -81,21 +85,43 @@ class JobList : View() {
             button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
                 setOnAction {
                     dialog("Create New Job", labelPosition = Orientation.VERTICAL) {
-                        val nameProp = SimpleStringProperty()
+                        val tempJob = JobModel()
                         field("Job Name") {
-                            textfield(nameProp) {
+                            textfield(tempJob.name) {
+                                validator {
+                                    if (it.isNullOrBlank()) {
+                                        ValidationMessage(
+                                            "Must not be empty.",
+                                            ValidationSeverity.Error
+                                        )
+                                    } else {
+                                        if (database.findByName(it) == null) {
+                                            null
+                                        } else {
+                                            ValidationMessage(
+                                                "A Job with that name already exists.",
+                                                ValidationSeverity.Error
+                                            )
+                                        }
+                                    }
+                                }
                                 action {
-                                    createNewJob(nameProp.value)
-                                    close()
+                                    if (tempJob.isValid) {
+                                        createNewJob(tempJob.name.value)
+                                        close()
+                                    }
                                 }
                             }
                         }
 
                         buttonbar {
                             button("Save") {
+                                enableWhen(tempJob.valid)
                                 action {
-                                    createNewJob(nameProp.value)
-                                    close()
+                                    if (tempJob.isValid) {
+                                        createNewJob(tempJob.name.value)
+                                        close()
+                                    }
                                 }
                             }
 
