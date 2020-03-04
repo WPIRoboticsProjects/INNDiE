@@ -17,7 +17,7 @@ val localCacheDir: Path = Paths.get(
 
 val localScriptRunnerCache: Path = localCacheDir.resolve("local-script-runner-cache")
 
-const val trainingLogCsvFilename = "trainingLog.csv"
+val trainingLogCsvFilename: Path = Paths.get("trainingLog.csv")
 
 infix fun <E> Iterable<E>.anyIn(other: Iterable<E>) = any { it in other }
 

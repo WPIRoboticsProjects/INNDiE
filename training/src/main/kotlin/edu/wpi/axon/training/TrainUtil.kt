@@ -193,10 +193,12 @@ internal fun ScriptGenerator.compileTrainSave(
         filePath = if (hasValidation) {
             // Can only use val_loss if there is validation data, which can take the form of
             // a validation dataset or a nonzero validation split
-            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+            trainState.workingDir.resolve(
+                "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+            )
         } else {
-            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
-        }
+            trainState.workingDir.resolve("${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5")
+        }.toString()
         monitor = if (hasValidation) "val_loss" else "loss"
         saveWeightsOnly = true
         verbose = 1
@@ -211,13 +213,13 @@ internal fun ScriptGenerator.compileTrainSave(
         output = earlyStoppingCallback
     }
 
-    val trainingLogCsvPath = "${trainState.workingDir}/$trainingLogCsvFilename"
+    val trainingLogCsvPath = trainState.workingDir.resolve(trainingLogCsvFilename)
 
     val awsProgressReportingCallback = if (trainState.usesAWS) {
         val variable = variables.create(Variable::class)
         tasks.run(S3ProgressReportingCallbackTask::class) {
             jobId = trainState.jobId
-            csvLogFile = trainingLogCsvPath
+            csvLogFile = trainingLogCsvPath.toString()
             output = variable
         }
         variable
@@ -227,7 +229,7 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val csvLoggerCallback: Variable = variables.create(Variable::class)
     tasks.run(CSVLoggerCallbackTask::class) {
-        logFilePath = trainingLogCsvPath
+        logFilePath = trainingLogCsvPath.toString()
         output = csvLoggerCallback
     }
 
@@ -276,11 +278,11 @@ internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
 ): Task {
     require(trainState.target is ModelDeploymentTarget.Coral)
 
-    // Only grab 10% of the dataset
     val datasetSlice = variables.create(Variable::class)
     tasks.run(SliceTask::class) {
         input = loadedDataset.train.first
         output = datasetSlice
+        // Take the portion of the dataset the user wanted
         sliceNotation = "[:int(len(${loadedDataset.train.first.name}) * " +
             "${trainState.target.representativeDatasetPercentage})]"
     }

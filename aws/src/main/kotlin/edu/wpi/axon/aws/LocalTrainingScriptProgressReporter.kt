@@ -3,19 +3,13 @@ package edu.wpi.axon.aws
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.util.createLocalProgressFilepath
 import edu.wpi.axon.util.getLatestEpochFromProgressCsv
-import edu.wpi.axon.util.getLocalTrainingScriptRunnerWorkingDir
 import java.lang.NumberFormatException
-import java.nio.file.Path
 import mu.KotlinLogging
 
 /**
  * A [TrainingScriptProgressReporter] that is designed for a [LocalTrainingScriptRunner].
- *
- * @param progressReportingDirPrefix The prefix for the local progress reporting directory.
  */
-class LocalTrainingScriptProgressReporter(
-    private val progressReportingDirPrefix: Path? = null
-) : TrainingScriptProgressReporter {
+class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
 
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
 
@@ -63,13 +57,12 @@ class LocalTrainingScriptProgressReporter(
         overriddenProgressMap[jobId]?.let { return it }
 
         val progressMap = scriptProgressMapMap[jobId]
-        val epochs = scriptDataMap[jobId]!!.epochs
+        val config = scriptDataMap[jobId]!!
+        val epochs = config.epochs
 
         // Create the progress file up here to share code but don't read from it unless we have to,
         // to avoid reading from it if it's not there but didn't have to be
-        val progressFile = createLocalProgressFilepath(
-            progressReportingDirPrefix ?: getLocalTrainingScriptRunnerWorkingDir(jobId)
-        ).toFile()
+        val progressFile = createLocalProgressFilepath(config.workingDir).toFile()
 
         LOGGER.debug {
             "Getting training progress for Job $jobId from path ${progressFile.path}"

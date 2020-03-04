@@ -33,7 +33,7 @@ internal class LocalTrainingScriptProgressReporterTest {
             )
         }
 
-        val reporter = LocalTrainingScriptProgressReporter(tempDir.toPath())
+        val reporter = LocalTrainingScriptProgressReporter()
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),
@@ -78,7 +78,7 @@ internal class LocalTrainingScriptProgressReporterTest {
             )
         }
 
-        val reporter = LocalTrainingScriptProgressReporter(tempDir.toPath())
+        val reporter = LocalTrainingScriptProgressReporter()
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),
@@ -104,7 +104,7 @@ internal class LocalTrainingScriptProgressReporterTest {
             writeText(RandomStringUtils.randomAlphanumeric(10))
         }
 
-        val reporter = LocalTrainingScriptProgressReporter(tempDir.toPath())
+        val reporter = LocalTrainingScriptProgressReporter()
         reporter.addJobAfterRestart(
             RunTrainingScriptConfiguration(
                 FilePath.Local("old.h5"),
