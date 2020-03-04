@@ -57,7 +57,6 @@ import tornadofx.isDouble
 import tornadofx.isInt
 import tornadofx.label
 import tornadofx.objectBinding
-import tornadofx.scrollpane
 import tornadofx.separator
 import tornadofx.textfield
 import tornadofx.toObservable

@@ -16,14 +16,12 @@ import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
-import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ListChangeListener
 import javafx.geometry.Orientation
 import javafx.scene.control.ProgressBar
 import javafx.scene.layout.Priority
 import org.koin.core.inject
 import tornadofx.ListCellFragment
-import tornadofx.ValidationContext
 import tornadofx.ValidationMessage
 import tornadofx.ValidationSeverity
 import tornadofx.View
