@@ -325,21 +325,29 @@ class DatasetPicker : ItemFragment<Dataset>() {
                     }
                 }
                 item(DatasetType.CUSTOM) {
-                    vbox {
-                        button {
+                    vbox(10) {
+                        button("Choose Dataset File") {
                             setOnAction {
                                 val file = chooseFile(
                                     "Pick",
-                                    arrayOf(FileChooser.ExtensionFilter("Any", "*.*"))
+                                    arrayOf(FileChooser.ExtensionFilter("Tar", "*.tar"))
                                 )
+
                                 file.firstOrNull()?.let {
-                                    job.userDataset.value =
-                                        Dataset.Custom(FilePath.Local(it.path), it.name)
+                                    job.userDataset.value = Dataset.Custom(
+                                        FilePath.Local(it.path),
+                                        it.name
+                                    )
                                 }
                             }
                         }
+
                         label(job.userDataset, converter = object : StringConverter<Dataset>() {
-                            override fun toString(obj: Dataset?) = obj?.displayName ?: ""
+                            override fun toString(obj: Dataset?) = when (obj) {
+                                is Dataset.Custom -> obj.baseNameWithoutExtension
+                                else -> ""
+                            }
+
                             override fun fromString(string: String) = null
                         })
                     }
