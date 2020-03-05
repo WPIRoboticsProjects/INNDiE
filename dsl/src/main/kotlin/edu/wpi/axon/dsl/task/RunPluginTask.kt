@@ -48,6 +48,13 @@ class RunPluginTask(name: String) : BaseTask(name) {
 
     override fun code(): String {
         val functionCall = """$functionName(${functionInputs.joinToString { it.name }})"""
+
+        val outputString = if (functionOutputs.isEmpty()) {
+            ""
+        } else {
+            """(${functionOutputs.joinToString { it.name }}) = """
+        }
+
         // Two empty lines before and after the definition to ensure the definition is isolated from
         // the rest of the script
         return """
@@ -56,7 +63,7 @@ class RunPluginTask(name: String) : BaseTask(name) {
             |$functionDefinition
             |
             |
-            |(${functionOutputs.joinToString { it.name }}) = $functionCall
+            |$outputString$functionCall
         """.trimMargin()
     }
 }

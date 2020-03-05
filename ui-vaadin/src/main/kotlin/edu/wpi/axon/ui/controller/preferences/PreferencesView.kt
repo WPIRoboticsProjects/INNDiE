@@ -24,7 +24,8 @@ import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.ui.MainLayout
 import edu.wpi.axon.ui.controller.HasNotifications
 import edu.wpi.axon.util.datasetPluginManagerName
-import edu.wpi.axon.util.testPluginManagerName
+import edu.wpi.axon.util.loadTestDataPluginManagerName
+import edu.wpi.axon.util.processTestOutputPluginManagerName
 import mu.KotlinLogging
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -38,7 +39,12 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
     private val binder = beanValidationBinder<Preferences>()
     private val datasetPluginManager by inject<PluginManager>(named(datasetPluginManagerName))
     private val preferencesManager by inject<PreferencesManager>()
-    private val testPluginManager by inject<PluginManager>(named(testPluginManagerName))
+    private val loadTestDataPluginManager by inject<PluginManager>(
+        named(loadTestDataPluginManagerName)
+    )
+    private val processTestOutputPluginManager by inject<PluginManager>(
+        named(processTestOutputPluginManagerName)
+    )
 
     init {
         ui {
@@ -72,7 +78,14 @@ class PreferencesView : KComposite(), HasNotifications, KoinComponent {
                 }
 
                 verticalLayoutSection {
-                    pluginManagerComponent("Test Plugins", testPluginManager)
+                    pluginManagerComponent("Test Data Loader Plugins", loadTestDataPluginManager)
+                }
+
+                verticalLayoutSection {
+                    pluginManagerComponent(
+                        "Test Output Processor Plugins",
+                        processTestOutputPluginManager
+                    )
                 }
 
                 button("Save") {

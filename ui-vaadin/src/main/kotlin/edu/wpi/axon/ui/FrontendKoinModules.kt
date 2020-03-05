@@ -15,20 +15,19 @@ import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
-import edu.wpi.axon.util.testPluginManagerName
-import java.nio.file.Paths
+import edu.wpi.axon.util.loadTestDataPluginManagerName
+import edu.wpi.axon.util.localAxonCacheDir
+import edu.wpi.axon.util.processTestOutputPluginManagerName
+import java.nio.file.Path
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
+import org.koin.core.scope.Scope
 import org.koin.dsl.module
 
-val localScriptRunnerCache = Paths.get(
-    System.getProperty("user.home"),
-    ".wpilib",
-    "Axon",
-    "local-script-runner-cache"
-)
+val localScriptRunnerCache: Path = localAxonCacheDir.resolve("local-script-runner-cache")
 
 fun defaultFrontendModule() = module {
     single(qualifier = named(axonBucketName), createdAtStart = true) { findAxonS3Bucket() }
@@ -45,74 +44,61 @@ fun defaultFrontendModule() = module {
     single {
         when (val bucketName = get<Option<String>>(named(axonBucketName))) {
             is Some -> S3PreferencesManager(S3Manager(bucketName.t)).apply { initialize() }
+
             is None -> LocalPreferencesManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "preferences.json"
-                )
+                localAxonCacheDir.resolve("preferences.json")
             ).apply { initialize() }
         }
     }
 
     single(named(datasetPluginManagerName)) {
-        // TODO: Load official plugins from resources
-        val officialPlugins = setOf(
-            datasetPassthroughPlugin,
-            processMnistTypePlugin
+        bindPluginManager(
+            setOf(
+                datasetPassthroughPlugin,
+                processMnistTypePlugin
+            ),
+            "axon-dataset-plugins",
+            "dataset_plugin_cache.json"
         )
-
-        when (val bucketName = get<Option<String>>(named(axonBucketName))) {
-            is Some -> {
-                S3PluginManager(
-                    S3Manager(bucketName.t),
-                    "axon-dataset-plugins",
-                    officialPlugins
-                ).apply { initialize() }
-            }
-
-            is None -> LocalPluginManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "dataset_plugin_cache.json"
-                ).toFile(),
-                officialPlugins
-            ).apply { initialize() }
-        }
     }
 
-    single(named(testPluginManagerName)) {
-        // TODO: Load official plugins from resources
-        val officialPlugins = setOf(
-            Plugin.Official("Test test plugin", """print("Hello from test test plugin!")""")
+    single(named(loadTestDataPluginManagerName)) {
+        bindPluginManager(
+            setOf(),
+            "axon-load-test-data-plugins",
+            "load_test_data_plugin_cache.json"
         )
+    }
 
-        when (val bucketName = get<Option<String>>(named(axonBucketName))) {
-            is Some -> {
-                S3PluginManager(
-                    S3Manager(bucketName.t),
-                    "axon-test-plugins",
-                    officialPlugins
-                ).apply { initialize() }
-            }
-
-            is None -> LocalPluginManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "test_plugin_cache.json"
-                ).toFile(),
-                officialPlugins
-            ).apply { initialize() }
-        }
+    single(named(processTestOutputPluginManagerName)) {
+        bindPluginManager(
+            setOf(),
+            "axon-process-test-output-plugins",
+            "process_test_output_plugin_cache.json"
+        )
     }
 
     single { JobLifecycleManager(jobRunner = get(), jobDb = get(), waitAfterStartingJobMs = 5000L) }
     single { ModelDownloader() }
     single { JobRunner() }
     single<ExampleModelManager> { GitExampleModelManager() }
+}
+
+private fun Scope.bindPluginManager(
+    officialPlugins: Set<Plugin.Official>,
+    cacheName: String,
+    cacheFileName: String
+): PluginManager = when (val bucketName = get<Option<String>>(named(axonBucketName))) {
+    is Some -> {
+        S3PluginManager(
+            S3Manager(bucketName.t),
+            cacheName,
+            officialPlugins
+        ).apply { initialize() }
+    }
+
+    is None -> LocalPluginManager(
+        localAxonCacheDir.resolve(cacheFileName).toFile(),
+        officialPlugins
+    ).apply { initialize() }
 }

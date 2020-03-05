@@ -23,6 +23,7 @@ import com.vaadin.flow.theme.lumo.Lumo
 import edu.wpi.axon.ui.controller.about.AboutView
 import edu.wpi.axon.ui.controller.jobs.JobsView
 import edu.wpi.axon.ui.controller.preferences.PreferencesView
+import edu.wpi.axon.ui.view.test.TestView
 import kotlin.reflect.KClass
 
 /**
@@ -48,6 +49,7 @@ class MainLayout : AppLayout() {
         }
         drawer {
             menuLink(VaadinIcon.CONTROLLER, "Jobs", JobsView::class)
+            menuLink(VaadinIcon.FLASK, "Test", TestView::class)
             menuLink(VaadinIcon.COG, "Preferences", PreferencesView::class)
             menuLink(VaadinIcon.INFO, "About", AboutView::class)
         }
