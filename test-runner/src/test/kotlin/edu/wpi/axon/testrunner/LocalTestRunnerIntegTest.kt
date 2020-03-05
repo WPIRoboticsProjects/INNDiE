@@ -3,10 +3,10 @@ package edu.wpi.axon.testrunner
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.testutil.KoinTestFixture
+import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.matchers.file.shouldContainFiles
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.Paths
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
@@ -21,9 +21,9 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
             Path.of(this::class.java.getResource("32_32_1_conv_sequential-trained.h5").toURI())
 
         val runner = LocalTestRunner()
-        runner.runTest(
+        val testResults = runner.runTest(
             modelPath,
-            Paths.get(""),
+            modelPath,
             Plugin.Official(
                 "",
                 """
@@ -47,6 +47,11 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
         )
 
         val outputDir = tempDir.toPath().resolve("output")
+        println(outputDir.toFile().walkTopDown().joinToString("\n"))
         outputDir.shouldContainFiles("file1.txt", "file2.txt")
+        testResults.shouldContainExactlyInAnyOrder(
+            outputDir.resolve("file1.txt").toFile(),
+            outputDir.resolve("file2.txt").toFile()
+        )
     }
 }

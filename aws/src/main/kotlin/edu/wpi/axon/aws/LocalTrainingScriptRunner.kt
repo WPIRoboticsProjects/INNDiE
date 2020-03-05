@@ -6,7 +6,6 @@ import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.createLocalProgressFilepath
 import edu.wpi.axon.util.getOutputModelName
 import edu.wpi.axon.util.runCommand
-import java.io.File
 import java.nio.file.Paths
 import kotlin.concurrent.thread
 import mu.KotlinLogging
@@ -41,35 +40,37 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
         }
 
         val scriptFilename = "${RandomStringUtils.randomAlphanumeric(20)}.py"
-        val scriptPath = "${config.workingDir}/$scriptFilename"
-        File(scriptPath).apply {
+        val scriptPath = config.workingDir.resolve(scriptFilename)
+        scriptPath.toFile().apply {
             createNewFile()
-            writeText(
-                config.scriptContents
-                    // Remap the working dir into the "current" dir
-                    .replace(
-                        config.workingDir.toString(),
-                        "."
-                    )
-                    // Remap the old model path from wherever it is on the local disk into the
-                    // /models directory in the container
-                    .replace(
-                        oldModelName.path,
-                        "/models/${oldModelName.filename}"
-                    )
-                    .let {
-                        if (config.dataset is Dataset.Custom &&
-                            config.dataset.path is FilePath.Local
-                        ) {
-                            // Remap the custom dataset path int o the /datasets dir if there is a
-                            // custom dataset
-                            it.replace(
-                                config.dataset.path.path,
-                                "/datasets/${config.dataset.path.filename}"
-                            )
-                        } else it
-                    }
-            )
+            val patchedScript = config.scriptContents
+                // Remap the working dir into the "current" dir
+                .replace(
+                    config.workingDir.toString(),
+                    "."
+                )
+                // Remap the old model path from wherever it is on the local disk into the
+                // /models directory in the container
+                .replace(
+                    oldModelName.path,
+                    "/models/${oldModelName.filename}"
+                )
+                .let {
+                    if (config.dataset is Dataset.Custom &&
+                        config.dataset.path is FilePath.Local
+                    ) {
+                        // Remap the custom dataset path int o the /datasets dir if there is a
+                        // custom dataset
+                        it.replace(
+                            config.dataset.path.path,
+                            "/datasets/${config.dataset.path.filename}"
+                        )
+                    } else it
+                }
+
+            LOGGER.debug { "Patched script:\n$patchedScript" }
+
+            writeText(patchedScript)
         }
 
         // Clear the progress file if there was a previous run
