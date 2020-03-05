@@ -30,6 +30,10 @@ class LocalTestRunner : TestRunner {
         processTestOutputPlugin: Plugin,
         workingDir: Path
     ): List<File> {
+        require(trainedModelPath.toString().isNotBlank())
+        require(testDataPath.toString().isNotBlank())
+        require(workingDir.toString().isNotBlank())
+
         val scriptGenerator = ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
             DefaultPolymorphicNamedDomainObjectContainer.of()
@@ -77,27 +81,53 @@ class LocalTestRunner : TestRunner {
         check(script is Valid)
 
         workingDir.resolve("output").toFile().mkdirs()
-        val scriptFile = workingDir.resolve("${RandomStringUtils.randomAlphanumeric(10)}.py")
-            .toFile()
-            .apply {
-                createNewFile()
-                writeText(script.a)
-            }
+        val scriptFilename = "${RandomStringUtils.randomAlphanumeric(20)}.py"
+        val scriptPath = workingDir.resolve(scriptFilename)
+        scriptPath.toFile().apply {
+            createNewFile()
+            val patchedScript = script.a
+                .replace(
+                    workingDir.toAbsolutePath().toString(),
+                    "."
+                )
+                .replace(
+                    trainedModelPath.toString(),
+                    "/models/${trainedModelPath.toAbsolutePath().fileName}"
+                )
+                .replace(
+                    testDataPath.toString(),
+                    "/test-data/${testDataPath.toAbsolutePath().fileName}"
+                )
+
+            LOGGER.debug { "Patched script:\n$patchedScript" }
+
+            writeText(patchedScript)
+        }
 
         val (exitCode, _, _) = runCommand(
             listOf(
-                "python3.6",
-                scriptFile.path
+                "docker",
+                "run",
+                "--rm",
+                "--mount",
+                "type=bind,source=${workingDir.toAbsolutePath()},target=/home",
+                "--mount",
+                "type=bind,source=${trainedModelPath.parent.toAbsolutePath()},target=/models",
+                "--mount",
+                "type=bind,source=${testDataPath.parent.toAbsolutePath()},target=/test-data",
+                "wpilib/axon-ci:latest",
+                "/usr/bin/python3.6",
+                "/home/$scriptFilename"
             ),
             mapOf(),
-            workingDir.toFile()
+            null
         ).attempt().unsafeRunSync().fold(
             {
                 LOGGER.debug(it) { "Failed to run test script." }
                 throw it
             },
             { (exitCode, stdOut, stdErr) ->
-                LOGGER.debug {
+                LOGGER.info {
                     """
                     |Finished running test script.
                     |Exit code: $exitCode

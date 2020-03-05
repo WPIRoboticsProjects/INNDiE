@@ -1,10 +1,6 @@
 package edu.wpi.axon.ui
 
 import arrow.core.Either
-import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.InternalJobTrainingMethod
-import edu.wpi.axon.db.data.ModelSource
-import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory

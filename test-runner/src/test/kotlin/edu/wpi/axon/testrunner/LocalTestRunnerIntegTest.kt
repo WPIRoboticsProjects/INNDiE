@@ -6,7 +6,6 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import io.kotlintest.matchers.file.shouldContainFiles
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.Paths
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
@@ -23,7 +22,7 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
         val runner = LocalTestRunner()
         runner.runTest(
             modelPath,
-            Paths.get(""),
+            modelPath,
             Plugin.Official(
                 "",
                 """
@@ -47,6 +46,7 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
         )
 
         val outputDir = tempDir.toPath().resolve("output")
+        println(outputDir.toFile().walkTopDown().joinToString("\n"))
         outputDir.shouldContainFiles("file1.txt", "file2.txt")
     }
 }
