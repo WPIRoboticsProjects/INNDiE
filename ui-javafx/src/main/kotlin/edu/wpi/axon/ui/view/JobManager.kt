@@ -16,5 +16,9 @@ class JobManager : Fragment() {
         tab("Results") {
             add<JobResultsView>()
         }
+
+        tab("Test") {
+            add<JobTestView>()
+        }
     }
 }
