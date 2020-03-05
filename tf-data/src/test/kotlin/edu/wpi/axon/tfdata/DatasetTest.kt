@@ -1,6 +1,8 @@
 package edu.wpi.axon.tfdata
 
+import edu.wpi.axon.util.FilePath
 import io.kotlintest.shouldBe
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -17,6 +19,15 @@ internal class DatasetTest {
     @MethodSource("datasetSerializationSource")
     fun `test serialization`(dataset: Dataset.ExampleDataset) {
         Dataset.deserialize(dataset.serialize()).shouldBe(dataset)
+    }
+
+    @Test
+    fun `test creating custom dataset with spaces in the filename`() {
+        // Just testing that this does not throw
+        Dataset.Custom(
+            FilePath.Local("my dataset.tar"),
+            "my dataset"
+        )
     }
 
     companion object {
