@@ -43,10 +43,10 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
                 |    Path("output/file2.txt").touch()
                 """.trimMargin()
             ),
-            tempDir.toPath()
+            tempDir.toPath().toRealPath()
         )
 
-        val outputDir = tempDir.toPath().resolve("output")
+        val outputDir = tempDir.toPath().toRealPath().resolve("output")
         println(outputDir.toFile().walkTopDown().joinToString("\n"))
         outputDir.shouldContainFiles("file1.txt", "file2.txt")
         testResults.shouldContainExactlyInAnyOrder(
