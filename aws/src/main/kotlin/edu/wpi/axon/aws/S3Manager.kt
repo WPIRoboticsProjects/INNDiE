@@ -23,6 +23,8 @@ class S3Manager(
     private val trainingResultCacheDir: File = cacheDir.resolve("training-results")
         .apply { mkdirs() }
     private val pluginCacheDir: File = cacheDir.resolve("plugins").apply { mkdirs() }
+    private val datasetCacheDir: File = cacheDir.resolve("datasets").apply { mkdirs() }
+    private val testDataCacheDir: File = cacheDir.resolve("test-data").apply { mkdirs() }
 
     /**
      * Uploads a model.
@@ -70,6 +72,15 @@ class S3Manager(
      * @param file The local test data file.
      */
     fun uploadTestDataFile(file: File) = uploadLocalFile(file, "axon-test-data/${file.name}")
+
+    /**
+     * Downloads a test data file to a local file.
+     *
+     * @param filename The test data filename.
+     * @return The test data in a local file.
+     */
+    fun downloadTestDataFile(filename: String): File =
+        downloadToLocalFile(testDataCacheDir, "axon-test-data/$filename")
 
     /**
      * Lists all the model files.
@@ -207,6 +218,23 @@ class S3Manager(
      */
     fun downloadPluginCache(cacheName: String): File =
         downloadToLocalFile(pluginCacheDir, "axon-plugins/$cacheName/plugin_cache.json")
+
+    /**
+     * Uploads a custom dataset.
+     *
+     * @param dataset The dataset file to upload.
+     */
+    fun uploadDataset(dataset: File) =
+        uploadLocalFile(dataset, "axon-datasets/${dataset.name}")
+
+    /**
+     * Downloads a custom dataset to a local file.
+     *
+     * @param datasetFilename The filename of the dataset to download.
+     * @return A local file containing the dataset.
+     */
+    fun downloadDataset(datasetFilename: String): File =
+        downloadToLocalFile(datasetCacheDir, "axon-datasets/$datasetFilename")
 
     /**
      * Downloads the preferences file to a local file. Throws an exception if there is no

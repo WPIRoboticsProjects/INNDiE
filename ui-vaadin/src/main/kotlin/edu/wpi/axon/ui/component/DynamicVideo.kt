@@ -8,18 +8,21 @@ import com.vaadin.flow.component.HasSize
 import com.vaadin.flow.component.HasStyle
 import com.vaadin.flow.component.Tag
 import com.vaadin.flow.dom.Element
-import com.vaadin.flow.server.InputStreamFactory
-import com.vaadin.flow.server.StreamResource
-import java.io.File
-import java.io.FileInputStream
+import com.vaadin.flow.server.AbstractStreamResource
 
 @Tag("video")
-class Video(file: File) : Component(), HasSize, HasStyle {
-    private class Source(file: File) : Element("source") {
-        init {
-            setAttribute("src", StreamResource(file.name, InputStreamFactory { FileInputStream(file) }))
+class DynamicVideo : Component(), HasDynamicContent, HasSize, HasStyle {
+    private class Source : Element("source"), HasDynamicContent {
+        override fun clear() {
+            removeAttribute("src")
+        }
+
+        override fun setSrc(source: AbstractStreamResource) {
+            setAttribute("src", source)
         }
     }
+
+    private val source = Source()
 
     var controls: Boolean
         get() = element.hasAttribute("controls")
@@ -38,9 +41,18 @@ class Video(file: File) : Component(), HasSize, HasStyle {
     init {
         controls = true
 
-        element.appendChild(Source(file))
+        element.appendChild(source)
+    }
+
+    override fun clear() {
+        source.clear()
+    }
+
+    override fun setSrc(source: AbstractStreamResource) {
+        this.source.setSrc(source)
     }
 }
 
 @VaadinDsl
-fun (@VaadinDsl HasComponents).video(file: File, block: (@VaadinDsl Video).() -> Unit = {}) = init(Video(file), block)
+fun (@VaadinDsl HasComponents).dynamicVideo(block: (@VaadinDsl DynamicVideo).() -> Unit = {}) =
+        init(DynamicVideo(), block)

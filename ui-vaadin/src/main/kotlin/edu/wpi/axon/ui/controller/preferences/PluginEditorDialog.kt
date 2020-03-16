@@ -35,13 +35,11 @@ class PluginEditorDialog(
                         setWidthFull()
                         addValueChangeListener { binder.validate() }
                         bind(binder).asRequired()
-                            .withValidator(
-                                { name ->
-                                    !pluginManager.listPlugins().map { it.name }.contains(
-                                        name
-                                    ) || name == bean?.name
-                                },
-                                "A plugin with that name already exists!"
+                            .withValidator({ name ->
+                                !pluginManager.listPlugins().map { it.name }.contains(
+                                    name
+                                ) || name == bean?.name
+                            }, "A plugin with that name already exists!"
                             ).bind(Plugin::name)
                     }
                     textArea("Content") {
