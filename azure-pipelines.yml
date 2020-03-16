@@ -70,6 +70,7 @@ stages:
             echo "Waiting for docker to come up: $(date)"
             done
           displayName: 'Install Docker'
+
         - task: Gradle@2
           displayName: 'Check'
           inputs:
