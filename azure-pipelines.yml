@@ -55,6 +55,10 @@ stages:
         vmImage: macOS-10.14
 
       steps:
+        - script: |
+            brew cask install docker
+            /Applications/Docker.app/Contents/MacOS/Docker --unattended
+          displayName: 'Install Docker'
         - task: Gradle@2
           displayName: 'Check'
           inputs:
