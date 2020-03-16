@@ -3,7 +3,8 @@ package edu.wpi.axon.ui.controller
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.util.datasetPluginManagerName
-import edu.wpi.axon.util.testPluginManagerName
+import edu.wpi.axon.util.loadTestDataPluginManagerName
+import edu.wpi.axon.util.processTestOutputPluginManagerName
 import tornadofx.Controller
 import tornadofx.SortedFilteredList
 
@@ -31,8 +32,16 @@ class DatasetPluginStore : PluginStore() {
     }
 }
 
-class TestPluginStore : PluginStore() {
-    override val pluginManager by di<PluginManager>(testPluginManagerName)
+class LoadTestDataPluginStore : PluginStore() {
+    override val pluginManager by di<PluginManager>(loadTestDataPluginManagerName)
+
+    init {
+        plugins.items.setAll(pluginManager.listPlugins())
+    }
+}
+
+class ProcessTestOutputPluginStore : PluginStore() {
+    override val pluginManager by di<PluginManager>(processTestOutputPluginManagerName)
 
     init {
         plugins.items.setAll(pluginManager.listPlugins())

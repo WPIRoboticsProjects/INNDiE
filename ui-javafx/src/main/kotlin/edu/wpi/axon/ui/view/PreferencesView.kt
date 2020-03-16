@@ -4,8 +4,9 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.ui.controller.DatasetPluginStore
+import edu.wpi.axon.ui.controller.LoadTestDataPluginStore
 import edu.wpi.axon.ui.controller.PluginStore
-import edu.wpi.axon.ui.controller.TestPluginStore
+import edu.wpi.axon.ui.controller.ProcessTestOutputPluginStore
 import edu.wpi.axon.ui.model.PluginModel
 import edu.wpi.axon.ui.model.PreferencesModel
 import javafx.geometry.Orientation
@@ -43,7 +44,8 @@ class PreferencesView : View("Preferences") {
 
     private val model by inject<PreferencesModel>()
     private val datasetPluginStore by inject<DatasetPluginStore>()
-    private val testPluginManager by inject<TestPluginStore>()
+    private val loadTestDataPluginManager by inject<LoadTestDataPluginStore>()
+    private val processTestOutputPluginManager by inject<ProcessTestOutputPluginStore>()
 
     override val root = vbox {
         form {
@@ -67,9 +69,14 @@ class PreferencesView : View("Preferences") {
                     FX.getComponents(scope)[PluginStore::class] = datasetPluginStore
                     add(find<PluginManagerEditor>(scope))
                 }
-                field("Test") {
+                field("Load Test Data") {
                     val scope = Scope()
-                    FX.getComponents(scope)[PluginStore::class] = testPluginManager
+                    FX.getComponents(scope)[PluginStore::class] = loadTestDataPluginManager
+                    add(find<PluginManagerEditor>(scope))
+                }
+                field("Process Test Output") {
+                    val scope = Scope()
+                    FX.getComponents(scope)[PluginStore::class] = processTestOutputPluginManager
                     add(find<PluginManagerEditor>(scope))
                 }
             }
@@ -95,8 +102,7 @@ class PreferencesView : View("Preferences") {
 
 class PluginManagerEditor : Fragment() {
 
-    val selected by inject<PluginModel>()
-
+    private val selected by inject<PluginModel>()
     private val store by inject<PluginStore>()
 
     override val root = vbox {

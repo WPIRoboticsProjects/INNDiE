@@ -1,6 +1,5 @@
 package edu.wpi.axon.ui.main
 
-import arrow.core.Either
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
@@ -18,31 +17,19 @@ import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypeForMobilenetPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tflayerloader.ModelLoaderFactory
+import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.JobRunner
 import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
+import edu.wpi.axon.util.loadTestDataPluginManagerName
 import edu.wpi.axon.util.localCacheDir
-import edu.wpi.axon.util.testPluginManagerName
-import java.io.File
-import java.nio.file.Paths
+import edu.wpi.axon.util.processTestOutputPluginManagerName
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
+import org.koin.core.scope.Scope
 import org.koin.dsl.module
-
-fun loadModel(modelName: String): Pair<Model, String> {
-    val localModelPath =
-        Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
-            .toString()
-    val layers =
-        ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
-    val model = layers.attempt().unsafeRunSync()
-    check(model is Either.Right)
-    return model.b to localModelPath
-}
 
 fun defaultFrontendModule() = module {
     single(qualifier = named(axonBucketName), createdAtStart = true) { findAxonS3Bucket() }
@@ -108,49 +95,32 @@ fun defaultFrontendModule() = module {
 
     single(named(datasetPluginManagerName)) {
         // TODO: Load official plugins from resources
-        val officialPlugins = setOf(
-            datasetPassthroughPlugin,
-            processMnistTypePlugin,
-            processMnistTypeForMobilenetPlugin,
-            divideByTwoFiveFivePlugin
+        bindPluginManager(
+            setOf(
+                datasetPassthroughPlugin,
+                processMnistTypePlugin,
+                processMnistTypeForMobilenetPlugin,
+                divideByTwoFiveFivePlugin
+            ),
+            "axon-dataset-plugins",
+            "dataset_plugin_cache.json"
         )
-
-        when (val bucketName = get<Option<String>>(named(axonBucketName))) {
-            is Some -> {
-                S3PluginManager(
-                    S3Manager(bucketName.t),
-                    "axon-dataset-plugins",
-                    officialPlugins
-                ).apply { initialize() }
-            }
-
-            is None -> LocalPluginManager(
-                localCacheDir.resolve("dataset_plugin_cache.json").toFile(),
-                officialPlugins
-            ).apply { initialize() }
-        }
     }
 
-    single(named(testPluginManagerName)) {
-        // TODO: Load official plugins from resources
-        val officialPlugins = setOf(
-            Plugin.Official("Test test plugin", """print("Hello from test test plugin!")""")
+    single(named(loadTestDataPluginManagerName)) {
+        bindPluginManager(
+            setOf(),
+            "axon-load-test-data-plugins",
+            "load_test_data_plugin_cache.json"
         )
+    }
 
-        when (val bucketName = get<Option<String>>(named(axonBucketName))) {
-            is Some -> {
-                S3PluginManager(
-                    S3Manager(bucketName.t),
-                    "axon-test-plugins",
-                    officialPlugins
-                ).apply { initialize() }
-            }
-
-            is None -> LocalPluginManager(
-                localCacheDir.resolve("test_plugin_cache.json").toFile(),
-                officialPlugins
-            ).apply { initialize() }
-        }
+    single(named(processTestOutputPluginManagerName)) {
+        bindPluginManager(
+            setOf(),
+            "axon-process-test-output-plugins",
+            "process_test_output_plugin_cache.json"
+        )
     }
 
     single(createdAtStart = true) {
@@ -165,4 +135,23 @@ fun defaultFrontendModule() = module {
     single { ModelManager() }
     single { JobRunner() }
     single<ExampleModelManager> { GitExampleModelManager().apply { updateCache().unsafeRunSync() } }
+}
+
+private fun Scope.bindPluginManager(
+    officialPlugins: Set<Plugin.Official>,
+    cacheName: String,
+    cacheFileName: String
+): PluginManager = when (val bucketName = get<Option<String>>(named(axonBucketName))) {
+    is Some -> {
+        S3PluginManager(
+            S3Manager(bucketName.t),
+            cacheName,
+            officialPlugins
+        ).apply { initialize() }
+    }
+
+    is None -> LocalPluginManager(
+        localCacheDir.resolve(cacheFileName).toFile(),
+        officialPlugins
+    ).apply { initialize() }
 }
