@@ -10,6 +10,9 @@ import java.nio.file.Path
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
+import java.nio.file.FileSystem
+import java.nio.file.FileSystems
+import java.nio.file.Paths
 
 internal class LocalTestRunnerIntegTest : KoinTestFixture() {
 
@@ -19,6 +22,12 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
 
         val modelPath =
             Path.of(this::class.java.getResource("32_32_1_conv_sequential-trained.h5").toURI())
+
+        println(tempDir.toPath())
+        println(tempDir.toPath().toRealPath())
+        println(tempDir.toPath().toAbsolutePath())
+        println(Paths.get(tempDir.toPath().toRealPath().toUri()))
+        println(FileSystems.getDefault().getPath(tempDir.toPath().toRealPath().toString()))
 
         val runner = LocalTestRunner()
         val testResults = runner.runTest(
@@ -43,7 +52,7 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
                 |    Path("output/file2.txt").touch()
                 """.trimMargin()
             ),
-            tempDir.toPath().toRealPath()
+            Paths.get(tempDir.toPath().toRealPath().toUri())
         )
 
         val outputDir = tempDir.toPath().toRealPath().resolve("output")
