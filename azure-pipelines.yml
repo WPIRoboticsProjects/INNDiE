@@ -55,6 +55,8 @@ stages:
         vmImage: macOS-10.14
 
       steps:
+        # The latest version of docker is broken so we need to install an older one
+        # https://github.com/docker/for-mac/issues/2359
         - script: |
             DOCKER_URL=https://download.docker.com/mac/stable/31259/Docker.dmg
             curl -O -sSL $DOCKER_URL
