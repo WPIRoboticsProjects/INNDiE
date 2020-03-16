@@ -7,7 +7,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.ItemViewModel
 
-class PluginModel: ItemViewModel<Plugin>() {
+class PluginModel : ItemViewModel<Plugin>() {
 
     val store by inject<PluginStore>()
 

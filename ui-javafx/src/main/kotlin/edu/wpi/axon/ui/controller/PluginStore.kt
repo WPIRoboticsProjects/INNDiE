@@ -7,7 +7,7 @@ import edu.wpi.axon.util.testPluginManagerName
 import tornadofx.Controller
 import tornadofx.SortedFilteredList
 
-abstract class PluginStore: Controller() {
+abstract class PluginStore : Controller() {
     protected abstract val pluginManager: PluginManager
 
     val plugins = SortedFilteredList<Plugin>()
@@ -23,7 +23,7 @@ abstract class PluginStore: Controller() {
     }
 }
 
-class DatasetPluginStore: PluginStore() {
+class DatasetPluginStore : PluginStore() {
     override val pluginManager by di<PluginManager>(datasetPluginManagerName)
 
     init {
@@ -31,7 +31,7 @@ class DatasetPluginStore: PluginStore() {
     }
 }
 
-class TestPluginStore: PluginStore() {
+class TestPluginStore : PluginStore() {
     override val pluginManager by di<PluginManager>(testPluginManagerName)
 
     init {

@@ -32,9 +32,6 @@ import tornadofx.isLong
 import tornadofx.listview
 import tornadofx.onUserSelect
 import tornadofx.required
-import tornadofx.scrollpane
-import tornadofx.selectedItem
-import tornadofx.set
 import tornadofx.textarea
 import tornadofx.textfield
 import tornadofx.toObservable
@@ -96,7 +93,7 @@ class PreferencesView : View("Preferences") {
     }
 }
 
-class PluginManagerEditor: Fragment() {
+class PluginManagerEditor : Fragment() {
 
     val selected by inject<PluginModel>()
 
@@ -132,7 +129,7 @@ class PluginManagerEditor: Fragment() {
     }
 }
 
-class PluginEditor: Fragment() {
+class PluginEditor : Fragment() {
 
     val model by inject<PluginModel>()
 
@@ -140,7 +137,6 @@ class PluginEditor: Fragment() {
         fieldset("Plugin Editor", labelPosition = Orientation.VERTICAL) {
             field("Name", Orientation.VERTICAL) {
                 textfield(model.name) {
-
                 }
             }
             field("Content", Orientation.VERTICAL) {
