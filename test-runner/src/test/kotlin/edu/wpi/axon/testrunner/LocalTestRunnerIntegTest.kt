@@ -23,6 +23,13 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
             Path.of(this::class.java.getResource("32_32_1_conv_sequential-trained.h5").toURI())
 
         println(tempDir.toPath())
+        println(tempDir.toPath().toUri())
+        println(tempDir.toPath().toAbsolutePath().toUri())
+        println(tempDir.toPath().toRealPath().toUri())
+        println(Paths.get(tempDir.toPath().toUri()))
+        println(Paths.get(tempDir.toPath().toAbsolutePath().toUri()))
+        println(Paths.get(tempDir.toPath().toUri()).toAbsolutePath())
+        println(Paths.get(tempDir.toPath().toUri()).toRealPath())
         println(tempDir.toPath().toRealPath())
         println(tempDir.toPath().toAbsolutePath())
         println(Paths.get(tempDir.toPath().toRealPath().toUri()))
