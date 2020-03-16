@@ -8,9 +8,6 @@ pluginManagement {
     val dokkaPluginVersion: String by settings
     val testloggerPluginVersion: String by settings
     val pitestPluginVersion: String by settings
-    val vaadinFlowPluginVersion: String by settings
-    val grettyPluginVersion: String by settings
-    val nodePluginVersion: String by settings
     val kotlinVersion: String by settings
     val javafxPluginVersion: String by settings
 
@@ -22,9 +19,6 @@ pluginManagement {
         id("org.jetbrains.dokka") version dokkaPluginVersion
         id("com.adarshr.test-logger") version testloggerPluginVersion
         id("info.solidsoft.pitest") version pitestPluginVersion
-        id("com.devsoap.vaadin-flow") version vaadinFlowPluginVersion
-        id("org.gretty") version grettyPluginVersion
-        id("com.moowork.node") version nodePluginVersion
         id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
         id("org.openjfx.javafxplugin") version javafxPluginVersion
     }
@@ -47,9 +41,7 @@ include(":test-util")
 include(":tf-data")
 include(":tf-data-code")
 include(":tf-layer-loader")
-include(":ui-electron")
 include(":ui-javafx")
-include(":ui-vaadin")
 include(":training")
 include(":training-test-util")
 include(":util")
