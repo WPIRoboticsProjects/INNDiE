@@ -35,8 +35,6 @@ val testUtilProject = project(":test-util")
 val tfDataProject = project(":tf-data")
 val tfDataCode = project(":tf-data-code")
 val tfLayerLoaderProject = project(":tf-layer-loader")
-val uiElectronProject = project(":ui-electron")
-val uiVaadinProject = project(":ui-vaadin")
 val trainingProject = project(":training")
 val trainingTestUtilProject = project(":training-test-util")
 val utilProject = project(":util")
@@ -56,8 +54,6 @@ val kotlinProjects = setOf(
     tfDataProject,
     tfDataCode,
     tfLayerLoaderProject,
-    uiElectronProject,
-    uiVaadinProject,
     trainingProject,
     trainingTestUtilProject,
     utilProject
@@ -77,8 +73,6 @@ val publishedProjects = setOf(
     tfDataProject,
     tfDataCode,
     tfLayerLoaderProject,
-    uiElectronProject,
-    uiVaadinProject,
     trainingProject,
     utilProject
 )
@@ -89,7 +83,6 @@ val pitestProjects = setOf(
     tfDataProject,
     tfDataCode,
     tfLayerLoaderProject,
-    uiVaadinProject,
     trainingProject,
     utilProject
 )
