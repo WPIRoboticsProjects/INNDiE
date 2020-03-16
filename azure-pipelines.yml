@@ -59,8 +59,7 @@ stages:
             brew cask install docker
             sudo /Applications/Docker.app/Contents/MacOS/Docker --quit-after-install --unattended
             nohup /Applications/Docker.app/Contents/MacOS/Docker --unattended &
-            echo where docker
-            where docker
+            docker -h
           displayName: 'Install Docker'
         - task: Gradle@2
           displayName: 'Check'
