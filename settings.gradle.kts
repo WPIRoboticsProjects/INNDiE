@@ -8,8 +8,6 @@ pluginManagement {
     val dokkaPluginVersion: String by settings
     val testloggerPluginVersion: String by settings
     val pitestPluginVersion: String by settings
-    val grettyPluginVersion: String by settings
-    val nodePluginVersion: String by settings
     val kotlinVersion: String by settings
 
     plugins {
