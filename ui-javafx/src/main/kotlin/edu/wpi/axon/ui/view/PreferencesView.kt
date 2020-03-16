@@ -9,18 +9,13 @@ import edu.wpi.axon.ui.model.PluginModel
 import edu.wpi.axon.ui.model.PreferencesModel
 import edu.wpi.axon.util.datasetPluginManagerName
 import edu.wpi.axon.util.testPluginManagerName
-import javafx.beans.value.ObservableValue
-import javafx.event.EventTarget
 import javafx.geometry.Orientation
-import javafx.scene.Node
-import javafx.scene.control.Button
 import javafx.scene.control.ButtonBar
 import javafx.scene.layout.Priority
 import software.amazon.awssdk.services.ec2.model.InstanceType
 import tornadofx.Fragment
 import tornadofx.View
 import tornadofx.action
-import tornadofx.attachTo
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.combobox
@@ -31,7 +26,6 @@ import tornadofx.filterInput
 import tornadofx.find
 import tornadofx.form
 import tornadofx.isLong
-import tornadofx.label
 import tornadofx.listview
 import tornadofx.required
 import tornadofx.separator
@@ -60,7 +54,7 @@ class PreferencesView : View("Preferences") {
                 field("Polling Rate (ms)") {
                     textfield(model.statusPollingDelayProperty) {
                         filterInput { it.controlNewText.isLong() }
-                        validator { isLongInRange(it, 5000L..60_000L) }
+                        validator { it.isLongInRange(5000L..60_000L) }
                     }
                 }
             }

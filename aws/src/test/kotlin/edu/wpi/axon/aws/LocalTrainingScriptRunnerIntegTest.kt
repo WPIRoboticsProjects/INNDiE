@@ -5,7 +5,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
 import io.kotlintest.matchers.booleans.shouldBeFalse
-import io.kotlintest.matchers.booleans.shouldBeTrue
+import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -25,7 +25,7 @@ internal class LocalTrainingScriptRunnerIntegTest {
     fun `test running mnist training script`(@TempDir tempDir: File) {
         val oldModelName = "custom_fashion_mnist.h5"
         val oldModelPath = this::class.java.getResource(oldModelName).path
-        val newModelPath = tempDir.toPath().resolve("custom_fashion_mnist-trained.h5").toString()
+        val newModelPath = tempDir.toPath().resolve("custom_fashion_mnist-trained.h5")
         val id = 1
         runner.startScript(
             RunTrainingScriptConfiguration(
@@ -97,13 +97,19 @@ internal class LocalTrainingScriptRunnerIntegTest {
 
                 var8 = var3.reshape(-1, 28, 28, 1) / 255
 
+                csvLogger = tf.keras.callbacks.CSVLogger(
+                    "$tempDir/trainingLog.csv",
+                    separator=',',
+                    append=False
+                )
+
                 var12.fit(
                     var6,
                     var2,
                     batch_size=None,
-                    epochs=1,
+                    epochs=2,
                     verbose=2,
-                    callbacks=[var15, var17],
+                    callbacks=[var15, var17, csvLogger],
                     validation_data=(var8, var4),
                     shuffle=True
                 )
@@ -122,12 +128,14 @@ internal class LocalTrainingScriptRunnerIntegTest {
             )
         )
 
+        println(tempDir.walkTopDown().joinToString("\n"))
+
         while (true) {
             val progress = runner.getTrainingProgress(id)
             println(progress)
             if (progress == TrainingScriptProgress.Completed) {
-                tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
-                    .exists().shouldBeTrue()
+                println(tempDir.walkTopDown().joinToString("\n"))
+                newModelPath.shouldExist()
                 break // Done with test
             } else if (progress is TrainingScriptProgress.Error) {
                 fail { "Progress was: $progress" }
@@ -182,13 +190,13 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 )
 
                 try:
-                    os.makedirs(Path("$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5").parent)
+                    os.makedirs(Path("./sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5").parent)
                 except OSError as err:
                     if err.errno != errno.EEXIST:
                         raise
 
                 var15 = tf.keras.callbacks.ModelCheckpoint(
-                    "$tempDir/sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
+                    "./sequential_2-weights.{epoch:02d}-{val_loss:.2f}.hdf5",
                     monitor="val_loss",
                     verbose=1,
                     save_best_only=False,
@@ -226,12 +234,12 @@ internal class LocalTrainingScriptRunnerIntegTest {
                 )
 
                 try:
-                    os.makedirs(Path("$newModelPath").parent)
+                    os.makedirs(Path("./custom_fashion_mnist-trained.h5").parent)
                 except OSError as err:
                     if err.errno != errno.EEXIST:
                         raise
 
-                var12.save("$newModelPath")
+                var12.save("./custom_fashion_mnist-trained.h5")
                 """.trimIndent(),
                 1,
                 tempDir.toPath(),

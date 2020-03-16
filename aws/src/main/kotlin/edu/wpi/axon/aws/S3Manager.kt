@@ -1,7 +1,9 @@
 package edu.wpi.axon.aws
 
+import edu.wpi.axon.util.localCacheDir
 import java.io.File
 import java.nio.file.Files
+import mu.KotlinLogging
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -16,26 +18,29 @@ class S3Manager(
 ) {
 
     private val s3 = S3Client.builder().build()
+    private val cacheDir: File = localCacheDir.resolve("s3-cache").toFile().apply { mkdirs() }
+    private val modelCacheDir: File = cacheDir.resolve("models").apply { mkdirs() }
+    private val trainingResultCacheDir: File = cacheDir.resolve("training-results")
+        .apply { mkdirs() }
+    private val pluginCacheDir: File = cacheDir.resolve("plugins").apply { mkdirs() }
 
     /**
-     * Uploads an "untrained" model (one that the user wants to upload to start a job with). Meant
-     * to be used as the starting point of a Job.
+     * Uploads a model.
      *
      * @param file The local file containing the model to upload. The filename of the uploaded
      * model will be the same as the filename of this file.
      */
-    fun uploadUntrainedModel(file: File) =
-        uploadLocalFile(file, "axon-untrained-models/${file.name}")
+    fun uploadModel(file: File) =
+        uploadLocalFile(file, "axon-models/${file.name}")
 
     /**
-     * Downloads an "untrained" model (one that the user uploaded). Meant to be
-     * used as the starting point of a Job.
+     * Downloads a model.
      *
      * @param filename The filename of the model file.
      * @return A local file containing the model.
      */
-    fun downloadUntrainedModel(filename: String): File =
-        downloadToLocalFile("axon-untrained-models/$filename")
+    fun downloadModel(filename: String): File =
+        downloadToLocalFile(modelCacheDir, "axon-models/$filename")
 
     /**
      * Lists the training results for the Job.
@@ -43,8 +48,11 @@ class S3Manager(
      * @param jobId The ID of the Job.
      * @return The filenames of the results.
      */
-    fun listTrainingResults(jobId: Int): List<String> =
-        listObjectsWithPrefixAndRemovePrefix("axon-training-results/$jobId/")
+    fun listTrainingResults(jobId: Int): List<String> {
+        val out = listObjectsWithPrefixAndRemovePrefix("axon-training-results/$jobId/")
+        LOGGER.debug { "Training results:\n$out" }
+        return out
+    }
 
     /**
      * Downloads a training result to a local file.
@@ -54,7 +62,7 @@ class S3Manager(
      * @return A local file containing the result.
      */
     fun downloadTrainingResult(jobId: Int, resultFilename: String): File =
-        downloadToLocalFile("axon-training-results/$jobId/$resultFilename")
+        downloadToLocalFile(trainingResultCacheDir, "axon-training-results/$jobId/$resultFilename")
 
     /**
      * Uploads a test data file.
@@ -64,12 +72,12 @@ class S3Manager(
     fun uploadTestDataFile(file: File) = uploadLocalFile(file, "axon-test-data/${file.name}")
 
     /**
-     * Lists all the untrained model files.
+     * Lists all the model files.
      *
-     * @return A list of the untrained model filenames.
+     * @return A list of the model filenames.
      */
-    fun listUntrainedModels(): List<String> =
-        listObjectsWithPrefixAndRemovePrefix("axon-untrained-models/")
+    fun listModels(): List<String> =
+        listObjectsWithPrefixAndRemovePrefix("axon-models/")
 
     /**
      * Lists all the test data files.
@@ -198,7 +206,7 @@ class S3Manager(
      * @return A local file containing the plugin cache.
      */
     fun downloadPluginCache(cacheName: String): File =
-        downloadToLocalFile("axon-plugins/$cacheName/plugin_cache.json")
+        downloadToLocalFile(pluginCacheDir, "axon-plugins/$cacheName/plugin_cache.json")
 
     /**
      * Downloads the preferences file to a local file. Throws an exception if there is no
@@ -233,6 +241,8 @@ class S3Manager(
      * @param path The path in S3 to upload to.
      */
     private fun uploadLocalFile(file: File, path: String) {
+        // TODO: Add caching here as well by checking the modified dates like we should do in
+        //  downloadToLocalFile.
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName).key(path).build(),
             RequestBody.fromFile(file)
@@ -246,20 +256,19 @@ class S3Manager(
      * @param path The path in S3 to download from.
      * @return A local file containing the data from the file in S3.
      */
-    private fun downloadToLocalFile(path: String): File {
+    private fun downloadToLocalFile(dir: File, path: String): File {
+        val localFile = File(dir, path.substringAfterLast('/'))
+
+        // If the file is already in the cache, don't download anything.
+        // TODO: Check the modified timestamp on the local file and on the key in S3 and overwrite
+        //  the local file if the key in S3 has been modified more recently.
+        if (localFile.exists()) {
+            return localFile
+        }
+
         val data = s3.getObject {
             it.bucket(bucketName).key(path)
         }.readAllBytes()
-
-        // Put the downloaded file in a temp dir to ensure it doesn't overwrite anything
-        val tempDir = Files.createTempDirectory("")
-
-        val localFile = File(tempDir.toFile(), path.substringAfterLast('/'))
-        check(localFile.createNewFile()) {
-            "File ${localFile.absolutePath} already existed but should not have. Not going to " +
-                "overwrite with new data."
-        }
-
         localFile.writeBytes(data)
         return localFile
     }
@@ -270,7 +279,7 @@ class S3Manager(
      */
     private fun listObjectsWithPrefixAndRemovePrefix(prefix: String) =
         s3.listObjects {
-            it.bucket(bucketName).prefix(prefix)
+            it.bucket(bucketName).prefix(prefix).maxKeys(1000)
         }.contents().map { it.key().substring(prefix.length) }
 
     private fun createTrainingProgressPrefix(id: Int) = "axon-training-progress/$id"
@@ -282,6 +291,7 @@ class S3Manager(
         "${createTrainingProgressPrefix(id)}/heartbeat.txt"
 
     companion object {
+        private val LOGGER = KotlinLogging.logger { }
         private const val preferencesFilename = "axon-preferences.json"
     }
 }

@@ -5,18 +5,22 @@ import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
 import edu.wpi.axon.aws.EC2Manager
+import edu.wpi.axon.aws.EC2TrainingResultSupplier
 import edu.wpi.axon.aws.EC2TrainingScriptCanceller
 import edu.wpi.axon.aws.EC2TrainingScriptProgressReporter
 import edu.wpi.axon.aws.EC2TrainingScriptRunner
+import edu.wpi.axon.aws.LocalTrainingResultSupplier
 import edu.wpi.axon.aws.LocalTrainingScriptCanceller
 import edu.wpi.axon.aws.LocalTrainingScriptProgressReporter
 import edu.wpi.axon.aws.LocalTrainingScriptRunner
 import edu.wpi.axon.aws.RunTrainingScriptConfiguration
 import edu.wpi.axon.aws.S3Manager
+import edu.wpi.axon.aws.TrainingResultSupplier
 import edu.wpi.axon.aws.TrainingScriptCanceller
 import edu.wpi.axon.aws.TrainingScriptProgressReporter
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.preferences.PreferencesManager
+import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.DesiredJobTrainingMethod
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.Job
@@ -26,10 +30,9 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
-import edu.wpi.axon.ui.main.localScriptRunnerCache
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
-import java.nio.file.Files
+import edu.wpi.axon.util.getLocalTrainingScriptRunnerWorkingDir
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlinx.coroutines.delay
@@ -47,8 +50,10 @@ internal class JobRunner : KoinComponent {
     private val runners = mutableMapOf<Int, TrainingScriptRunner>()
     private val progressReporters = mutableMapOf<Int, TrainingScriptProgressReporter>()
     private val cancellers = mutableMapOf<Int, TrainingScriptCanceller>()
+    private val resultSuppliers = mutableMapOf<Int, TrainingResultSupplier>()
     private val bucketName by inject<Option<String>>(named(axonBucketName))
-    private val modelDownloader by inject<ModelDownloader>()
+    private val modelManager by inject<ModelManager>()
+    private val jobDb by inject<JobDb>()
 
     /**
      * Generates the code for a job and starts it.
@@ -71,31 +76,21 @@ internal class JobRunner : KoinComponent {
 
         return when (desiredJobTrainingMethod) {
             DesiredJobTrainingMethod.LOCAL -> {
-                when (val path = job.userOldModelPath) {
-                    is ModelSource.FromFile -> check(path.filePath is FilePath.Local)
-                    is ModelSource.FromJob -> TODO("Not implemented.")
-                }
-                startLocalJob(job)
+                val localFile = modelManager.downloadModel(job.userOldModelPath)
+                startLocalJob(job.copy(userOldModelPath = ModelSource.FromFile(localFile)))
                 InternalJobTrainingMethod.Local
             }
 
             DesiredJobTrainingMethod.EC2 -> {
-                when (val path = job.userOldModelPath) {
-                    is ModelSource.FromFile -> check(path.filePath is FilePath.S3)
-                    is ModelSource.FromJob -> TODO("Not implemented.")
-                }
                 check(bucketName is Some)
-                startEC2Job(job)
+                val s3File = modelManager.uploadModel(job.userOldModelPath)
+                startEC2Job(job.copy(userOldModelPath = ModelSource.FromFile(s3File)))
             }
         }
     }
 
     private fun startLocalJob(job: Job) {
-        // The local runner can work out of any directory so just use the cache dir.
-        val workingDir = localScriptRunnerCache
-            .resolve(job.id.toString())
-            .apply { toFile().mkdirs() }
-
+        val workingDir = getLocalTrainingScriptRunnerWorkingDir(job.id)
         val config = generateScriptAndCreateConfig(job, workingDir)
 
         val scriptRunner = LocalTrainingScriptRunner().apply { startScript(config) }
@@ -125,13 +120,16 @@ internal class JobRunner : KoinComponent {
         runners[jobId] = scriptRunner
         progressReporters[jobId] = scriptRunner
         cancellers[jobId] = scriptRunner
+        resultSuppliers[jobId] = scriptRunner
     }
 
     private fun generateScriptAndCreateConfig(
         job: Job,
         workingDir: Path
     ): RunTrainingScriptConfiguration {
-        val (oldModel, modelPath) = modelDownloader.downloadModel(job.userOldModelPath)
+        require(job.userOldModelPath is ModelSource.FromFile)
+        val modelPath = (job.userOldModelPath as ModelSource.FromFile).filePath
+        val oldModel = modelManager.loadModel(job.userOldModelPath)
 
         val trainModelScriptGenerator = when (job.userNewModel) {
             is Model.Sequential -> {
@@ -171,13 +169,40 @@ internal class JobRunner : KoinComponent {
      *
      * @param id The id of the Job to cancel.
      */
-    internal fun cancelJob(id: Int) {
-        cancellers[id]!!.cancelScript(id)
+    internal fun cancelJob(id: Int): Boolean =
+        cancellers[id]?.let { it.cancelScript(id); true } ?: false
+
+    /**
+     * Get the previously set TrainingResultSupplier or try to create a new one.
+     */
+    private fun getResultSupplier(id: Int): TrainingResultSupplier? {
+        val supplier = resultSuppliers[id]
+        if (supplier != null) {
+            return supplier
+        }
+
+        val job = jobDb.getById(id)
+        return if (job == null) {
+            null
+        } else {
+            val newSupplier = when (job.internalTrainingMethod) {
+                is InternalJobTrainingMethod.EC2 -> EC2TrainingResultSupplier(S3Manager(getBucket()))
+                is InternalJobTrainingMethod.Local -> LocalTrainingResultSupplier().apply {
+                    addJob(id, getLocalTrainingScriptRunnerWorkingDir(id))
+                }
+                else -> null
+            }
+
+            newSupplier?.let { resultSuppliers[id] = it }
+
+            newSupplier
+        }
     }
 
-    internal fun listResults(id: Int) = runners[id]!!.listResults(id)
+    internal fun listResults(id: Int) = getResultSupplier(id)?.listResults(id) ?: emptyList()
 
-    internal fun getResult(id: Int, filename: String) = runners[id]!!.getResult(id, filename)
+    internal fun getResult(id: Int, filename: String) =
+        getResultSupplier(id)!!.getResult(id, filename)
 
     /**
      * Waits until the [TrainingScriptProgress] state is either completed or error.
@@ -213,30 +238,33 @@ internal class JobRunner : KoinComponent {
     internal fun startProgressReporting(job: Job) {
         require(runners[job.id] == null)
 
-        // The script contents don't matter to the progress reporter. Set an empty
-        // string to avoid having to regenerate the script. The model path doesn't matter either.
-        val config = createRunTrainingScriptConfiguration(
-            job,
-            FilePath.Local(""),
-            "",
-            Files.createTempDirectory("")
-        )
-
         when (val trainingMethod = job.internalTrainingMethod) {
             is InternalJobTrainingMethod.EC2 -> {
-                progressReporters[job.id] = EC2TrainingScriptProgressReporter(
-                    EC2Manager(),
-                    S3Manager(getBucket())
-                ).apply {
-                    addJob(config, trainingMethod.instanceId)
-                }
+                val ec2Manager = EC2Manager()
+                val s3Manager = S3Manager(getBucket())
+                progressReporters[job.id] =
+                    EC2TrainingScriptProgressReporter(ec2Manager, s3Manager).apply {
+                        addJob(job.id, trainingMethod.instanceId, job.userEpochs)
+                    }
 
-                cancellers[job.id] = EC2TrainingScriptCanceller(EC2Manager()).apply {
+                cancellers[job.id] = EC2TrainingScriptCanceller(ec2Manager).apply {
                     addJob(job.id, trainingMethod.instanceId)
                 }
+
+                resultSuppliers[job.id] = EC2TrainingResultSupplier(s3Manager)
             }
 
             is InternalJobTrainingMethod.Local -> {
+                // The script contents don't matter to the progress reporter. Set an empty
+                // string to avoid having to regenerate the script. The model path doesn't matter
+                // either.
+                val config = createRunTrainingScriptConfiguration(
+                    job,
+                    FilePath.Local(""),
+                    "",
+                    getLocalTrainingScriptRunnerWorkingDir(job.id)
+                )
+
                 progressReporters[job.id] = LocalTrainingScriptProgressReporter().apply {
                     addJobAfterRestart(config)
                 }
@@ -245,6 +273,10 @@ internal class JobRunner : KoinComponent {
                     addJobAfterRestart(job.id) {
                         progressReporters[job.id]!!.overrideTrainingProgress(job.id, it)
                     }
+                }
+
+                resultSuppliers[job.id] = LocalTrainingResultSupplier().apply {
+                    addJob(job.id, config.workingDir)
                 }
             }
 

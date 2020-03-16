@@ -2,6 +2,7 @@ package edu.wpi.axon.ui.model
 
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.Job
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.training.ModelDeploymentTarget
 import javafx.beans.property.SimpleIntegerProperty
@@ -23,6 +24,15 @@ data class JobDto(val job: Job) {
 
     val userOldModelPathProperty = SimpleObjectProperty(job.userOldModelPath)
     var userOldModelPath by userOldModelPathProperty
+
+    val oldModelTypeProperty = SimpleObjectProperty(
+        when (job.userOldModelPath) {
+            is ModelSource.FromExample -> ModelSourceType.EXAMPLE
+            is ModelSource.FromFile -> ModelSourceType.FILE
+            is ModelSource.FromJob -> ModelSourceType.JOB
+        }
+    )
+    var oldModelType by oldModelTypeProperty
 
     val userDatasetProperty = SimpleObjectProperty(job.userDataset)
     var userDataset by userDatasetProperty
@@ -67,6 +77,7 @@ class JobModel : ItemViewModel<JobDto>() {
     val name = bind(JobDto::nameProperty)
     val status = bind(JobDto::statusProperty)
     val userOldModelPath = bind(JobDto::userOldModelPathProperty)
+    val oldModelType = bind(JobDto::oldModelTypeProperty)
     val userDataset = bind(JobDto::userDatasetProperty)
     val userOptimizer = bind(JobDto::userOptimizerProperty)
     val optimizerType = bind(JobDto::optimizerTypeProperty)

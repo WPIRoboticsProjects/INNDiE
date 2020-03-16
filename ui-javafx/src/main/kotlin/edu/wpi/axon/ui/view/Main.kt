@@ -1,19 +1,18 @@
 package edu.wpi.axon.ui.view
 
-import edu.wpi.axon.ui.model.JobModel
 import javafx.scene.layout.BorderPane
 import tornadofx.View
 import tornadofx.action
+import tornadofx.center
 import tornadofx.item
+import tornadofx.left
 import tornadofx.menu
 import tornadofx.menubar
 import tornadofx.separator
-import tornadofx.vbox
 
 class Main : View() {
-    override val root = BorderPane()
 
-    private val job by inject<JobModel>()
+    override val root = BorderPane()
 
     init {
         with(root) {
@@ -37,10 +36,10 @@ class Main : View() {
                     }
                 }
             }
-            left = vbox {
+            left {
                 add<JobList>()
             }
-            center = vbox {
+            center {
                 add<JobManager>()
             }
         }

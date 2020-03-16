@@ -33,7 +33,14 @@ fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
         0 -> TrainingScriptProgress.NotStarted
         1 -> TrainingScriptProgress.Creating
         2 -> TrainingScriptProgress.Initializing
-        3 -> TrainingScriptProgress.InProgress(nextDouble(0.0, 1.0))
+        3 -> {
+            val epochs = nextInt(1, 10)
+            val totalEpochs = nextInt(epochs, epochs + 10)
+            TrainingScriptProgress.InProgress(
+                epochs.toDouble() / totalEpochs,
+                "epochs\n${(0..epochs).joinToString("\n")}"
+            )
+        }
         4 -> TrainingScriptProgress.Completed
         5 -> TrainingScriptProgress.Error(RandomStringUtils.randomAlphanumeric(50))
         else -> error("Missing a TrainingScriptProgress case.")

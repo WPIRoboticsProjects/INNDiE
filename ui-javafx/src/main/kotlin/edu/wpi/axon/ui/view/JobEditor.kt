@@ -2,9 +2,7 @@ package edu.wpi.axon.ui.view
 
 import arrow.core.Option
 import edu.wpi.axon.db.data.DesiredJobTrainingMethod
-import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
@@ -20,13 +18,15 @@ import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.FTRLDto
 import edu.wpi.axon.ui.model.FTRLModel
 import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.model.ModelSourceModel
-import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
+import javafx.scene.control.ButtonBar
+import javafx.scene.control.Label
+import javafx.scene.control.ScrollPane
+import javafx.scene.layout.Pane
 import javafx.stage.FileChooser
 import javafx.stage.Modality
 import javafx.util.StringConverter
@@ -40,6 +40,7 @@ import tornadofx.bind
 import tornadofx.bindTo
 import tornadofx.booleanBinding
 import tornadofx.borderpane
+import tornadofx.bottom
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.center
@@ -55,78 +56,94 @@ import tornadofx.hbox
 import tornadofx.isDouble
 import tornadofx.isInt
 import tornadofx.label
+import tornadofx.objectBinding
 import tornadofx.separator
 import tornadofx.textfield
 import tornadofx.toObservable
+import tornadofx.tooltip
 import tornadofx.validator
 import tornadofx.vbox
 
 class JobEditor : Fragment() {
+
     private val job by inject<JobModel>()
     private val jobLifecycleManager by di<JobLifecycleManager>()
     private val bucketName by di<Option<String>>(axonBucketName)
 
     override val root = borderpane {
-        center {
-            add<JobConfiguration>()
-        }
-        bottom = buttonbar {
-            button("Revert") {
-                enableWhen(job.dirty)
-                setOnAction {
-                    job.rollback()
+        centerProperty().bind(job.itemProperty.objectBinding {
+            if (it == null) {
+                Label("No selection.")
+            } else {
+                ScrollPane().apply {
+                    add<JobConfiguration>()
                 }
             }
-            button("Save") {
-                enableWhen(job.status.booleanBinding {
-                    it == TrainingScriptProgress.NotStarted
-                }.and(job.dirty))
-                setOnAction {
-                    job.commit()
-                }
-            }
-            button("Run") {
-                enableWhen(job.status.booleanBinding {
-                    it == TrainingScriptProgress.NotStarted
-                })
+        })
 
-                val desiredTrainingMethod = SimpleObjectProperty(
-                    bucketName.fold(
-                        { DesiredJobTrainingMethod.LOCAL },
-                        { DesiredJobTrainingMethod.EC2 }
-                    )
-                )
-
-                combobox<DesiredJobTrainingMethod> {
-                    bind(desiredTrainingMethod)
-                    items = DesiredJobTrainingMethod.values().toList().toObservable()
-                    cellFormat {
-                        text = it.name.toLowerCase().capitalize()
+        bottomProperty().bind(job.itemProperty.objectBinding {
+            if (it == null) {
+                Pane()
+            } else {
+                ButtonBar().apply {
+                    button("Revert") {
+                        enableWhen(job.dirty)
+                        setOnAction {
+                            job.rollback()
+                        }
                     }
-                    setOnAction { it.consume() }
-                }
+                    button("Save") {
+                        enableWhen(job.status.booleanBinding {
+                            it == TrainingScriptProgress.NotStarted
+                        }.and(job.dirty))
+                        setOnAction {
+                            job.commit()
+                        }
+                    }
+                    button("Run") {
+                        enableWhen(job.status.booleanBinding {
+                            it == TrainingScriptProgress.NotStarted
+                        })
 
-                action {
-                    job.commit {
-                        jobLifecycleManager.startJob(
-                            job.id.value.toInt(),
-                            desiredTrainingMethod.value
+                        val desiredTrainingMethod = SimpleObjectProperty(
+                            bucketName.fold(
+                                { DesiredJobTrainingMethod.LOCAL },
+                                { DesiredJobTrainingMethod.EC2 }
+                            )
                         )
+
+                        combobox<DesiredJobTrainingMethod> {
+                            bind(desiredTrainingMethod)
+                            items = DesiredJobTrainingMethod.values().toList().toObservable()
+                            cellFormat {
+                                text = it.name.toLowerCase().capitalize()
+                            }
+                            setOnAction { it.consume() }
+                        }
+
+                        action {
+                            job.commit {
+                                jobLifecycleManager.startJob(
+                                    job.id.value.toInt(),
+                                    desiredTrainingMethod.value
+                                )
+                            }
+                        }
+                    }
+                    button("Cancel") {
+                        enableWhen(job.status.booleanBinding {
+                            it == TrainingScriptProgress.Creating ||
+                                it == TrainingScriptProgress.Initializing ||
+                                it is TrainingScriptProgress.InProgress
+                        })
+
+                        action {
+                            jobLifecycleManager.cancelJob(job.id.value.toInt())
+                        }
                     }
                 }
             }
-            button("Cancel") {
-                enableWhen(job.status.booleanBinding {
-                    it == TrainingScriptProgress.Creating ||
-                        it == TrainingScriptProgress.Initializing ||
-                        it is TrainingScriptProgress.InProgress
-                })
-
-                action {
-                    jobLifecycleManager.cancelJob(job.id.value.toInt())
-                }
-            }
-        }
+        })
     }
 }
 
@@ -141,8 +158,24 @@ class JobConfiguration : Fragment("Configuration") {
         hbox(20) {
             vbox(20) {
                 fieldset("Dataset") {
+                    label("This is the data the model will be trained with.")
                     add<DatasetPicker>()
+                }
+                separator()
+                fieldset("Model") {
+                    label("This is the model that will be trained.")
+                    add<ModelPicker>()
+                }
+                separator()
+                fieldset("Dataset Plugin") {
+                    label("This adapts the shape of the dataset to the shape the model requires.")
                     field("Plugin") {
+                        tooltip(
+                            """
+                            The plugin used to process the dataset before giving it to the model for training.
+                            Add new plugins in the plugin editor.
+                            """.trimIndent()
+                        )
                         combobox(job.datasetPlugin) {
                             items = datasetPluginManager.listPlugins().toList().toObservable()
                             cellFormat {
@@ -151,17 +184,19 @@ class JobConfiguration : Fragment("Configuration") {
                         }
                     }
                 }
-                separator()
-                fieldset("Model") {
-                    add<ModelPicker>()
-                }
             }
             vbox(20) {
-                fieldset {
+                fieldset("General") {
                     field("Epochs") {
+                        tooltip(
+                            """
+                            The number of iterations over the dataset preformed when training the model.
+                            More epochs takes longer but usually produces a more accurate model.
+                            """.trimIndent()
+                        )
                         textfield(job.userEpochs) {
                             filterInput { it.controlNewText.isInt() }
-                            validator { isNotNull(it) }
+                            validator { it.isIntGreaterThanOrEqualTo(1) }
                         }
                     }
                 }
@@ -169,6 +204,12 @@ class JobConfiguration : Fragment("Configuration") {
                 fieldset("Optimizer") {
                     field("Type") {
                         combobox(job.optimizerType) {
+                            tooltip(
+                                """
+                                The type of the optimizer to use when training the model.
+                                Different optimizers are better for different models.
+                                """.trimIndent()
+                            )
                             items = Optimizer::class.sealedSubclasses.toObservable()
                             cellFormat {
                                 text = it.simpleName ?: "UNKNOWN"
@@ -194,6 +235,12 @@ class JobConfiguration : Fragment("Configuration") {
                 fieldset("Loss") {
                     field("Type") {
                         combobox(job.lossType) {
+                            tooltip(
+                                """
+                                The type of the loss function to use.
+                                Different loss functions are better for different models and tasks.
+                                """.trimIndent()
+                            )
                             items = Loss::class.sealedSubclasses.toObservable()
                             cellFormat {
                                 text = it.simpleName ?: "UNKNOWN"
@@ -215,11 +262,14 @@ class JobConfiguration : Fragment("Configuration") {
                         }
                     }
                 }
-            }
-            vbox(20) {
                 fieldset("Target") {
                     field("Type") {
                         combobox(job.targetType) {
+                            tooltip(
+                                """
+                                The target machine that the model will run on.
+                                """.trimIndent()
+                            )
                             items = ModelDeploymentTarget::class.sealedSubclasses.toObservable()
                             cellFormat {
                                 text = it.simpleName ?: "UNKNOWN"
@@ -261,30 +311,43 @@ class DatasetPicker : ItemFragment<Dataset>() {
             contentMap(dataset.type) {
                 item(DatasetType.EXAMPLE) {
                     combobox(job.userDataset) {
-                        items =
-                            Dataset.ExampleDataset::class.sealedSubclasses.map { it.objectInstance }
-                                .toObservable()
+                        tooltip(
+                            """
+                            Example datasets are simple, easy ways to test a model before curating a real dataset.
+                            """.trimIndent()
+                        )
+                        items = Dataset.ExampleDataset::class.sealedSubclasses
+                            .map { it.objectInstance }
+                            .toObservable()
                         cellFormat {
                             text = it.displayName
                         }
                     }
                 }
                 item(DatasetType.CUSTOM) {
-                    vbox {
-                        button {
+                    vbox(10) {
+                        button("Choose Dataset File") {
                             setOnAction {
                                 val file = chooseFile(
                                     "Pick",
-                                    arrayOf(FileChooser.ExtensionFilter("Any", "*.*"))
+                                    arrayOf(FileChooser.ExtensionFilter("Tar", "*.tar"))
                                 )
+
                                 file.firstOrNull()?.let {
-                                    job.userDataset.value =
-                                        Dataset.Custom(FilePath.Local(it.path), it.name)
+                                    job.userDataset.value = Dataset.Custom(
+                                        FilePath.Local(it.path),
+                                        it.name
+                                    )
                                 }
                             }
                         }
+
                         label(job.userDataset, converter = object : StringConverter<Dataset>() {
-                            override fun toString(obj: Dataset?) = obj?.displayName ?: ""
+                            override fun toString(obj: Dataset?) = when (obj) {
+                                is Dataset.Custom -> obj.baseNameWithoutExtension
+                                else -> ""
+                            }
+
                             override fun fromString(string: String) = null
                         })
                     }
@@ -298,61 +361,29 @@ class DatasetPicker : ItemFragment<Dataset>() {
     }
 }
 
-class ModelPicker : ItemFragment<ModelSource>() {
+class LayerEditorFragment : Fragment() {
+
     private val job by inject<JobModel>()
-    private val modelSource = ModelSourceModel().bindTo(this)
-    private val exampleModelManager by di<ExampleModelManager>()
 
-    override val root = vbox {
-        field("Source") {
-            combobox(modelSource.type) {
-                items = ModelSourceType.values().toList().toObservable()
-                cellFormat {
-                    text = it.name.toLowerCase().capitalize()
-                }
-            }
-        }
-        field {
-            contentMap(modelSource.type) {
-                item(ModelSourceType.EXAMPLE) {
-                    combobox(job.userOldModelPath) {
-                        items = exampleModelManager.getAllExampleModels().unsafeRunSync().map {
-                            ModelSource.FromExample(it)
-                        }.toObservable()
-                        cellFormat {
-                            text = (it as? ModelSource.FromExample)?.exampleModel?.name ?: ""
-                        }
-                    }
-                }
-                item(ModelSourceType.FILE) {
-                    vbox {
-                        label(
-                            job.userOldModelPath,
-                            converter = object : StringConverter<ModelSource>() {
-                                override fun toString(obj: ModelSource?) =
-                                    (obj as? ModelSource.FromFile)?.filePath?.toString() ?: ""
+    override val root = borderpane {
+        val layerEditor = LayerEditor(job.userNewModel.value)
+        center = layerEditor
 
-                                override fun fromString(string: String?) = null
-                            })
-                    }
-                }
-                item(ModelSourceType.JOB) {
-                    vbox {
-                        label("Job")
-                    }
-                }
-            }
-        }
-        field {
-            button("Edit") {
+        bottom = buttonbar {
+            button("Save") {
                 action {
+                    val newModel = layerEditor.getNewModel()
+                    job.userNewModel.value = null
+                    job.userNewModel.value = newModel
+                    close()
+                }
+            }
+            button("Cancel") {
+                action {
+                    close()
                 }
             }
         }
-    }
-
-    init {
-        itemProperty.bind(job.userOldModelPath)
     }
 }
 
@@ -430,7 +461,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.learningRatePower) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleLessThanOrEqualToZero(it)
+                    it.isDoubleLessThanOrEqualToZero()
                 }
             }
         }
@@ -438,7 +469,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.initialAccumulatorValue) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleGreaterThanOrEqualToZero(it)
+                    it.isDoubleGreaterThanOrEqualToZero()
                 }
             }
         }
@@ -446,7 +477,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l1RegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleGreaterThanOrEqualToZero(it)
+                    it.isDoubleGreaterThanOrEqualToZero()
                 }
             }
         }
@@ -454,7 +485,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l2RegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleGreaterThanOrEqualToZero(it)
+                    it.isDoubleGreaterThanOrEqualToZero()
                 }
             }
         }
@@ -462,7 +493,7 @@ class OptimizerFragment : Fragment() {
             textfield(ftrlModel.l2ShrinkageRegularizationStrength) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleGreaterThanOrEqualToZero(it)
+                    it.isDoubleGreaterThanOrEqualToZero()
                 }
             }
         }
@@ -511,7 +542,7 @@ class TargetFragment : Fragment() {
     lateinit var model: ItemViewModel<*>
 
     override val root = form {
-        fieldset("Edit Loss") {
+        fieldset("Edit Target") {
             println("Loaded with target type: ${job.targetType.value}")
             println("Loaded with target: ${job.target.value}")
             model = when (val target = job.target.value) {
@@ -551,7 +582,7 @@ class TargetFragment : Fragment() {
                 }) {
                 filterInput { it.controlNewText.isDouble() }
                 validator {
-                    isDoubleInRange(it, 0.0..100.0)
+                    it.isDoubleInRange(0.0..100.0)
                 }
             }
         }

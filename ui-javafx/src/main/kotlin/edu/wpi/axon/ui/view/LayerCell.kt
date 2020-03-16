@@ -7,18 +7,19 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.VBox
+import tornadofx.ItemViewModel
 import tornadofx.hbox
 import tornadofx.label
 
 fun createLayerCell(layer: Layer.MetaLayer, openEditor: (LayerCell) -> Unit) = when (layer) {
     is Layer.MetaLayer.TrainableLayer -> LayerCell(
-        layer,
+        TrainableLayerModel(layer),
         createBaseLayerCell(layer.layer),
         openEditor
     )
 
     is Layer.MetaLayer.UntrainableLayer -> LayerCell(
-        layer,
+        UntrainableLayerModel(layer),
         createBaseLayerCell(layer.layer),
         openEditor
     )
@@ -81,7 +82,7 @@ fun createLayerColor(layer: Layer): String = when (layer) {
 }
 
 class LayerCell(
-    var layer: Layer.MetaLayer,
+    var layer: ItemViewModel<out Layer.MetaLayer>,
     var content: Node,
     private val openEditor: (LayerCell) -> Unit
 ) : AbstractCell() {
@@ -94,9 +95,9 @@ class LayerCell(
         }
 
         top = hbox {
-            style = "-fx-background-color: ${createLayerColor(layer)};"
+            style = "-fx-background-color: ${createLayerColor(layer.item)};"
 
-            label(layer.layer::class.simpleName!!) {
+            label(layer.item.layer::class.simpleName!!) {
                 style = "-fx-text-fill: white;"
             }
         }

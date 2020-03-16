@@ -59,7 +59,7 @@ sealed class Layer {
             override val name: String,
             override val inputs: Set<String>?,
             override val layer: Layer,
-            var trainable: Boolean
+            val trainable: Boolean
         ) : MetaLayer() {
             init {
                 require(layer !is MetaLayer)
@@ -83,8 +83,18 @@ sealed class Layer {
                 require(layer !is MetaLayer)
             }
 
-            override fun copyWithNewInputs(inputs: Set<String>) =
-                copy(inputs = inputs, layer = layer.copyWithNewInputs(inputs))
+            override fun copyWithNewInputs(inputs: Set<String>): UntrainableLayer {
+                return if (layer is InputLayer) {
+                    // InputLayers can't have inputs, so if we get one, make sure there are no
+                    // inputs. After that, there is nothing new in the copy so just return a normal
+                    // copy.
+                    check(inputs.isEmpty())
+                    copy()
+                } else {
+                    // All the other layers can have inputs so copy the layer with the new inputs.
+                    copy(inputs = inputs, layer = layer.copyWithNewInputs(inputs))
+                }
+            }
         }
     }
 

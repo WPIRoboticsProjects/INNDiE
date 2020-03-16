@@ -35,7 +35,7 @@ class ModelDownloader : KoinComponent {
                             // If the model to start training from is in S3, we need to download it
                             s3Manager.fold(
                                 { error("Need an S3Manager to download the untrained model.") },
-                                { it.downloadUntrainedModel(modelPath.path) }
+                                { it.downloadModel(modelPath.path) }
                             )
                         }
 
@@ -63,9 +63,9 @@ class ModelDownloader : KoinComponent {
                                 """.trimMargin()
                             }
 
-                            if (!it.listUntrainedModels().contains(file.name)) {
+                            if (!it.listModels().contains(file.name)) {
                                 // The model is not in S3 so we need to upload it
-                                it.uploadUntrainedModel(file)
+                                it.uploadModel(file)
                             }
 
                             model to FilePath.S3(file.name)

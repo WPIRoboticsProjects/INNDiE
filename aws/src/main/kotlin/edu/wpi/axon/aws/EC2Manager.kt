@@ -69,7 +69,7 @@ class EC2Manager {
     }
 
     /**
-     * Terminates the instance.
+     * Terminates the instance. This operation is idempotent.
      *
      * @param instanceId The ID of the instance.
      */

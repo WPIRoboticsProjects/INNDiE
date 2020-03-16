@@ -15,24 +15,14 @@ fun EventTarget.textfield(property: ObservableValue<Double>, op: TextField.() ->
         op(this)
     }
 
-fun isNotNull(value: String?) =
-    if (value == null) {
+fun String?.isDoubleLessThanOrEqualToZero() =
+    if (this.isNullOrBlank()) {
         ValidationMessage(
-            "Must not be null.",
+            "Must not be empty.",
             ValidationSeverity.Error
         )
     } else {
-        null
-    }
-
-fun isDoubleLessThanOrEqualToZero(value: String?) =
-    if (value == null) {
-        ValidationMessage(
-            "Must not be null.",
-            ValidationSeverity.Error
-        )
-    } else {
-        if (value.toDouble() <= 0.0) {
+        if (this.toDouble() <= 0.0) {
             null
         } else {
             ValidationMessage(
@@ -42,14 +32,14 @@ fun isDoubleLessThanOrEqualToZero(value: String?) =
         }
     }
 
-fun isDoubleGreaterThanOrEqualToZero(value: String?) =
-    if (value == null) {
+fun String?.isDoubleGreaterThanOrEqualToZero() =
+    if (this.isNullOrBlank()) {
         ValidationMessage(
-            "Must not be null.",
+            "Must not be empty.",
             ValidationSeverity.Error
         )
     } else {
-        if (value.toDouble() >= 0.0) {
+        if (this.toDouble() >= 0.0) {
             null
         } else {
             ValidationMessage(
@@ -59,39 +49,39 @@ fun isDoubleGreaterThanOrEqualToZero(value: String?) =
         }
     }
 
-fun isLongGreaterThanOrEqualToZero(value: String?) =
-    if (value == null) {
+fun String?.isIntGreaterThanOrEqualTo(value: Int) =
+    if (this.isNullOrBlank()) {
         ValidationMessage(
-            "Must not be null.",
+            "Must not be empty.",
             ValidationSeverity.Error
         )
     } else {
-        if (value.replace(",", "").toLong() >= 0L) {
+        if (this.replace(",", "").toInt() >= value) {
             null
         } else {
             ValidationMessage(
-                "Must be greater than or equal to zero.",
+                "Must be greater than or equal to $value.",
                 ValidationSeverity.Error
             )
         }
     }
 
-fun isDoubleInRange(value: String?, range: ClosedRange<Double>) =
-    if (value == null) {
-        ValidationMessage("Must not be null.", ValidationSeverity.Error)
+fun String?.isDoubleInRange(range: ClosedRange<Double>) =
+    if (this.isNullOrBlank()) {
+        ValidationMessage("Must not be empty.", ValidationSeverity.Error)
     } else {
-        if (value.toDouble() in range) {
+        if (this.toDouble() in range) {
             null
         } else {
             ValidationMessage("Must be in the range $range.", ValidationSeverity.Error)
         }
     }
 
-fun isLongInRange(value: String?, range: ClosedRange<Long>) =
-    if (value.isNullOrBlank()) {
-        ValidationMessage("Must not be null.", ValidationSeverity.Error)
+fun String?.isLongInRange(range: ClosedRange<Long>) =
+    if (this.isNullOrBlank()) {
+        ValidationMessage("Must not be empty.", ValidationSeverity.Error)
     } else {
-        if (value.replace(",", "").toLong() in range) {
+        if (this.replace(",", "").toLong() in range) {
             null
         } else {
             ValidationMessage("Must be in the range $range.", ValidationSeverity.Error)

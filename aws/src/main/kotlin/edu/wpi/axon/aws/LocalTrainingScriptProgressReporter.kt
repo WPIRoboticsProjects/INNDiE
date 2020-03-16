@@ -2,20 +2,17 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.util.createLocalProgressFilepath
-import java.io.File
+import edu.wpi.axon.util.getLatestEpochFromProgressCsv
 import java.lang.NumberFormatException
 import mu.KotlinLogging
 
 /**
  * A [TrainingScriptProgressReporter] that is designed for a [LocalTrainingScriptRunner].
- *
- * @param progressReportingDirPrefix The prefix for the local progress reporting directory.
  */
-class LocalTrainingScriptProgressReporter(
-    private val progressReportingDirPrefix: String = "/tmp/progress_reporting"
-) : TrainingScriptProgressReporter {
+class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
 
     private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
+
     // TODO: Use a callback to get the most recent progress instead of this
     private var scriptProgressMapMap = mutableMapOf<Int, Map<Int, TrainingScriptProgress>?>()
     private val scriptThreadMap = mutableMapOf<Int, Thread?>()
@@ -60,33 +57,48 @@ class LocalTrainingScriptProgressReporter(
         overriddenProgressMap[jobId]?.let { return it }
 
         val progressMap = scriptProgressMapMap[jobId]
-        val epochs = scriptDataMap[jobId]!!.epochs
+        val config = scriptDataMap[jobId]!!
+        val epochs = config.epochs
 
         // Create the progress file up here to share code but don't read from it unless we have to,
         // to avoid reading from it if it's not there but didn't have to be
-        val progressFile = File(createLocalProgressFilepath(progressReportingDirPrefix, jobId))
+        val progressFile = createLocalProgressFilepath(config.workingDir).toFile()
+
+        LOGGER.debug {
+            "Getting training progress for Job $jobId from path ${progressFile.path}"
+        }
 
         return if (progressMap == null) {
             // We are resuming from a restart because there was no initial progress data. Remove
             // whitespace from the progress text because `toInt` is picky.
-            val progressText = progressFile.readText().replace(Regex("\\s+"), "")
-            try {
-                LOGGER.debug {
-                    """
-                    progressText=$progressText
-                    epochs=$epochs
-                    """.trimIndent()
+            val progressText = progressFile.readText()
+            LOGGER.debug {
+                """
+                progressText=$progressText
+                epochs=$epochs
+                """.trimIndent()
+            }
+
+            if (progressText.isBlank()) {
+                TrainingScriptProgress.Initializing
+            } else {
+                try {
+                    val latestEpoch = getLatestEpochFromProgressCsv(progressText)
+                    if (latestEpoch == epochs) {
+                        // We need to make sure the progress gets to Completed because the thread is no
+                        // longer alive to do it for us.
+                        TrainingScriptProgress.Completed
+                    } else {
+                        TrainingScriptProgress.InProgress(
+                            latestEpoch / epochs.toDouble(),
+                            progressText
+                        )
+                    }
+                } catch (ex: NumberFormatException) {
+                    TrainingScriptProgress.Error("Invalid progress text: $progressText")
+                } catch (ex: IllegalStateException) {
+                    TrainingScriptProgress.Error("Invalid progress text: $progressText")
                 }
-                val progressDouble = progressText.toInt()
-                if (progressDouble == epochs) {
-                    // We need to make sure the progress gets to Completed because the thread is no
-                    // longer alive to do it for us.
-                    TrainingScriptProgress.Completed
-                } else {
-                    TrainingScriptProgress.InProgress(progressDouble / epochs.toDouble())
-                }
-            } catch (ex: NumberFormatException) {
-                TrainingScriptProgress.Error("Invalid progress text: $progressText")
             }
         } else {
             // If progressMap wasn't null, then the thread should've been set as well
@@ -96,18 +108,25 @@ class LocalTrainingScriptProgressReporter(
             if (scriptThreadMap[jobId]!!.isAlive) {
                 // Training thread is still running. Try to read the progress file. Remove
                 // whitespace because `toInt` is picky.
-                val progressText = progressFile.readText().replace(Regex("\\s+"), "")
+                val progressText = progressFile.readText()
+
+                LOGGER.debug {
+                    """
+                    progressText=$progressText
+                    epochs=$epochs
+                    """.trimIndent()
+                }
 
                 when {
                     lastProgressData == TrainingScriptProgress.Creating &&
-                        progressText == "initializing" -> {
+                        (progressText == "initializing" || progressText.isBlank()) -> {
                         // It's initializing if the training thread wrote Creating and the progress file
                         // still contains "initializing"
                         TrainingScriptProgress.Creating
                     }
 
                     lastProgressData == TrainingScriptProgress.Initializing &&
-                        progressText == "initializing" -> {
+                        (progressText == "initializing" || progressText.isBlank()) -> {
                         // It's initializing if the training thread wrote Initializing and the progress
                         // file still contains "initializing"
                         TrainingScriptProgress.Initializing
@@ -122,10 +141,17 @@ class LocalTrainingScriptProgressReporter(
                             else -> {
                                 // Otherwise it must be InProgress
                                 try {
+                                    val latestEpoch = getLatestEpochFromProgressCsv(progressText)
+                                    LOGGER.debug { "Latest epoch: $latestEpoch" }
                                     TrainingScriptProgress.InProgress(
-                                        progressText.toInt() / epochs.toDouble()
+                                        latestEpoch / epochs.toDouble(),
+                                        progressText
                                     )
                                 } catch (ex: NumberFormatException) {
+                                    TrainingScriptProgress.Error(
+                                        "Invalid progress text: $progressText"
+                                    )
+                                } catch (ex: IllegalStateException) {
                                     TrainingScriptProgress.Error(
                                         "Invalid progress text: $progressText"
                                     )

@@ -10,27 +10,22 @@ import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.plugin.S3PluginManager
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.InternalJobTrainingMethod
-import edu.wpi.axon.db.data.ModelSource
-import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.examplemodel.GitExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
+import edu.wpi.axon.plugin.DatasetPlugins.divideByTwoFiveFivePlugin
+import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypeForMobilenetPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
-import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.JobRunner
-import edu.wpi.axon.ui.ModelDownloader
-import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.util.axonBucketName
 import edu.wpi.axon.util.datasetPluginManagerName
+import edu.wpi.axon.util.localCacheDir
 import edu.wpi.axon.util.testPluginManagerName
 import java.io.File
 import java.nio.file.Paths
@@ -38,17 +33,10 @@ import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-val localScriptRunnerCache = Paths.get(
-    System.getProperty("user.home"),
-    ".wpilib",
-    "Axon",
-    "local-script-runner-cache"
-)
-
 fun loadModel(modelName: String): Pair<Model, String> {
     val localModelPath =
-            Paths.get("/Users/austinshalit/git/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
-                    .toString()
+        Paths.get("/home/salmon/Documents/Axon/training/src/test/resources/edu/wpi/axon/training/$modelName")
+            .toString()
     val layers =
         ModelLoaderFactory().createModelLoader(localModelPath).load(File(localModelPath))
     val model = layers.attempt().unsafeRunSync()
@@ -62,50 +50,50 @@ fun defaultFrontendModule() = module {
     single {
         JobDb(
             Database.connect(
-                url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+                url = "jdbc:h2:~/.wpilib/Axon/db;DB_CLOSE_DELAY=-1",
                 driver = "org.h2.Driver"
             )
         ).apply {
-            val modelName = "32_32_1_conv_sequential.h5"
-            val (model, path) = loadModel(modelName)
-
-            create(
-                name = "AWS Job",
-                status = TrainingScriptProgress.NotStarted,
-                userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
-                userDataset = Dataset.ExampleDataset.FashionMnist,
-                userOptimizer = Optimizer.Adam(
-                    learningRate = 0.001,
-                    beta1 = 0.9,
-                    beta2 = 0.999,
-                    epsilon = 1e-7,
-                    amsGrad = false
-                ),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 1,
-                userNewModel = model,
-                generateDebugComments = false,
-                datasetPlugin = datasetPassthroughPlugin,
-                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
-                target = ModelDeploymentTarget.Desktop
-            )
-
-            create(
-                name = "Local Job",
-                status = TrainingScriptProgress.NotStarted,
-                userOldModelPath = ModelSource.FromFile(FilePath.Local(path)),
-                userDataset = Dataset.ExampleDataset.FashionMnist,
-                userOptimizer = Optimizer.Adam(),
-                userLoss = Loss.SparseCategoricalCrossentropy,
-                userMetrics = setOf("accuracy"),
-                userEpochs = 1,
-                userNewModel = model,
-                generateDebugComments = false,
-                datasetPlugin = processMnistTypePlugin,
-                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
-                target = ModelDeploymentTarget.Desktop
-            )
+            // val modelName = "32_32_1_conv_sequential.h5"
+            // val (model, path) = loadModel(modelName)
+            //
+            // create(
+            //     name = "AWS Job",
+            //     status = TrainingScriptProgress.NotStarted,
+            //     userOldModelPath = ModelSource.FromFile(FilePath.S3(modelName)),
+            //     userDataset = Dataset.ExampleDataset.FashionMnist,
+            //     userOptimizer = Optimizer.Adam(
+            //         learningRate = 0.001,
+            //         beta1 = 0.9,
+            //         beta2 = 0.999,
+            //         epsilon = 1e-7,
+            //         amsGrad = false
+            //     ),
+            //     userLoss = Loss.SparseCategoricalCrossentropy,
+            //     userMetrics = setOf("accuracy"),
+            //     userEpochs = 1,
+            //     userNewModel = model,
+            //     generateDebugComments = false,
+            //     datasetPlugin = datasetPassthroughPlugin,
+            //     internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+            //     target = ModelDeploymentTarget.Desktop
+            // )
+            //
+            // create(
+            //     name = "Local Job",
+            //     status = TrainingScriptProgress.NotStarted,
+            //     userOldModelPath = ModelSource.FromFile(FilePath.Local(path)),
+            //     userDataset = Dataset.ExampleDataset.FashionMnist,
+            //     userOptimizer = Optimizer.Adam(),
+            //     userLoss = Loss.SparseCategoricalCrossentropy,
+            //     userMetrics = setOf("accuracy"),
+            //     userEpochs = 1,
+            //     userNewModel = model,
+            //     generateDebugComments = false,
+            //     datasetPlugin = processMnistTypePlugin,
+            //     internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+            //     target = ModelDeploymentTarget.Desktop
+            // )
         }
     }
 
@@ -113,12 +101,7 @@ fun defaultFrontendModule() = module {
         when (val bucketName = get<Option<String>>(named(axonBucketName))) {
             is Some -> S3PreferencesManager(S3Manager(bucketName.t)).apply { initialize() }
             is None -> LocalPreferencesManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "preferences.json"
-                )
+                localCacheDir.resolve("preferences.json")
             ).apply { initialize() }
         }
     }
@@ -127,7 +110,9 @@ fun defaultFrontendModule() = module {
         // TODO: Load official plugins from resources
         val officialPlugins = setOf(
             datasetPassthroughPlugin,
-            processMnistTypePlugin
+            processMnistTypePlugin,
+            processMnistTypeForMobilenetPlugin,
+            divideByTwoFiveFivePlugin
         )
 
         when (val bucketName = get<Option<String>>(named(axonBucketName))) {
@@ -140,12 +125,7 @@ fun defaultFrontendModule() = module {
             }
 
             is None -> LocalPluginManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "dataset_plugin_cache.json"
-                ).toFile(),
+                localCacheDir.resolve("dataset_plugin_cache.json").toFile(),
                 officialPlugins
             ).apply { initialize() }
         }
@@ -167,18 +147,14 @@ fun defaultFrontendModule() = module {
             }
 
             is None -> LocalPluginManager(
-                Paths.get(
-                    System.getProperty("user.home"),
-                    ".wpilib",
-                    "Axon",
-                    "test_plugin_cache.json"
-                ).toFile(),
+                localCacheDir.resolve("test_plugin_cache.json").toFile(),
                 officialPlugins
             ).apply { initialize() }
         }
     }
 
-    single {
+    single(createdAtStart = true) {
+        // This needs to be eager so we eagerly resume tracking in-progress Jobs
         JobLifecycleManager(
             jobRunner = get(),
             jobDb = get(),
@@ -186,7 +162,7 @@ fun defaultFrontendModule() = module {
         ).apply { initialize() }
     }
 
-    single { ModelDownloader() }
+    single { ModelManager() }
     single { JobRunner() }
     single<ExampleModelManager> { GitExampleModelManager().apply { updateCache().unsafeRunSync() } }
 }
