@@ -6,13 +6,12 @@ import edu.wpi.axon.testutil.KoinTestFixture
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.matchers.file.shouldContainFiles
 import java.io.File
+import java.nio.file.FileSystems
 import java.nio.file.Path
+import java.nio.file.Paths
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
-import java.nio.file.FileSystem
-import java.nio.file.FileSystems
-import java.nio.file.Paths
 
 internal class LocalTestRunnerIntegTest : KoinTestFixture() {
 
