@@ -248,6 +248,7 @@ configure(javaProjects) {
              */
             excludeTags("needsSpecialSoftware")
 
+            // TODO: Get rid of the need for this by running tests that need TF in a Docker container
             if (!project.hasProperty("hasTensorFlowSupport")) {
                 excludeTags("needsTensorFlowSupport")
             }

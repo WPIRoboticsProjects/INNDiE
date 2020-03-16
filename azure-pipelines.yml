@@ -6,53 +6,9 @@ trigger:
     include:
       - '*'
 
-resources:
-  containers:
-  - container: axon-ci
-    image: wpilib/axon-ci:latest
-
 stages:
 - stage: Build
   jobs:
-    - job: Linux_Docker
-
-      container: axon-ci
-
-      steps:
-        - task: Gradle@2
-          displayName: 'Check'
-          inputs:
-            workingDirectory: ''
-            gradleWrapperFile: 'gradlew'
-            gradleOptions: '-Xmx3072m'
-            options: '--stacktrace -PlogTests -Pheadless -PhasTensorFlowSupport'
-            javaHomeOption: 'JDKVersion'
-            jdkVersionOption: '1.11'
-            jdkArchitectureOption: 'x64'
-            publishJUnitResults: true
-            testResultsFiles: '**/TEST-*.xml'
-            tasks: 'check'
-
-        - task: Gradle@2
-          displayName: 'JacocoRootReport'
-          inputs:
-            workingDirectory: ''
-            gradleWrapperFile: 'gradlew'
-            gradleOptions: '-Xmx3072m'
-            options: '--stacktrace -PlogTests -Pheadless'
-            javaHomeOption: 'JDKVersion'
-            jdkVersionOption: '1.11'
-            jdkArchitectureOption: 'x64'
-            publishJUnitResults: true
-            testResultsFiles: '**/TEST-*.xml'
-            tasks: 'jacocoRootReport'
-
-        - bash: bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
-          displayName: 'CodeCov'
-          workingDirectory: ''
-          env:
-            CODECOV_TOKEN: $(CODECOV_TOKEN)
-
     - job: Linux
 
       pool:
@@ -86,6 +42,12 @@ stages:
             publishJUnitResults: true
             testResultsFiles: '**/TEST-*.xml'
             tasks: 'jacocoRootReport'
+
+        - bash: bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
+          displayName: 'CodeCov'
+          workingDirectory: ''
+          env:
+            CODECOV_TOKEN: $(CODECOV_TOKEN)
 
     - job: MacOS
 
