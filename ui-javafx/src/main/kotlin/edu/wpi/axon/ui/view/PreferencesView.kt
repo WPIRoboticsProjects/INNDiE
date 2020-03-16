@@ -2,20 +2,22 @@ package edu.wpi.axon.ui.view
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import edu.wpi.axon.plugin.PluginManager
-import edu.wpi.axon.ui.model.PluginManagerModel
-import edu.wpi.axon.ui.model.PluginManagerScope
+import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.ui.controller.DatasetPluginStore
+import edu.wpi.axon.ui.controller.PluginStore
+import edu.wpi.axon.ui.controller.TestPluginStore
 import edu.wpi.axon.ui.model.PluginModel
 import edu.wpi.axon.ui.model.PreferencesModel
-import edu.wpi.axon.util.datasetPluginManagerName
-import edu.wpi.axon.util.testPluginManagerName
 import javafx.geometry.Orientation
 import javafx.scene.control.ButtonBar
 import javafx.scene.layout.Priority
 import software.amazon.awssdk.services.ec2.model.InstanceType
+import tornadofx.FX
 import tornadofx.Fragment
+import tornadofx.Scope
 import tornadofx.View
 import tornadofx.action
+import tornadofx.bindSelected
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.combobox
@@ -25,10 +27,14 @@ import tornadofx.fieldset
 import tornadofx.filterInput
 import tornadofx.find
 import tornadofx.form
+import tornadofx.hbox
 import tornadofx.isLong
 import tornadofx.listview
+import tornadofx.onUserSelect
 import tornadofx.required
-import tornadofx.separator
+import tornadofx.scrollpane
+import tornadofx.selectedItem
+import tornadofx.set
 import tornadofx.textarea
 import tornadofx.textfield
 import tornadofx.toObservable
@@ -39,8 +45,8 @@ import tornadofx.vgrow
 class PreferencesView : View("Preferences") {
 
     private val model by inject<PreferencesModel>()
-    private val datasetPluginManager by di<PluginManager>(datasetPluginManagerName)
-    private val testPluginManager by di<PluginManager>(testPluginManagerName)
+    private val datasetPluginStore by inject<DatasetPluginStore>()
+    private val testPluginManager by inject<TestPluginStore>()
 
     override val root = vbox {
         form {
@@ -56,6 +62,18 @@ class PreferencesView : View("Preferences") {
                         filterInput { it.controlNewText.isLong() }
                         validator { it.isLongInRange(5000L..60_000L) }
                     }
+                }
+            }
+            fieldset("Plugins", labelPosition = Orientation.VERTICAL) {
+                field("Dataset") {
+                    val scope = Scope()
+                    FX.getComponents(scope)[PluginStore::class] = datasetPluginStore
+                    add(find<PluginManagerEditor>(scope))
+                }
+                field("Test") {
+                    val scope = Scope()
+                    FX.getComponents(scope)[PluginStore::class] = testPluginManager
+                    add(find<PluginManagerEditor>(scope))
                 }
             }
             buttonbar(ButtonBar.BUTTON_ORDER_NONE) {
@@ -75,31 +93,40 @@ class PreferencesView : View("Preferences") {
                 }
             }
         }
-        separator()
-        add(find<PluginManagerEditor>(PluginManagerScope(PluginManagerModel().apply { this.item = datasetPluginManager })))
     }
 }
 
-
-
 class PluginManagerEditor: Fragment() {
 
-    val model by inject<PluginManagerModel>()
+    val selected by inject<PluginModel>()
+
+    private val store by inject<PluginStore>()
 
     override val root = vbox {
-        listview(model.plugins) {
+        listview(store.plugins) {
+            bindSelected(selected)
             cellFormat {
                 text = it.name
-                graphic = button(graphic = FontAwesomeIconView(FontAwesomeIcon.PENCIL)) {
-                    setOnAction {
-                        find<PluginEditor>().openWindow()
-                    }
+            }
+            onUserSelect {
+                find<PluginEditor>().openWindow()
+            }
+            vgrow = Priority.NEVER
+            prefHeight = -1.0
+            maxHeight = 150.0
+        }
+        hbox {
+            button(graphic = FontAwesomeIconView(FontAwesomeIcon.MINUS)) {
+                enableWhen { selected.empty.not().and(selected.unofficial) }
+                setOnAction {
+                    store.removePlugin(selected.item as Plugin.Unofficial)
                 }
             }
-        }
-        button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
-            setOnAction {
-                find<PluginEditor>().openWindow()
+            button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
+                setOnAction {
+                    selected.item = null
+                    find<PluginEditor>().openWindow()
+                }
             }
         }
     }

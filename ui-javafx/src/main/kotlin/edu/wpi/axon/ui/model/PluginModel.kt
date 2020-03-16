@@ -1,29 +1,27 @@
 package edu.wpi.axon.ui.model
 
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.plugin.PluginManager
-import javafx.beans.property.SimpleListProperty
+import edu.wpi.axon.ui.controller.PluginStore
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty
-import javafx.collections.ObservableList
 import tornadofx.ItemViewModel
-import tornadofx.Scope
-import tornadofx.toObservable
 
 class PluginModel: ItemViewModel<Plugin>() {
+
+    val store by inject<PluginStore>()
+
     val name = bind { SimpleStringProperty(item?.name ?: "") }
     val contents = bind { SimpleStringProperty(item?.contents ?: "") }
 
-    override fun onCommit() {
-
-    }
-}
-
-class PluginManagerModel: ItemViewModel<PluginManager>() {
-    val plugins = bind { SimpleListProperty<Plugin>((item?.listPlugins() ?: listOf<Plugin>()).toList().toObservable()) }
+    val unofficial = bind { SimpleBooleanProperty(item is Plugin.Unofficial) } as ReadOnlyBooleanProperty
 
     override fun onCommit() {
+        if (item is Plugin.Unofficial) {
+            store.removePlugin(item as Plugin.Unofficial)
+        }
 
+        item = Plugin.Unofficial(name.value, contents.value)
+        store.addPlugin(item as Plugin.Unofficial)
     }
 }
-
-class PluginManagerScope(val manager: PluginManagerModel): Scope()
