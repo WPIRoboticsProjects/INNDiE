@@ -104,6 +104,9 @@ stages:
         vmImage: windows-2019
 
       steps:
+        - powershell: & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchLinux
+          displayName: 'SwitchLinux'
+
         - task: Gradle@2
           displayName: 'Check'
           inputs:
