@@ -104,6 +104,12 @@ stages:
         vmImage: windows-2019
 
       steps:
+        - powershell: "Install-Module -Name DockerMsftProvider -Repository PSGallery -Force"
+          displayName: 'InstallDockerProvider'
+
+        - powershell: "Install-Package -Name docker -ProviderName DockerMsftProvider -Force -RequiredVersion 19.03"
+          displayName: 'InstallDocker'
+
         - powershell: "& (Join-Path -Path (Get-Item ((Get-Command docker.exe).Source)).Directory.Parent.Parent.FullName -ChildPath \"DockerCli.exe\") -SwitchLinuxEngine"
           displayName: 'SwitchLinux'
 
