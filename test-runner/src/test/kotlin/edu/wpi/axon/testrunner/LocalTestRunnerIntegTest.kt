@@ -3,6 +3,7 @@ package edu.wpi.axon.testrunner
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.axon.util.toPrintableString
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.matchers.file.shouldContainFiles
 import java.io.File
@@ -29,6 +30,7 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
         println("File.pathSeparator: ${File.pathSeparator}")
         println("File.pathSeparatorChar: ${File.pathSeparatorChar}")
         println("tempDir.toPath(): ${tempDir.toPath()}")
+        println("tempDir.toPath(): ${tempDir.toPath().toPrintableString()}")
         println("tempDir.path: ${tempDir.path}")
         println("tempDir.name: ${tempDir.name}")
         println("tempDir.parent: ${tempDir.parent}")

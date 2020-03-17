@@ -25,6 +25,8 @@ infix fun <E> Iterable<E>.allIn(other: Iterable<E>) = all { it in other }
 
 infix fun <E> Iterable<E>.notAllIn(other: Iterable<E>) = !all { it in other }
 
+fun Path.toPrintableString(): String = toString().replace("\\", "\\\\")
+
 /**
  * Runs a command as a process.
  *
