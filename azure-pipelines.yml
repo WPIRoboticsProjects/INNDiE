@@ -116,6 +116,8 @@ stages:
         - powershell: "choco install docker-desktop -y --version=2.1.0.3"
 
         - powershell: "Get-ChildItem -Path $Env:ProgramFiles\\Docker\\Docker"
+        - powershell: "Restart-Service com.docker.service"
+        - powershell: "Restart-Service Docker"
         - powershell: "& 'C:\\Program Files\\Docker\\Docker\\DockerCli.exe' -Version"
         - powershell: "& 'C:\\Program Files\\Docker\\Docker\\DockerCli.exe' -SwitchLinuxEngine"
 
