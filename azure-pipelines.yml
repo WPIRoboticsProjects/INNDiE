@@ -115,7 +115,7 @@ stages:
 
         - powershell: "choco install docker-desktop -y --version=2.1.0.3"
 
-        - powershell: "& &Env:ProgramFiles\\Docker\\Docker\\DockerCli.eze -SwitchLinuxEngine"
+        - powershell: "& $Env:ProgramFiles\\Docker\\Docker\\DockerCli.exe -SwitchLinuxEngine"
 
 #        - powershell: "& (Join-Path -Path (Get-Item ((Get-Command docker.exe).Source)).Directory.Parent.Parent.FullName -ChildPath \"DockerCli.exe\") -SwitchLinuxEngine"
 #          displayName: 'SwitchLinux'
