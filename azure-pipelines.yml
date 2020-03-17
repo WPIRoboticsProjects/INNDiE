@@ -104,11 +104,16 @@ stages:
         vmImage: windows-2019
 
       steps:
-        - powershell: "Install-Module -Name DockerMsftProvider -Repository PSGallery -Force"
-          displayName: 'InstallDockerProvider'
+#        - powershell: "Install-Module -Name DockerMsftProvider -Repository PSGallery -Force"
+#          displayName: 'InstallDockerProvider'
+#
+#        - powershell: "Install-Package -Name docker -ProviderName DockerMsftProvider -Force -RequiredVersion 19.03"
+#          displayName: 'InstallDocker'
+#
+#        - powershell: "Start-Service docker"
+#          displayName: 'StartDocker'
 
-        - powershell: "Install-Package -Name docker -ProviderName DockerMsftProvider -Force -RequiredVersion 19.03"
-          displayName: 'InstallDocker'
+        - powershell: "choco install docker-desktop -y --version=2.1.0.3"
 
         - powershell: "& (Join-Path -Path (Get-Item ((Get-Command docker.exe).Source)).Directory.Parent.Parent.FullName -ChildPath \"DockerCli.exe\") -SwitchLinuxEngine"
           displayName: 'SwitchLinux'
