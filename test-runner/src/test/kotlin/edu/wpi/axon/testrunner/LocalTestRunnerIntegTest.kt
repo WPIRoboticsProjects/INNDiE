@@ -22,6 +22,10 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
         val modelPath =
             Path.of(this::class.java.getResource("32_32_1_conv_sequential-trained.h5").toURI())
 
+        println("File.separator: ${File.separator}")
+        println("File.separatorChar: ${File.separatorChar}")
+        println("File.pathSeparator: ${File.pathSeparator}")
+        println("File.pathSeparatorChar: ${File.pathSeparatorChar}")
         println("tempDir.toPath(): ${tempDir.toPath()}")
         println("tempDir.path: ${tempDir.path}")
         println("tempDir.name: ${tempDir.name}")
