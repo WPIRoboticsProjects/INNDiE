@@ -23,7 +23,9 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
             Path.of(this::class.java.getResource("32_32_1_conv_sequential-trained.h5").toURI())
 
         println("File.separator: ${File.separator}")
+        println("File.separator == \"\\\": ${File.separator == "\\"}")
         println("File.separatorChar: ${File.separatorChar}")
+        println("File.separatorChar == '\\': ${File.separatorChar == '\\'}")
         println("File.pathSeparator: ${File.pathSeparator}")
         println("File.pathSeparatorChar: ${File.pathSeparatorChar}")
         println("tempDir.toPath(): ${tempDir.toPath()}")
