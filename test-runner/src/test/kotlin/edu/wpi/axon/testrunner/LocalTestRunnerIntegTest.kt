@@ -10,6 +10,7 @@ import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlinx.serialization.toUtf8Bytes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
@@ -30,6 +31,8 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
         println("File.pathSeparator: ${File.pathSeparator}")
         println("File.pathSeparatorChar: ${File.pathSeparatorChar}")
         println("tempDir.toPath(): ${tempDir.toPath()}")
+        println("tempDir.toPath().toString().toUtf8Bytes().joinToString(\",\"): ${tempDir.toPath().toString().toUtf8Bytes().joinToString(",")}")
+        println("tempDir.toPath().normalize(): ${tempDir.toPath().normalize()}")
         println("tempDir.toPath(): ${tempDir.toPath().toPrintableString()}")
         println("tempDir.path: ${tempDir.path}")
         println("tempDir.name: ${tempDir.name}")
