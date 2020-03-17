@@ -24,6 +24,7 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
 
         println(tempDir.toPath())
         println(tempDir.path)
+        println(tempDir.toPath().nameCount)
         println(tempDir.toPath().toUri())
         println(tempDir.toPath().toAbsolutePath().toUri())
         println(tempDir.toPath().toRealPath().toUri())
