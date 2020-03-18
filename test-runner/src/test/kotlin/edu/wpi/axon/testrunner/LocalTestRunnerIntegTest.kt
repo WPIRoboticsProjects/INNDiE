@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
 
+@Tag("needsDocker")
 internal class LocalTestRunnerIntegTest : KoinTestFixture() {
 
     @Test
-    @Tag("needsDocker")
     fun `running a script that emits two files returns those two files`(@TempDir tempDir: File) {
         startKoin { modules(defaultBackendModule()) }
 
