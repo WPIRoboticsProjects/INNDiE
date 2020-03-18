@@ -7,6 +7,8 @@ import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.matchers.file.shouldContainFiles
 import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
@@ -14,6 +16,13 @@ import org.koin.core.context.startKoin
 internal class LocalTestRunnerIntegTest : KoinTestFixture() {
 
     @Test
+    fun `dummy test`() {
+        // Each test class needs at least one test or else JUnit complains (disabled tests don't
+        // count).
+    }
+
+    @Test
+    @Tag("needsDocker")
     fun `running a script that emits two files returns those two files`(@TempDir tempDir: File) {
         startKoin { modules(defaultBackendModule()) }
 
@@ -43,7 +52,7 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
                 |    Path("output/file2.txt").touch()
                 """.trimMargin()
             ),
-            tempDir.toPath().toRealPath()
+            Paths.get(tempDir.toPath().toRealPath().toUri())
         )
 
         val outputDir = tempDir.toPath().toRealPath().resolve("output")
