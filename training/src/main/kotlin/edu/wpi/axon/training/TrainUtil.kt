@@ -193,11 +193,9 @@ internal fun ScriptGenerator.compileTrainSave(
         filePath = if (hasValidation) {
             // Can only use val_loss if there is validation data, which can take the form of
             // a validation dataset or a nonzero validation split
-            trainState.workingDir.resolve(
-                "${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
-            )
+            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
         } else {
-            trainState.workingDir.resolve("${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5")
+            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
         }.toString()
         monitor = if (hasValidation) "val_loss" else "loss"
         saveWeightsOnly = true
