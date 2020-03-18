@@ -190,9 +190,7 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val checkpointCallback by variables.creating(Variable::class)
     tasks.run(CheckpointCallbackTask::class) {
-        val basePath = trainState.workingDir.toString() +
-            trainState.workingDir.fileSystem.separator +
-            oldModel.name
+        val basePath = "${trainState.workingDir}/${oldModel.name}"
 
         filePath = if (hasValidation) {
             // Can only use val_loss if there is validation data, which can take the form of
