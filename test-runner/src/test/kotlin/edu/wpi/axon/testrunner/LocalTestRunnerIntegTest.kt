@@ -11,6 +11,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlinx.serialization.toUtf8Bytes
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.context.startKoin
@@ -18,37 +19,12 @@ import org.koin.core.context.startKoin
 internal class LocalTestRunnerIntegTest : KoinTestFixture() {
 
     @Test
+    @Tag("needsDocker")
     fun `running a script that emits two files returns those two files`(@TempDir tempDir: File) {
         startKoin { modules(defaultBackendModule()) }
 
         val modelPath =
             Path.of(this::class.java.getResource("32_32_1_conv_sequential-trained.h5").toURI())
-
-        println("File.separator: ${File.separator}")
-        println("File.separator == \"\\\": ${File.separator == "\\"}")
-        println("File.separatorChar: ${File.separatorChar}")
-        println("File.separatorChar == '\\': ${File.separatorChar == '\\'}")
-        println("File.pathSeparator: ${File.pathSeparator}")
-        println("File.pathSeparatorChar: ${File.pathSeparatorChar}")
-        println("tempDir.toPath(): ${tempDir.toPath()}")
-        println("tempDir.toPath().toString().toUtf8Bytes().joinToString(\",\"): ${tempDir.toPath().toString().toUtf8Bytes().joinToString(",")}")
-        println("tempDir.toPath().normalize(): ${tempDir.toPath().normalize()}")
-        println("tempDir.toPath(): ${tempDir.toPath().toPrintableString()}")
-        println("tempDir.path: ${tempDir.path}")
-        println("tempDir.name: ${tempDir.name}")
-        println("tempDir.parent: ${tempDir.parent}")
-        println("tempDir.toPath().nameCount: ${tempDir.toPath().nameCount}")
-        println("tempDir.toPath().toUri(): ${tempDir.toPath().toUri()}")
-        println("tempDir.toPath().toAbsolutePath().toUri(): ${tempDir.toPath().toAbsolutePath().toUri()}")
-        println("tempDir.toPath().toRealPath().toUri(): ${tempDir.toPath().toRealPath().toUri()}")
-        println("Paths.get(tempDir.toPath().toUri()): ${Paths.get(tempDir.toPath().toUri())}")
-        println("Paths.get(tempDir.toPath().toAbsolutePath().toUri()): ${Paths.get(tempDir.toPath().toAbsolutePath().toUri())}")
-        println("Paths.get(tempDir.toPath().toUri()).toAbsolutePath(): ${Paths.get(tempDir.toPath().toUri()).toAbsolutePath()}")
-        println("Paths.get(tempDir.toPath().toUri()).toRealPath(): ${Paths.get(tempDir.toPath().toUri()).toRealPath()}")
-        println("tempDir.toPath().toRealPath(): ${tempDir.toPath().toRealPath()}")
-        println("tempDir.toPath().toAbsolutePath(): ${tempDir.toPath().toAbsolutePath()}")
-        println("Paths.get(tempDir.toPath().toRealPath().toUri()): ${Paths.get(tempDir.toPath().toRealPath().toUri())}")
-        println("FileSystems.getDefault().getPath(tempDir.toPath().toRealPath().toString()): ${FileSystems.getDefault().getPath(tempDir.toPath().toRealPath().toString())}")
 
         val runner = LocalTestRunner()
         val testResults = runner.runTest(

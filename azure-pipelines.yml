@@ -104,35 +104,13 @@ stages:
         vmImage: windows-2019
 
       steps:
-#        - powershell: "Install-Module -Name DockerMsftProvider -Repository PSGallery -Force"
-#          displayName: 'InstallDockerProvider'
-#
-#        - powershell: "Install-Package -Name docker -ProviderName DockerMsftProvider -Force -RequiredVersion 19.03"
-#          displayName: 'InstallDocker'
-#
-#        - powershell: "Start-Service docker"
-#          displayName: 'StartDocker'
-
-        - powershell: "choco install docker-desktop -y --version=2.1.0.3"
-
-        - powershell: "Get-ChildItem -Path $Env:ProgramFiles\\Docker\\Docker"
-        - powershell: "Restart-Service com.docker.service"
-        - powershell: "Restart-Service Docker"
-        - powershell: "& 'C:\\Program Files\\Docker\\Docker\\DockerCli.exe' -Version"
-        - powershell: "& 'C:\\Program Files\\Docker\\Docker\\DockerCli.exe' -SwitchLinuxEngine"
-
-#        - powershell: "& $Env:ProgramFiles\\Docker\\Docker\\DockerCli.exe -SwitchLinuxEngine"
-
-#        - powershell: "& (Join-Path -Path (Get-Item ((Get-Command docker.exe).Source)).Directory.Parent.Parent.FullName -ChildPath \"DockerCli.exe\") -SwitchLinuxEngine"
-#          displayName: 'SwitchLinux'
-
         - task: Gradle@2
           displayName: 'Check'
           inputs:
             workingDirectory: ''
             gradleWrapperFile: 'gradlew'
             gradleOptions: '-Xmx3072m'
-            options: '--stacktrace -PlogTests -Pheadless'
+            options: '--stacktrace -PlogTests -Pheadless -PnoDocker'
             javaHomeOption: 'JDKVersion'
             jdkVersionOption: '1.11'
             jdkArchitectureOption: 'x64'

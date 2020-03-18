@@ -115,12 +115,6 @@ class LocalTestRunner : TestRunner {
                 "${trainedModelPath.parent.toAbsolutePath()}:/models",
                 "-v",
                 "${testDataPath.parent.toAbsolutePath()}:/test-data",
-                // "--mount",
-                // "type=bind,source=${workingDir.toAbsolutePath().toPrintableString()},target=/home",
-                // "--mount",
-                // "type=bind,source=${trainedModelPath.parent.toAbsolutePath().toPrintableString()},target=/models",
-                // "--mount",
-                // "type=bind,source=${testDataPath.parent.toAbsolutePath().toPrintableString()},target=/test-data",
                 "wpilib/axon-ci:latest",
                 "/usr/bin/python3.6",
                 "/home/$scriptFilename"
