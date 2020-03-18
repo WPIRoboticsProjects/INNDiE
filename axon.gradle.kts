@@ -253,7 +253,7 @@ configure(javaProjects) {
                 excludeTags("needsTensorFlowSupport")
             }
 
-            if (!project.hasProperty("noDocker")) {
+            if (project.hasProperty("noDocker")) {
                 excludeTags("needsDocker")
             }
         }
