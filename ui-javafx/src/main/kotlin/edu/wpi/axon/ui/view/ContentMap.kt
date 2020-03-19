@@ -27,12 +27,6 @@ class ContentMap<T : Any?> : Pane() {
     fun item(type: T, op: Parent.() -> Unit) {
         val pane = lazy {
             val pane = Pane()
-            // pane.apply {
-            //     setTopAnchor(pane, 0.0)
-            //     setRightAnchor(pane, 0.0)
-            //     setBottomAnchor(pane, 0.0)
-            //     setLeftAnchor(pane, 0.0)
-            // }
             pane.apply(op)
         }
         map[type] = pane

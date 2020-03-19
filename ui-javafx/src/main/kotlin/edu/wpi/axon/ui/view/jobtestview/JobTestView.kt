@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view
+package edu.wpi.axon.ui.view.jobtestview
 
 import edu.wpi.axon.ui.model.JobModel
 import javafx.scene.control.Label

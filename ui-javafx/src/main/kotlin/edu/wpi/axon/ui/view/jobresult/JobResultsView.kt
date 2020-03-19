@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view
+package edu.wpi.axon.ui.view.jobresult
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.ui.JobLifecycleManager
@@ -97,21 +97,17 @@ class JobResultsView : Fragment() {
                                     bottom = null
                                 } else {
                                     bottom {
-                                        add(
-                                            find<ResultFragment>(
-                                                mapOf(
-                                                    ResultFragment::data to LazyResult(
-                                                        newValue,
-                                                        lazy {
-                                                            jobLifecycleManager.getResult(
-                                                                job.id.value.toInt(),
-                                                                newValue
-                                                            )
-                                                        }
+                                        add(find<ResultFragment>(
+                                            mapOf(ResultFragment::data to LazyResult(
+                                                newValue,
+                                                lazy {
+                                                    jobLifecycleManager.getResult(
+                                                        job.id.value.toInt(),
+                                                        newValue
                                                     )
-                                                )
-                                            )
-                                        )
+                                                }
+                                            ))
+                                        ))
                                     }
                                 }
                             }

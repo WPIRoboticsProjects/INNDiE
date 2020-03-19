@@ -1,10 +1,12 @@
-package edu.wpi.axon.ui.view
+package edu.wpi.axon.ui.view.jobeditor
 
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.model.ModelSourceType
+import edu.wpi.axon.ui.view.contentMap
+import edu.wpi.axon.ui.view.layereditor.LayerEditorFragment
 import edu.wpi.axon.util.FilePath
 import java.io.File
 import javafx.stage.FileChooser
@@ -12,7 +14,6 @@ import javafx.stage.Modality
 import javafx.util.StringConverter
 import tornadofx.ItemFragment
 import tornadofx.action
-import tornadofx.bind
 import tornadofx.button
 import tornadofx.chooseFile
 import tornadofx.combobox

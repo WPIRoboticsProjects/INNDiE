@@ -1,5 +1,7 @@
 package edu.wpi.axon.ui.view
 
+import edu.wpi.axon.ui.view.joblist.JobList
+import edu.wpi.axon.ui.view.preferences.PreferencesView
 import javafx.scene.layout.BorderPane
 import tornadofx.View
 import tornadofx.action

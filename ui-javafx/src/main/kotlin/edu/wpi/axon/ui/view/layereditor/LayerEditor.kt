@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view
+package edu.wpi.axon.ui.view.layereditor
 
 import arrow.core.getOrHandle
 import com.fxgraph.edges.Edge
@@ -7,10 +7,8 @@ import com.fxgraph.layout.AbegoTreeLayout
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.scene.layout.BorderPane
 import org.abego.treelayout.Configuration
-import tornadofx.ItemViewModel
 import tornadofx.action
 import tornadofx.add
 import tornadofx.button
@@ -20,8 +18,6 @@ import tornadofx.enableWhen
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.form
-import tornadofx.getValue
-import tornadofx.setValue
 import tornadofx.splitpane
 import tornadofx.textfield
 
@@ -38,7 +34,10 @@ class LayerEditor(
         when (initialModel) {
             is Model.Sequential -> {
                 initialModel.layers.fold<Layer.MetaLayer, LayerCell?>(null) { prevCell, layer ->
-                    val cell = createLayerCell(layer, ::openEditor)
+                    val cell = createLayerCell(
+                        layer,
+                        ::openEditor
+                    )
                     graph.model.addCell(cell)
                     prevCell?.let { graph.model.addEdge(it, cell) }
                     cell
@@ -48,7 +47,11 @@ class LayerEditor(
             is Model.General -> {
                 val cells = initialModel.layers
                     .nodes()
-                    .map { it to createLayerCell(it, ::openEditor) }
+                    .map { it to createLayerCell(
+                        it,
+                        ::openEditor
+                    )
+                    }
                     .toMap()
 
                 val edges = initialModel.layers.edges().map {
@@ -121,7 +124,10 @@ class LayerEditor(
                         enableWhen(model.dirty)
                         action {
                             model.commit()
-                            layerCell.content = createBaseLayerCell(model.item.layer)
+                            layerCell.content =
+                                createBaseLayerCell(
+                                    model.item.layer
+                                )
                         }
                     }
                     button("Close") {
@@ -133,7 +139,8 @@ class LayerEditor(
             }
 
             is Layer.MetaLayer.UntrainableLayer -> form {
-                val model = UntrainableLayerModel(layer)
+                val model =
+                    UntrainableLayerModel(layer)
                 fieldset("Edit Layer") {
                     field("Type") {
                         textfield(layer.layer::class.simpleName) {
@@ -150,7 +157,10 @@ class LayerEditor(
                             enableWhen(model.dirty)
                             action {
                                 model.commit()
-                                layerCell.content = createBaseLayerCell(model.item.layer)
+                                layerCell.content =
+                                    createBaseLayerCell(
+                                        model.item.layer
+                                    )
                             }
                         }
                         button("Close") {
@@ -164,21 +174,3 @@ class LayerEditor(
         }
     }
 }
-
-class TrainableLayerModel(layer: Layer.MetaLayer.TrainableLayer) :
-    ItemViewModel<Layer.MetaLayer.TrainableLayer>() {
-
-    init {
-        itemProperty.set(layer)
-    }
-
-    val trainableProperty = bind { SimpleBooleanProperty(item.trainable) }
-    var trainable by trainableProperty
-
-    override fun onCommit() {
-        itemProperty.set(item.copy(trainable = trainable))
-    }
-}
-
-class UntrainableLayerModel(layer: Layer.MetaLayer.UntrainableLayer) :
-    ItemViewModel<Layer.MetaLayer.UntrainableLayer>(layer)

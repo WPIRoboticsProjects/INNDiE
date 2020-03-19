@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view
+package edu.wpi.axon.ui.view.jobresult
 
 import java.io.File
 
