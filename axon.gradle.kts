@@ -406,13 +406,16 @@ configure(kotlinProjects) {
 
 val jacocoRootReport by tasks.creating(JacocoReport::class) {
     group = "verification"
-    dependsOn(subprojects.flatMap { it.tasks.withType(JacocoReport::class) } - this)
+    val excludedProjects = listOf(uiJavaFxProject)
+    val includedProjects = subprojects.filter { it !in excludedProjects }
 
-    val allSrcDirs = subprojects.map { it.sourceSets.main.get().allSource.srcDirs }
+    dependsOn(includedProjects.flatMap { it.tasks.withType(JacocoReport::class) } - this)
+
+    val allSrcDirs = includedProjects.map { it.sourceSets.main.get().allSource.srcDirs }
     additionalSourceDirs.setFrom(allSrcDirs)
     sourceDirectories.setFrom(allSrcDirs)
-    classDirectories.setFrom(subprojects.map { it.sourceSets.main.get().output })
-    executionData.setFrom(subprojects.filter {
+    classDirectories.setFrom(includedProjects.map { it.sourceSets.main.get().output })
+    executionData.setFrom(includedProjects.filter {
         File("${it.buildDir}/jacoco/test.exec").exists()
     }.flatMap { it.tasks.withType(JacocoReport::class).map { it.executionData } })
 
