@@ -1,4 +1,4 @@
-package edu.wpi.axon.ui.view
+package edu.wpi.axon.ui.view.layereditor
 
 import com.fxgraph.cells.AbstractCell
 import com.fxgraph.graph.Graph
@@ -63,8 +63,12 @@ private fun Node.layerProp(name: String, value: String) = hbox {
 }
 
 fun createLayerColor(layer: Layer): String = when (layer) {
-    is Layer.MetaLayer.TrainableLayer -> createLayerColor(layer.layer)
-    is Layer.MetaLayer.UntrainableLayer -> createLayerColor(layer.layer)
+    is Layer.MetaLayer.TrainableLayer -> createLayerColor(
+        layer.layer
+    )
+    is Layer.MetaLayer.UntrainableLayer -> createLayerColor(
+        layer.layer
+    )
     is Layer.UnknownLayer -> "#000000"
     is Layer.ModelLayer -> "#db0808"
     is Layer.InputLayer -> "#000000"
@@ -95,7 +99,9 @@ class LayerCell(
         }
 
         top = hbox {
-            style = "-fx-background-color: ${createLayerColor(layer.item)};"
+            style = "-fx-background-color: ${createLayerColor(
+                layer.item
+            )};"
 
             label(layer.item.layer::class.simpleName!!) {
                 style = "-fx-text-fill: white;"
