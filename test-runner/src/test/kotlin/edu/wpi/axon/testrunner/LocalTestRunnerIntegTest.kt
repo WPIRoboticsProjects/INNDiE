@@ -32,7 +32,7 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
         val runner = LocalTestRunner()
         val testResults = runner.runTest(
             modelPath,
-            modelPath,
+            TestData.FromFile(modelPath),
             Plugin.Official(
                 "",
                 """

@@ -10,7 +10,7 @@ interface TestRunner {
      * Runs an inference test with a trained model.
      *
      * @param trainedModelPath The path to the trained model to run inference with.
-     * @param testDataPath The path to the test data to load.
+     * @param testData The test data to load.
      * @param loadTestDataPlugin The plugin to use for loading the test data.
      * @param processTestOutputPlugin The plugin to use for processing the output of the model.
      * @param workingDir The directory to work out of.
@@ -18,7 +18,7 @@ interface TestRunner {
      */
     fun runTest(
         trainedModelPath: Path,
-        testDataPath: Path,
+        testData: TestData,
         loadTestDataPlugin: Plugin,
         processTestOutputPlugin: Plugin,
         workingDir: Path

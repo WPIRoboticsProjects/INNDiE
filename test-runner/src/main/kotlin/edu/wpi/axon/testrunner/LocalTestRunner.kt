@@ -2,6 +2,7 @@ package edu.wpi.axon.testrunner
 
 import arrow.core.Tuple3
 import arrow.core.Valid
+import arrow.core.mapOf
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
@@ -25,13 +26,12 @@ class LocalTestRunner : TestRunner {
 
     override fun runTest(
         trainedModelPath: Path,
-        testDataPath: Path,
+        testData: TestData,
         loadTestDataPlugin: Plugin,
         processTestOutputPlugin: Plugin,
         workingDir: Path
     ): List<File> {
         require(trainedModelPath.toString().isNotBlank())
-        require(testDataPath.toString().isNotBlank())
         require(workingDir.toString().isNotBlank())
 
         val scriptGenerator = ScriptGenerator(
@@ -44,25 +44,25 @@ class LocalTestRunner : TestRunner {
                 modelOutput = model
             }
 
-            val testDataPathVar by variables.creating(Variable::class)
+            val testDataStringVar by variables.creating(Variable::class)
             tasks.run(LoadStringTask::class) {
-                data = testDataPath.toString()
-                output = testDataPathVar
+                data = testData.serialize()
+                output = testDataStringVar
             }
 
-            val testData by variables.creating(Variable::class)
+            val loadedTestData by variables.creating(Variable::class)
             val steps by variables.creating(Variable::class)
             tasks.run(RunPluginTask::class) {
                 functionName = "load_test_data"
                 functionDefinition = loadTestDataPlugin.contents
-                functionInputs = listOf(testDataPathVar)
-                functionOutputs = listOf(testData, steps)
+                functionInputs = listOf(testDataStringVar)
+                functionOutputs = listOf(loadedTestData, steps)
             }
 
             val inferenceOutput by variables.creating(Variable::class)
             tasks.run(RunInferenceTask::class) {
                 this.model = model
-                input = testData
+                input = loadedTestData
                 this.steps = steps
                 output = inferenceOutput
             }
@@ -70,7 +70,7 @@ class LocalTestRunner : TestRunner {
             lastTask = tasks.run(RunPluginTask::class) {
                 functionName = "process_model_output"
                 functionDefinition = processTestOutputPlugin.contents
-                functionInputs = listOf(testData, inferenceOutput)
+                functionInputs = listOf(loadedTestData, inferenceOutput)
                 functionOutputs = listOf()
             }
         }
@@ -94,10 +94,18 @@ class LocalTestRunner : TestRunner {
                     trainedModelPath.toString(),
                     "/models/${trainedModelPath.toAbsolutePath().fileName}"
                 )
-                .replace(
-                    testDataPath.toString(),
-                    "/test-data/${testDataPath.toAbsolutePath().fileName}"
-                )
+                .let {
+                    when (testData) {
+                        is TestData.FromFile -> {
+                            it.replace(
+                                testData.filePath.toString(),
+                                "/test-data/${testData.filePath.toAbsolutePath().fileName}"
+                            )
+                        }
+
+                        is TestData.FromExampleDataset -> it
+                    }
+                }
 
             LOGGER.debug { "Patched script:\n$patchedScript" }
 
@@ -112,9 +120,14 @@ class LocalTestRunner : TestRunner {
                 "-v",
                 "${workingDir.toAbsolutePath()}:/home",
                 "-v",
-                "${trainedModelPath.parent.toAbsolutePath()}:/models",
-                "-v",
-                "${testDataPath.parent.toAbsolutePath()}:/test-data",
+                "${trainedModelPath.parent.toAbsolutePath()}:/models"
+            ) + when (testData) {
+                is TestData.FromExampleDataset -> emptyList()
+                is TestData.FromFile -> listOf(
+                    "-v",
+                    "${testData.filePath.parent.toAbsolutePath()}:/test-data"
+                )
+            } + listOf(
                 "wpilib/axon-ci:latest",
                 "/usr/bin/python3.6",
                 "/home/$scriptFilename"

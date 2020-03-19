@@ -97,17 +97,17 @@ class JobResultsView : Fragment() {
                                     bottom = null
                                 } else {
                                     bottom {
-                                        add(find<ResultFragment>(
-                                            mapOf(ResultFragment::data to LazyResult(
-                                                newValue,
-                                                lazy {
-                                                    jobLifecycleManager.getResult(
-                                                        job.id.value.toInt(),
-                                                        newValue
-                                                    )
-                                                }
-                                            ))
-                                        ))
+                                        val resultFragment = find<ResultFragment>()
+                                        resultFragment.data.value = LazyResult(
+                                            newValue,
+                                            lazy {
+                                                jobLifecycleManager.getResult(
+                                                    job.id.value.toInt(),
+                                                    newValue
+                                                )
+                                            }
+                                        )
+                                        add(resultFragment)
                                     }
                                 }
                             }
