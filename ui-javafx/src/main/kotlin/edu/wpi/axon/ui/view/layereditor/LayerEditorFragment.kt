@@ -1,7 +1,6 @@
 package edu.wpi.axon.ui.view.layereditor
 
 import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.view.layereditor.LayerEditor
 import tornadofx.Fragment
 import tornadofx.action
 import tornadofx.borderpane

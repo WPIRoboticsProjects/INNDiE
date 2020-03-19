@@ -3,8 +3,8 @@ package edu.wpi.axon.ui.view.layereditor
 import edu.wpi.axon.tfdata.layer.Layer
 import javafx.beans.property.SimpleBooleanProperty
 import tornadofx.ItemViewModel
-import tornadofx.setValue
 import tornadofx.getValue
+import tornadofx.setValue
 
 class TrainableLayerModel(layer: Layer.MetaLayer.TrainableLayer) :
     ItemViewModel<Layer.MetaLayer.TrainableLayer>() {

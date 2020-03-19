@@ -8,6 +8,7 @@ import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
 import edu.wpi.axon.util.datasetPluginManagerName
 import javafx.stage.Modality
+import kotlin.reflect.KClass
 import tornadofx.Fragment
 import tornadofx.action
 import tornadofx.button
@@ -25,7 +26,6 @@ import tornadofx.toObservable
 import tornadofx.tooltip
 import tornadofx.validator
 import tornadofx.vbox
-import kotlin.reflect.KClass
 
 class JobConfiguration : Fragment("Configuration") {
     private val job by inject<JobModel>()
