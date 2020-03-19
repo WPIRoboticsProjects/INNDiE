@@ -32,9 +32,13 @@ sealed class TrainingScriptProgress : Comparable<TrainingScriptProgress> {
      * The training is in progress.
      *
      * @param percentComplete The percent of epochs that have been completed.
+     * @param progressLog The log of progress updates.
      */
     @Serializable
-    data class InProgress(val percentComplete: Double) : TrainingScriptProgress()
+    data class InProgress(
+        val percentComplete: Double,
+        val progressLog: String
+    ) : TrainingScriptProgress()
 
     /**
      * The training is finished.

@@ -10,6 +10,9 @@ sealed class Loss {
     @Serializable
     object SparseCategoricalCrossentropy : Loss()
 
+    @Serializable
+    object MeanSquaredError : Loss()
+
     fun serialize(): String = Json(
         JsonConfiguration.Stable
     ).stringify(serializer(), this)

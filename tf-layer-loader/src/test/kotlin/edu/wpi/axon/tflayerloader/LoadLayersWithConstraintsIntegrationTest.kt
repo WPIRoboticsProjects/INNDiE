@@ -22,7 +22,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
                     1,
                     Activation.Linear,
                     kernelConstraint = Constraint.MaxNorm(2.0, 0)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -39,7 +39,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
                     1,
                     Activation.Linear,
                     kernelConstraint = Constraint.MinMaxNorm(1.0, 2.0, 3.0, 0)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -56,7 +56,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
                     1,
                     Activation.Linear,
                     kernelConstraint = Constraint.UnitNorm(0)
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -73,7 +73,7 @@ internal class LoadLayersWithConstraintsIntegrationTest {
                     1,
                     Activation.Linear,
                     kernelConstraint = Constraint.NonNeg
-                ).trainable()
+                ).isTrainable()
             )
         }
     }

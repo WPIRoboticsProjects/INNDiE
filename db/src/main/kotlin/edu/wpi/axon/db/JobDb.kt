@@ -1,8 +1,9 @@
 package edu.wpi.axon.db
 
 import com.beust.klaxon.Klaxon
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.JobTrainingMethod
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
@@ -10,7 +11,6 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
-import edu.wpi.axon.util.FilePath
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
@@ -29,7 +29,7 @@ internal object Jobs : IntIdTable() {
 
     val nameCol = varchar("name", 255).uniqueIndex()
     val statusCol = text("status")
-    val userOldModelPathCol = varchar("userOldModelPath", 255)
+    val userOldModelPathCol = text("userOldModelPath")
     val userDatasetCol = text("dataset")
     val userOptimizerCol = varchar("userOptimizer", 255)
     val userLossCol = varchar("userLoss", 255)
@@ -37,14 +37,14 @@ internal object Jobs : IntIdTable() {
     val userEpochsCol = integer("userEpochs")
     val userModelCol = text("userModel")
     val generateDebugCommentsCol = bool("generateDebugComments")
-    val trainingMethodCol = varchar("trainingMethod", 255)
+    val internalTrainingMethodCol = varchar("internalTrainingMethod", 255)
     val targetCol = varchar("target", 255)
     val datasetPluginCol = text("datasetPlugin")
 
     fun toDomain(row: ResultRow) = Job(
         name = row[nameCol],
         status = TrainingScriptProgress.deserialize(row[statusCol]),
-        userOldModelPath = FilePath.deserialize(row[userOldModelPathCol]),
+        userOldModelPath = ModelSource.deserialize(row[userOldModelPathCol]),
         userDataset = Dataset.deserialize(row[userDatasetCol]),
         userOptimizer = Optimizer.deserialize(row[userOptimizerCol]),
         userLoss = Loss.deserialize(row[userLossCol]),
@@ -52,7 +52,9 @@ internal object Jobs : IntIdTable() {
         userEpochs = row[userEpochsCol],
         generateDebugComments = row[generateDebugCommentsCol],
         userNewModel = Model.deserialize(row[userModelCol]),
-        trainingMethod = JobTrainingMethod.deserialize(row[trainingMethodCol]),
+        internalTrainingMethod = InternalJobTrainingMethod.deserialize(
+            row[internalTrainingMethodCol]
+        ),
         target = ModelDeploymentTarget.deserialize(row[targetCol]),
         datasetPlugin = Plugin.deserialize(row[datasetPluginCol]),
         id = row[id].value
@@ -87,7 +89,7 @@ class JobDb(private val database: Database) {
     fun create(
         name: String,
         status: TrainingScriptProgress,
-        userOldModelPath: FilePath,
+        userOldModelPath: ModelSource,
         userDataset: Dataset,
         userOptimizer: Optimizer,
         userLoss: Loss,
@@ -95,7 +97,7 @@ class JobDb(private val database: Database) {
         userEpochs: Int,
         userNewModel: Model,
         generateDebugComments: Boolean,
-        trainingMethod: JobTrainingMethod,
+        internalTrainingMethod: InternalJobTrainingMethod,
         target: ModelDeploymentTarget,
         datasetPlugin: Plugin
     ): Job {
@@ -111,7 +113,7 @@ class JobDb(private val database: Database) {
                 row[userEpochsCol] = userEpochs
                 row[userModelCol] = userNewModel.serialize()
                 row[generateDebugCommentsCol] = generateDebugComments
-                row[trainingMethodCol] = trainingMethod.serialize()
+                row[internalTrainingMethodCol] = internalTrainingMethod.serialize()
                 row[targetCol] = target.serialize()
                 row[datasetPluginCol] = datasetPlugin.serialize()
             }.value
@@ -128,7 +130,7 @@ class JobDb(private val database: Database) {
             userEpochs = userEpochs,
             userNewModel = userNewModel,
             generateDebugComments = generateDebugComments,
-            trainingMethod = trainingMethod,
+            internalTrainingMethod = internalTrainingMethod,
             target = target,
             datasetPlugin = datasetPlugin,
             id = newId
@@ -151,7 +153,7 @@ class JobDb(private val database: Database) {
         job.userEpochs,
         job.userNewModel,
         job.generateDebugComments,
-        job.trainingMethod,
+        job.internalTrainingMethod,
         job.target,
         job.datasetPlugin
     )
@@ -160,7 +162,7 @@ class JobDb(private val database: Database) {
         id: Int,
         name: String? = null,
         status: TrainingScriptProgress? = null,
-        userOldModelPath: FilePath? = null,
+        userOldModelPath: ModelSource? = null,
         userDataset: Dataset? = null,
         userOptimizer: Optimizer? = null,
         userLoss: Loss? = null,
@@ -168,10 +170,10 @@ class JobDb(private val database: Database) {
         userEpochs: Int? = null,
         userNewModel: Model? = null,
         generateDebugComments: Boolean? = null,
-        trainingMethod: JobTrainingMethod? = null,
+        internalJobTrainingMethod: InternalJobTrainingMethod? = null,
         target: ModelDeploymentTarget? = null,
         datasetPlugin: Plugin? = null
-    ) {
+    ): Job {
         transaction(database) {
             Jobs.update({ Jobs.id eq id }) { row ->
                 name?.let { row[nameCol] = name }
@@ -184,17 +186,25 @@ class JobDb(private val database: Database) {
                 userEpochs?.let { row[userEpochsCol] = userEpochs }
                 userNewModel?.let { row[userModelCol] = userNewModel.serialize() }
                 generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
-                trainingMethod?.let { row[trainingMethodCol] = trainingMethod.serialize() }
+                internalJobTrainingMethod?.let {
+                    row[internalTrainingMethodCol] = internalJobTrainingMethod.serialize()
+                }
                 target?.let { row[targetCol] = target.serialize() }
                 datasetPlugin?.let { row[datasetPluginCol] = datasetPlugin.serialize() }
             }
         }
 
-        observers.forEach { it(JobDbOp.Update, getById(id)!!) }
+        val newJob = getById(id)!!
+        observers.forEach { it(JobDbOp.Update, newJob) }
+        return newJob
     }
 
     fun count(): Int = transaction(database) {
         Jobs.selectAll().count()
+    }
+
+    fun fetchAll(): List<Job> = transaction(database) {
+        Jobs.selectAll().map { Jobs.toDomain(it) }
     }
 
     fun fetch(limit: Int, offset: Int): List<Job> = transaction(database) {
@@ -223,6 +233,16 @@ class JobDb(private val database: Database) {
                 (Jobs.statusCol like "%InProgress%")
         }.map { Jobs.toDomain(it) }
             .filter { it.status !is TrainingScriptProgress.Error }
+    }
+
+    fun removeById(id: Int) {
+        val job = getById(id)!!
+
+        transaction(database) {
+            Jobs.deleteWhere { Jobs.id eq id }
+        }
+
+        observers.forEach { it(JobDbOp.Remove, job) }
     }
 
     fun remove(job: Job) {

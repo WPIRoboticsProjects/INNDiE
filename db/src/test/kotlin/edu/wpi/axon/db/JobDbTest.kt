@@ -84,7 +84,17 @@ internal class JobDbTest {
         val runningJobs = listOf(
             Random.nextJob(db, status = TrainingScriptProgress.Creating),
             Random.nextJob(db, status = TrainingScriptProgress.Initializing),
-            Random.nextJob(db, status = TrainingScriptProgress.InProgress(0.2))
+            Random.nextJob(
+                db, status = TrainingScriptProgress.InProgress(
+                    0.2,
+                    """
+                    epoch
+                    0
+                    1
+                    2
+                    """.trimIndent()
+                )
+            )
         )
 
         // Jobs that are not running

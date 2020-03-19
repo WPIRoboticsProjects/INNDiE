@@ -1,6 +1,7 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.util.getLatestEpochFromProgressCsv
 import java.lang.NumberFormatException
 import mu.KotlinLogging
 import software.amazon.awssdk.services.ec2.model.InstanceStateName
@@ -17,19 +18,20 @@ class EC2TrainingScriptProgressReporter(
 ) : TrainingScriptProgressReporter {
 
     private val instanceIds = mutableMapOf<Int, String>()
-    private val scriptDataMap = mutableMapOf<Int, RunTrainingScriptConfiguration>()
     private val overriddenProgressMap = mutableMapOf<Int, TrainingScriptProgress>()
+    private val epochsMap = mutableMapOf<Int, Int>()
 
     /**
      * Adds a Job.
      *
-     * @param config The config the Job was started with.
+     * @param jobId The ID of the Job.
      * @param instanceId The EC2 instance ID for the instance that was started to run the training
      * script.
+     * @param epochs The number of epochs the Job will train for.
      */
-    fun addJob(config: RunTrainingScriptConfiguration, instanceId: String) {
-        instanceIds[config.id] = instanceId
-        scriptDataMap[config.id] = config
+    fun addJob(jobId: Int, instanceId: String, epochs: Int) {
+        instanceIds[jobId] = instanceId
+        epochsMap[jobId] = epochs
     }
 
     @UseExperimental(ExperimentalStdlibApi::class)
@@ -45,7 +47,7 @@ class EC2TrainingScriptProgressReporter(
             progress = s3Manager.getTrainingProgress(jobId),
             status = ec2Manager.getInstanceState(instanceId),
             ec2ConsoleOutput = s3Manager.getTrainingLogFile(jobId),
-            epochs = scriptDataMap[jobId]!!.epochs
+            epochs = epochsMap[jobId]!!
         )
     }
 
@@ -55,7 +57,7 @@ class EC2TrainingScriptProgressReporter(
 
     private fun requireJobIsInMaps(jobId: Int) {
         require(jobId in instanceIds.keys)
-        require(jobId in scriptDataMap.keys)
+        require(jobId in epochsMap.keys)
     }
 
     companion object {
@@ -102,10 +104,14 @@ class EC2TrainingScriptProgressReporter(
                 }
 
                 "1" -> when (progress) {
+                    "not started" -> when (status) {
+                        InstanceStateName.RUNNING -> progressAssumingEverythingIsFine
+                        else -> TrainingScriptProgress.Error(
+                            "Unknown progress text: $progress\n$ec2ConsoleOutput"
+                        )
+                    }
+
                     "initializing" -> progressAssumingEverythingIsFine
-                    "not started" -> TrainingScriptProgress.Error(
-                        "Unknown progress text: $progress\n$ec2ConsoleOutput"
-                    )
 
                     else -> when (status) {
                         InstanceStateName.SHUTTING_DOWN, InstanceStateName.TERMINATED,
@@ -140,9 +146,14 @@ class EC2TrainingScriptProgressReporter(
 
             else -> if (heartbeat == "1") {
                 try {
-                    TrainingScriptProgress.InProgress(progress.toDouble() / epochs)
+                    TrainingScriptProgress.InProgress(
+                        getLatestEpochFromProgressCsv(progress) / epochs.toDouble(),
+                        progress
+                    )
                 } catch (ex: NumberFormatException) {
-                    TrainingScriptProgress.Error("Invalid heartbeat text: $heartbeat")
+                    TrainingScriptProgress.Error("Invalid progress text: $progress")
+                } catch (ex: IllegalStateException) {
+                    TrainingScriptProgress.Error("Invalid progress text: $progress")
                 }
             } else {
                 LOGGER.warn {

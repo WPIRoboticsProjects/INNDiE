@@ -9,6 +9,7 @@ pluginManagement {
     val testloggerPluginVersion: String by settings
     val pitestPluginVersion: String by settings
     val kotlinVersion: String by settings
+    val javafxPluginVersion: String by settings
 
     plugins {
         id("com.diffplug.gradle.spotless") version spotlessPluginVersion
@@ -19,6 +20,7 @@ pluginManagement {
         id("com.adarshr.test-logger") version testloggerPluginVersion
         id("info.solidsoft.pitest") version pitestPluginVersion
         id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
+        id("org.openjfx.javafxplugin") version javafxPluginVersion
     }
 }
 
@@ -34,10 +36,12 @@ include(":example-models")
 include(":logging")
 include(":pattern-match")
 include(":plugin")
+include(":test-runner")
 include(":test-util")
 include(":tf-data")
 include(":tf-data-code")
 include(":tf-layer-loader")
+include(":ui-javafx")
 include(":training")
 include(":training-test-util")
 include(":util")

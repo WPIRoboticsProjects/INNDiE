@@ -31,10 +31,12 @@ val exampleModelsProject = project(":example-models")
 val loggingProject = project(":logging")
 val patternMatchProject = project(":pattern-match")
 val pluginProject = project(":plugin")
+val testRunnerProject = project(":test-runner")
 val testUtilProject = project(":test-util")
 val tfDataProject = project(":tf-data")
 val tfDataCode = project(":tf-data-code")
 val tfLayerLoaderProject = project(":tf-layer-loader")
+val uiJavaFxProject = project(":ui-javafx")
 val trainingProject = project(":training")
 val trainingTestUtilProject = project(":training-test-util")
 val utilProject = project(":util")
@@ -50,10 +52,12 @@ val kotlinProjects = setOf(
     loggingProject,
     patternMatchProject,
     pluginProject,
+    testRunnerProject,
     testUtilProject,
     tfDataProject,
     tfDataCode,
     tfLayerLoaderProject,
+    uiJavaFxProject,
     trainingProject,
     trainingTestUtilProject,
     utilProject
@@ -70,9 +74,11 @@ val publishedProjects = setOf(
     loggingProject,
     patternMatchProject,
     pluginProject,
+    testRunnerProject,
     tfDataProject,
     tfDataCode,
     tfLayerLoaderProject,
+    uiJavaFxProject,
     trainingProject,
     utilProject
 )
@@ -122,6 +128,7 @@ allprojects {
         maven("https://dl.bintray.com/jamesmudd/jhdf")
         maven("https://dl.bintray.com/kotlin/exposed")
         maven("https://dl.bintray.com/octogonapus/maven-artifacts")
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
 
     // Configures the Jacoco tool version to be the same for all projects that have it applied.
@@ -241,8 +248,13 @@ configure(javaProjects) {
              */
             excludeTags("needsSpecialSoftware")
 
+            // TODO: Get rid of the need for this by running tests that need TF in a Docker container
             if (!project.hasProperty("hasTensorFlowSupport")) {
                 excludeTags("needsTensorFlowSupport")
+            }
+
+            if (project.hasProperty("noDocker")) {
+                excludeTags("needsDocker")
             }
         }
 

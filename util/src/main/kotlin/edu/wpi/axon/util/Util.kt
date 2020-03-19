@@ -5,7 +5,19 @@ import arrow.fx.IO
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.nio.file.Path
+import java.nio.file.Paths
 import mu.KotlinLogging
+
+val localCacheDir: Path = Paths.get(
+    System.getProperty("user.home"),
+    ".wpilib",
+    "Axon"
+)
+
+val localScriptRunnerCache: Path = localCacheDir.resolve("local-script-runner-cache")
+
+val trainingLogCsvFilename: Path = Paths.get("trainingLog.csv")
 
 infix fun <E> Iterable<E>.anyIn(other: Iterable<E>) = any { it in other }
 
@@ -59,12 +71,10 @@ fun runCommand(
 }
 
 /**
- * @param progressReportingDirPrefix The prefix for the local progress reporting directory.
- * @param id The unique Job ID.
+ * @param parentDir The directory the progress file is in.
  * @return The path to the progress reporting file used when Axon is running locally.
  */
-fun createLocalProgressFilepath(progressReportingDirPrefix: String, id: Int) =
-    "$progressReportingDirPrefix/$id/progress.txt"
+fun createLocalProgressFilepath(parentDir: Path) = parentDir.resolve(trainingLogCsvFilename)
 
 fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
     is FilePath.S3 -> data.all { it is FilePath.S3 }
@@ -77,5 +87,22 @@ fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
  */
 fun getOutputModelName(inputModelName: String): String =
     "${inputModelName.substringBeforeLast('.')}-trained.${inputModelName.substringAfterLast('.')}"
+
+fun getLocalTrainingScriptRunnerWorkingDir(jobId: Int) =
+    localScriptRunnerCache.resolve(jobId.toString()).apply { toFile().mkdirs() }
+
+fun getLatestEpochFromProgressCsv(progressCsv: String): Int {
+    val lines = progressCsv.lines()
+    val epochColIndex = lines.first().split(',').indexOf("epoch")
+    if (epochColIndex == -1) {
+        throw IllegalStateException("Did not find the epoch column.")
+    }
+
+    return lines.mapNotNull { if (it.isBlank()) null else it }
+        .last()
+        .split(',')[epochColIndex]
+        .toDouble()
+        .toInt() // toDouble then toInt because toInt is too picky
+}
 
 private val LOGGER = KotlinLogging.logger { }

@@ -20,11 +20,14 @@ sealed class ModelDeploymentTarget {
     /**
      * The model is going to be deployed to a mobile system that uses the Coral Edge TPU.
      *
+     * // TODO: Rename this to representativeDatasetRatio because it's not really a percentage
      * @param representativeDatasetPercentage The percentage of the training dataset to use for the
      * representative dataset used for post-training quantization.
      */
     @Serializable
-    data class Coral(val representativeDatasetPercentage: Double) : ModelDeploymentTarget()
+    data class Coral(val representativeDatasetPercentage: Double) : ModelDeploymentTarget() {
+        constructor() : this(representativeDatasetPercentage = 0.2)
+    }
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable

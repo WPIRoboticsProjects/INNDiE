@@ -24,6 +24,10 @@ internal class DefaultLossToCodeTest {
             Arguments.of(
                 Loss.SparseCategoricalCrossentropy,
                 """tf.keras.losses.sparse_categorical_crossentropy"""
+            ),
+            Arguments.of(
+                Loss.MeanSquaredError,
+                """tf.keras.losses.mean_squared_error"""
             )
         )
     }

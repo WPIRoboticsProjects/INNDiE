@@ -1,6 +1,7 @@
 package edu.wpi.axon.db.data
 
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.examplemodel.ExampleModel
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
@@ -32,17 +33,24 @@ fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
         0 -> TrainingScriptProgress.NotStarted
         1 -> TrainingScriptProgress.Creating
         2 -> TrainingScriptProgress.Initializing
-        3 -> TrainingScriptProgress.InProgress(nextDouble(0.0, 1.0))
+        3 -> {
+            val epochs = nextInt(1, 10)
+            val totalEpochs = nextInt(epochs, epochs + 10)
+            TrainingScriptProgress.InProgress(
+                epochs.toDouble() / totalEpochs,
+                "epochs\n${(0..epochs).joinToString("\n")}"
+            )
+        }
         4 -> TrainingScriptProgress.Completed
         5 -> TrainingScriptProgress.Error(RandomStringUtils.randomAlphanumeric(50))
         else -> error("Missing a TrainingScriptProgress case.")
     }
 
-fun Random.nextTrainingMethod(): JobTrainingMethod =
-    when (nextInt(JobTrainingMethod::class.sealedSubclasses.count())) {
-        0 -> JobTrainingMethod.EC2(RandomStringUtils.randomAlphabetic(10))
-        1 -> JobTrainingMethod.Local
-        2 -> JobTrainingMethod.Untrained
+fun Random.nextTrainingMethod(): InternalJobTrainingMethod =
+    when (nextInt(InternalJobTrainingMethod::class.sealedSubclasses.count())) {
+        0 -> InternalJobTrainingMethod.EC2(RandomStringUtils.randomAlphabetic(10))
+        1 -> InternalJobTrainingMethod.Local
+        2 -> InternalJobTrainingMethod.Untrained
         else -> error("Missing a JobTrainingMethod case.")
     }
 
@@ -62,11 +70,34 @@ fun Random.nextPlugin(): Plugin {
     }
 }
 
+fun nextExampleModel() = ExampleModel(
+    name = RandomStringUtils.randomAlphanumeric(10),
+    fileName = "${RandomStringUtils.randomAlphanumeric(10)}.h5",
+    url = "https://${RandomStringUtils.randomAlphanumeric(10)}",
+    description = RandomStringUtils.randomAlphanumeric(10),
+    freezeLayers = emptyMap()
+)
+
+fun Random.nextFilePath(): FilePath =
+    when (nextInt(FilePath::class.sealedSubclasses.count())) {
+        0 -> FilePath.S3(RandomStringUtils.randomAlphanumeric(10))
+        1 -> FilePath.Local(RandomStringUtils.randomAlphanumeric(10))
+        else -> error("Missing a FilePath case.")
+    }
+
+fun Random.nextModelSource(): ModelSource =
+    when (nextInt(ModelSource::class.sealedSubclasses.count())) {
+        0 -> ModelSource.FromExample(nextExampleModel())
+        1 -> ModelSource.FromFile(nextFilePath())
+        2 -> ModelSource.FromJob(nextInt(1, Int.MAX_VALUE))
+        else -> error("Missing a ModelSource case.")
+    }
+
 fun Random.nextJob(
     jobDb: JobDb,
     name: String = RandomStringUtils.randomAlphanumeric(10),
     status: TrainingScriptProgress = nextTrainingScriptProgress(),
-    userOldModelPath: FilePath = FilePath.S3(RandomStringUtils.randomAlphanumeric(10)),
+    userOldModelPath: ModelSource = nextModelSource(),
     userDataset: Dataset = nextDataset(),
     userOptimizer: Optimizer = Optimizer.Adam(
         nextDouble(0.0, 1.0),
@@ -85,19 +116,19 @@ fun Random.nextJob(
         RandomStringUtils.randomAlphanumeric(10),
         (1..3).map { nextInt(128) },
         setOf(
-            Layer.Dense(RandomStringUtils.randomAlphanumeric(10), null, 10).trainable(),
+            Layer.Dense(RandomStringUtils.randomAlphanumeric(10), null, 10).isTrainable(),
             Layer.Conv2D(
                 RandomStringUtils.randomAlphanumeric(10),
                 null,
                 9,
                 SerializableTuple2II(3, 3),
                 Activation.SoftMax
-            ).trainable(),
+            ).isTrainable(),
             Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
         )
     ),
     generateDebugComments: Boolean = nextBoolean(),
-    trainingMethod: JobTrainingMethod = nextTrainingMethod(),
+    trainingMethod: InternalJobTrainingMethod = nextTrainingMethod(),
     target: ModelDeploymentTarget = nextTarget(),
     datasetPlugin: Plugin = nextPlugin()
 ) = jobDb.create(

@@ -45,7 +45,10 @@ sealed class Dataset : Comparable<Dataset> {
     @Serializable
     data class Custom(val path: FilePath, override val displayName: String) : Dataset() {
 
-        override val progressReportingName = path.filename.replace(".", "_").replace("-", "_")
+        override val progressReportingName = path.filename
+            .replace(".", "_")
+            .replace("-", "_")
+            .replace(" ", "_")
 
         init {
             require(progressReportingName.matches(Regex("""\w+""")))

@@ -29,7 +29,7 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                     SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
                     PoolingPadding.Valid,
                     DataFormat.ChannelsLast
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -44,7 +44,7 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                     "global_max_pooling2d",
                     null,
                     DataFormat.ChannelsLast
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -60,7 +60,7 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                     null,
                     0.2,
                     null
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -77,7 +77,7 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                     SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
                     DataFormat.ChannelsLast,
                     Interpolation.Nearest
-                ).trainable()
+                ).isTrainable()
             )
         }
     }
@@ -94,7 +94,7 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                     SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
                     DataFormat.ChannelsLast,
                     Interpolation.Bilinear
-                ).trainable()
+                ).isTrainable()
             )
         }
     }

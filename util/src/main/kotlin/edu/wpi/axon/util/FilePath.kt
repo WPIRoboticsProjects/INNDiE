@@ -1,5 +1,6 @@
 package edu.wpi.axon.util
 
+import java.nio.file.Paths
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -19,7 +20,7 @@ sealed class FilePath {
      * The filename.
      */
     val filename: String
-        get() = path.substringAfterLast("/")
+        get() = Paths.get(path).fileName.toString()
 
     /**
      * A path in S3. This does not include any prefixes that Axon uses to sort files.

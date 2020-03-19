@@ -20,7 +20,18 @@ internal class TrainingScriptProgressTest {
             TrainingScriptProgress.NotStarted,
             TrainingScriptProgress.Creating,
             TrainingScriptProgress.Initializing,
-            TrainingScriptProgress.InProgress(0.5),
+            TrainingScriptProgress.InProgress(
+                0.5,
+                """
+                epoch
+                0
+                1
+                2
+                3
+                4
+                5
+                """.trimIndent()
+            ),
             TrainingScriptProgress.Completed,
             TrainingScriptProgress.Error("a")
         )

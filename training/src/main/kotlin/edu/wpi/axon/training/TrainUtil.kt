@@ -9,6 +9,7 @@ import edu.wpi.axon.dsl.create
 import edu.wpi.axon.dsl.creating
 import edu.wpi.axon.dsl.run
 import edu.wpi.axon.dsl.running
+import edu.wpi.axon.dsl.task.CSVLoggerCallbackTask
 import edu.wpi.axon.dsl.task.CheckpointCallbackTask
 import edu.wpi.axon.dsl.task.CompileModelTask
 import edu.wpi.axon.dsl.task.ConvertSuperviselyDatasetToRecord
@@ -16,7 +17,6 @@ import edu.wpi.axon.dsl.task.EarlyStoppingTask
 import edu.wpi.axon.dsl.task.LoadExampleDatasetTask
 import edu.wpi.axon.dsl.task.LoadModelTask
 import edu.wpi.axon.dsl.task.LoadTFRecordOfImagesWithObjects
-import edu.wpi.axon.dsl.task.LocalProgressReportingCallbackTask
 import edu.wpi.axon.dsl.task.PostTrainingQuantizationTask
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.dsl.task.RunPluginTask
@@ -29,6 +29,7 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
+import edu.wpi.axon.util.trainingLogCsvFilename
 
 /**
  * Loads a model in to a variable using. Assumes the model is on disk.
@@ -189,13 +190,16 @@ internal fun ScriptGenerator.compileTrainSave(
 
     val checkpointCallback by variables.creating(Variable::class)
     tasks.run(CheckpointCallbackTask::class) {
+        val basePath = "${trainState.workingDir}/${oldModel.name}"
+
         filePath = if (hasValidation) {
             // Can only use val_loss if there is validation data, which can take the form of
             // a validation dataset or a nonzero validation split
-            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
+            "$basePath-weights.{epoch:02d}-{val_loss:.2f}.hdf5"
         } else {
-            "${trainState.workingDir}/${oldModel.name}-weights.{epoch:02d}-{loss:.2f}.hdf5"
-        }
+            "$basePath-weights.{epoch:02d}-{loss:.2f}.hdf5"
+        }.toString()
+
         monitor = if (hasValidation) "val_loss" else "loss"
         saveWeightsOnly = true
         verbose = 1
@@ -210,17 +214,24 @@ internal fun ScriptGenerator.compileTrainSave(
         output = earlyStoppingCallback
     }
 
-    val progressReportingCallback: Variable = variables.create(Variable::class)
-    if (trainState.usesAWS) {
+    val trainingLogCsvPath = trainState.workingDir.resolve(trainingLogCsvFilename)
+
+    val awsProgressReportingCallback = if (trainState.usesAWS) {
+        val variable = variables.create(Variable::class)
         tasks.run(S3ProgressReportingCallbackTask::class) {
             jobId = trainState.jobId
-            output = progressReportingCallback
+            csvLogFile = trainingLogCsvPath.toString()
+            output = variable
         }
+        variable
     } else {
-        tasks.run(LocalProgressReportingCallbackTask::class) {
-            jobId = trainState.jobId
-            output = progressReportingCallback
-        }
+        null
+    }
+
+    val csvLoggerCallback: Variable = variables.create(Variable::class)
+    tasks.run(CSVLoggerCallbackTask::class) {
+        logFilePath = trainingLogCsvPath.toString()
+        output = csvLoggerCallback
     }
 
     val trainModelTask by tasks.running(TrainTask::class) {
@@ -235,7 +246,14 @@ internal fun ScriptGenerator.compileTrainSave(
             validationOutputData = Some(it.second)
         }
 
-        callbacks = setOf(checkpointCallback, earlyStoppingCallback, progressReportingCallback)
+        callbacks = setOf(
+            checkpointCallback,
+            earlyStoppingCallback,
+            csvLoggerCallback
+        )
+        if (awsProgressReportingCallback != null) {
+            callbacks = callbacks + awsProgressReportingCallback
+        }
 
         epochs = trainState.userEpochs
         dependencies += compileModelTask
@@ -261,11 +279,11 @@ internal fun ScriptGenerator.quantizeAndCompileForEdgeTpu(
 ): Task {
     require(trainState.target is ModelDeploymentTarget.Coral)
 
-    // Only grab 10% of the dataset
     val datasetSlice = variables.create(Variable::class)
     tasks.run(SliceTask::class) {
         input = loadedDataset.train.first
         output = datasetSlice
+        // Take the portion of the dataset the user wanted
         sliceNotation = "[:int(len(${loadedDataset.train.first.name}) * " +
             "${trainState.target.representativeDatasetPercentage})]"
     }

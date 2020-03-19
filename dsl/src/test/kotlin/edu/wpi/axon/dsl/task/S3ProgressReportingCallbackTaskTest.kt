@@ -17,6 +17,7 @@ internal class S3ProgressReportingCallbackTaskConfigurationTest :
         {
             S3ProgressReportingCallbackTask("").apply {
                 jobId = Random.nextInt(1, Int.MAX_VALUE)
+                csvLogFile = "out/log.csv"
             }
         },
         listOf(
@@ -37,6 +38,7 @@ internal class S3ProgressReportingCallbackTaskTest : KoinTestFixture() {
 
         val task = S3ProgressReportingCallbackTask("").apply {
             jobId = Random.nextInt(1, Int.MAX_VALUE)
+            csvLogFile = "./output/logFile.csv"
             output = configuredCorrectly("output")
         }
 
@@ -44,9 +46,11 @@ internal class S3ProgressReportingCallbackTaskTest : KoinTestFixture() {
             """
             |class var1(tf.keras.callbacks.Callback):
             |    def on_epoch_end(self, epoch, logs=None):
-            |        axon.client.impl_update_training_progress(${task.jobId} str(epoch + 1),
-            |                                                  "b",
-            |                                                  None)
+            |        if os.path.isfile("./output/logFile.csv"):
+            |            with open("./output/logFile.csv", "r") as f:
+            |                axon.client.impl_update_training_progress(${task.jobId}, f.read(),
+            |                                                          "b",
+            |                                                          None)
             |
             |output = var1()
             """.trimMargin()
