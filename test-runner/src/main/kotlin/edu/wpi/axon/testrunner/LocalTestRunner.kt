@@ -13,9 +13,13 @@ import edu.wpi.axon.dsl.task.RunInferenceTask
 import edu.wpi.axon.dsl.task.RunPluginTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.util.runCommand
 import java.io.File
 import java.nio.file.Path
+import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.stringify
 import mu.KotlinLogging
 import org.apache.commons.lang3.RandomStringUtils
 
@@ -24,6 +28,7 @@ import org.apache.commons.lang3.RandomStringUtils
  */
 class LocalTestRunner : TestRunner {
 
+    @UseExperimental(ImplicitReflectionSerializer::class)
     override fun runTest(
         trainedModelPath: Path,
         testData: TestData,
@@ -33,6 +38,17 @@ class LocalTestRunner : TestRunner {
     ): List<File> {
         require(trainedModelPath.toString().isNotBlank())
         require(workingDir.toString().isNotBlank())
+
+        LOGGER.debug {
+            """
+            |Running a test with:
+            |trainedModelPath=$trainedModelPath
+            |testData=$testData
+            |loadTestDataPlugin=$loadTestDataPlugin
+            |processTestOutputPlugin=$processTestOutputPlugin
+            |workingDir=$workingDir
+            """.trimMargin()
+        }
 
         val scriptGenerator = ScriptGenerator(
             DefaultPolymorphicNamedDomainObjectContainer.of(),
@@ -46,7 +62,22 @@ class LocalTestRunner : TestRunner {
 
             val testDataStringVar by variables.creating(Variable::class)
             tasks.run(LoadStringTask::class) {
-                data = testData.serialize()
+                // TODO: Document this format
+                data = Json.stringify(
+                    when (testData) {
+                        is TestData.FromDataset -> when (testData.exampleDataset) {
+                            is Dataset.ExampleDataset ->
+                                mapOf("example_dataset" to testData.exampleDataset.name)
+
+                            is Dataset.Custom ->
+                                mapOf("custom_dataset" to testData.exampleDataset.path.path)
+                        }
+
+                        is TestData.FromFile ->
+                            mapOf("from_file" to testData.filePath.toAbsolutePath().toString())
+                    }
+                )
+
                 output = testDataStringVar
             }
 
@@ -103,7 +134,7 @@ class LocalTestRunner : TestRunner {
                             )
                         }
 
-                        is TestData.FromExampleDataset -> it
+                        is TestData.FromDataset -> it
                     }
                 }
 
@@ -122,7 +153,7 @@ class LocalTestRunner : TestRunner {
                 "-v",
                 "${trainedModelPath.parent.toAbsolutePath()}:/models"
             ) + when (testData) {
-                is TestData.FromExampleDataset -> emptyList()
+                is TestData.FromDataset -> emptyList()
                 is TestData.FromFile -> listOf(
                     "-v",
                     "${testData.filePath.parent.toAbsolutePath()}:/test-data"

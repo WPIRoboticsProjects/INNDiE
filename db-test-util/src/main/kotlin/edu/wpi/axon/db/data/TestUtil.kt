@@ -12,6 +12,7 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.getOutputModelName
 import kotlin.random.Random
 import org.apache.commons.lang3.RandomStringUtils
 
@@ -127,6 +128,7 @@ fun Random.nextJob(
             Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
         )
     ),
+    userNewModelPath: FilePath = FilePath.Local(getOutputModelName(userOldModelPath.filename)),
     generateDebugComments: Boolean = nextBoolean(),
     trainingMethod: InternalJobTrainingMethod = nextTrainingMethod(),
     target: ModelDeploymentTarget = nextTarget(),
@@ -141,6 +143,7 @@ fun Random.nextJob(
     userMetrics,
     userEpochs,
     userNewModel,
+    userNewModelPath,
     generateDebugComments,
     trainingMethod,
     target,

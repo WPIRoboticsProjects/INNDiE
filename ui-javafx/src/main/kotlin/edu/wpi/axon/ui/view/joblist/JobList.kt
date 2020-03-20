@@ -15,6 +15,8 @@ import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobModel
+import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.getOutputModelName
 import javafx.collections.ListChangeListener
 import javafx.geometry.Orientation
 import javafx.scene.layout.Priority
@@ -138,6 +140,7 @@ class JobList : View() {
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = modelManager.loadModel(modelSource),
+            userNewModelPath = FilePath.Local(getOutputModelName(modelSource.filename)),
             generateDebugComments = false,
             internalTrainingMethod = InternalJobTrainingMethod.Untrained,
             target = ModelDeploymentTarget.Desktop,

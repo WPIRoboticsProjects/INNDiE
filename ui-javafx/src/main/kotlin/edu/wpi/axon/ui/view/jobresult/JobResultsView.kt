@@ -116,7 +116,7 @@ class JobResultsView : Fragment() {
 
                     is TrainingScriptProgress.Error -> VBox().apply {
                         spacing = 10.0
-                        label("Job completed erroneously. Error Log:")
+                        label("The Job completed erroneously. Error Log:")
                         textarea {
                             text = status.log
                             isEditable = false
@@ -124,10 +124,10 @@ class JobResultsView : Fragment() {
                         }
                     }
 
-                    TrainingScriptProgress.NotStarted -> Label("Job has not been started yet.")
+                    TrainingScriptProgress.NotStarted -> Label("The Job has not been started yet.")
 
                     TrainingScriptProgress.Creating, TrainingScriptProgress.Initializing ->
-                        Label("Job is starting.")
+                        Label("The Job is starting.")
 
                     is TrainingScriptProgress.InProgress -> VBox().apply {
                         trainingLogLineChart(status.progressLog)

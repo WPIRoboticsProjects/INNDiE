@@ -1,15 +1,21 @@
 package edu.wpi.axon.ui.view.jobtestview
 
+import edu.wpi.axon.db.data.ModelSource
+import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.testrunner.LocalTestRunner
 import edu.wpi.axon.testrunner.TestData
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.view.contentMap
+import edu.wpi.axon.ui.view.jobresult.LazyResult
 import edu.wpi.axon.ui.view.jobresult.ResultFragment
+import edu.wpi.axon.util.getLocalTestRunnerWorkingDir
 import edu.wpi.axon.util.loadTestDataPluginManagerName
 import edu.wpi.axon.util.processTestOutputPluginManagerName
 import java.io.File
+import java.nio.file.Paths
+import javafx.collections.FXCollections
 import javafx.scene.control.Label
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
@@ -42,128 +48,171 @@ class JobTestView : Fragment() {
     )
     private val model = JobTestViewModel()
     private val testRunner = LocalTestRunner()
+    private val testResults = FXCollections.observableArrayList<File>()
+    private val modelManager = ModelManager()
 
     override val root = borderpane {
-        centerProperty().bind(job.itemProperty.objectBinding {
-            if (it == null) {
+        centerProperty().bind(job.itemProperty.objectBinding(job.status) { jobDto ->
+            if (jobDto == null) {
+                bottom { }
                 Label("No selection.")
             } else {
-                bottom {
-                    buttonbar {
-                        button("Run Test") {
-                            action {
-                                // TODO: Start running the test async
-                            }
-                        }
-                    }
-                }
-                vbox(20) {
-                    form {
-                        fieldset("Test Data") {
-                            field("Type") {
-                                combobox(model.testDataType) {
-                                    items = TestDataType.values().toList().toObservable()
-                                    valueProperty().addListener { _, _, newValue ->
-                                        if (newValue == TestDataType.FROM_TRAINING_DATA) {
-                                            model.testData.value =
-                                                TestData.FromExampleDataset(job.userDataset.value)
+                when (jobDto.status) {
+                    TrainingScriptProgress.Completed -> {
+                        bottom {
+                            buttonbar {
+                                button("Run Test").action {
+                                    model.commit {
+                                        val resultsTask = runAsync {
+                                            val localModel = modelManager.downloadModel(
+                                                ModelSource.FromFile(jobDto.userNewModelPath)
+                                            )
+
+                                            testRunner.runTest(
+                                                trainedModelPath = Paths.get(localModel.path),
+                                                testData = model.testData.value,
+                                                loadTestDataPlugin = model.loadTestDataPlugin.value,
+                                                processTestOutputPlugin = model.processTestOutputPlugin.value,
+                                                workingDir = getLocalTestRunnerWorkingDir(jobDto.id)
+                                            )
                                         }
-                                    }
-                                    cellFormat {
-                                        text = it.name.split("_").joinToString(" ") {
-                                            it.toLowerCase().capitalize()
+
+                                        resultsTask.setOnSucceeded {
+                                            val results = resultsTask.get()
+                                            testResults.setAll(results)
                                         }
                                     }
                                 }
                             }
+                        }
 
-                            field("Selection") {
-                                contentMap(model.testDataType) {
-                                    item(TestDataType.FROM_TRAINING_DATA) {
-                                        label(
-                                            job.userDataset,
-                                            converter = object : StringConverter<Dataset>() {
-                                                override fun toString(p0: Dataset?) =
-                                                    p0?.displayName
-                                                        ?: "The Job is missing a dataset."
-
-                                                override fun fromString(p0: String?) = null
-                                            })
-                                    }
-
-                                    item(TestDataType.FROM_FILE) {
-                                        hbox(10) {
-                                            button("Choose File") {
-                                                action {
-                                                    val file = chooseFile(
-                                                        "Pick",
-                                                        arrayOf(
-                                                            FileChooser.ExtensionFilter(
-                                                                "Any",
-                                                                "*.*"
-                                                            )
-                                                        )
-                                                    )
-
-                                                    file.firstOrNull()?.let {
-                                                        model.testData.value =
-                                                            TestData.FromFile(it.toPath())
-                                                    }
+                        vbox(20) {
+                            form {
+                                fieldset("Test Data") {
+                                    field("Type") {
+                                        combobox(model.testDataType) {
+                                            items = TestDataType.values().toList().toObservable()
+                                            valueProperty().addListener { _, _, newValue ->
+                                                if (newValue == TestDataType.FROM_TRAINING_DATA) {
+                                                    model.testData.value =
+                                                        TestData.FromDataset(jobDto.userDataset)
                                                 }
                                             }
+                                            cellFormat {
+                                                text = it.name.split("_").joinToString(" ") {
+                                                    it.toLowerCase().capitalize()
+                                                }
+                                            }
+                                        }
+                                    }
 
-                                            label(
-                                                model.testData,
-                                                converter = object : StringConverter<TestData>() {
-                                                    override fun toString(p0: TestData?) =
-                                                        when (p0) {
-                                                            is TestData.FromFile ->
-                                                                p0.filePath.fileName.toString()
-                                                            else -> ""
+                                    field("Selection") {
+                                        contentMap(model.testDataType) {
+                                            item(TestDataType.FROM_TRAINING_DATA) {
+                                                label(jobDto.userDataset.displayName)
+                                            }
+
+                                            item(TestDataType.FROM_FILE) {
+                                                hbox(10) {
+                                                    button("Choose File") {
+                                                        action {
+                                                            val file = chooseFile(
+                                                                "Pick",
+                                                                arrayOf(
+                                                                    FileChooser.ExtensionFilter(
+                                                                        "Any",
+                                                                        "*.*"
+                                                                    )
+                                                                )
+                                                            )
+
+                                                            file.firstOrNull()?.let {
+                                                                model.testData.value =
+                                                                    TestData.FromFile(it.toPath())
+                                                            }
                                                         }
+                                                    }
 
-                                                    override fun fromString(p0: String?) = null
-                                                })
+                                                    label(
+                                                        model.testData,
+                                                        converter = object :
+                                                            StringConverter<TestData>() {
+                                                            override fun toString(p0: TestData?) =
+                                                                when (p0) {
+                                                                    is TestData.FromFile ->
+                                                                        p0.filePath.fileName.toString()
+                                                                    else -> ""
+                                                                }
+
+                                                            override fun fromString(p0: String?) =
+                                                                null
+                                                        })
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                separator()
+
+                                fieldset("Plugins") {
+                                    field("Load Test Data") {
+                                        combobox(model.loadTestDataPlugin) {
+                                            items =
+                                                loadTestDataPluginManager.listPlugins().toList()
+                                                    .toObservable()
+                                            cellFormat {
+                                                text = it.name.toLowerCase().capitalize()
+                                            }
+                                            validator { if (it == null) error("Must not be empty.") else null }
+                                        }
+                                    }
+
+                                    field("Process Test Output") {
+                                        combobox(model.processTestOutputPlugin) {
+                                            items = processTestOutputPluginManager.listPlugins()
+                                                .toList()
+                                                .toObservable()
+                                            cellFormat {
+                                                text = it.name.toLowerCase().capitalize()
+                                            }
+                                            validator { if (it == null) error("Must not be empty.") else null }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        separator()
+                            hbox(10) {
+                                val resultFragment = find<ResultFragment>()
 
-                        fieldset("Plugins") {
-                            field("Load Test Data") {
-                                combobox(model.loadTestDataPlugin) {
-                                    items =
-                                        loadTestDataPluginManager.listPlugins().toList()
-                                            .toObservable()
-                                    cellFormat {
-                                        text = it.name.toLowerCase().capitalize()
-                                    }
-                                    validator { if (it == null) error("Must not be empty.") else null }
+                                listview(testResults) {
+                                    resultFragment.data.bind(
+                                        selectionModel.selectedItemProperty().objectBinding {
+                                            if (it == null) {
+                                                null
+                                            } else {
+                                                // The compiler needs the <File> type argument even though
+                                                // there is a smart cast.
+                                                @Suppress("RemoveExplicitTypeArguments")
+                                                LazyResult(it.name, lazy<File> { it })
+                                            }
+                                        })
                                 }
-                            }
 
-                            field("Process Test Output") {
-                                combobox(model.processTestOutputPlugin) {
-                                    items = processTestOutputPluginManager.listPlugins().toList()
-                                        .toObservable()
-                                    cellFormat {
-                                        text = it.name.toLowerCase().capitalize()
-                                    }
-                                    validator { if (it == null) error("Must not be empty.") else null }
-                                }
+                                add(resultFragment)
                             }
                         }
                     }
 
-                    listview<File> {
-                        // TODO: Bind the data to the test results
-                    }
+                    is TrainingScriptProgress.Error ->
+                        label("The Job completed erroneously. Look at the Results view for more information.")
 
-                    val resultFragment = find<ResultFragment>()
-                    // TODO: Bind the data to the selection
+                    TrainingScriptProgress.NotStarted -> label("The Job has not been started yet.")
+
+                    TrainingScriptProgress.Creating, TrainingScriptProgress.Initializing ->
+                        label("The Job is starting.")
+
+                    is TrainingScriptProgress.InProgress -> label("The Job is training.")
                 }
             }
         })

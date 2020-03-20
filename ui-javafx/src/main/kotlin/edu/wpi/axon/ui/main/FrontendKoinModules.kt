@@ -15,6 +15,7 @@ import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.divideByTwoFiveFivePlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypeForMobilenetPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
+import edu.wpi.axon.plugin.LoadTestDataPlugins.loadExampleDatasetPlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
@@ -109,7 +110,9 @@ fun defaultFrontendModule() = module {
 
     single(named(loadTestDataPluginManagerName)) {
         bindPluginManager(
-            setOf(),
+            setOf(
+                loadExampleDatasetPlugin
+            ),
             "axon-load-test-data-plugins",
             "load_test_data_plugin_cache.json"
         )

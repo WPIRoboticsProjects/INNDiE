@@ -16,4 +16,15 @@ internal class LoadStringTaskTest : KoinTestFixture() {
             output = configuredCorrectly("output")
         }.code().shouldBe("output = \"data\"")
     }
+
+    @Test
+    fun `test escaping the string`() {
+        startKoin { }
+        LoadStringTask("").apply {
+            data = """"quoted" \backslashes\"""
+            output = configuredCorrectly("output")
+        }.code().shouldBe("""
+            output = "\"quoted\" \\backslashes\\"
+        """.trimIndent())
+    }
 }
