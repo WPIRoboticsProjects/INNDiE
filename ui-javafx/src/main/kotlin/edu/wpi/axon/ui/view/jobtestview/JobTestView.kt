@@ -17,6 +17,7 @@ import java.io.File
 import java.nio.file.Paths
 import javafx.collections.FXCollections
 import javafx.scene.control.Label
+import javafx.scene.control.SelectionMode
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
 import tornadofx.Fragment
@@ -186,17 +187,15 @@ class JobTestView : Fragment() {
                                 val resultFragment = find<ResultFragment>()
 
                                 listview(testResults) {
+                                    selectionModel.selectionMode = SelectionMode.SINGLE
+                                    isEditable = false
                                     resultFragment.data.bind(
                                         selectionModel.selectedItemProperty().objectBinding {
-                                            if (it == null) {
-                                                null
-                                            } else {
-                                                // The compiler needs the <File> type argument even though
-                                                // there is a smart cast.
-                                                @Suppress("RemoveExplicitTypeArguments")
-                                                LazyResult(it.name, lazy<File> { it })
+                                            it?.let {
+                                                LazyResult(it.name, lazy { it })
                                             }
-                                        })
+                                        }
+                                    )
                                 }
 
                                 add(resultFragment)

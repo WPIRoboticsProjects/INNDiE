@@ -9,7 +9,6 @@ import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.label
 import tornadofx.objectBinding
-import tornadofx.removeFromParent
 import tornadofx.textarea
 
 /**
@@ -22,16 +21,7 @@ class ResultFragment : Fragment() {
     override val root = borderpane {
         centerProperty().bind(data.objectBinding {
             if (it == null) {
-                bottom {
-                    buttonbar {
-                        button("Close") {
-                            action {
-                                this@ResultFragment.removeFromParent()
-                            }
-                        }
-                    }
-                }
-
+                bottom { }
                 label("No data.")
             } else {
                 bottom {
@@ -39,12 +29,6 @@ class ResultFragment : Fragment() {
                         button("Show File") {
                             action {
                                 TODO("Show the file in the native file browser.")
-                            }
-                        }
-
-                        button("Close") {
-                            action {
-                                this@ResultFragment.removeFromParent()
                             }
                         }
                     }
