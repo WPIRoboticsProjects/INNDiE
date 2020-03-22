@@ -62,6 +62,16 @@ private fun getNextDirName(jobId: Int): Path {
     return workingDirPath.resolve("${highestDirNumber + 1}")
 }
 
+private fun getExistingTestResults(jobId: Int): Map<String, List<File>> {
+    val workingDirPath = getLocalTestRunnerWorkingDir(jobId)
+    return workingDirPath.toFile()
+        .list()
+        ?.mapNotNull { it.toIntOrNull() }
+        ?.map { workingDirPath.resolve(it.toString()).toFile() }
+        ?.map { it.name to (it.resolve("output").listFiles()?.toList() ?: emptyList()) }
+        ?.toMap() ?: emptyMap()
+}
+
 class JobTestView : Fragment() {
 
     private val job by inject<JobModel>()
@@ -78,8 +88,11 @@ class JobTestView : Fragment() {
         centerProperty().bind(job.itemProperty.objectBinding(job.status) { jobDto ->
             if (jobDto == null) {
                 bottom { }
-                Label("No selection.")
+                testResults.clear()
+                label("No selection.")
             } else {
+                testResults.clear()
+                testResults.putAll(getExistingTestResults(jobDto.id))
                 when (jobDto.status) {
                     TrainingScriptProgress.Completed -> {
                         bottom {
