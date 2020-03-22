@@ -37,7 +37,7 @@ internal object Jobs : IntIdTable() {
     val userMetricsCol = varchar("userMetrics", 255)
     val userEpochsCol = integer("userEpochs")
     val userModelCol = text("userModel")
-    val userNewModelPathCol = text("userNewModelPath")
+    val userNewModelFilenameCol = text("userNewModelFilename")
     val generateDebugCommentsCol = bool("generateDebugComments")
     val internalTrainingMethodCol = varchar("internalTrainingMethod", 255)
     val targetCol = varchar("target", 255)
@@ -54,7 +54,7 @@ internal object Jobs : IntIdTable() {
         userEpochs = row[userEpochsCol],
         generateDebugComments = row[generateDebugCommentsCol],
         userNewModel = Model.deserialize(row[userModelCol]),
-        userNewModelPath = FilePath.deserialize(row[userNewModelPathCol]),
+        userNewModelFilename = row[userNewModelFilenameCol],
         internalTrainingMethod = InternalJobTrainingMethod.deserialize(
             row[internalTrainingMethodCol]
         ),
@@ -99,7 +99,7 @@ class JobDb(private val database: Database) {
         userMetrics: Set<String>,
         userEpochs: Int,
         userNewModel: Model,
-        userNewModelPath: FilePath,
+        userNewModelFilename: String,
         generateDebugComments: Boolean,
         internalTrainingMethod: InternalJobTrainingMethod,
         target: ModelDeploymentTarget,
@@ -116,7 +116,7 @@ class JobDb(private val database: Database) {
                 row[userMetricsCol] = klaxon.toJsonString(userMetrics)
                 row[userEpochsCol] = userEpochs
                 row[userModelCol] = userNewModel.serialize()
-                row[userNewModelPathCol] = userNewModelPath.serialize()
+                row[userNewModelFilenameCol] = userNewModelFilename
                 row[generateDebugCommentsCol] = generateDebugComments
                 row[internalTrainingMethodCol] = internalTrainingMethod.serialize()
                 row[targetCol] = target.serialize()
@@ -134,7 +134,7 @@ class JobDb(private val database: Database) {
             userMetrics = userMetrics,
             userEpochs = userEpochs,
             userNewModel = userNewModel,
-            userNewModelPath = userNewModelPath,
+            userNewModelFilename = userNewModelFilename,
             generateDebugComments = generateDebugComments,
             internalTrainingMethod = internalTrainingMethod,
             target = target,
@@ -158,7 +158,7 @@ class JobDb(private val database: Database) {
         userMetrics: Set<String>? = null,
         userEpochs: Int? = null,
         userNewModel: Model? = null,
-        userNewModelPath: FilePath? = null,
+        userNewModelFilename: FilePath.Local? = null,
         generateDebugComments: Boolean? = null,
         internalJobTrainingMethod: InternalJobTrainingMethod? = null,
         target: ModelDeploymentTarget? = null,
@@ -175,7 +175,9 @@ class JobDb(private val database: Database) {
                 userMetrics?.let { row[userMetricsCol] = klaxon.toJsonString(userMetrics) }
                 userEpochs?.let { row[userEpochsCol] = userEpochs }
                 userNewModel?.let { row[userModelCol] = userNewModel.serialize() }
-                userNewModelPath?.let { row[userNewModelPathCol] = userNewModelPath.serialize() }
+                userNewModelFilename?.let {
+                    row[userNewModelFilenameCol] = userNewModelFilename.serialize()
+                }
                 generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
                 internalJobTrainingMethod?.let {
                     row[internalTrainingMethodCol] = internalJobTrainingMethod.serialize()

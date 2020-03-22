@@ -128,7 +128,7 @@ fun Random.nextJob(
             Layer.AveragePooling2D(RandomStringUtils.randomAlphanumeric(10), null).untrainable()
         )
     ),
-    userNewModelPath: FilePath = FilePath.Local(getOutputModelName(userOldModelPath.filename)),
+    userNewModelPath: String = getOutputModelName(userOldModelPath.filename),
     generateDebugComments: Boolean = nextBoolean(),
     trainingMethod: InternalJobTrainingMethod = nextTrainingMethod(),
     target: ModelDeploymentTarget = nextTarget(),
