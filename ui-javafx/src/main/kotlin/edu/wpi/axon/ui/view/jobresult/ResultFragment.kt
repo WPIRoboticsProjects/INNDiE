@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleObjectProperty
 import tornadofx.Fragment
 import tornadofx.action
 import tornadofx.borderpane
-import tornadofx.bottom
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.label
@@ -21,19 +20,8 @@ class ResultFragment : Fragment() {
     override val root = borderpane {
         centerProperty().bind(data.objectBinding {
             if (it == null) {
-                bottom { }
                 label("No data.")
             } else {
-                bottom {
-                    buttonbar {
-                        button("Show File") {
-                            action {
-                                TODO("Show the file in the native file browser.")
-                            }
-                        }
-                    }
-                }
-
                 when (val extension = it.filename.substringAfterLast('.', "")) {
                     "txt", "log", "py", "csv" -> textarea {
                         text = it.file.value.readText()
@@ -42,6 +30,20 @@ class ResultFragment : Fragment() {
                     }
 
                     else -> label("Cannot visualize data format: $extension")
+                }
+            }
+        })
+
+        bottomProperty().bind(data.objectBinding {
+            if (it == null) {
+                null
+            } else {
+                buttonbar {
+                    button("Show File") {
+                        action {
+                            TODO("Show the file in the native file browser.")
+                        }
+                    }
                 }
             }
         })

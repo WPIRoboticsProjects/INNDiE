@@ -82,12 +82,13 @@ class LocalTestRunner : TestRunner {
             }
 
             val loadedTestData by variables.creating(Variable::class)
+            val expectedOutput by variables.creating(Variable::class)
             val steps by variables.creating(Variable::class)
             tasks.run(RunPluginTask::class) {
                 functionName = "load_test_data"
                 functionDefinition = loadTestDataPlugin.contents
                 functionInputs = listOf(testDataStringVar)
-                functionOutputs = listOf(loadedTestData, steps)
+                functionOutputs = listOf(loadedTestData, expectedOutput, steps)
             }
 
             val inferenceOutput by variables.creating(Variable::class)
@@ -101,7 +102,7 @@ class LocalTestRunner : TestRunner {
             lastTask = tasks.run(RunPluginTask::class) {
                 functionName = "process_model_output"
                 functionDefinition = processTestOutputPlugin.contents
-                functionInputs = listOf(loadedTestData, inferenceOutput)
+                functionInputs = listOf(loadedTestData, expectedOutput, inferenceOutput)
                 functionOutputs = listOf()
             }
         }

@@ -176,7 +176,7 @@ class JobDb(private val database: Database) {
                 userEpochs?.let { row[userEpochsCol] = userEpochs }
                 userNewModel?.let { row[userModelCol] = userNewModel.serialize() }
                 userNewModelFilename?.let {
-                    row[userNewModelFilenameCol] = userNewModelFilename.serialize()
+                    row[userNewModelFilenameCol] = userNewModelFilename.path
                 }
                 generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
                 internalJobTrainingMethod?.let {
