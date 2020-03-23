@@ -2,7 +2,9 @@ package edu.wpi.axon.ui.controller
 
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.JobDbOp
+import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.ui.model.JobDto
+import edu.wpi.axon.ui.model.ModelSourceType
 import javafx.application.Platform
 import tornadofx.Controller
 import tornadofx.asObservable
@@ -25,6 +27,11 @@ class JobBoard : Controller() {
                         name = job.name
                         status = job.status
                         userOldModelPath = job.userOldModelPath
+                        oldModelType = when (job.userOldModelPath) {
+                            is ModelSource.FromExample -> ModelSourceType.EXAMPLE
+                            is ModelSource.FromFile -> ModelSourceType.FILE
+                            is ModelSource.FromJob -> ModelSourceType.JOB
+                        }
                         userDataset = job.userDataset
                         userOptimizer = job.userOptimizer
                         optimizerType = job.userOptimizer::class
@@ -33,6 +40,8 @@ class JobBoard : Controller() {
                         userMetrics = job.userMetrics.toObservable()
                         userEpochs = job.userEpochs
                         userNewModel = job.userNewModel
+                        userNewModelFilename = job.userNewModelFilename
+                        internalTrainingMethod = job.internalTrainingMethod
                         target = job.target
                         targetType = job.target::class
                         datasetPlugin = job.datasetPlugin

@@ -7,6 +7,7 @@ import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.testrunner.LocalTestRunner
 import edu.wpi.axon.testrunner.TestData
 import edu.wpi.axon.ui.ModelManager
+import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.view.contentMap
 import edu.wpi.axon.ui.view.jobresult.LazyResult
@@ -20,7 +21,7 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import javafx.collections.FXCollections
-import javafx.scene.control.Label
+import javafx.event.EventTarget
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.Priority
@@ -34,6 +35,7 @@ import tornadofx.bottom
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.chooseFile
+import tornadofx.clear
 import tornadofx.combobox
 import tornadofx.field
 import tornadofx.fieldset
@@ -87,7 +89,7 @@ class JobTestView : Fragment() {
     override val root = borderpane {
         centerProperty().bind(job.itemProperty.objectBinding(job.status) { jobDto ->
             if (jobDto == null) {
-                bottom { }
+                bottom { clear() }
                 testResults.clear()
                 label("No selection.")
             } else {
@@ -98,174 +100,14 @@ class JobTestView : Fragment() {
                         bottom {
                             buttonbar {
                                 button("Run Test").action {
-                                    model.commit {
-                                        val workingDir = getNextDirName(jobDto.id)
-
-                                        val resultsTask = runAsync {
-                                            val localNewModelPath =
-                                                when (jobDto.internalTrainingMethod) {
-                                                    is InternalJobTrainingMethod.EC2 ->
-                                                        modelManager.downloadModel(
-                                                            ModelSource.FromFile(
-                                                                FilePath.S3(jobDto.userNewModelFilename)
-                                                            )
-                                                        ).path
-
-                                                    InternalJobTrainingMethod.Local ->
-                                                        getLocalTrainingScriptRunnerWorkingDir(
-                                                            jobDto.id
-                                                        ).resolve(jobDto.userNewModelFilename)
-                                                            .toAbsolutePath()
-                                                            .toString()
-
-                                                    InternalJobTrainingMethod.Untrained ->
-                                                        error("The Job should have been trained by now.")
-                                                }
-
-                                            testRunner.runTest(
-                                                trainedModelPath = Paths.get(localNewModelPath),
-                                                testData = model.testData.value,
-                                                loadTestDataPlugin = model.loadTestDataPlugin.value,
-                                                processTestOutputPlugin = model.processTestOutputPlugin.value,
-                                                workingDir = workingDir
-                                            )
-                                        }
-
-                                        resultsTask.setOnSucceeded {
-                                            val results = resultsTask.get()
-                                            testResults[workingDir.fileName.toString()] = results
-                                        }
-                                    }
+                                    model.commit { runTest(jobDto) }
                                 }
                             }
                         }
 
                         vbox(20) {
-                            form {
-                                fieldset("Test Data") {
-                                    field("Type") {
-                                        combobox(model.testDataType) {
-                                            items = TestDataType.values().toList().toObservable()
-                                            valueProperty().addListener { _, _, newValue ->
-                                                if (newValue == TestDataType.FROM_TRAINING_DATA) {
-                                                    model.testData.value =
-                                                        TestData.FromDataset(jobDto.userDataset)
-                                                }
-                                            }
-                                            cellFormat {
-                                                text = it.name.split("_").joinToString(" ") {
-                                                    it.toLowerCase().capitalize()
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    field("Selection") {
-                                        contentMap(model.testDataType) {
-                                            item(TestDataType.FROM_TRAINING_DATA) {
-                                                label(jobDto.userDataset.displayName)
-                                            }
-
-                                            item(TestDataType.FROM_FILE) {
-                                                hbox(10) {
-                                                    button("Choose File") {
-                                                        action {
-                                                            val file = chooseFile(
-                                                                "Pick",
-                                                                arrayOf(
-                                                                    FileChooser.ExtensionFilter(
-                                                                        "Any",
-                                                                        "*.*"
-                                                                    )
-                                                                )
-                                                            )
-
-                                                            file.firstOrNull()?.let {
-                                                                model.testData.value =
-                                                                    TestData.FromFile(it.toPath())
-                                                            }
-                                                        }
-                                                    }
-
-                                                    label(
-                                                        model.testData,
-                                                        converter = object :
-                                                            StringConverter<TestData>() {
-                                                            override fun toString(p0: TestData?) =
-                                                                when (p0) {
-                                                                    is TestData.FromFile ->
-                                                                        p0.filePath.fileName.toString()
-                                                                    else -> ""
-                                                                }
-
-                                                            override fun fromString(p0: String?) =
-                                                                null
-                                                        })
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                separator()
-
-                                fieldset("Plugins") {
-                                    field("Load Test Data") {
-                                        combobox(model.loadTestDataPlugin) {
-                                            items =
-                                                loadTestDataPluginManager.listPlugins().toList()
-                                                    .toObservable()
-                                            cellFormat {
-                                                text = it.name.toLowerCase().capitalize()
-                                            }
-                                            validator { if (it == null) error("Must not be empty.") else null }
-                                        }
-                                    }
-
-                                    field("Process Test Output") {
-                                        combobox(model.processTestOutputPlugin) {
-                                            items = processTestOutputPluginManager.listPlugins()
-                                                .toList()
-                                                .toObservable()
-                                            cellFormat {
-                                                text = it.name.toLowerCase().capitalize()
-                                            }
-                                            validator { if (it == null) error("Must not be empty.") else null }
-                                        }
-                                    }
-                                }
-                            }
-
-                            hbox(10) {
-                                val root = TreeItem<Any>().apply {
-                                    isExpanded = true
-                                    children.bind(testResults) { workingDir, files ->
-                                        (TreeItem(workingDir) as TreeItem<Any>).apply {
-                                            isExpanded = true
-                                            children.addAll(files.map {
-                                                TreeItem(it) as TreeItem<Any>
-                                            })
-                                        }
-                                    }
-                                }
-
-                                val resultFragment = find<ResultFragment>().apply {
-                                    hgrow = Priority.ALWAYS
-                                }
-
-                                val treeView = TreeView(root).apply {
-                                    isShowRoot = false
-                                    resultFragment.data.bind(
-                                        selectionModel.selectedItemProperty().objectBinding {
-                                            (it?.value as? File)?.let {
-                                                LazyResult(it.name, lazy { it })
-                                            }
-                                        })
-                                }
-
-                                add(treeView)
-                                add(resultFragment)
-                            }
+                            createForm(jobDto)
+                            createResultView()
                         }
                     }
 
@@ -281,5 +123,169 @@ class JobTestView : Fragment() {
                 }
             }
         })
+    }
+
+    private fun EventTarget.createForm(job: JobDto) = form {
+        fieldset("Test Data") {
+            field("Type") {
+                combobox(model.testDataType) {
+                    items = TestDataType.values().toList().toObservable()
+                    valueProperty().addListener { _, _, newValue ->
+                        if (newValue == TestDataType.FROM_TRAINING_DATA) {
+                            model.testData.value =
+                                TestData.FromDataset(job.userDataset)
+                        }
+                    }
+                    cellFormat {
+                        text = it.name.split("_").joinToString(" ") {
+                            it.toLowerCase().capitalize()
+                        }
+                    }
+                }
+            }
+
+            field("Selection") {
+                contentMap(model.testDataType) {
+                    item(TestDataType.FROM_TRAINING_DATA) {
+                        label(job.userDataset.displayName)
+                    }
+
+                    item(TestDataType.FROM_FILE) {
+                        hbox(10) {
+                            button("Choose File") {
+                                action {
+                                    val file = chooseFile(
+                                        "Pick",
+                                        arrayOf(
+                                            FileChooser.ExtensionFilter(
+                                                "Any",
+                                                "*.*"
+                                            )
+                                        )
+                                    )
+
+                                    file.firstOrNull()?.let {
+                                        model.testData.value =
+                                            TestData.FromFile(it.toPath())
+                                    }
+                                }
+                            }
+
+                            label(
+                                model.testData,
+                                converter = object :
+                                    StringConverter<TestData>() {
+                                    override fun toString(p0: TestData?) =
+                                        when (p0) {
+                                            is TestData.FromFile ->
+                                                p0.filePath.fileName.toString()
+                                            else -> ""
+                                        }
+
+                                    override fun fromString(p0: String?) =
+                                        null
+                                })
+                        }
+                    }
+                }
+            }
+        }
+
+        separator()
+
+        fieldset("Plugins") {
+            field("Load Test Data") {
+                combobox(model.loadTestDataPlugin) {
+                    items =
+                        loadTestDataPluginManager.listPlugins().toList()
+                            .toObservable()
+                    cellFormat {
+                        text = it.name.toLowerCase().capitalize()
+                    }
+                    validator { if (it == null) error("Must not be empty.") else null }
+                }
+            }
+
+            field("Process Test Output") {
+                combobox(model.processTestOutputPlugin) {
+                    items = processTestOutputPluginManager.listPlugins()
+                        .toList()
+                        .toObservable()
+                    cellFormat {
+                        text = it.name.toLowerCase().capitalize()
+                    }
+                    validator { if (it == null) error("Must not be empty.") else null }
+                }
+            }
+        }
+    }
+
+    private fun EventTarget.createResultView() = hbox(10) {
+        val root = TreeItem<Any>().apply {
+            isExpanded = true
+            children.bind(testResults) { workingDir, files ->
+                (TreeItem(workingDir) as TreeItem<Any>).apply {
+                    isExpanded = true
+                    children.addAll(files.map {
+                        TreeItem(it) as TreeItem<Any>
+                    })
+                }
+            }
+        }
+
+        val resultFragment = find<ResultFragment>().apply {
+            hgrow = Priority.ALWAYS
+        }
+
+        val treeView = TreeView(root).apply {
+            isShowRoot = false
+            resultFragment.data.bind(
+                selectionModel.selectedItemProperty().objectBinding {
+                    (it?.value as? File)?.let {
+                        LazyResult(it.name, lazy { it })
+                    }
+                })
+        }
+
+        add(treeView)
+        add(resultFragment)
+    }
+
+    private fun runTest(job: JobDto) {
+        val workingDir = getNextDirName(job.id)
+
+        val resultsTask = runAsync {
+            val localNewModelPath = when (job.internalTrainingMethod) {
+                is InternalJobTrainingMethod.EC2 ->
+                    modelManager.downloadModel(
+                        ModelSource.FromFile(
+                            FilePath.S3(job.userNewModelFilename)
+                        )
+                    ).path
+
+                InternalJobTrainingMethod.Local ->
+                    getLocalTrainingScriptRunnerWorkingDir(
+                        job.id
+                    ).resolve(job.userNewModelFilename)
+                        .toAbsolutePath()
+                        .toString()
+
+                InternalJobTrainingMethod.Untrained ->
+                    error("The Job should have been trained by now.")
+            }
+
+            testRunner.runTest(
+                trainedModelPath = Paths.get(localNewModelPath),
+                testData = model.testData.value,
+                loadTestDataPlugin = model.loadTestDataPlugin.value,
+                processTestOutputPlugin = model.processTestOutputPlugin.value,
+                workingDir = workingDir
+            )
+        }
+
+        resultsTask.setOnSucceeded {
+            val results = resultsTask.get()
+            testResults[workingDir.fileName.toString()] = results
+        }
     }
 }
