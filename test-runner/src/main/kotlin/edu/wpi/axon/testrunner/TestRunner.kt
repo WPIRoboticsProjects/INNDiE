@@ -1,5 +1,6 @@
 package edu.wpi.axon.testrunner
 
+import arrow.core.Either
 import edu.wpi.axon.plugin.Plugin
 import java.io.File
 import java.nio.file.Path

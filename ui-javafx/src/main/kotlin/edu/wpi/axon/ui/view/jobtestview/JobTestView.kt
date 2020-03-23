@@ -17,17 +17,21 @@ import edu.wpi.axon.util.getLocalTestRunnerWorkingDir
 import edu.wpi.axon.util.getLocalTrainingScriptRunnerWorkingDir
 import edu.wpi.axon.util.loadTestDataPluginManagerName
 import edu.wpi.axon.util.processTestOutputPluginManagerName
+import javafx.beans.property.SimpleBooleanProperty
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import javafx.collections.FXCollections
 import javafx.event.EventTarget
+import javafx.scene.control.SelectionMode
+import javafx.scene.control.TreeCell
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
 import tornadofx.Fragment
+import tornadofx.UIComponent
 import tornadofx.action
 import tornadofx.bind
 import tornadofx.borderpane
@@ -35,8 +39,10 @@ import tornadofx.bottom
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.chooseFile
+import tornadofx.cleanBind
 import tornadofx.clear
 import tornadofx.combobox
+import tornadofx.fail
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.form
@@ -44,10 +50,19 @@ import tornadofx.hbox
 import tornadofx.hgrow
 import tornadofx.label
 import tornadofx.objectBinding
+import tornadofx.progressindicator
+import tornadofx.required
+import tornadofx.runAsyncWithOverlay
 import tornadofx.separator
+import tornadofx.success
+import tornadofx.textarea
 import tornadofx.toObservable
 import tornadofx.validator
 import tornadofx.vbox
+
+data class TestResultFile(val file: File) {
+    override fun toString(): String = file.name
+}
 
 /**
  * Computes the next directory name inside the local test runner's working directory.
@@ -130,10 +145,10 @@ class JobTestView : Fragment() {
             field("Type") {
                 combobox(model.testDataType) {
                     items = TestDataType.values().toList().toObservable()
+                    required()
                     valueProperty().addListener { _, _, newValue ->
                         if (newValue == TestDataType.FROM_TRAINING_DATA) {
-                            model.testData.value =
-                                TestData.FromDataset(job.userDataset)
+                            model.testData.value = TestData.FromDataset(job.userDataset)
                         }
                     }
                     cellFormat {
@@ -152,39 +167,29 @@ class JobTestView : Fragment() {
 
                     item(TestDataType.FROM_FILE) {
                         hbox(10) {
-                            button("Choose File") {
-                                action {
-                                    val file = chooseFile(
-                                        "Pick",
-                                        arrayOf(
-                                            FileChooser.ExtensionFilter(
-                                                "Any",
-                                                "*.*"
-                                            )
-                                        )
-                                    )
+                            button("Choose File").action {
+                                val file = chooseFile(
+                                    "Pick",
+                                    arrayOf(FileChooser.ExtensionFilter("Any", "*.*"))
+                                )
 
-                                    file.firstOrNull()?.let {
-                                        model.testData.value =
-                                            TestData.FromFile(it.toPath())
-                                    }
+                                file.firstOrNull()?.let {
+                                    model.testData.value = TestData.FromFile(it.toPath())
                                 }
                             }
 
                             label(
                                 model.testData,
-                                converter = object :
-                                    StringConverter<TestData>() {
+                                converter = object : StringConverter<TestData>() {
                                     override fun toString(p0: TestData?) =
                                         when (p0) {
-                                            is TestData.FromFile ->
-                                                p0.filePath.fileName.toString()
+                                            is TestData.FromFile -> p0.filePath.fileName.toString()
                                             else -> ""
                                         }
 
-                                    override fun fromString(p0: String?) =
-                                        null
-                                })
+                                    override fun fromString(p0: String?) = null
+                                }
+                            )
                         }
                     }
                 }
@@ -196,38 +201,35 @@ class JobTestView : Fragment() {
         fieldset("Plugins") {
             field("Load Test Data") {
                 combobox(model.loadTestDataPlugin) {
-                    items =
-                        loadTestDataPluginManager.listPlugins().toList()
-                            .toObservable()
+                    items = loadTestDataPluginManager.listPlugins().toList().toObservable()
+                    required()
                     cellFormat {
                         text = it.name.toLowerCase().capitalize()
                     }
-                    validator { if (it == null) error("Must not be empty.") else null }
                 }
             }
 
             field("Process Test Output") {
                 combobox(model.processTestOutputPlugin) {
-                    items = processTestOutputPluginManager.listPlugins()
-                        .toList()
-                        .toObservable()
+                    items = processTestOutputPluginManager.listPlugins().toList().toObservable()
+                    required()
                     cellFormat {
                         text = it.name.toLowerCase().capitalize()
                     }
-                    validator { if (it == null) error("Must not be empty.") else null }
                 }
             }
         }
     }
 
     private fun EventTarget.createResultView() = hbox(10) {
+        @Suppress("UNCHECKED_CAST")
         val root = TreeItem<Any>().apply {
             isExpanded = true
             children.bind(testResults) { workingDir, files ->
                 (TreeItem(workingDir) as TreeItem<Any>).apply {
                     isExpanded = true
                     children.addAll(files.map {
-                        TreeItem(it) as TreeItem<Any>
+                        TreeItem(TestResultFile(it)) as TreeItem<Any>
                     })
                 }
             }
@@ -239,10 +241,12 @@ class JobTestView : Fragment() {
 
         val treeView = TreeView(root).apply {
             isShowRoot = false
+            selectionModel.selectionMode = SelectionMode.SINGLE
+            isEditable = false
             resultFragment.data.bind(
                 selectionModel.selectedItemProperty().objectBinding {
-                    (it?.value as? File)?.let {
-                        LazyResult(it.name, lazy { it })
+                    (it?.value as? TestResultFile)?.let {
+                        LazyResult(it.file.name, lazy { it.file })
                     }
                 })
         }
@@ -251,10 +255,10 @@ class JobTestView : Fragment() {
         add(resultFragment)
     }
 
-    private fun runTest(job: JobDto) {
+    private fun UIComponent.runTest(job: JobDto) {
         val workingDir = getNextDirName(job.id)
 
-        val resultsTask = runAsync {
+        runAsyncWithOverlay {
             val localNewModelPath = when (job.internalTrainingMethod) {
                 is InternalJobTrainingMethod.EC2 ->
                     modelManager.downloadModel(
@@ -281,11 +285,17 @@ class JobTestView : Fragment() {
                 processTestOutputPlugin = model.processTestOutputPlugin.value,
                 workingDir = workingDir
             )
-        }
-
-        resultsTask.setOnSucceeded {
-            val results = resultsTask.get()
-            testResults[workingDir.fileName.toString()] = results
+        } success {
+            testResults[workingDir.fileName.toString()] = it
+        } fail {
+            dialog("Test Failed to Run") {
+                field("Error") {
+                    textarea(it.localizedMessage) {
+                        isEditable = false
+                        isWrapText = true
+                    }
+                }
+            }
         }
     }
 }

@@ -172,8 +172,7 @@ class LocalTestRunner : TestRunner {
                 throw it
             },
             { (exitCode, stdOut, stdErr) ->
-                LOGGER.info {
-                    """
+                val message = """
                     |Finished running test script.
                     |Exit code: $exitCode
                     |Std out:
@@ -182,14 +181,22 @@ class LocalTestRunner : TestRunner {
                     |Std err:
                     |$stdErr
                     |
-                    """.trimMargin()
+                """.trimMargin()
+
+                LOGGER.info { message }
+
+                check(exitCode == 0) {
+                    workingDir.resolve("output")
+                        .resolve("error_log.txt")
+                        .toFile()
+                        .writeText(message)
+
+                    message
                 }
 
                 Tuple3(exitCode, stdOut, stdErr)
             }
         )
-
-        check(exitCode == 0)
 
         return workingDir.resolve("output")
             .toFile()
