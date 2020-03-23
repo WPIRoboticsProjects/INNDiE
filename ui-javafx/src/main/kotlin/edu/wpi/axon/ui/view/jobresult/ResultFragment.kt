@@ -1,20 +1,27 @@
 package edu.wpi.axon.ui.view.jobresult
 
 import javafx.beans.property.SimpleObjectProperty
+import javafx.scene.control.ButtonBar
+import javafx.scene.control.ButtonType
 import tornadofx.Fragment
 import tornadofx.action
 import tornadofx.borderpane
 import tornadofx.bottom
 import tornadofx.button
 import tornadofx.buttonbar
+import tornadofx.information
 import tornadofx.label
 import tornadofx.objectBinding
+import tornadofx.putString
 import tornadofx.textarea
+import java.awt.Desktop
 
 /**
  * Visualizes a training or testing result.
  */
 class ResultFragment : Fragment() {
+
+    private val copyPathButtonType = ButtonType("Copy Path", ButtonBar.ButtonData.APPLY)
 
     val data = SimpleObjectProperty<LazyResult>()
 
@@ -26,9 +33,21 @@ class ResultFragment : Fragment() {
             } else {
                 bottom {
                     buttonbar {
-                        button("Show File") {
+                        button("Show File Location") {
                             action {
-                                TODO("Show the file in the native file browser.")
+                                if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE_FILE_DIR)) {
+                                    Desktop.getDesktop().browseFileDirectory(it.file.value)
+                                } else {
+                                    information(header = it.filename,
+                                            content = it.file.value.path,
+                                            buttons = *arrayOf(copyPathButtonType, ButtonType.OK),
+                                            title = "Result File Path",
+                                            actionFn = { button ->
+                                                when(button) {
+                                                    copyPathButtonType -> clipboard.putString(it.file.value.path)
+                                                }
+                                            })
+                                }
                             }
                         }
                     }
