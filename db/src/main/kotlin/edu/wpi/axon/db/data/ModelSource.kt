@@ -44,6 +44,7 @@ sealed class ModelSource {
     ).stringify(serializer(), this)
 
     companion object {
+
         fun deserialize(data: String) = Json(
             JsonConfiguration.Stable
         ).parse(serializer(), data)

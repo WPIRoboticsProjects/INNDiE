@@ -60,8 +60,11 @@ data class JobDto(val job: Job) {
     val userNewModelProperty = SimpleObjectProperty(job.userNewModel)
     var userNewModel by userNewModelProperty
 
-    val userNewModelPathProperty = SimpleObjectProperty(job.userNewModelPath)
-    var userNewModelPath by userNewModelPathProperty
+    val userNewModelFilenameProperty = SimpleObjectProperty(job.userNewModelFilename)
+    var userNewModelFilename by userNewModelFilenameProperty
+
+    val internalTrainingMethodProperty = SimpleObjectProperty(job.internalTrainingMethod)
+    var internalTrainingMethod by internalTrainingMethodProperty
 
     val targetProperty = SimpleObjectProperty<ModelDeploymentTarget>(job.target)
     var target by targetProperty
@@ -91,7 +94,8 @@ class JobModel : ItemViewModel<JobDto>() {
     val userMetrics = bind(JobDto::userMetricsProperty)
     val userEpochs = bind(JobDto::userEpochsProperty)
     val userNewModel = bind(JobDto::userNewModelProperty)
-    val userNewModelPath = bind(JobDto::userNewModelPathProperty)
+    val userNewModelFilename = bind(JobDto::userNewModelFilenameProperty)
+    val internalTrainingMethod = bind(JobDto::internalTrainingMethodProperty)
     val target = bind(JobDto::targetProperty)
     val targetType = bind(JobDto::targetTypeProperty)
     val datasetPlugin = bind(JobDto::datasetPluginProperty)
@@ -110,7 +114,7 @@ class JobModel : ItemViewModel<JobDto>() {
             userMetrics = userMetrics.value,
             userEpochs = userEpochs.value.toInt(),
             userNewModel = userNewModel.value,
-            userNewModelPath = FilePath.Local(getOutputModelName(userOldModelPath.value.filename)),
+            userNewModelFilename = FilePath.Local(getOutputModelName(userOldModelPath.value.filename)),
             target = target.value,
             datasetPlugin = datasetPlugin.value
         )
