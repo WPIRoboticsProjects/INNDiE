@@ -23,5 +23,5 @@ interface TestRunner {
         loadTestDataPlugin: Plugin,
         processTestOutputPlugin: Plugin,
         workingDir: Path
-    ): List<File>
+    ): Either<List<File>, List<File>>
 }

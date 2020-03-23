@@ -1,8 +1,10 @@
 package edu.wpi.axon.testrunner
 
-import arrow.core.Tuple3
+import arrow.core.Either
 import arrow.core.Valid
+import arrow.core.left
 import arrow.core.mapOf
+import arrow.core.right
 import edu.wpi.axon.dsl.ScriptGenerator
 import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.creating
@@ -35,7 +37,7 @@ class LocalTestRunner : TestRunner {
         loadTestDataPlugin: Plugin,
         processTestOutputPlugin: Plugin,
         workingDir: Path
-    ): List<File> {
+    ): Either<List<File>, List<File>> {
         require(trainedModelPath.toString().isNotBlank())
         require(workingDir.toString().isNotBlank())
 
@@ -144,7 +146,7 @@ class LocalTestRunner : TestRunner {
             writeText(patchedScript)
         }
 
-        val (exitCode, _, _) = runCommand(
+        return runCommand(
             listOf(
                 "docker",
                 "run",
@@ -185,24 +187,23 @@ class LocalTestRunner : TestRunner {
 
                 LOGGER.info { message }
 
-                check(exitCode == 0) {
-                    workingDir.resolve("output")
+                val outputFiles = workingDir.resolve("output")
+                    .toFile()
+                    .walkTopDown()
+                    .filter { it.isFile }
+                    .toList()
+
+                if (exitCode != 0) {
+                    val errorLogFile = workingDir.resolve("output")
                         .resolve("error_log.txt")
                         .toFile()
-                        .writeText(message)
-
-                    message
+                    errorLogFile.writeText(message)
+                    listOf(errorLogFile).left()
+                } else {
+                    outputFiles.right()
                 }
-
-                Tuple3(exitCode, stdOut, stdErr)
             }
         )
-
-        return workingDir.resolve("output")
-            .toFile()
-            .walkTopDown()
-            .filter { it.isFile }
-            .toList()
     }
 
     companion object {

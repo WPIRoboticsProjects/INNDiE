@@ -3,6 +3,7 @@ package edu.wpi.axon.testrunner
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.testutil.KoinTestFixture
+import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.matchers.file.shouldContainFiles
 import java.io.File
@@ -58,9 +59,11 @@ internal class LocalTestRunnerIntegTest : KoinTestFixture() {
         val outputDir = tempDir.toPath().toRealPath().resolve("output")
         println(outputDir.toFile().walkTopDown().joinToString("\n"))
         outputDir.shouldContainFiles("file1.txt", "file2.txt")
-        testResults.shouldContainExactlyInAnyOrder(
-            outputDir.resolve("file1.txt").toFile(),
-            outputDir.resolve("file2.txt").toFile()
-        )
+        testResults.shouldBeRight {
+            it.shouldContainExactlyInAnyOrder(
+                outputDir.resolve("file1.txt").toFile(),
+                outputDir.resolve("file2.txt").toFile()
+            )
+        }
     }
 }

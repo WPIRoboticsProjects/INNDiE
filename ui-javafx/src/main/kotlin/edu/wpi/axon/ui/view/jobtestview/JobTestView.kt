@@ -1,5 +1,6 @@
 package edu.wpi.axon.ui.view.jobtestview
 
+import arrow.core.Either
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
@@ -17,14 +18,13 @@ import edu.wpi.axon.util.getLocalTestRunnerWorkingDir
 import edu.wpi.axon.util.getLocalTrainingScriptRunnerWorkingDir
 import edu.wpi.axon.util.loadTestDataPluginManagerName
 import edu.wpi.axon.util.processTestOutputPluginManagerName
-import javafx.beans.property.SimpleBooleanProperty
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import javafx.collections.FXCollections
 import javafx.event.EventTarget
+import javafx.geometry.Pos
 import javafx.scene.control.SelectionMode
-import javafx.scene.control.TreeCell
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.Priority
@@ -35,29 +35,22 @@ import tornadofx.UIComponent
 import tornadofx.action
 import tornadofx.bind
 import tornadofx.borderpane
-import tornadofx.bottom
 import tornadofx.button
-import tornadofx.buttonbar
 import tornadofx.chooseFile
-import tornadofx.cleanBind
-import tornadofx.clear
 import tornadofx.combobox
-import tornadofx.fail
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.form
 import tornadofx.hbox
 import tornadofx.hgrow
+import tornadofx.insets
 import tornadofx.label
 import tornadofx.objectBinding
-import tornadofx.progressindicator
 import tornadofx.required
 import tornadofx.runAsyncWithOverlay
 import tornadofx.separator
 import tornadofx.success
-import tornadofx.textarea
 import tornadofx.toObservable
-import tornadofx.validator
 import tornadofx.vbox
 
 data class TestResultFile(val file: File) {
@@ -104,7 +97,6 @@ class JobTestView : Fragment() {
     override val root = borderpane {
         centerProperty().bind(job.itemProperty.objectBinding(job.status) { jobDto ->
             if (jobDto == null) {
-                bottom { clear() }
                 testResults.clear()
                 label("No selection.")
             } else {
@@ -112,16 +104,9 @@ class JobTestView : Fragment() {
                 testResults.putAll(getExistingTestResults(jobDto.id))
                 when (jobDto.status) {
                     TrainingScriptProgress.Completed -> {
-                        bottom {
-                            buttonbar {
-                                button("Run Test").action {
-                                    model.commit { runTest(jobDto) }
-                                }
-                            }
-                        }
-
                         vbox(20) {
-                            createForm(jobDto)
+                            padding = insets(5)
+                            createControls(jobDto)
                             createResultView()
                         }
                     }
@@ -140,83 +125,94 @@ class JobTestView : Fragment() {
         })
     }
 
-    private fun EventTarget.createForm(job: JobDto) = form {
-        fieldset("Test Data") {
-            field("Type") {
-                combobox(model.testDataType) {
-                    items = TestDataType.values().toList().toObservable()
-                    required()
-                    valueProperty().addListener { _, _, newValue ->
-                        if (newValue == TestDataType.FROM_TRAINING_DATA) {
-                            model.testData.value = TestData.FromDataset(job.userDataset)
+    private fun EventTarget.createControls(job: JobDto) = vbox(10) {
+        alignment = Pos.TOP_LEFT
+
+        form {
+            fieldset("Test Data") {
+                field("Type") {
+                    combobox(model.testDataType) {
+                        items = TestDataType.values().toList().toObservable()
+                        required()
+                        valueProperty().addListener { _, _, newValue ->
+                            if (newValue == TestDataType.FROM_TRAINING_DATA) {
+                                model.testData.value = TestData.FromDataset(job.userDataset)
+                            }
+                        }
+                        cellFormat {
+                            text = it.name.split("_").joinToString(" ") {
+                                it.toLowerCase().capitalize()
+                            }
                         }
                     }
-                    cellFormat {
-                        text = it.name.split("_").joinToString(" ") {
-                            it.toLowerCase().capitalize()
+                }
+
+                field("Selection") {
+                    contentMap(model.testDataType) {
+                        item(TestDataType.FROM_TRAINING_DATA) {
+                            label(job.userDataset.displayName)
+                        }
+
+                        item(TestDataType.FROM_FILE) {
+                            hbox(10) {
+                                button("Choose File").action {
+                                    val file = chooseFile(
+                                        "Pick",
+                                        arrayOf(FileChooser.ExtensionFilter("Any", "*.*"))
+                                    )
+
+                                    file.firstOrNull()?.let {
+                                        model.testData.value = TestData.FromFile(it.toPath())
+                                    }
+                                }
+
+                                label(
+                                    model.testData,
+                                    converter = object : StringConverter<TestData>() {
+                                        override fun toString(p0: TestData?) =
+                                            when (p0) {
+                                                is TestData.FromFile -> p0.filePath.fileName.toString()
+                                                else -> ""
+                                            }
+
+                                        override fun fromString(p0: String?) = null
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            field("Selection") {
-                contentMap(model.testDataType) {
-                    item(TestDataType.FROM_TRAINING_DATA) {
-                        label(job.userDataset.displayName)
+            separator()
+
+            fieldset("Plugins") {
+                field("Load Test Data") {
+                    combobox(model.loadTestDataPlugin) {
+                        items = loadTestDataPluginManager.listPlugins().toList().toObservable()
+                        required()
+                        cellFormat {
+                            text = it.name.toLowerCase().capitalize()
+                        }
                     }
+                }
 
-                    item(TestDataType.FROM_FILE) {
-                        hbox(10) {
-                            button("Choose File").action {
-                                val file = chooseFile(
-                                    "Pick",
-                                    arrayOf(FileChooser.ExtensionFilter("Any", "*.*"))
-                                )
-
-                                file.firstOrNull()?.let {
-                                    model.testData.value = TestData.FromFile(it.toPath())
-                                }
-                            }
-
-                            label(
-                                model.testData,
-                                converter = object : StringConverter<TestData>() {
-                                    override fun toString(p0: TestData?) =
-                                        when (p0) {
-                                            is TestData.FromFile -> p0.filePath.fileName.toString()
-                                            else -> ""
-                                        }
-
-                                    override fun fromString(p0: String?) = null
-                                }
-                            )
+                field("Process Test Output") {
+                    combobox(model.processTestOutputPlugin) {
+                        items = processTestOutputPluginManager.listPlugins().toList().toObservable()
+                        required()
+                        cellFormat {
+                            text = it.name.toLowerCase().capitalize()
                         }
                     }
                 }
             }
         }
 
-        separator()
-
-        fieldset("Plugins") {
-            field("Load Test Data") {
-                combobox(model.loadTestDataPlugin) {
-                    items = loadTestDataPluginManager.listPlugins().toList().toObservable()
-                    required()
-                    cellFormat {
-                        text = it.name.toLowerCase().capitalize()
-                    }
-                }
-            }
-
-            field("Process Test Output") {
-                combobox(model.processTestOutputPlugin) {
-                    items = processTestOutputPluginManager.listPlugins().toList().toObservable()
-                    required()
-                    cellFormat {
-                        text = it.name.toLowerCase().capitalize()
-                    }
-                }
+        hbox(10) {
+            padding = insets(left = 10)
+            button("Run Test").action {
+                model.commit { runTest(job) }
             }
         }
     }
@@ -286,13 +282,13 @@ class JobTestView : Fragment() {
                 workingDir = workingDir
             )
         } success {
-            testResults[workingDir.fileName.toString()] = it
-        } fail {
-            dialog("Test Failed to Run") {
-                field("Error") {
-                    textarea(it.localizedMessage) {
-                        isEditable = false
-                        isWrapText = true
+            val files = it.fold({ it }, { it })
+            testResults[workingDir.fileName.toString()] = files
+
+            if (it is Either.Left) {
+                dialog("Test Failed to Run") {
+                    field("Error") {
+                        label("Check the error_log.txt file for more information.")
                     }
                 }
             }
