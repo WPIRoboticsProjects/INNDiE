@@ -1,5 +1,6 @@
 package edu.wpi.axon.testrunner
 
+import arrow.core.Either
 import edu.wpi.axon.plugin.Plugin
 import java.io.File
 import java.nio.file.Path
@@ -22,5 +23,5 @@ interface TestRunner {
         loadTestDataPlugin: Plugin,
         processTestOutputPlugin: Plugin,
         workingDir: Path
-    ): List<File>
+    ): Either<List<File>, List<File>>
 }
