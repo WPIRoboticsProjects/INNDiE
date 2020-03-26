@@ -2,6 +2,7 @@ package edu.wpi.axon.ui.view.jobresult
 
 import java.awt.Desktop
 import javafx.beans.property.SimpleObjectProperty
+import javafx.scene.chart.NumberAxis
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.ButtonType
 import javafx.scene.layout.Priority
@@ -13,6 +14,8 @@ import tornadofx.buttonbar
 import tornadofx.hgrow
 import tornadofx.information
 import tornadofx.label
+import tornadofx.linechart
+import tornadofx.multiseries
 import tornadofx.objectBinding
 import tornadofx.putString
 import tornadofx.textarea
@@ -36,10 +39,30 @@ class ResultFragment : Fragment() {
                 label("No data.")
             } else {
                 when (val extension = it.filename.substringAfterLast('.', "")) {
-                    "txt", "log", "py", "csv" -> textarea {
+                    "txt", "log", "py" -> textarea {
                         text = it.file.value.readText()
                         isEditable = false
                         isWrapText = true
+                    }
+
+                    "csv" -> linechart(
+                        it.filename.substringBeforeLast('.'),
+                        x = NumberAxis(),
+                        y = NumberAxis()
+                    ) {
+                        val lines = it.file.value.readLines()
+                        val titleLine = lines.first()
+                        val dataLines = lines.drop(1).map { it.split(',') }
+                        val columnTitles = titleLine.split(',')
+
+                        multiseries(*columnTitles.drop(1).toTypedArray()) {
+                            dataLines.forEach {
+                                data(
+                                    it.first().toDouble(),
+                                    *it.drop(1).map { it.toDouble() }.toTypedArray()
+                                )
+                            }
+                        }
                     }
 
                     else -> label("Cannot visualize data format: $extension")
@@ -58,14 +81,14 @@ class ResultFragment : Fragment() {
                                 Desktop.getDesktop().browseFileDirectory(it.file.value)
                             } else {
                                 information(header = it.filename,
-                                        content = it.file.value.path,
-                                        buttons = *arrayOf(copyPathButtonType, ButtonType.OK),
-                                        title = "Result File Path",
-                                        actionFn = { button ->
-                                            when (button) {
-                                                copyPathButtonType -> clipboard.putString(it.file.value.path)
-                                            }
-                                        })
+                                    content = it.file.value.path,
+                                    buttons = *arrayOf(copyPathButtonType, ButtonType.OK),
+                                    title = "Result File Path",
+                                    actionFn = { button ->
+                                        when (button) {
+                                            copyPathButtonType -> clipboard.putString(it.file.value.path)
+                                        }
+                                    })
                             }
                         }
                     }
