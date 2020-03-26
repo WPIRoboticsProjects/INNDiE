@@ -12,6 +12,7 @@ import tornadofx.borderpane
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.hgrow
+import tornadofx.imageview
 import tornadofx.information
 import tornadofx.label
 import tornadofx.linechart
@@ -63,6 +64,14 @@ class ResultFragment : Fragment() {
                                 )
                             }
                         }
+                    }
+
+                    "bmp", "gif", "jpg", "jpeg", "png" -> imageview(
+                        it.file.value.toPath().toUri().toString()
+                    ) {
+                        isPreserveRatio = true
+                        isSmooth = true
+                        isCache = true
                     }
 
                     else -> label("Cannot visualize data format: $extension")
