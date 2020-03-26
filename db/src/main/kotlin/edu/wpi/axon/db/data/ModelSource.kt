@@ -30,15 +30,6 @@ sealed class ModelSource {
         override val filename: String = filePath.filename
     }
 
-    /**
-     * From the trained output of a Job.
-     */
-    @Serializable
-    data class FromJob(val jobId: Int) : ModelSource() {
-        override val filename: String
-            get() = TODO("Not yet implemented")
-    }
-
     fun serialize(): String = Json(
         JsonConfiguration.Stable
     ).stringify(serializer(), this)

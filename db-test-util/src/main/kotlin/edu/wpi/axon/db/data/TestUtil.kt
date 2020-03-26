@@ -90,7 +90,6 @@ fun Random.nextModelSource(): ModelSource =
     when (nextInt(ModelSource::class.sealedSubclasses.count())) {
         0 -> ModelSource.FromExample(nextExampleModel())
         1 -> ModelSource.FromFile(nextFilePath())
-        2 -> ModelSource.FromJob(nextInt(1, Int.MAX_VALUE))
         else -> error("Missing a ModelSource case.")
     }
 

@@ -30,7 +30,6 @@ class JobBoard : Controller() {
                         oldModelType = when (job.userOldModelPath) {
                             is ModelSource.FromExample -> ModelSourceType.EXAMPLE
                             is ModelSource.FromFile -> ModelSourceType.FILE
-                            is ModelSource.FromJob -> ModelSourceType.JOB
                         }
                         userDataset = job.userDataset
                         userOptimizer = job.userOptimizer

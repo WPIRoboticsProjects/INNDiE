@@ -37,9 +37,6 @@ class ModelPicker : ItemFragment<ModelSource>() {
                 ModelSourceType.FILE -> if (job.userOldModelPath
                         .value !is ModelSource.FromFile
                 ) null else job.userOldModelPath.value
-                ModelSourceType.JOB -> if (job.userOldModelPath
-                        .value !is ModelSource.FromJob
-                ) null else job.userOldModelPath.value
                 null -> null
             }
 
@@ -115,12 +112,6 @@ class ModelPicker : ItemFragment<ModelSource>() {
                                 }
                             }
                         }
-                    }
-                }
-
-                item(ModelSourceType.JOB) {
-                    vbox {
-                        label("Job")
                     }
                 }
             }

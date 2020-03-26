@@ -35,8 +35,6 @@ class ModelManager : KoinComponent {
 
                 is FilePath.Local -> modelSource.filePath as FilePath.Local
             }
-
-            is ModelSource.FromJob -> TODO()
         }
     }
 
@@ -55,8 +53,6 @@ class ModelManager : KoinComponent {
                     FilePath.S3(modelSource.filePath.filename)
                 }
             }
-
-            is ModelSource.FromJob -> TODO()
         }
     }
 

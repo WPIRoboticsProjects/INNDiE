@@ -31,7 +31,6 @@ data class JobDto(val job: Job) {
         when (job.userOldModelPath) {
             is ModelSource.FromExample -> ModelSourceType.EXAMPLE
             is ModelSource.FromFile -> ModelSourceType.FILE
-            is ModelSource.FromJob -> ModelSourceType.JOB
         }
     )
     var oldModelType by oldModelTypeProperty

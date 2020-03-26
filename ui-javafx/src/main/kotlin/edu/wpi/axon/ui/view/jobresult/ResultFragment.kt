@@ -1,5 +1,6 @@
 package edu.wpi.axon.ui.view.jobresult
 
+import java.awt.Desktop
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.ButtonType
@@ -9,13 +10,12 @@ import tornadofx.action
 import tornadofx.borderpane
 import tornadofx.button
 import tornadofx.buttonbar
-import tornadofx.information
 import tornadofx.hgrow
+import tornadofx.information
 import tornadofx.label
 import tornadofx.objectBinding
 import tornadofx.putString
 import tornadofx.textarea
-import java.awt.Desktop
 import tornadofx.vgrow
 
 /**
@@ -62,7 +62,7 @@ class ResultFragment : Fragment() {
                                         buttons = *arrayOf(copyPathButtonType, ButtonType.OK),
                                         title = "Result File Path",
                                         actionFn = { button ->
-                                            when(button) {
+                                            when (button) {
                                                 copyPathButtonType -> clipboard.putString(it.file.value.path)
                                             }
                                         })
