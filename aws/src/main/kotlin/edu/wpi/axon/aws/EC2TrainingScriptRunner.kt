@@ -81,7 +81,7 @@ class EC2TrainingScriptRunner(
             |apt-cache policy docker-ce
             |apt install -y docker-ce
             |systemctl status docker
-            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.16/axon-0.1.16-py2.py3-none-any.whl
+            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.17/axon-0.1.17-py2.py3-none-any.whl
             |axon create-heartbeat ${config.id}
             |axon update-training-progress ${config.id} "initializing"
             |axon download-model "${config.oldModelName.path}"
