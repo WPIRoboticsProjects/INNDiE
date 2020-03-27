@@ -16,6 +16,7 @@ import edu.wpi.axon.training.ModelDeploymentTarget
  * @param userEpochs The number of epochs.
  * @param userNewModel The new model configuration (the old model after it was configured by the
  * user).
+ * @param userNewModelFilename The filename of the new model (after training).
  * @param generateDebugComments Whether to put debug comments in the output.
  * @param internalTrainingMethod Do not set this directly, this should always start as
  * [InternalJobTrainingMethod.Untrained]. If you want to control where the Job is trained, set the
@@ -35,6 +36,7 @@ data class Job(
     val userMetrics: Set<String>,
     val userEpochs: Int,
     val userNewModel: Model,
+    val userNewModelFilename: String,
     val generateDebugComments: Boolean,
     val internalTrainingMethod: InternalJobTrainingMethod,
     val target: ModelDeploymentTarget,

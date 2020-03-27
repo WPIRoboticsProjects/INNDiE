@@ -15,9 +15,11 @@ import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.divideByTwoFiveFivePlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypeForMobilenetPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
+import edu.wpi.axon.plugin.LoadTestDataPlugins.loadExampleDatasetPlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
+import edu.wpi.axon.plugin.ProcessTestOutputPlugins.serializeModelOutputPlugin
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.JobRunner
 import edu.wpi.axon.ui.ModelManager
@@ -109,7 +111,9 @@ fun defaultFrontendModule() = module {
 
     single(named(loadTestDataPluginManagerName)) {
         bindPluginManager(
-            setOf(),
+            setOf(
+                loadExampleDatasetPlugin
+            ),
             "axon-load-test-data-plugins",
             "load_test_data_plugin_cache.json"
         )
@@ -117,7 +121,9 @@ fun defaultFrontendModule() = module {
 
     single(named(processTestOutputPluginManagerName)) {
         bindPluginManager(
-            setOf(),
+            setOf(
+                serializeModelOutputPlugin
+            ),
             "axon-process-test-output-plugins",
             "process_test_output_plugin_cache.json"
         )

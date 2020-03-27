@@ -11,6 +11,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.axon.util.FilePath
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
@@ -36,6 +37,7 @@ internal object Jobs : IntIdTable() {
     val userMetricsCol = varchar("userMetrics", 255)
     val userEpochsCol = integer("userEpochs")
     val userModelCol = text("userModel")
+    val userNewModelFilenameCol = text("userNewModelFilename")
     val generateDebugCommentsCol = bool("generateDebugComments")
     val internalTrainingMethodCol = varchar("internalTrainingMethod", 255)
     val targetCol = varchar("target", 255)
@@ -52,6 +54,7 @@ internal object Jobs : IntIdTable() {
         userEpochs = row[userEpochsCol],
         generateDebugComments = row[generateDebugCommentsCol],
         userNewModel = Model.deserialize(row[userModelCol]),
+        userNewModelFilename = row[userNewModelFilenameCol],
         internalTrainingMethod = InternalJobTrainingMethod.deserialize(
             row[internalTrainingMethodCol]
         ),
@@ -96,6 +99,7 @@ class JobDb(private val database: Database) {
         userMetrics: Set<String>,
         userEpochs: Int,
         userNewModel: Model,
+        userNewModelFilename: String,
         generateDebugComments: Boolean,
         internalTrainingMethod: InternalJobTrainingMethod,
         target: ModelDeploymentTarget,
@@ -112,6 +116,7 @@ class JobDb(private val database: Database) {
                 row[userMetricsCol] = klaxon.toJsonString(userMetrics)
                 row[userEpochsCol] = userEpochs
                 row[userModelCol] = userNewModel.serialize()
+                row[userNewModelFilenameCol] = userNewModelFilename
                 row[generateDebugCommentsCol] = generateDebugComments
                 row[internalTrainingMethodCol] = internalTrainingMethod.serialize()
                 row[targetCol] = target.serialize()
@@ -129,6 +134,7 @@ class JobDb(private val database: Database) {
             userMetrics = userMetrics,
             userEpochs = userEpochs,
             userNewModel = userNewModel,
+            userNewModelFilename = userNewModelFilename,
             generateDebugComments = generateDebugComments,
             internalTrainingMethod = internalTrainingMethod,
             target = target,
@@ -141,23 +147,6 @@ class JobDb(private val database: Database) {
         return job
     }
 
-    fun update(job: Job) = update(
-        job.id,
-        job.name,
-        job.status,
-        job.userOldModelPath,
-        job.userDataset,
-        job.userOptimizer,
-        job.userLoss,
-        job.userMetrics,
-        job.userEpochs,
-        job.userNewModel,
-        job.generateDebugComments,
-        job.internalTrainingMethod,
-        job.target,
-        job.datasetPlugin
-    )
-
     fun update(
         id: Int,
         name: String? = null,
@@ -169,6 +158,7 @@ class JobDb(private val database: Database) {
         userMetrics: Set<String>? = null,
         userEpochs: Int? = null,
         userNewModel: Model? = null,
+        userNewModelFilename: FilePath.Local? = null,
         generateDebugComments: Boolean? = null,
         internalJobTrainingMethod: InternalJobTrainingMethod? = null,
         target: ModelDeploymentTarget? = null,
@@ -185,6 +175,9 @@ class JobDb(private val database: Database) {
                 userMetrics?.let { row[userMetricsCol] = klaxon.toJsonString(userMetrics) }
                 userEpochs?.let { row[userEpochsCol] = userEpochs }
                 userNewModel?.let { row[userModelCol] = userNewModel.serialize() }
+                userNewModelFilename?.let {
+                    row[userNewModelFilenameCol] = userNewModelFilename.path
+                }
                 generateDebugComments?.let { row[generateDebugCommentsCol] = generateDebugComments }
                 internalJobTrainingMethod?.let {
                     row[internalTrainingMethodCol] = internalJobTrainingMethod.serialize()
@@ -228,10 +221,10 @@ class JobDb(private val database: Database) {
     fun fetchRunningJobs(): List<Job> = transaction(database) {
         // TODO: Split the error log off of the status so we don't need to do this filter
         Jobs.select {
-            (Jobs.statusCol like "%Creating%") or
-                (Jobs.statusCol like "%Initializing%") or
-                (Jobs.statusCol like "%InProgress%")
-        }.map { Jobs.toDomain(it) }
+                (Jobs.statusCol like "%Creating%") or
+                    (Jobs.statusCol like "%Initializing%") or
+                    (Jobs.statusCol like "%InProgress%")
+            }.map { Jobs.toDomain(it) }
             .filter { it.status !is TrainingScriptProgress.Error }
     }
 

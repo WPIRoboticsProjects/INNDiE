@@ -5,6 +5,8 @@ import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.axon.util.FilePath
+import edu.wpi.axon.util.getOutputModelName
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleSetProperty
@@ -29,7 +31,6 @@ data class JobDto(val job: Job) {
         when (job.userOldModelPath) {
             is ModelSource.FromExample -> ModelSourceType.EXAMPLE
             is ModelSource.FromFile -> ModelSourceType.FILE
-            is ModelSource.FromJob -> ModelSourceType.JOB
         }
     )
     var oldModelType by oldModelTypeProperty
@@ -57,6 +58,12 @@ data class JobDto(val job: Job) {
 
     val userNewModelProperty = SimpleObjectProperty(job.userNewModel)
     var userNewModel by userNewModelProperty
+
+    val userNewModelFilenameProperty = SimpleObjectProperty(job.userNewModelFilename)
+    var userNewModelFilename by userNewModelFilenameProperty
+
+    val internalTrainingMethodProperty = SimpleObjectProperty(job.internalTrainingMethod)
+    var internalTrainingMethod by internalTrainingMethodProperty
 
     val targetProperty = SimpleObjectProperty<ModelDeploymentTarget>(job.target)
     var target by targetProperty
@@ -86,6 +93,8 @@ class JobModel : ItemViewModel<JobDto>() {
     val userMetrics = bind(JobDto::userMetricsProperty)
     val userEpochs = bind(JobDto::userEpochsProperty)
     val userNewModel = bind(JobDto::userNewModelProperty)
+    val userNewModelFilename = bind(JobDto::userNewModelFilenameProperty)
+    val internalTrainingMethod = bind(JobDto::internalTrainingMethodProperty)
     val target = bind(JobDto::targetProperty)
     val targetType = bind(JobDto::targetTypeProperty)
     val datasetPlugin = bind(JobDto::datasetPluginProperty)
@@ -104,6 +113,7 @@ class JobModel : ItemViewModel<JobDto>() {
             userMetrics = userMetrics.value,
             userEpochs = userEpochs.value.toInt(),
             userNewModel = userNewModel.value,
+            userNewModelFilename = FilePath.Local(getOutputModelName(userOldModelPath.value.filename)),
             target = target.value,
             datasetPlugin = datasetPlugin.value
         )

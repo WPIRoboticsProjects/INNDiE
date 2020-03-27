@@ -29,5 +29,6 @@ class LoadStringTask(name: String) : BaseTask(name) {
 
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
-    override fun code() = """${output.name} = "$data""""
+    override fun code() =
+        """${output.name} = "${data.replace("\\", "\\\\").replace("\"", "\\\"")}""""
 }

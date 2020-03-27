@@ -16,7 +16,7 @@ val localCacheDir: Path = Paths.get(
 )
 
 val localScriptRunnerCache: Path = localCacheDir.resolve("local-script-runner-cache")
-
+val localTestRunnerCache: Path = localCacheDir.resolve("local-test-runner-cache")
 val trainingLogCsvFilename: Path = Paths.get("trainingLog.csv")
 
 infix fun <E> Iterable<E>.anyIn(other: Iterable<E>) = any { it in other }
@@ -74,7 +74,7 @@ fun runCommand(
  * @param parentDir The directory the progress file is in.
  * @return The path to the progress reporting file used when Axon is running locally.
  */
-fun createLocalProgressFilepath(parentDir: Path) = parentDir.resolve(trainingLogCsvFilename)
+fun createLocalProgressFilepath(parentDir: Path): Path = parentDir.resolve(trainingLogCsvFilename)
 
 fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
     is FilePath.S3 -> data.all { it is FilePath.S3 }
@@ -88,8 +88,11 @@ fun allS3OrLocal(vararg data: FilePath) = when (data.first()) {
 fun getOutputModelName(inputModelName: String): String =
     "${inputModelName.substringBeforeLast('.')}-trained.${inputModelName.substringAfterLast('.')}"
 
-fun getLocalTrainingScriptRunnerWorkingDir(jobId: Int) =
+fun getLocalTrainingScriptRunnerWorkingDir(jobId: Int): Path =
     localScriptRunnerCache.resolve(jobId.toString()).apply { toFile().mkdirs() }
+
+fun getLocalTestRunnerWorkingDir(jobId: Int): Path =
+    localTestRunnerCache.resolve(jobId.toString()).apply { toFile().mkdirs() }
 
 fun getLatestEpochFromProgressCsv(progressCsv: String): Int {
     val lines = progressCsv.lines()

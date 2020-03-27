@@ -7,6 +7,7 @@ description = "UI code using JavaFX"
 
 dependencies {
     api(project(":db"))
+    api(project(":test-runner"))
 
     implementation(project(":aws"))
     implementation(project(":dsl"))

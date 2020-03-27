@@ -12,29 +12,30 @@ import kotlinx.serialization.json.JsonConfiguration
 @Serializable
 sealed class ModelSource {
 
+    abstract val filename: String
+
     /**
      * From an example model.
      */
     @Serializable
-    data class FromExample(val exampleModel: ExampleModel) : ModelSource()
+    data class FromExample(val exampleModel: ExampleModel) : ModelSource() {
+        override val filename: String = exampleModel.fileName
+    }
 
     /**
      * From a FilePath.
      */
     @Serializable
-    data class FromFile(val filePath: FilePath) : ModelSource()
-
-    /**
-     * From the trained output of a Job.
-     */
-    @Serializable
-    data class FromJob(val jobId: Int) : ModelSource()
+    data class FromFile(val filePath: FilePath) : ModelSource() {
+        override val filename: String = filePath.filename
+    }
 
     fun serialize(): String = Json(
         JsonConfiguration.Stable
     ).stringify(serializer(), this)
 
     companion object {
+
         fun deserialize(data: String) = Json(
             JsonConfiguration.Stable
         ).parse(serializer(), data)

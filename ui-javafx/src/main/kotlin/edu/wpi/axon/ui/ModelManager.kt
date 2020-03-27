@@ -24,19 +24,17 @@ class ModelManager : KoinComponent {
         return when (modelSource) {
             is ModelSource.FromExample -> {
                 val file = exampleModelManager.download(modelSource.exampleModel).unsafeRunSync()
-                FilePath.Local(file.path)
+                FilePath.Local(file.absolutePath)
             }
 
             is ModelSource.FromFile -> when (modelSource.filePath) {
                 is FilePath.S3 -> {
-                    val file = getS3Manager().downloadModel(modelSource.filePath.filename)
-                    FilePath.Local(file.path)
+                    val file = getS3Manager().downloadModel(modelSource.filePath.path)
+                    FilePath.Local(file.absolutePath)
                 }
 
                 is FilePath.Local -> modelSource.filePath as FilePath.Local
             }
-
-            is ModelSource.FromJob -> TODO()
         }
     }
 
@@ -55,8 +53,6 @@ class ModelManager : KoinComponent {
                     FilePath.S3(modelSource.filePath.filename)
                 }
             }
-
-            is ModelSource.FromJob -> TODO()
         }
     }
 
