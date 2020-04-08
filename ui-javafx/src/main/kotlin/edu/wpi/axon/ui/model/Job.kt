@@ -5,12 +5,14 @@ import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
 import javafx.beans.property.SimpleIntegerProperty
@@ -83,6 +85,10 @@ data class JobDto(val job: Job) {
 
     val idProperty = SimpleIntegerProperty(job.id)
     var id by idProperty
+
+    override fun toString(): String {
+        return "JobDto(job=$job, nameProperty=$nameProperty, statusProperty=$statusProperty, userOldModelPathProperty=$userOldModelPathProperty, oldModelTypeProperty=$oldModelTypeProperty, userDatasetProperty=$userDatasetProperty, userOptimizerProperty=$userOptimizerProperty, optimizerTypeProperty=$optimizerTypeProperty, userLossProperty=$userLossProperty, lossTypeProperty=$lossTypeProperty, userMetricsProperty=$userMetricsProperty, userEpochsProperty=$userEpochsProperty, userNewModelProperty=$userNewModelProperty, userNewModelFilenameProperty=$userNewModelFilenameProperty, internalTrainingMethodProperty=$internalTrainingMethodProperty, targetProperty=$targetProperty, targetTypeProperty=$targetTypeProperty, datasetPluginProperty=$datasetPluginProperty, idProperty=$idProperty)"
+    }
 }
 
 class JobModel : ItemViewModel<JobDto>() {
@@ -131,6 +137,9 @@ class JobModel : ItemViewModel<JobDto>() {
 
 class JobWizardModel : ItemViewModel<JobDto>() {
 
+    private val modelManager by di<ModelManager>()
+    private val exampleModelManager by di<ExampleModelManager>()
+
     val name = bind(JobDto::nameProperty, autocommit = true)
     val task = bind(autocommit = true) { SimpleObjectProperty<WizardTask>() }
     val taskInput = bind(autocommit = true) { SimpleObjectProperty<WizardTask.TaskInput>() }
@@ -139,28 +148,26 @@ class JobWizardModel : ItemViewModel<JobDto>() {
 
     override fun onCommit() {
         // Logic for detecting parameters goes here
-
-
-
-//        val modelSource = ModelSource.FromExample(
-//                exampleModelManager.getAllExampleModels()
-//                        .unsafeRunSync()
-//                        .first()
-//        )
+        val modelSource = ModelSource.FromExample(
+                exampleModelManager.getAllExampleModels()
+                        .unsafeRunSync()
+                        .first()
+        )
 
         with(item) {
-            name = this@JobWizardModel.name.value
             status = TrainingScriptProgress.NotStarted
-//            userOldModelPath = modelSource
-            userDataset = Dataset.ExampleDataset.FashionMnist
+            userOldModelPath = modelSource
+            userDataset = taskInput.value.dataset
             userOptimizer = Optimizer.Adam()
             userLoss = Loss.SparseCategoricalCrossentropy
             userMetrics = setOf("accuracy").toObservable()
-            userEpochs = this@JobWizardModel.userEpochs.value
-//            userNewModel = modelManager.loadModel(modelSource)
-//            userNewModelFilename = getOutputModelName(modelSource.filename)
+            userNewModel = modelManager.loadModel(modelSource)
+            userNewModelFilename = getOutputModelName(modelSource.filename)
             internalTrainingMethod = InternalJobTrainingMethod.Untrained
-            target = ModelDeploymentTarget.Desktop
+            when (targetType) {
+                ModelDeploymentTarget.Desktop::class -> target = ModelDeploymentTarget.Desktop
+                ModelDeploymentTarget.Coral::class -> target = ModelDeploymentTarget.Coral()
+            }
             datasetPlugin = DatasetPlugins.processMnistTypePlugin
         }
     }

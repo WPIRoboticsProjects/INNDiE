@@ -14,6 +14,7 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.controller.JobBoard
+import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
@@ -74,6 +75,7 @@ class JobList : View() {
                         onComplete {
                             runAsync {
                                 with(job.item) {
+                                    println(this)
                                     database.create(
                                             name = name,
                                             status = status,
@@ -92,7 +94,7 @@ class JobList : View() {
                                     )
                                 }
                             } ui {
-
+                                this@JobList.job.item = JobDto(it)
                             }
                         }
                         openModal()

@@ -1,9 +1,12 @@
 package edu.wpi.axon.ui.view.joblist
 
+import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.model.JobWizardModel
 import edu.wpi.axon.ui.model.WizardTask
 import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
+import tornadofx.ValidationMessage
+import tornadofx.ValidationSeverity
 import tornadofx.View
 import tornadofx.Wizard
 import tornadofx.combobox
@@ -33,6 +36,7 @@ class JobWizard : Wizard("Create job", "Provide job information") {
         add(InputSelection::class)
         add(TrainingOptions::class)
         add(TargetSelection::class)
+        add(FinalInformation::class)
 
         enableStepLinks = true
     }
@@ -134,6 +138,36 @@ class TargetSelection : View("Target") {
                 }
 
                 required()
+            }
+        }
+    }
+}
+
+class FinalInformation : View("Finish") {
+    private val database by di<JobDb>()
+
+    val job: JobWizardModel by inject()
+
+    override val complete = job.valid(job.name)
+
+    override val root = form {
+        fieldset(title) {
+            textfield(job.name) {
+                validator {
+                    if (it.isNullOrBlank()) {
+                        ValidationMessage("Must not be empty.", ValidationSeverity.Error
+                        )
+                    } else {
+                        if (database.findByName(it) == null) {
+                            null
+                        } else {
+                            ValidationMessage(
+                                    "A Job with that name already exists.",
+                                    ValidationSeverity.Error
+                            )
+                        }
+                    }
+                }
             }
         }
     }
