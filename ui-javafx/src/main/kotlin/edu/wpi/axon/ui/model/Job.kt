@@ -1,9 +1,15 @@
 package edu.wpi.axon.ui.model
 
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
+import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.plugin.Plugin
+import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.loss.Loss
+import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
@@ -16,6 +22,7 @@ import tornadofx.ItemViewModel
 import tornadofx.asObservable
 import tornadofx.getValue
 import tornadofx.setValue
+import tornadofx.toObservable
 
 data class JobDto(val job: Job) {
     val nameProperty = SimpleStringProperty(job.name)
@@ -120,4 +127,41 @@ class JobModel : ItemViewModel<JobDto>() {
     }
 
     override fun toString() = "JobModel($item)"
+}
+
+class JobWizardModel : ItemViewModel<JobDto>() {
+
+    val name = bind(JobDto::nameProperty, autocommit = true)
+    val task = bind(autocommit = true) { SimpleObjectProperty<WizardTask>() }
+    val taskInput = bind(autocommit = true) { SimpleObjectProperty<WizardTask.TaskInput>() }
+    val targetType = bind(JobDto::targetTypeProperty, autocommit = true)
+    val userEpochs = bind(JobDto::userEpochsProperty, autocommit = true)
+
+    override fun onCommit() {
+        // Logic for detecting parameters goes here
+
+
+
+//        val modelSource = ModelSource.FromExample(
+//                exampleModelManager.getAllExampleModels()
+//                        .unsafeRunSync()
+//                        .first()
+//        )
+
+        with(item) {
+            name = this@JobWizardModel.name.value
+            status = TrainingScriptProgress.NotStarted
+//            userOldModelPath = modelSource
+            userDataset = Dataset.ExampleDataset.FashionMnist
+            userOptimizer = Optimizer.Adam()
+            userLoss = Loss.SparseCategoricalCrossentropy
+            userMetrics = setOf("accuracy").toObservable()
+            userEpochs = this@JobWizardModel.userEpochs.value
+//            userNewModel = modelManager.loadModel(modelSource)
+//            userNewModelFilename = getOutputModelName(modelSource.filename)
+            internalTrainingMethod = InternalJobTrainingMethod.Untrained
+            target = ModelDeploymentTarget.Desktop
+            datasetPlugin = DatasetPlugins.processMnistTypePlugin
+        }
+    }
 }

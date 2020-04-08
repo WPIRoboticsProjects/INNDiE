@@ -15,6 +15,7 @@ import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobModel
+import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
 import javafx.collections.ListChangeListener
 import javafx.geometry.Orientation
@@ -69,54 +70,82 @@ class JobList : View() {
 
             button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
                 setOnAction {
-                    dialog("Create New Job", labelPosition = Orientation.VERTICAL) {
-                        val tempJob = JobModel()
-                        field("Job Name") {
-                            textfield(tempJob.name) {
-                                validator {
-                                    if (it.isNullOrBlank()) {
-                                        ValidationMessage(
-                                            "Must not be empty.",
-                                            ValidationSeverity.Error
-                                        )
-                                    } else {
-                                        if (database.findByName(it) == null) {
-                                            null
-                                        } else {
-                                            ValidationMessage(
-                                                "A Job with that name already exists.",
-                                                ValidationSeverity.Error
-                                            )
-                                        }
-                                    }
+                    find<JobWizard> {
+                        onComplete {
+                            runAsync {
+                                with(job.item) {
+                                    database.create(
+                                            name = name,
+                                            status = status,
+                                            userOldModelPath = userOldModelPath,
+                                            userDataset = userDataset,
+                                            userOptimizer = userOptimizer,
+                                            userLoss = userLoss,
+                                            userMetrics = userMetrics,
+                                            userEpochs = userEpochs,
+                                            userNewModel = userNewModel,
+                                            userNewModelFilename = userNewModelFilename,
+                                            generateDebugComments = false,
+                                            internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+                                            target = target,
+                                            datasetPlugin = datasetPlugin
+                                    )
                                 }
-                                action {
-                                    if (tempJob.isValid) {
-                                        createNewJob(tempJob.name.value)
-                                        close()
-                                    }
-                                }
+                            } ui {
+
                             }
                         }
-
-                        buttonbar {
-                            button("Save") {
-                                enableWhen(tempJob.valid)
-                                action {
-                                    if (tempJob.isValid) {
-                                        createNewJob(tempJob.name.value)
-                                        close()
-                                    }
-                                }
-                            }
-
-                            button("Cancel") {
-                                action {
-                                    close()
-                                }
-                            }
-                        }
+                        openModal()
                     }
+
+//                    dialog("Create New Job", labelPosition = Orientation.VERTICAL) {
+//                        val tempJob = JobModel()
+//                        field("Job Name") {
+//                            textfield(tempJob.name) {
+//                                validator {
+//                                    if (it.isNullOrBlank()) {
+//                                        ValidationMessage(
+//                                            "Must not be empty.",
+//                                            ValidationSeverity.Error
+//                                        )
+//                                    } else {
+//                                        if (database.findByName(it) == null) {
+//                                            null
+//                                        } else {
+//                                            ValidationMessage(
+//                                                "A Job with that name already exists.",
+//                                                ValidationSeverity.Error
+//                                            )
+//                                        }
+//                                    }
+//                                }
+//                                action {
+//                                    if (tempJob.isValid) {
+//                                        createNewJob(tempJob.name.value)
+//                                        close()
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//                        buttonbar {
+//                            button("Save") {
+//                                enableWhen(tempJob.valid)
+//                                action {
+//                                    if (tempJob.isValid) {
+//                                        createNewJob(tempJob.name.value)
+//                                        close()
+//                                    }
+//                                }
+//                            }
+//
+//                            button("Cancel") {
+//                                action {
+//                                    close()
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
         }
