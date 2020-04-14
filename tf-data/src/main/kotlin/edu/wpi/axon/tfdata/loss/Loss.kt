@@ -8,6 +8,9 @@ import kotlinx.serialization.json.JsonConfiguration
 sealed class Loss {
 
     @Serializable
+    object CategoricalCrossentropy : Loss()
+
+    @Serializable
     object SparseCategoricalCrossentropy : Loss()
 
     @Serializable

@@ -10,11 +10,10 @@ object DatasetPlugins {
     )
 
     val divideByTwoFiveFivePlugin = Plugin.Official(
-        "Divide Elements by 255",
+        "Divide Data Elements by 255",
         """
         |def process_dataset(x, y):
         |    newX = tf.cast(x / 255.0, tf.float32)
-        |    newY = tf.cast(y / 255.0, tf.float32)
         |    return (newX, newY)
         """.trimMargin()
     )
@@ -24,9 +23,8 @@ object DatasetPlugins {
         """
         |def process_dataset(x, y):
         |    newX = tf.cast(x / 255.0, tf.float32)
-        |    newY = tf.cast(y / 255.0, tf.float32)
         |    newX = newX[..., tf.newaxis]
-        |    newY = newY[..., tf.newaxis]
+        |    newY = tf.keras.utils.to_categorical(y)
         |    return (newX, newY)
         """.trimMargin()
     )
@@ -36,11 +34,10 @@ object DatasetPlugins {
         """
         |def process_dataset(x, y):
         |    newX = tf.cast(x / 255.0, tf.float32)
-        |    newY = tf.cast(y / 255.0, tf.float32)
         |    newX = newX[..., tf.newaxis]
         |    newX = tf.image.resize_images(newX, (224, 224), method=tf.image.ResizeMethod.BILINEAR, align_corners=True)
         |    newX = tf.image.grayscale_to_rgb(newX)
-        |    newY = newY[..., tf.newaxis]
+        |    newY = tf.keras.utils.to_categorical(y)
         |    return (newX, newY)
         """.trimMargin()
     )

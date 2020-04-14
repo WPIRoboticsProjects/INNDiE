@@ -22,6 +22,10 @@ internal class DefaultLossToCodeTest {
         @Suppress("unused")
         fun lossSource() = listOf(
             Arguments.of(
+                Loss.CategoricalCrossentropy,
+                """tf.keras.losses.categorical_crossentropy"""
+            ),
+            Arguments.of(
                 Loss.SparseCategoricalCrossentropy,
                 """tf.keras.losses.sparse_categorical_crossentropy"""
             ),
