@@ -2,8 +2,8 @@ package edu.wpi.axon.plugin
 
 object ProcessTestOutputPlugins {
 
-    val serializeModelOutputPlugin = Plugin.Official(
-        "Basic View",
+    val classifyImageModelOutputPlugin = Plugin.Official(
+        "Classify Image",
         """
         |def process_model_output(model_input, expected_output, model_output):
         |    import numpy as np
