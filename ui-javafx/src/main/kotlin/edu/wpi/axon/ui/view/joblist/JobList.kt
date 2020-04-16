@@ -4,11 +4,15 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
+import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
+import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
+import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
@@ -16,6 +20,7 @@ import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
+import edu.wpi.axon.ui.model.JobWizardModel
 import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
 import javafx.collections.ListChangeListener
@@ -72,6 +77,30 @@ class JobList : View() {
             button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
                 setOnAction {
                     find<JobWizard> {
+//                        val modelSource = ModelSource.FromExample(
+//                                exampleModelManager.getAllExampleModels()
+//                                        .unsafeRunSync()
+//                                        .first()
+//                        )
+//
+//                        job.item = JobDto(Job(
+//                                name = "",
+//                                status = TrainingScriptProgress.NotStarted,
+//                                userOldModelPath = modelSource,
+//                                userDataset = Dataset.ExampleDataset.FashionMnist,
+//                                userOptimizer = Optimizer.Adam(),
+//                                userLoss = Loss.SparseCategoricalCrossentropy,
+//                                userMetrics = setOf("accuracy"),
+//                                userEpochs = 1,
+//                                userNewModel = modelManager.loadModel(modelSource),
+//                                userNewModelFilename = getOutputModelName(modelSource.filename),
+//                                generateDebugComments = false,
+//                                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+//                                target = ModelDeploymentTarget.Desktop,
+//                                datasetPlugin = processMnistTypePlugin,
+//                                id = 0
+//                        ))
+
                         onComplete {
                             runAsync {
                                 with(job.item) {
@@ -94,7 +123,7 @@ class JobList : View() {
                                     )
                                 }
                             } ui {
-                                this@JobList.job.item = JobDto(it)
+                                //this@JobList.job.item = JobDto(it)
                             }
                         }
                         openModal()

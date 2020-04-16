@@ -147,19 +147,20 @@ class JobWizardModel : ItemViewModel<JobDto>() {
     val userEpochs = bind(JobDto::userEpochsProperty, autocommit = true)
 
     override fun onCommit() {
+        print("\n\n\nAUSTIN\n\n\n")
         // Logic for detecting parameters goes here
         val modelSource = ModelSource.FromExample(
                 exampleModelManager.getAllExampleModels()
                         .unsafeRunSync()
-                        .first()
+                        .first { it.name == "${task.value.title} - ${taskInput.value.title}" }
         )
 
         with(item) {
             status = TrainingScriptProgress.NotStarted
             userOldModelPath = modelSource
             userDataset = taskInput.value.dataset
-            userOptimizer = Optimizer.Adam()
-            userLoss = Loss.SparseCategoricalCrossentropy
+            userOptimizer = taskInput.value.optimizer
+            userLoss = taskInput.value.loss
             userMetrics = setOf("accuracy").toObservable()
             userNewModel = modelManager.loadModel(modelSource)
             userNewModelFilename = getOutputModelName(modelSource.filename)
@@ -168,7 +169,12 @@ class JobWizardModel : ItemViewModel<JobDto>() {
                 ModelDeploymentTarget.Desktop::class -> target = ModelDeploymentTarget.Desktop
                 ModelDeploymentTarget.Coral::class -> target = ModelDeploymentTarget.Coral()
             }
-            datasetPlugin = DatasetPlugins.processMnistTypePlugin
+            datasetPlugin = extractDatasetPlugin(taskInput.value.dataset, modelSource)
         }
+    }
+
+    private fun extractDatasetPlugin(dataset: Dataset, model: ModelSource): Plugin {
+        // TODO
+        return DatasetPlugins.processMnistTypePlugin
     }
 }

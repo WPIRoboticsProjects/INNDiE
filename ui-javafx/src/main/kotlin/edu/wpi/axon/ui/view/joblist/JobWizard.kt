@@ -40,6 +40,10 @@ class JobWizard : Wizard("Create job", "Provide job information") {
 
         enableStepLinks = true
     }
+
+    override fun onSave() {
+        job.commit()
+    }
 }
 
 class TaskSelection : View("Task") {
