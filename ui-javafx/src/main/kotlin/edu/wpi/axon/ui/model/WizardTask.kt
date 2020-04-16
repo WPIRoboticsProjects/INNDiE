@@ -10,13 +10,16 @@ sealed class WizardTask(val title: String, val description: String) {
 
     abstract val supportedInputs: List<TaskInput>
 
-    object Classification : WizardTask("Classification", "Separate images into categories") {
+    object Classification : WizardTask("Classification", "Separate items into categories") {
         override val supportedInputs: List<TaskInput>
             get() = listOf(
                     TaskInput("MNIST", "Classify handwritten digits", DatasetType.EXAMPLE, Dataset.ExampleDataset.Mnist, Optimizer.Adam(), Loss.SparseCategoricalCrossentropy),
-                    TaskInput("Fashion MNIST", "Classify photos of clothing", DatasetType.EXAMPLE, Dataset.ExampleDataset.FashionMnist, Optimizer.Adam(), Loss.SparseCategoricalCrossentropy)
+                    TaskInput("Fashion MNIST", "Classify photos of clothing", DatasetType.EXAMPLE, Dataset.ExampleDataset.FashionMnist, Optimizer.Adam(), Loss.SparseCategoricalCrossentropy),
+                    TaskInput("IMDB", "Classify a positive or negative movie review", DatasetType.EXAMPLE, Dataset.ExampleDataset.IMDB, Optimizer.Adam(), Loss.SparseCategoricalCrossentropy)
             )
     }
+
+    //TODO: Add regression car mpg example
 
     object Detection : WizardTask("Detection", "Detection objects in images") {
         override val supportedInputs: List<TaskInput>

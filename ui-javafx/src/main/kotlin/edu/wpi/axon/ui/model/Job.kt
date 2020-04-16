@@ -147,7 +147,6 @@ class JobWizardModel : ItemViewModel<JobDto>() {
     val userEpochs = bind(JobDto::userEpochsProperty, autocommit = true)
 
     override fun onCommit() {
-        print("\n\n\nAUSTIN\n\n\n")
         // Logic for detecting parameters goes here
         val modelSource = ModelSource.FromExample(
                 exampleModelManager.getAllExampleModels()
@@ -173,8 +172,14 @@ class JobWizardModel : ItemViewModel<JobDto>() {
         }
     }
 
-    private fun extractDatasetPlugin(dataset: Dataset, model: ModelSource): Plugin {
-        // TODO
-        return DatasetPlugins.processMnistTypePlugin
+    private fun extractDatasetPlugin(dataset: Dataset, model: ModelSource.FromExample) = when (dataset) {
+        Dataset.ExampleDataset.BostonHousing -> TODO()
+        Dataset.ExampleDataset.Cifar10 -> TODO()
+        Dataset.ExampleDataset.Cifar100 -> TODO()
+        Dataset.ExampleDataset.FashionMnist -> DatasetPlugins.processMnistTypePlugin
+        Dataset.ExampleDataset.IMDB -> TODO()
+        Dataset.ExampleDataset.Mnist -> DatasetPlugins.processMnistTypePlugin
+        Dataset.ExampleDataset.Reuters -> TODO()
+        is Dataset.Custom -> TODO()
     }
 }
