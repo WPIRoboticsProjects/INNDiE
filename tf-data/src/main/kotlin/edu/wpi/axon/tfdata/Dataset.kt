@@ -17,7 +17,7 @@ sealed class Dataset : Comparable<Dataset> {
         final override val progressReportingName = name
 
         init {
-            require(progressReportingName.matches(Regex("""\w+""")))
+            require(progressReportingName.matches(Regex("""[\w-]+""")))
         }
 
         @Serializable
@@ -40,6 +40,9 @@ sealed class Dataset : Comparable<Dataset> {
 
         @Serializable
         object Reuters : ExampleDataset("reuters", "Reuters")
+
+        @Serializable
+        object AutoMPG : ExampleDataset("auto-mpg", "Auto MPG")
     }
 
     @Serializable

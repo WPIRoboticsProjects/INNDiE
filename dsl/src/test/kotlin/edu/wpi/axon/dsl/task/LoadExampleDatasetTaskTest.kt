@@ -1,6 +1,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
+import edu.wpi.axon.dsl.mockVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.code.ExampleDatasetToCode
@@ -19,12 +20,13 @@ internal class LoadExampleDatasetTaskTest : KoinTestFixture() {
     fun `test code gen`() {
         val mockDataset = mockk<Dataset.ExampleDataset> { every { name } returns "dataset_name" }
         val mockDatasetToCode = mockk<ExampleDatasetToCode> {
-            every { datasetToCode(mockDataset) } returns "dataset_code"
+            every { datasetToCode(mockDataset) } returns "    return tf.keras.datasets.my_dataset.load_data()"
         }
 
         startKoin {
             modules(module {
                 single { mockDatasetToCode }
+                mockVariableNameGenerator()
             })
         }
 
@@ -37,7 +39,10 @@ internal class LoadExampleDatasetTaskTest : KoinTestFixture() {
         }
 
         task.code() shouldBe """
-            |(xTrain, yTrain), (xTest, yTest) = dataset_code.load_data()
+            |def var1():
+            |    return tf.keras.datasets.my_dataset.load_data()
+            |
+            |(xTrain, yTrain), (xTest, yTest) = var1()
         """.trimMargin()
 
         verify { mockDatasetToCode.datasetToCode(mockDataset) }

@@ -43,6 +43,23 @@ sealed class Optimizer {
         )
     }
 
+    @Serializable
+    data class RMSprop(
+        val learningRate: Double,
+        val rho: Double,
+        val momentum: Double,
+        val epsilon: Double,
+        val centered: Boolean
+    ) : Optimizer() {
+        constructor() : this(
+            learningRate = 0.001,
+            rho = 0.9,
+            momentum = 0.0,
+            epsilon = 1e-7,
+            centered = false
+        )
+    }
+
     fun serialize(): String = Json(
         JsonConfiguration.Stable
     ).stringify(serializer(), this)

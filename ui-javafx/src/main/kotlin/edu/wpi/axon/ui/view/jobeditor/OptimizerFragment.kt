@@ -6,6 +6,8 @@ import edu.wpi.axon.ui.model.AdamModel
 import edu.wpi.axon.ui.model.FTRLDto
 import edu.wpi.axon.ui.model.FTRLModel
 import edu.wpi.axon.ui.model.JobModel
+import edu.wpi.axon.ui.model.RMSpropDto
+import edu.wpi.axon.ui.model.RMSpropModel
 import edu.wpi.axon.ui.view.isDoubleGreaterThanOrEqualToZero
 import edu.wpi.axon.ui.view.isDoubleLessThanOrEqualToZero
 import edu.wpi.axon.ui.view.textfield
@@ -37,6 +39,7 @@ class OptimizerFragment : Fragment() {
             model = when (val opt = job.userOptimizer.value) {
                 is Optimizer.Adam -> createAdamFields(opt)
                 is Optimizer.FTRL -> createFTRLFields(opt)
+                is Optimizer.RMSprop -> createRMSpropFields(opt)
             }
         }
 
@@ -135,5 +138,38 @@ class OptimizerFragment : Fragment() {
         }
 
         return ftrlModel
+    }
+
+    private fun Fieldset.createRMSpropFields(opt: Optimizer.RMSprop): ItemViewModel<*> {
+        @Suppress("UNCHECKED_CAST")
+        val rmsPropModel = RMSpropModel(job.userOptimizer as Property<Optimizer.RMSprop>).apply {
+            item = RMSpropDto(opt)
+        }
+
+        field("Learning Rate") {
+            textfield(rmsPropModel.learningRate) {
+                filterInput { it.controlNewText.isDouble() }
+            }
+        }
+        field("Rho") {
+            textfield(rmsPropModel.rho) {
+                filterInput { it.controlNewText.isDouble() }
+            }
+        }
+        field("Momentum") {
+            textfield(rmsPropModel.momentum) {
+                filterInput { it.controlNewText.isDouble() }
+            }
+        }
+        field("Epsilon") {
+            textfield(rmsPropModel.epsilon) {
+                filterInput { it.controlNewText.isDouble() }
+            }
+        }
+        field("Centered") {
+            checkbox(property = rmsPropModel.centered)
+        }
+
+        return rmsPropModel
     }
 }
