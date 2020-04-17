@@ -1,6 +1,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.Code
+import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
@@ -52,11 +53,17 @@ class LoadExampleDatasetTask(name: String) : BaseTask(name) {
 
     override val dependencies: MutableSet<Code<*>> = mutableSetOf()
 
+    private val variableNameGenerator: UniqueVariableNameGenerator by inject()
+
     override fun code(): String {
+        val methodName = variableNameGenerator.uniqueVariableName()
         val output = "(${xTrainOutput.name}, ${yTrainOutput.name}), " +
             "(${xTestOutput.name}, ${yTestOutput.name})"
         return """
-            |$output = ${exampleDatasetToCode.datasetToCode(dataset)}.load_data()
+            |def $methodName():
+            |${exampleDatasetToCode.datasetToCode(dataset)}
+            |
+            |$output = $methodName()
         """.trimMargin()
     }
 }
