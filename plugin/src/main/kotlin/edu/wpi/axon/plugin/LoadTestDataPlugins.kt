@@ -35,6 +35,7 @@ object LoadTestDataPlugins {
         |    x_test = x_test[:1]
         |    x_test = tf.cast(x_test / 255, tf.float32)
         |    x_test = x_test[..., tf.newaxis]
+        |    y_test = tf.keras.utils.to_categorical(y_test)
         |    return (x_test, y_test[:1], 1)
         """.trimMargin()
     )

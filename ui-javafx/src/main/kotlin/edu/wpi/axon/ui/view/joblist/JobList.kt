@@ -135,7 +135,7 @@ class JobList : View() {
             userOldModelPath = modelSource,
             userDataset = Dataset.ExampleDataset.FashionMnist,
             userOptimizer = Optimizer.Adam(),
-            userLoss = Loss.SparseCategoricalCrossentropy,
+            userLoss = Loss.CategoricalCrossentropy,
             userMetrics = setOf("accuracy"),
             userEpochs = 1,
             userNewModel = modelManager.loadModel(modelSource),
