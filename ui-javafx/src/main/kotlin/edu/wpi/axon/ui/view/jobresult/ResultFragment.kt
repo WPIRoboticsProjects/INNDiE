@@ -71,7 +71,7 @@ class ResultFragment : Fragment() {
                     ) {
                         isPreserveRatio = true
                         isSmooth = true
-                        isCache = true
+                        fitHeight = this@borderpane.height - 50
                     }
 
                     else -> label("Cannot visualize data format: $extension")

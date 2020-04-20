@@ -14,6 +14,10 @@ object ProcessTestOutputPlugins {
         |    with open("output/model_output.txt", "w+") as f:
         |        np.savetxt(f, model_output)
         |
+        |    with open("output/classification.txt", "w+") as f:
+        |        f.write("Expected class: {}\n".format(np.argmax(expected_output)))
+        |        f.write("Predicted class: {}\n".format(np.argmax(model_output)))
+        |
         |    images = tf.image.encode_jpeg(tf.cast(model_input[0]*255, tf.uint8))
         |    fwrite = tf.write_file(
         |        tf.constant("output/model_input.jpeg"),
