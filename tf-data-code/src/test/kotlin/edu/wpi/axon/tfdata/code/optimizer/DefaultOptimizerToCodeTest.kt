@@ -28,6 +28,10 @@ internal class DefaultOptimizerToCodeTest {
             Arguments.of(
                 Optimizer.FTRL(),
                 """tf.keras.optimizers.Ftrl(0.001, -0.5, 0.1, 0.0, 0.0, 'Ftrl', 0.0)"""
+            ),
+            Arguments.of(
+                Optimizer.RMSprop(),
+                """tf.keras.optimizers.RMSprop(0.001, 0.9, 0.0, 1.0E-7, False)"""
             )
         )
     }

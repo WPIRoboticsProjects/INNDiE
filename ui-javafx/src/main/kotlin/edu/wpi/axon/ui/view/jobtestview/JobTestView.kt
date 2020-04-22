@@ -46,6 +46,7 @@ import tornadofx.hgrow
 import tornadofx.insets
 import tornadofx.label
 import tornadofx.objectBinding
+import tornadofx.rebindOnChange
 import tornadofx.required
 import tornadofx.runAsyncWithOverlay
 import tornadofx.separator
@@ -95,6 +96,7 @@ class JobTestView : Fragment() {
     private val modelManager = ModelManager()
 
     override val root = borderpane {
+        model.rebindOnChange(job.itemProperty)
         centerProperty().bind(job.itemProperty.objectBinding(job.status) { jobDto ->
             if (jobDto == null) {
                 testResults.clear()

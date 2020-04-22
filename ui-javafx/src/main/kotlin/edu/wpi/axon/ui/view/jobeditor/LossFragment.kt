@@ -20,6 +20,13 @@ class LossFragment : Fragment() {
             println("Loaded with loss type: ${job.lossType.value}")
             println("Loaded with loss: ${job.userLoss.value}")
             model = when (val loss = job.userLoss.value) {
+                is Loss.CategoricalCrossentropy -> {
+                    field {
+                        label("CategoricalCrossentropy has no data.")
+                    }
+                    object : ItemViewModel<Unit>() {}
+                }
+
                 is Loss.SparseCategoricalCrossentropy -> {
                     field {
                         label("SparseCategoricalCrossentropy has no data.")

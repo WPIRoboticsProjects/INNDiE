@@ -14,5 +14,9 @@ class DefaultOptimizerToCode : OptimizerToCode {
             "${optimizer.learningRatePower}, ${optimizer.initialAccumulatorValue}, " +
             "${optimizer.l1RegularizationStrength}, ${optimizer.l2RegularizationStrength}, " +
             "'Ftrl', ${optimizer.l2ShrinkageRegularizationStrength})"
+
+        is Optimizer.RMSprop -> "tf.keras.optimizers.RMSprop(${optimizer.learningRate}, " +
+            "${optimizer.rho}, ${optimizer.momentum}, ${optimizer.epsilon}, " +
+            "${pythonString(optimizer.centered)})"
     }
 }

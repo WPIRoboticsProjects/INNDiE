@@ -19,7 +19,8 @@ import edu.wpi.axon.plugin.LoadTestDataPlugins.loadExampleDatasetPlugin
 import edu.wpi.axon.plugin.LocalPluginManager
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
-import edu.wpi.axon.plugin.ProcessTestOutputPlugins.serializeModelOutputPlugin
+import edu.wpi.axon.plugin.ProcessTestOutputPlugins.autoMpgRegressionOutputPlugin
+import edu.wpi.axon.plugin.ProcessTestOutputPlugins.imageClassificationModelOutputPlugin
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.JobRunner
 import edu.wpi.axon.ui.ModelManager
@@ -122,7 +123,8 @@ fun defaultFrontendModule() = module {
     single(named(processTestOutputPluginManagerName)) {
         bindPluginManager(
             setOf(
-                serializeModelOutputPlugin
+                imageClassificationModelOutputPlugin,
+                autoMpgRegressionOutputPlugin
             ),
             "axon-process-test-output-plugins",
             "process_test_output_plugin_cache.json"
