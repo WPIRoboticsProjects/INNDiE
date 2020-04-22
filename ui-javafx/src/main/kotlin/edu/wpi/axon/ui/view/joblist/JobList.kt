@@ -77,31 +77,12 @@ class JobList : View() {
             button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
                 setOnAction {
                     find<JobWizard> {
-//                        val modelSource = ModelSource.FromExample(
-//                                exampleModelManager.getAllExampleModels()
-//                                        .unsafeRunSync()
-//                                        .first()
-//                        )
-//
-//                        job.item = JobDto(Job(
-//                                name = "",
-//                                status = TrainingScriptProgress.NotStarted,
-//                                userOldModelPath = modelSource,
-//                                userDataset = Dataset.ExampleDataset.FashionMnist,
-//                                userOptimizer = Optimizer.Adam(),
-//                                userLoss = Loss.SparseCategoricalCrossentropy,
-//                                userMetrics = setOf("accuracy"),
-//                                userEpochs = 1,
-//                                userNewModel = modelManager.loadModel(modelSource),
-//                                userNewModelFilename = getOutputModelName(modelSource.filename),
-//                                generateDebugComments = false,
-//                                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
-//                                target = ModelDeploymentTarget.Desktop,
-//                                datasetPlugin = processMnistTypePlugin,
-//                                id = 0
-//                        ))
+                        job.item = null
 
                         onComplete {
+
+                            print("\n\n\n AUSTIN \n\n\n")
+
                             runAsync {
                                 with(job.item) {
                                     println(this)

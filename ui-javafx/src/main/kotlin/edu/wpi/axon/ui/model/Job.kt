@@ -154,22 +154,27 @@ class JobWizardModel : ItemViewModel<JobDto>() {
                         .first { it.name == "${task.value.title} - ${taskInput.value.title}" }
         )
 
-        with(item) {
-            status = TrainingScriptProgress.NotStarted
-            userOldModelPath = modelSource
-            userDataset = taskInput.value.dataset
-            userOptimizer = taskInput.value.optimizer
-            userLoss = taskInput.value.loss
-            userMetrics = setOf("accuracy").toObservable()
-            userNewModel = modelManager.loadModel(modelSource)
-            userNewModelFilename = getOutputModelName(modelSource.filename)
-            internalTrainingMethod = InternalJobTrainingMethod.Untrained
-            when (targetType) {
-                ModelDeploymentTarget.Desktop::class -> target = ModelDeploymentTarget.Desktop
-                ModelDeploymentTarget.Coral::class -> target = ModelDeploymentTarget.Coral()
-            }
-            datasetPlugin = extractDatasetPlugin(taskInput.value.dataset, modelSource)
-        }
+        item = JobDto(Job(
+                name = name.value,
+                status = TrainingScriptProgress.NotStarted,
+                userOldModelPath = modelSource,
+                userDataset = taskInput.value.dataset,
+                userOptimizer = taskInput.value.optimizer,
+                userEpochs = userEpochs.value.toInt(),
+                userLoss = taskInput.value.loss,
+                userMetrics = setOf("accuracy").toObservable(),
+                userNewModel = modelManager.loadModel(modelSource),
+                userNewModelFilename = getOutputModelName(modelSource.filename),
+                internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+                target = when (targetType.value) {
+                    ModelDeploymentTarget.Desktop::class -> ModelDeploymentTarget.Desktop
+                    ModelDeploymentTarget.Coral::class -> ModelDeploymentTarget.Coral()
+                    else -> error("Invalid target")
+                },
+                generateDebugComments = false,
+                datasetPlugin = extractDatasetPlugin(taskInput.value.dataset, modelSource),
+                id = -1
+        ))
     }
 
     private fun extractDatasetPlugin(dataset: Dataset, model: ModelSource.FromExample) = when (dataset) {
@@ -180,6 +185,7 @@ class JobWizardModel : ItemViewModel<JobDto>() {
         Dataset.ExampleDataset.IMDB -> TODO()
         Dataset.ExampleDataset.Mnist -> DatasetPlugins.processMnistTypePlugin
         Dataset.ExampleDataset.Reuters -> TODO()
+        Dataset.ExampleDataset.AutoMPG -> DatasetPlugins.datasetPassthroughPlugin
         is Dataset.Custom -> TODO()
     }
 }

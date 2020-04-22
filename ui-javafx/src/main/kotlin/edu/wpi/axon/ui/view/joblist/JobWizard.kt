@@ -43,6 +43,7 @@ class JobWizard : Wizard("Create job", "Provide job information") {
 
     override fun onSave() {
         job.commit()
+        super.onSave()
     }
 }
 
