@@ -9,8 +9,6 @@ import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.util.FilePath

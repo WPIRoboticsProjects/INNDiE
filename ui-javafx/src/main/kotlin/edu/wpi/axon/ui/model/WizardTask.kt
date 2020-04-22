@@ -24,14 +24,12 @@ sealed class WizardTask(val title: String, val description: String) {
             get() = listOf(
                     TaskInput("Auto MPG", "Predict the MPG of a provided vehicle configuration", DatasetType.EXAMPLE, Dataset.ExampleDataset.AutoMPG, Optimizer.RMSprop(), Loss.MeanSquaredError)
             )
-
     }
 
 //    object Detection : WizardTask("Detection", "Detection objects in images") {
 //        override val supportedInputs: List<TaskInput>
 //            get() = listOf(
-////                    TaskInput("Custom", "Detect custom objects using a Supervise.ly dataset", DatasetType.CUSTOM, Dataset.Custom("", ""))
+// //                    TaskInput("Custom", "Detect custom objects using a Supervise.ly dataset", DatasetType.CUSTOM, Dataset.Custom("", ""))
 //            )
 //    }
 }
-

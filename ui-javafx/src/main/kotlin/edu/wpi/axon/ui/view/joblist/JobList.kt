@@ -4,41 +4,27 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
-import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
-import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.ModelManager
 import edu.wpi.axon.ui.controller.JobBoard
-import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.model.JobWizardModel
-import edu.wpi.axon.util.FilePath
 import edu.wpi.axon.util.getOutputModelName
 import javafx.collections.ListChangeListener
-import javafx.geometry.Orientation
 import javafx.scene.layout.Priority
-import tornadofx.ValidationMessage
-import tornadofx.ValidationSeverity
 import tornadofx.View
-import tornadofx.action
 import tornadofx.bindSelected
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.enableWhen
-import tornadofx.field
 import tornadofx.insets
 import tornadofx.listview
-import tornadofx.textfield
-import tornadofx.validator
 import tornadofx.vbox
 import tornadofx.vgrow
 
@@ -76,13 +62,8 @@ class JobList : View() {
 
             button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
                 setOnAction {
-                    find<JobWizard> {
-                        job.item = null
-
+                    JobWizard().apply {
                         onComplete {
-
-                            print("\n\n\n AUSTIN \n\n\n")
-
                             runAsync {
                                 with(job.item) {
                                     println(this)
@@ -103,8 +84,6 @@ class JobList : View() {
                                             datasetPlugin = datasetPlugin
                                     )
                                 }
-                            } ui {
-                                //this@JobList.job.item = JobDto(it)
                             }
                         }
                         openModal()

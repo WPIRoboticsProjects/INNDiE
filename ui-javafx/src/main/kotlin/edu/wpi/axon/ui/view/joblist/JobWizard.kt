@@ -24,7 +24,6 @@ import tornadofx.toObservable
 import tornadofx.tooltip
 import tornadofx.validator
 
-
 class JobWizard : Wizard("Create job", "Provide job information") {
     val job: JobWizardModel by inject()
 
@@ -61,7 +60,7 @@ class TaskSelection : View("Task") {
                     """.trimIndent()
                 )
 
-                items = WizardTask::class.sealedSubclasses.map { it.objectInstance } .toList().toObservable()
+                items = WizardTask::class.sealedSubclasses.map { it.objectInstance }.toList().toObservable()
 
                 cellFormat {
                     text = it.title
