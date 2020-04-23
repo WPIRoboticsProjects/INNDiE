@@ -146,13 +146,19 @@ class JobWizardModel : ItemViewModel<JobDto>() {
 
     override fun onCommit() {
         // Logic for detecting parameters goes here
-        val modelSource = ModelSource.FromExample(
-                exampleModelManager.getAllExampleModels()
-                        .unsafeRunSync()
-                        .first { it.name == "${task.value.title} - ${taskInput.value.title}" }
-        )
+        val exampleModelName = "${task.value.title} - ${taskInput.value.title}"
+        val exampleModel = exampleModelManager.getAllExampleModels()
+            .unsafeRunSync()
+            .firstOrNull { it.name == exampleModelName }
 
-        item = JobDto(Job(
+        check(exampleModel != null) {
+            "No example model was found with name `$exampleModelName`"
+        }
+
+        val modelSource = ModelSource.FromExample(exampleModel)
+
+        item = JobDto(
+            Job(
                 name = name.value,
                 status = TrainingScriptProgress.NotStarted,
                 userOldModelPath = modelSource,
@@ -172,18 +178,20 @@ class JobWizardModel : ItemViewModel<JobDto>() {
                 generateDebugComments = false,
                 datasetPlugin = extractDatasetPlugin(taskInput.value.dataset, modelSource),
                 id = -1
-        ))
+            )
+        )
     }
 
-    private fun extractDatasetPlugin(dataset: Dataset, model: ModelSource.FromExample) = when (dataset) {
-        Dataset.ExampleDataset.BostonHousing -> TODO()
-        Dataset.ExampleDataset.Cifar10 -> TODO()
-        Dataset.ExampleDataset.Cifar100 -> TODO()
-        Dataset.ExampleDataset.FashionMnist -> DatasetPlugins.processMnistTypePlugin
-        Dataset.ExampleDataset.IMDB -> TODO()
-        Dataset.ExampleDataset.Mnist -> DatasetPlugins.processMnistTypePlugin
-        Dataset.ExampleDataset.Reuters -> TODO()
-        Dataset.ExampleDataset.AutoMPG -> DatasetPlugins.datasetPassthroughPlugin
-        is Dataset.Custom -> TODO()
-    }
+    private fun extractDatasetPlugin(dataset: Dataset, model: ModelSource.FromExample) =
+        when (dataset) {
+            Dataset.ExampleDataset.BostonHousing -> TODO()
+            Dataset.ExampleDataset.Cifar10 -> TODO()
+            Dataset.ExampleDataset.Cifar100 -> TODO()
+            Dataset.ExampleDataset.FashionMnist -> DatasetPlugins.processMnistTypePlugin
+            Dataset.ExampleDataset.IMDB -> TODO()
+            Dataset.ExampleDataset.Mnist -> DatasetPlugins.processMnistTypePlugin
+            Dataset.ExampleDataset.Reuters -> TODO()
+            Dataset.ExampleDataset.AutoMPG -> DatasetPlugins.datasetPassthroughPlugin
+            is Dataset.Custom -> TODO()
+        }
 }

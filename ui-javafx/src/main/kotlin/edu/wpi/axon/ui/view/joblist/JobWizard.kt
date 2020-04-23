@@ -1,6 +1,7 @@
 package edu.wpi.axon.ui.view.joblist
 
 import edu.wpi.axon.db.JobDb
+import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.model.JobWizardModel
 import edu.wpi.axon.ui.model.WizardTask
@@ -30,6 +31,8 @@ class JobWizard : Wizard("Create job", "Provide job information") {
     override val canGoNext = currentPageComplete
     override val canFinish = allPagesComplete
 
+    private val exampleModelManager by di<ExampleModelManager>()
+
     init {
         add(TaskSelection::class)
         add(InputSelection::class)
@@ -38,6 +41,12 @@ class JobWizard : Wizard("Create job", "Provide job information") {
         add(FinalInformation::class)
 
         enableStepLinks = true
+
+        // Refresh the example model cache when the user opens the wizard just in case it's out of
+        // date
+        runAsync {
+            exampleModelManager.updateCache().unsafeRunSync()
+        }
     }
 
     override fun onSave() {

@@ -18,11 +18,13 @@ import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.util.getOutputModelName
 import javafx.collections.ListChangeListener
 import javafx.scene.layout.Priority
+import tornadofx.Scope
 import tornadofx.View
 import tornadofx.bindSelected
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.enableWhen
+import tornadofx.find
 import tornadofx.insets
 import tornadofx.listview
 import tornadofx.vbox
@@ -62,7 +64,8 @@ class JobList : View() {
 
             button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
                 setOnAction {
-                    JobWizard().apply {
+                    // Force the wizard to operate in a new scope separate from its parent's scope
+                    find(JobWizard::class, Scope()).apply {
                         onComplete {
                             runAsync {
                                 with(job.item) {
