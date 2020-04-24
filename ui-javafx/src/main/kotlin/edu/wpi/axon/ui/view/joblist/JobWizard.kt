@@ -10,7 +10,9 @@ import tornadofx.ValidationMessage
 import tornadofx.ValidationSeverity
 import tornadofx.View
 import tornadofx.Wizard
+import tornadofx.booleanBinding
 import tornadofx.combobox
+import tornadofx.datagrid
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.filterInput
@@ -19,8 +21,11 @@ import tornadofx.isInt
 import tornadofx.objectBinding
 import tornadofx.observableListOf
 import tornadofx.required
+import tornadofx.selectedValueProperty
 import tornadofx.textfield
 import tornadofx.toObservable
+import tornadofx.togglebutton
+import tornadofx.togglegroup
 import tornadofx.tooltip
 import tornadofx.validator
 
@@ -83,27 +88,40 @@ class TaskSelection : View("Task") {
 class InputSelection : View("Input") {
     val job: JobWizardModel by inject()
 
-    override val complete = job.valid(job.taskInput)
+    override val complete = job.taskInput.booleanBinding { it != null }
 
     override val root = form {
         fieldset(title) {
-            combobox(job.taskInput) {
-                tooltip(
-                    """
-                    The input to the machine learning process.
-                    """.trimIndent()
-                )
+            togglegroup {
+                job.taskInput.bind(selectedValueProperty())
+                datagrid<WizardTask.TaskInput> {
+                    itemsProperty.bind(job.task.objectBinding { it?.supportedInputs?.toObservable() ?: observableListOf() })
 
-                itemsProperty().bind(job.task.objectBinding { it?.supportedInputs?.toObservable() ?: observableListOf() })
-
-                cellFormat {
-                    text = it.title
+                    cellCache {
+                        togglebutton(it.title, this@togglegroup, value = it)
+                    }
                 }
-
-                required()
             }
         }
     }
+
+//            combobox(job.taskInput) {
+//                tooltip(
+//                    """
+//                    The input to the machine learning process.
+//                    """.trimIndent()
+//                )
+//
+//
+//
+//                cellFormat {
+//                    text = it.title
+//                }
+//
+//                required()
+//            }
+//        }
+//    }
 }
 
 class TrainingOptions : View("Training Options") {

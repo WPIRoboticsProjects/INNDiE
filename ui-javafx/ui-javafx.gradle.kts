@@ -65,6 +65,6 @@ application {
     // https://github.com/edvin/tornadofx/issues/899#issuecomment-569709223
     applicationDefaultJvmArgs += "--add-opens=javafx.graphics/javafx.scene=ALL-UNNAMED"
     applicationDefaultJvmArgs += "--add-opens=javafx.controls/javafx.scene.control=ALL-UNNAMED"
-
+    applicationDefaultJvmArgs += "--add-opens=javafx.controls/javafx.scene.control.skin=ALL-UNNAMED"
     applicationDefaultJvmArgs += "--add-opens=javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED"
 }
