@@ -3,6 +3,7 @@ package edu.wpi.axon.ui.view.joblist
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobWizardModel
 import edu.wpi.axon.ui.model.WizardTask
 import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
@@ -38,6 +39,8 @@ class JobWizard : Wizard("Create job", "Provide job information") {
     private val exampleModelManager by di<ExampleModelManager>()
 
     init {
+        job.item = JobDto(null)
+
         add(TaskSelection::class)
         add(InputSelection::class)
         add(TrainingOptions::class)
@@ -73,7 +76,8 @@ class TaskSelection : View("Task") {
                     """.trimIndent()
                 )
 
-                items = WizardTask::class.sealedSubclasses.map { it.objectInstance }.toList().toObservable()
+                items = WizardTask::class.sealedSubclasses.map { it.objectInstance }.toList()
+                    .toObservable()
 
                 cellFormat {
                     text = it.title
@@ -95,7 +99,9 @@ class InputSelection : View("Input") {
             togglegroup {
                 job.taskInput.bind(selectedValueProperty())
                 datagrid<WizardTask.TaskInput> {
-                    itemsProperty.bind(job.task.objectBinding { it?.supportedInputs?.toObservable() ?: observableListOf() })
+                    itemsProperty.bind(job.task.objectBinding {
+                        it?.supportedInputs?.toObservable() ?: observableListOf()
+                    })
 
                     cellCache {
                         togglebutton(it.title, this@togglegroup, value = it)
@@ -186,15 +192,16 @@ class FinalInformation : View("Finish") {
                 textfield(job.name) {
                     validator {
                         if (it.isNullOrBlank()) {
-                            ValidationMessage("Must not be empty.", ValidationSeverity.Error
+                            ValidationMessage(
+                                "Must not be empty.", ValidationSeverity.Error
                             )
                         } else {
                             if (database.findByName(it) == null) {
                                 null
                             } else {
                                 ValidationMessage(
-                                        "A Job with that name already exists.",
-                                        ValidationSeverity.Error
+                                    "A Job with that name already exists.",
+                                    ValidationSeverity.Error
                                 )
                             }
                         }

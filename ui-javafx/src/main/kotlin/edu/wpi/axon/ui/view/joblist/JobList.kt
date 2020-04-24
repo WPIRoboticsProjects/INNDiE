@@ -71,20 +71,20 @@ class JobList : View() {
                                 with(job.item) {
                                     println(this)
                                     database.create(
-                                            name = name,
-                                            status = status,
-                                            userOldModelPath = userOldModelPath,
-                                            userDataset = userDataset,
-                                            userOptimizer = userOptimizer,
-                                            userLoss = userLoss,
-                                            userMetrics = userMetrics,
-                                            userEpochs = userEpochs,
-                                            userNewModel = userNewModel,
-                                            userNewModelFilename = userNewModelFilename,
-                                            generateDebugComments = false,
-                                            internalTrainingMethod = InternalJobTrainingMethod.Untrained,
-                                            target = target,
-                                            datasetPlugin = datasetPlugin
+                                        name = name,
+                                        status = status,
+                                        userOldModelPath = userOldModelPath,
+                                        userDataset = userDataset,
+                                        userOptimizer = userOptimizer,
+                                        userLoss = userLoss,
+                                        userMetrics = userMetrics,
+                                        userEpochs = userEpochs,
+                                        userNewModel = userNewModel,
+                                        userNewModelFilename = userNewModelFilename,
+                                        generateDebugComments = false,
+                                        internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+                                        target = target,
+                                        datasetPlugin = datasetPlugin
                                     )
                                 }
                             }
