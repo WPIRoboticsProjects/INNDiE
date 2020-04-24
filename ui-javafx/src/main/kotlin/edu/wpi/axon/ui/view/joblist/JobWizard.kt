@@ -164,19 +164,21 @@ class FinalInformation : View("Finish") {
 
     override val root = form {
         fieldset(title) {
-            textfield(job.name) {
-                validator {
-                    if (it.isNullOrBlank()) {
-                        ValidationMessage("Must not be empty.", ValidationSeverity.Error
-                        )
-                    } else {
-                        if (database.findByName(it) == null) {
-                            null
-                        } else {
-                            ValidationMessage(
-                                    "A Job with that name already exists.",
-                                    ValidationSeverity.Error
+            field("Name") {
+                textfield(job.name) {
+                    validator {
+                        if (it.isNullOrBlank()) {
+                            ValidationMessage("Must not be empty.", ValidationSeverity.Error
                             )
+                        } else {
+                            if (database.findByName(it) == null) {
+                                null
+                            } else {
+                                ValidationMessage(
+                                        "A Job with that name already exists.",
+                                        ValidationSeverity.Error
+                                )
+                            }
                         }
                     }
                 }
