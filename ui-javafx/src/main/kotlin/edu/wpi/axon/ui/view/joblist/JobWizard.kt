@@ -18,7 +18,6 @@ import tornadofx.form
 import tornadofx.isInt
 import tornadofx.objectBinding
 import tornadofx.observableListOf
-import tornadofx.onChange
 import tornadofx.required
 import tornadofx.textfield
 import tornadofx.toObservable
@@ -95,7 +94,7 @@ class InputSelection : View("Input") {
                     """.trimIndent()
                 )
 
-                job.task.objectBinding { it?.supportedInputs?.toObservable() ?: observableListOf() }.onChange { items = it }
+                itemsProperty().bind(job.task.objectBinding { it?.supportedInputs?.toObservable() ?: observableListOf() })
 
                 cellFormat {
                     text = it.title
