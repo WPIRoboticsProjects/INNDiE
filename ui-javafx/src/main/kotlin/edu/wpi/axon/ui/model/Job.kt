@@ -162,8 +162,10 @@ class JobWizardModel : ItemViewModel<JobDto>() {
     val target = bind(JobDto::targetProperty, autocommit = true)
     val targetType = bind(JobDto::targetTypeProperty, autocommit = true)
     val datasetPlugin = bind(JobDto::datasetPluginProperty, autocommit = true)
+
     val task = bind(autocommit = true) { SimpleObjectProperty<WizardTask>() }
     val taskInput = bind(autocommit = true) { SimpleObjectProperty<TaskInput>() }
+    val wizardTarget = bind(autocommit = true) { SimpleObjectProperty<WizardTarget>() }
 
     override fun onCommit() {
         // Logic for detecting parameters goes here
@@ -187,6 +189,7 @@ class JobWizardModel : ItemViewModel<JobDto>() {
         userNewModel.value = modelManager.loadModel(modelSource)
         userNewModelFilename.value = getOutputModelName(modelSource.filename)
         internalTrainingMethod.value = InternalJobTrainingMethod.Untrained
+        targetType.value = wizardTarget.value.targetClass
         target.value = when (targetType.value) {
             ModelDeploymentTarget.Desktop::class -> ModelDeploymentTarget.Desktop
             ModelDeploymentTarget.Coral::class -> ModelDeploymentTarget.Coral()

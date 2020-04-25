@@ -3,8 +3,10 @@ package edu.wpi.axon.ui.controller
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.TaskInput
+import edu.wpi.axon.ui.model.WizardTarget
 import edu.wpi.axon.ui.model.WizardTask
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -50,5 +52,10 @@ class WizardTaskService : Controller() {
                                     Optimizer.RMSprop(),
                                     Loss.MeanSquaredError)
                     ))
+    )
+
+    val targets: ObservableList<WizardTarget> = FXCollections.observableArrayList(
+            WizardTarget("Desktop", "For inference on a computer", resources["/desktop.png"], ModelDeploymentTarget.Desktop::class),
+            WizardTarget("Coral", "For inference with a Google™ Coral", resources["/coral.jpg"], ModelDeploymentTarget.Coral::class)
     )
 }

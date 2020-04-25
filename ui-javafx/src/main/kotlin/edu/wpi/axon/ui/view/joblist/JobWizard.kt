@@ -2,12 +2,10 @@ package edu.wpi.axon.ui.view.joblist
 
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.controller.WizardTaskService
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobWizardModel
 import edu.wpi.axon.ui.model.TaskInput
-import edu.wpi.axon.ui.model.WizardTask
 import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
 import javafx.geometry.Pos
 import javafx.scene.input.MouseButton
@@ -19,7 +17,6 @@ import tornadofx.View
 import tornadofx.Wizard
 import tornadofx.bindSelected
 import tornadofx.booleanBinding
-import tornadofx.combobox
 import tornadofx.datagrid
 import tornadofx.field
 import tornadofx.fieldset
@@ -30,7 +27,6 @@ import tornadofx.isInt
 import tornadofx.label
 import tornadofx.objectBinding
 import tornadofx.observableListOf
-import tornadofx.required
 import tornadofx.textfield
 import tornadofx.toObservable
 import tornadofx.tooltip
@@ -94,7 +90,9 @@ class TaskSelection : View("Task") {
 
                         alignment = Pos.CENTER
 
-                        label(task.title)
+                        label(task.title) {
+                            alignment = Pos.TOP_CENTER
+                        }
                         imageview(task.graphic) {
                             isPreserveRatio = false
                             fitWidth = 125.0
@@ -102,6 +100,7 @@ class TaskSelection : View("Task") {
                         }
                         label(task.description) {
                             isWrapText = true
+                            alignment = Pos.BOTTOM_CENTER
                             textAlignment = TextAlignment.CENTER
                         }
                     }
@@ -137,7 +136,9 @@ class InputSelection : View("Input") {
 
                         alignment = Pos.CENTER
 
-                        label(taskInput.title)
+                        label(taskInput.title) {
+                            alignment = Pos.TOP_CENTER
+                        }
                         imageview(taskInput.graphic) {
                             isPreserveRatio = false
                             fitWidth = 125.0
@@ -145,6 +146,7 @@ class InputSelection : View("Input") {
                         }
                         label(taskInput.description) {
                             isWrapText = true
+                            alignment = Pos.BOTTOM_CENTER
                             textAlignment = TextAlignment.CENTER
                         }
                     }
@@ -178,26 +180,44 @@ class TrainingOptions : View("Training Options") {
 }
 
 class TargetSelection : View("Target") {
+    private val taskService: WizardTaskService by inject()
     val job: JobWizardModel by inject()
 
-    override val complete = job.valid(job.targetType)
+    override val complete = job.wizardTarget.booleanBinding { it != null }
 
     override val root = form {
         fieldset(title) {
-            combobox(job.targetType) {
-                tooltip(
-                    """
-                    The target machine that the model will run on.
-                    """.trimIndent()
-                )
+            datagrid(taskService.targets) {
+                bindSelected(job.wizardTarget)
 
-                items = ModelDeploymentTarget::class.sealedSubclasses.toObservable()
+                cellWidth = 200.0
+                cellHeight = 200.0
 
-                cellFormat {
-                    text = it.simpleName
+                cellCache { target ->
+                    vbox {
+                        addEventFilter(MouseEvent.MOUSE_CLICKED) {
+                            if (it.button == MouseButton.PRIMARY) {
+                                selectionModel.select(target)
+                            }
+                        }
+
+                        alignment = Pos.CENTER
+
+                        label(target.title) {
+                            alignment = Pos.TOP_CENTER
+                        }
+                        imageview(target.graphic) {
+                            isPreserveRatio = false
+                            fitWidth = 125.0
+                            fitHeight = 125.0
+                        }
+                        label(target.description) {
+                            isWrapText = true
+                            alignment = Pos.BOTTOM_CENTER
+                            textAlignment = TextAlignment.CENTER
+                        }
+                    }
                 }
-
-                required()
             }
         }
     }
