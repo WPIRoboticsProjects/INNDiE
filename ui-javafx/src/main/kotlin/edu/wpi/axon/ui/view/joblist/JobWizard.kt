@@ -21,7 +21,6 @@ import tornadofx.datagrid
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.filterInput
-import tornadofx.fitToParentSize
 import tornadofx.form
 import tornadofx.imageview
 import tornadofx.isInt

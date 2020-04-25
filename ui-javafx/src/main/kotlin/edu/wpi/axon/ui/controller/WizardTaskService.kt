@@ -10,7 +10,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import tornadofx.Controller
 
-class WizardTaskService: Controller() {
+class WizardTaskService : Controller() {
     val tasks: ObservableList<WizardTask> = FXCollections.observableArrayList(
             WizardTask("Classification",
                     "Separate items into categories",
