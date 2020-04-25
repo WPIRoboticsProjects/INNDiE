@@ -31,7 +31,7 @@ class WizardTaskService : Controller() {
                                 Optimizer.Adam(),
                                 Loss.CategoricalCrossentropy),
                         TaskInput("IMDB",
-                                "Classify a positive or negative movie review",
+                                "Classify positive or negative movie reviews",
                                 resources["/imdb.png"],
                                 DatasetType.EXAMPLE,
                                 Dataset.ExampleDataset.IMDB,
