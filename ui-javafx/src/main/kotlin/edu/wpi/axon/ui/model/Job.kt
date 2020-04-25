@@ -182,9 +182,12 @@ class JobWizardModel : ItemViewModel<JobDto>() {
 
         status.value = TrainingScriptProgress.NotStarted
         userOldModelPath.value = modelSource
+        oldModelType.value = ModelSourceType.EXAMPLE
         userDataset.value = taskInput.value.dataset
         userOptimizer.value = taskInput.value.optimizer
+        optimizerType.value = taskInput.value.optimizer::class
         userLoss.value = taskInput.value.loss
+        lossType.value = taskInput.value.loss::class
         userMetrics.value = setOf("accuracy").toObservable()
         userNewModel.value = modelManager.loadModel(modelSource)
         userNewModelFilename.value = getOutputModelName(modelSource.filename)
