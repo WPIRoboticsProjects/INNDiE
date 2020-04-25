@@ -8,6 +8,7 @@ import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobWizardModel
 import edu.wpi.axon.ui.model.TaskInput
 import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
+import javafx.geometry.Pos
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import tornadofx.ValidationMessage
@@ -102,6 +103,9 @@ class InputSelection : View("Input") {
         datagrid<TaskInput> {
             bindSelected(job.taskInput)
 
+            cellWidth = 250.0
+            cellHeight = 250.0
+
             itemsProperty.bind(job.task.objectBinding {
                 it?.supportedInputs?.toObservable() ?: observableListOf()
             })
@@ -113,11 +117,13 @@ class InputSelection : View("Input") {
                         }
                     }
 
+                    alignment = Pos.CENTER
+
                     label(taskInput.title)
                     imageview(taskInput.graphic) {
                         isPreserveRatio = false
-                        fitWidth = 100.0
-                        fitHeight = 100.0
+                        fitWidth = 150.0
+                        fitHeight = 150.0
                     }
                     label(taskInput.description)
                 }
