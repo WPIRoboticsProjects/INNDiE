@@ -7,10 +7,12 @@ import edu.wpi.axon.ui.controller.WizardTaskService
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobWizardModel
 import edu.wpi.axon.ui.model.TaskInput
+import edu.wpi.axon.ui.model.WizardTask
 import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
 import javafx.geometry.Pos
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
+import javafx.scene.text.TextAlignment
 import tornadofx.ValidationMessage
 import tornadofx.ValidationSeverity
 import tornadofx.View
@@ -71,24 +73,39 @@ class TaskSelection : View("Task") {
     private val taskService: WizardTaskService by inject()
     val job: JobWizardModel by inject()
 
-    override val complete = job.valid(job.task)
+    override val complete = job.task.booleanBinding { it != null }
 
     override val root = form {
         fieldset(title) {
-            combobox(job.task) {
-                tooltip(
-                    """
-                    The type of machine learning task.
-                    """.trimIndent()
-                )
 
-                items = taskService.tasks
+            datagrid(taskService.tasks) {
+                bindSelected(job.task)
 
-                cellFormat {
-                    text = it.title
+                cellWidth = 200.0
+                cellHeight = 200.0
+
+                cellCache { task ->
+                    vbox {
+                        addEventFilter(MouseEvent.MOUSE_CLICKED) {
+                            if (it.button == MouseButton.PRIMARY) {
+                                selectionModel.select(task)
+                            }
+                        }
+
+                        alignment = Pos.CENTER
+
+                        label(task.title)
+                        imageview(task.graphic) {
+                            isPreserveRatio = false
+                            fitWidth = 125.0
+                            fitHeight = 125.0
+                        }
+                        label(task.description) {
+                            isWrapText = true
+                            textAlignment = TextAlignment.CENTER
+                        }
+                    }
                 }
-
-                required()
             }
         }
     }
@@ -100,32 +117,37 @@ class InputSelection : View("Input") {
     override val complete = job.taskInput.booleanBinding { it != null }
 
     override val root = form {
-        datagrid<TaskInput> {
-            bindSelected(job.taskInput)
+        fieldset(title) {
+            datagrid<TaskInput> {
+                bindSelected(job.taskInput)
 
-            cellWidth = 250.0
-            cellHeight = 250.0
+                cellWidth = 200.0
+                cellHeight = 200.0
 
-            itemsProperty.bind(job.task.objectBinding {
-                it?.supportedInputs?.toObservable() ?: observableListOf()
-            })
-            cellCache { taskInput ->
-                vbox {
-                    addEventFilter(MouseEvent.MOUSE_CLICKED) {
-                        if (it.button == MouseButton.PRIMARY) {
-                            selectionModel.select(taskInput)
+                itemsProperty.bind(job.task.objectBinding {
+                    it?.supportedInputs?.toObservable() ?: observableListOf()
+                })
+                cellCache { taskInput ->
+                    vbox {
+                        addEventFilter(MouseEvent.MOUSE_CLICKED) {
+                            if (it.button == MouseButton.PRIMARY) {
+                                selectionModel.select(taskInput)
+                            }
+                        }
+
+                        alignment = Pos.CENTER
+
+                        label(taskInput.title)
+                        imageview(taskInput.graphic) {
+                            isPreserveRatio = false
+                            fitWidth = 125.0
+                            fitHeight = 125.0
+                        }
+                        label(taskInput.description) {
+                            isWrapText = true
+                            textAlignment = TextAlignment.CENTER
                         }
                     }
-
-                    alignment = Pos.CENTER
-
-                    label(taskInput.title)
-                    imageview(taskInput.graphic) {
-                        isPreserveRatio = false
-                        fitWidth = 150.0
-                        fitHeight = 150.0
-                    }
-                    label(taskInput.description)
                 }
             }
         }
