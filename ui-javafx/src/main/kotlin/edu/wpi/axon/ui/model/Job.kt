@@ -163,7 +163,7 @@ class JobWizardModel : ItemViewModel<JobDto>() {
     val targetType = bind(JobDto::targetTypeProperty, autocommit = true)
     val datasetPlugin = bind(JobDto::datasetPluginProperty, autocommit = true)
     val task = bind(autocommit = true) { SimpleObjectProperty<WizardTask>() }
-    val taskInput = bind(autocommit = true) { SimpleObjectProperty<WizardTask.TaskInput>() }
+    val taskInput = bind(autocommit = true) { SimpleObjectProperty<TaskInput>() }
 
     override fun onCommit() {
         // Logic for detecting parameters goes here

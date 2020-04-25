@@ -3,32 +3,37 @@ package edu.wpi.axon.ui.view.joblist
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.axon.ui.controller.WizardTaskService
 import edu.wpi.axon.ui.model.JobDto
 import edu.wpi.axon.ui.model.JobWizardModel
-import edu.wpi.axon.ui.model.WizardTask
+import edu.wpi.axon.ui.model.TaskInput
 import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
+import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 import tornadofx.ValidationMessage
 import tornadofx.ValidationSeverity
 import tornadofx.View
 import tornadofx.Wizard
+import tornadofx.bindSelected
 import tornadofx.booleanBinding
 import tornadofx.combobox
 import tornadofx.datagrid
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.filterInput
+import tornadofx.fitToParentSize
 import tornadofx.form
+import tornadofx.imageview
 import tornadofx.isInt
+import tornadofx.label
 import tornadofx.objectBinding
 import tornadofx.observableListOf
 import tornadofx.required
-import tornadofx.selectedValueProperty
 import tornadofx.textfield
 import tornadofx.toObservable
-import tornadofx.togglebutton
-import tornadofx.togglegroup
 import tornadofx.tooltip
 import tornadofx.validator
+import tornadofx.vbox
 
 class JobWizard : Wizard("Create job", "Provide job information") {
     val job: JobWizardModel by inject()
@@ -63,6 +68,7 @@ class JobWizard : Wizard("Create job", "Provide job information") {
 }
 
 class TaskSelection : View("Task") {
+    private val taskService: WizardTaskService by inject()
     val job: JobWizardModel by inject()
 
     override val complete = job.valid(job.task)
@@ -76,8 +82,7 @@ class TaskSelection : View("Task") {
                     """.trimIndent()
                 )
 
-                items = WizardTask::class.sealedSubclasses.map { it.objectInstance }.toList()
-                    .toObservable()
+                items = taskService.tasks
 
                 cellFormat {
                     text = it.title
@@ -95,39 +100,31 @@ class InputSelection : View("Input") {
     override val complete = job.taskInput.booleanBinding { it != null }
 
     override val root = form {
-        fieldset(title) {
-            togglegroup {
-                job.taskInput.bind(selectedValueProperty())
-                datagrid<WizardTask.TaskInput> {
-                    itemsProperty.bind(job.task.objectBinding {
-                        it?.supportedInputs?.toObservable() ?: observableListOf()
-                    })
+        datagrid<TaskInput> {
+            bindSelected(job.taskInput)
 
-                    cellCache {
-                        togglebutton(it.title, this@togglegroup, value = it)
+            itemsProperty.bind(job.task.objectBinding {
+                it?.supportedInputs?.toObservable() ?: observableListOf()
+            })
+            cellCache { taskInput ->
+                vbox {
+                    addEventFilter(MouseEvent.MOUSE_CLICKED) {
+                        if (it.button == MouseButton.PRIMARY) {
+                            selectionModel.select(taskInput)
+                        }
                     }
+
+                    label(taskInput.title)
+                    imageview(taskInput.graphic) {
+                        isPreserveRatio = false
+                        fitWidth = 100.0
+                        fitHeight = 100.0
+                    }
+                    label(taskInput.description)
                 }
             }
         }
     }
-
-//            combobox(job.taskInput) {
-//                tooltip(
-//                    """
-//                    The input to the machine learning process.
-//                    """.trimIndent()
-//                )
-//
-//
-//
-//                cellFormat {
-//                    text = it.title
-//                }
-//
-//                required()
-//            }
-//        }
-//    }
 }
 
 class TrainingOptions : View("Training Options") {
