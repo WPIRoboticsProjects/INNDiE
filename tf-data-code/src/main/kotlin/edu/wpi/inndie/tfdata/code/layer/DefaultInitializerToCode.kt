@@ -2,7 +2,7 @@ package edu.wpi.inndie.tfdata.code.layer
 
 import arrow.core.right
 import edu.wpi.inndie.tfdata.code.namedArguments
-import edu.wpi.axon.tfdata.layer.Initializer
+import edu.wpi.inndie.tfdata.layer.Initializer
 
 class DefaultInitializerToCode : InitializerToCode {
 

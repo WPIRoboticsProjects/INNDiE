@@ -1,8 +1,8 @@
 package edu.wpi.inndie.tflayerloader
 
 import arrow.core.Either
-import edu.wpi.axon.tfdata.LayerGraph
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.LayerGraph
+import edu.wpi.inndie.tfdata.layer.Layer
 
 @Suppress("UnstableApiUsage")
 interface LayersToGraph {

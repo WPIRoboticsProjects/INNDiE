@@ -6,8 +6,8 @@ import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.code.loss.LossToCode
 import edu.wpi.inndie.tfdata.code.optimizer.OptimizerToCode
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import io.kotlintest.shouldBe
 import io.mockk.confirmVerified
 import io.mockk.every

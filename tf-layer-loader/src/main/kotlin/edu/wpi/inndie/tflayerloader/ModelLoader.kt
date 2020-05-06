@@ -1,7 +1,7 @@
 package edu.wpi.inndie.tflayerloader
 
 import arrow.fx.IO
-import edu.wpi.axon.tfdata.Model
+import edu.wpi.inndie.tfdata.Model
 import java.io.File
 
 interface ModelLoader {

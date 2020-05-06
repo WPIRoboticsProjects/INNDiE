@@ -26,7 +26,7 @@ import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.tfdata.Model
+import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.training.TrainGeneralModelScriptGenerator
 import edu.wpi.inndie.training.TrainSequentialModelScriptGenerator
 import edu.wpi.inndie.training.TrainState

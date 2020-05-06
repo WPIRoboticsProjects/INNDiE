@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
-import edu.wpi.axon.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.loss.Loss
 import edu.wpi.inndie.ui.model.JobModel
 import tornadofx.Fragment
 import tornadofx.ItemViewModel

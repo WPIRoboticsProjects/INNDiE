@@ -1,6 +1,6 @@
 package edu.wpi.inndie.tfdata.code
 
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Dataset
 
 interface ExampleDatasetToCode {
 

@@ -1,6 +1,6 @@
 package edu.wpi.axon.aws
 
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.util.FilePath
 import java.nio.file.Path
 

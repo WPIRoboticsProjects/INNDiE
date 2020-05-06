@@ -4,7 +4,7 @@
 package edu.wpi.inndie.tflayerloader
 
 import com.google.common.graph.EndpointPair
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Layer
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.collections.shouldContainExactly

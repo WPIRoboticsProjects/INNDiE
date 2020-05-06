@@ -6,10 +6,10 @@ import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.training.testutil.loadModel
 import edu.wpi.inndie.util.FilePath
 import io.kotlintest.assertions.arrow.validation.shouldBeValid

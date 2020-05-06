@@ -8,8 +8,8 @@ import edu.wpi.inndie.tfdata.code.asTuple
 import edu.wpi.inndie.tfdata.code.namedArguments
 import edu.wpi.inndie.tfdata.code.pythonString
 import edu.wpi.inndie.tfdata.code.unquoted
-import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Activation
+import edu.wpi.inndie.tfdata.layer.Layer
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 

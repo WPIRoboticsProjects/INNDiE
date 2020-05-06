@@ -1,6 +1,6 @@
 package edu.wpi.inndie.tfdata.code.loss
 
-import edu.wpi.axon.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.loss.Loss
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments

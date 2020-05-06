@@ -5,7 +5,7 @@ import arrow.core.getOrElse
 import edu.wpi.axon.aws.S3Manager
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.tfdata.Model
+import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.tflayerloader.ModelLoaderFactory
 import edu.wpi.inndie.util.FilePath
 import edu.wpi.inndie.util.axonBucketName

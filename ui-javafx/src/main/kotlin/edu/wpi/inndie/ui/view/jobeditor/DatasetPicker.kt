@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.ui.model.DatasetModel
 import edu.wpi.inndie.ui.model.DatasetType
 import edu.wpi.inndie.ui.model.JobModel

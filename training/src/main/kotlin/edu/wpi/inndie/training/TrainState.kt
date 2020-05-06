@@ -2,10 +2,10 @@ package edu.wpi.inndie.training
 
 import arrow.core.Option
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.util.FilePath
 import edu.wpi.inndie.util.allS3OrLocal
 import edu.wpi.inndie.util.getOutputModelName

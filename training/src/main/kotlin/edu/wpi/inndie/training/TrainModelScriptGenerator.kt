@@ -2,7 +2,7 @@ package edu.wpi.inndie.training
 
 import arrow.core.NonEmptyList
 import arrow.core.Validated
-import edu.wpi.axon.tfdata.Model
+import edu.wpi.inndie.tfdata.Model
 
 /**
  * Trains a [Model].

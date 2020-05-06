@@ -4,10 +4,10 @@ package edu.wpi.inndie.training
 
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.DataFormat
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.layer.Activation
+import edu.wpi.inndie.tfdata.layer.DataFormat
+import edu.wpi.inndie.tfdata.layer.Layer
 import edu.wpi.inndie.training.testutil.loadModel
 import io.kotlintest.matchers.collections.shouldHaveSize
 import io.kotlintest.matchers.types.shouldBeInstanceOf

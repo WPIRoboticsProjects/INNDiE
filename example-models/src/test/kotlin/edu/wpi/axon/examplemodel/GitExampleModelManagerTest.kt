@@ -2,7 +2,7 @@ package edu.wpi.axon.examplemodel
 
 import arrow.core.None
 import arrow.core.Some
-import edu.wpi.axon.tfdata.SerializableOptionB
+import edu.wpi.inndie.tfdata.SerializableOptionB
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
 import io.kotlintest.matchers.collections.shouldContain
 import io.kotlintest.matchers.collections.shouldContainExactly

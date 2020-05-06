@@ -8,18 +8,18 @@ import arrow.fx.IO
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.SerializableEitherDLd
-import edu.wpi.axon.tfdata.SerializableEitherITii
-import edu.wpi.axon.tfdata.SerializableTuple2II
-import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Constraint
-import edu.wpi.axon.tfdata.layer.DataFormat
-import edu.wpi.axon.tfdata.layer.Initializer
-import edu.wpi.axon.tfdata.layer.Interpolation
-import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tfdata.layer.PoolingPadding
-import edu.wpi.axon.tfdata.layer.Regularizer
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.SerializableEitherDLd
+import edu.wpi.inndie.tfdata.SerializableEitherITii
+import edu.wpi.inndie.tfdata.SerializableTuple2II
+import edu.wpi.inndie.tfdata.layer.Activation
+import edu.wpi.inndie.tfdata.layer.Constraint
+import edu.wpi.inndie.tfdata.layer.DataFormat
+import edu.wpi.inndie.tfdata.layer.Initializer
+import edu.wpi.inndie.tfdata.layer.Interpolation
+import edu.wpi.inndie.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.PoolingPadding
+import edu.wpi.inndie.tfdata.layer.Regularizer
 import edu.wpi.inndie.util.singleAssign
 import io.jhdf.HdfFile
 import java.io.File
@@ -181,7 +181,12 @@ internal class HDF5ModelLoader(
                 name,
                 data.inboundNodes(),
                 json["filters"] as Int,
-                (json["kernel_size"] as JsonArray<Int>).let { SerializableTuple2II(it[0], it[1]) },
+                (json["kernel_size"] as JsonArray<Int>).let {
+                    SerializableTuple2II(
+                        it[0],
+                        it[1]
+                    )
+                },
                 parseActivation(json)
             )
 

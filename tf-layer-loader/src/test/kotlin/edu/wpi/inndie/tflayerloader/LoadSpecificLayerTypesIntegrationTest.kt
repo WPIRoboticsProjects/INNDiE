@@ -3,13 +3,13 @@
 
 package edu.wpi.inndie.tflayerloader
 
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.SerializableEitherITii
-import edu.wpi.axon.tfdata.SerializableTuple2II
-import edu.wpi.axon.tfdata.layer.DataFormat
-import edu.wpi.axon.tfdata.layer.Interpolation
-import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tfdata.layer.PoolingPadding
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.SerializableEitherITii
+import edu.wpi.inndie.tfdata.SerializableTuple2II
+import edu.wpi.inndie.tfdata.layer.DataFormat
+import edu.wpi.inndie.tfdata.layer.Interpolation
+import edu.wpi.inndie.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.PoolingPadding
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,8 +25,12 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                 Layer.AveragePooling2D(
                     "average_pooling2d_7",
                     null,
-                    SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
-                    SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+                    SerializableEitherITii.Right(
+                        SerializableTuple2II(2, 2)
+                    ),
+                    SerializableEitherITii.Right(
+                        SerializableTuple2II(2, 2)
+                    ),
                     PoolingPadding.Valid,
                     DataFormat.ChannelsLast
                 ).isTrainable()
@@ -74,7 +78,9 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                 Layer.UpSampling2D(
                     "up_sampling2d_3",
                     null,
-                    SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+                    SerializableEitherITii.Right(
+                        SerializableTuple2II(2, 2)
+                    ),
                     DataFormat.ChannelsLast,
                     Interpolation.Nearest
                 ).isTrainable()
@@ -91,7 +97,9 @@ internal class LoadSpecificLayerTypesIntegrationTest {
                 Layer.UpSampling2D(
                     "up_sampling2d_2",
                     null,
-                    SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+                    SerializableEitherITii.Right(
+                        SerializableTuple2II(2, 2)
+                    ),
                     DataFormat.ChannelsLast,
                     Interpolation.Bilinear
                 ).isTrainable()

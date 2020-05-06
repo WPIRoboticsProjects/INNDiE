@@ -5,7 +5,7 @@ import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.code.ExampleDatasetToCode
 import edu.wpi.inndie.util.singleAssign
 import org.koin.core.inject

@@ -8,9 +8,9 @@ import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
-import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.Dataset
+import edu.wpi.inndie.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.training.ModelDeploymentTarget
 import edu.wpi.inndie.ui.ModelManager
 import edu.wpi.inndie.ui.controller.JobBoard

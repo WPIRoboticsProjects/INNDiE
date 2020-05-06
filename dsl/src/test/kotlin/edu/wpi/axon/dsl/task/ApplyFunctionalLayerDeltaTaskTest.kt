@@ -13,10 +13,10 @@ import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.mockVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tfdata.Model
+import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.tfdata.code.layer.LayerToCode
-import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Activation
+import edu.wpi.inndie.tfdata.layer.Layer
 import edu.wpi.inndie.tflayerloader.layerGraphIsValid
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.booleans.shouldBeTrue

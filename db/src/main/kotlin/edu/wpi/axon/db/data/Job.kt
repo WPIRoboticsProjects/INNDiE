@@ -1,10 +1,10 @@
 package edu.wpi.axon.db.data
 
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.training.ModelDeploymentTarget
 
 /**

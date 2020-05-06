@@ -6,8 +6,8 @@ import arrow.core.Tuple2
 import arrow.core.toT
 import arrow.fx.IO
 import arrow.fx.extensions.fx
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.layer.Layer
 import edu.wpi.inndie.tflayerloader.ModelLoaderFactory
 import java.io.File
 import org.octogonapus.ktguava.collections.mapNodes

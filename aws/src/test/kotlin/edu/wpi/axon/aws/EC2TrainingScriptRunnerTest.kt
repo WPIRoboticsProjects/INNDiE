@@ -1,7 +1,7 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.util.FilePath
 import io.kotlintest.should
 import io.kotlintest.shouldBe

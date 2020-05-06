@@ -1,6 +1,6 @@
 package edu.wpi.inndie.tfdata.code.loss
 
-import edu.wpi.axon.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.loss.Loss
 
 interface LossToCode {
 

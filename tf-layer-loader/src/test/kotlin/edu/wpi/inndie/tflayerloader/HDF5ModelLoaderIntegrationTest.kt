@@ -3,13 +3,13 @@
 
 package edu.wpi.inndie.tflayerloader
 
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.SerializableEitherITii
-import edu.wpi.axon.tfdata.SerializableTuple2II
-import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.DataFormat
-import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tfdata.layer.PoolingPadding
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.SerializableEitherITii
+import edu.wpi.inndie.tfdata.SerializableTuple2II
+import edu.wpi.inndie.tfdata.layer.Activation
+import edu.wpi.inndie.tfdata.layer.DataFormat
+import edu.wpi.inndie.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.PoolingPadding
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -85,8 +85,12 @@ internal class HDF5ModelLoaderIntegrationTest {
                     Layer.MaxPooling2D(
                         "max_pooling2d_8",
                         null,
-                        SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
-                        SerializableEitherITii.Right(SerializableTuple2II(2, 2)),
+                        SerializableEitherITii.Right(
+                            SerializableTuple2II(2, 2)
+                        ),
+                        SerializableEitherITii.Right(
+                            SerializableTuple2II(2, 2)
+                        ),
                         PoolingPadding.Valid,
                         DataFormat.ChannelsLast
                     ).isTrainable(),

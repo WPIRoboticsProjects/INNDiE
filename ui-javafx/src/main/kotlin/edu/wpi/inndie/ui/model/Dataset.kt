@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.model
 
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Dataset
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.ItemViewModel
 

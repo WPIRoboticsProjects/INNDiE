@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.model
 
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty

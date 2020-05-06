@@ -6,7 +6,7 @@ import arrow.Kind
 import arrow.core.Either
 import arrow.typeclasses.MonadError
 import com.google.common.graph.Graph
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Layer
 import edu.wpi.inndie.util.allIn
 import edu.wpi.inndie.util.breadthFirstSearch
 

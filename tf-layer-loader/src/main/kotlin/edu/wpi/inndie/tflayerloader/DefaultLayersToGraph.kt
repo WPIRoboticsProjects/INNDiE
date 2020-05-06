@@ -9,8 +9,8 @@ import arrow.fx.IO
 import com.google.common.base.Throwables
 import com.google.common.graph.GraphBuilder
 import com.google.common.graph.ImmutableGraph
-import edu.wpi.axon.tfdata.LayerGraph
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.LayerGraph
+import edu.wpi.inndie.tfdata.layer.Layer
 import edu.wpi.inndie.util.checkIslands
 
 class DefaultLayersToGraph : LayersToGraph {

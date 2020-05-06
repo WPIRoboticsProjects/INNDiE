@@ -2,11 +2,11 @@
 
 package edu.wpi.inndie.tflayerloader
 
-import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.SerializableEitherDLd
-import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Initializer
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.Model
+import edu.wpi.inndie.tfdata.SerializableEitherDLd
+import edu.wpi.inndie.tfdata.layer.Activation
+import edu.wpi.inndie.tfdata.layer.Initializer
+import edu.wpi.inndie.tfdata.layer.Layer
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +24,8 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     1,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Left(0.0))
+                    kernelInitializer = Initializer.Constant(
+                        SerializableEitherDLd.Left(0.0))
                 ).isTrainable()
             )
         }
@@ -41,7 +42,8 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(
+                        SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).isTrainable()
             )
         }
@@ -58,7 +60,8 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(
+                        SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).isTrainable()
             )
         }
@@ -75,7 +78,8 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.Constant(SerializableEitherDLd.Right(listOf(1.0, 2.1)))
+                    kernelInitializer = Initializer.Constant(
+                        SerializableEitherDLd.Right(listOf(1.0, 2.1)))
                 ).isTrainable()
             )
         }
@@ -143,7 +147,8 @@ internal class LoadLayersWithInitializersIntegrationTest {
                     null,
                     2,
                     Activation.Linear,
-                    kernelInitializer = Initializer.RandomUniform(SerializableEitherDLd.Left(-0.1), SerializableEitherDLd.Left(0.1), null)
+                    kernelInitializer = Initializer.RandomUniform(
+                        SerializableEitherDLd.Left(-0.1), SerializableEitherDLd.Left(0.1), null)
                 ).isTrainable()
             )
         }

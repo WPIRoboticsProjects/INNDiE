@@ -6,7 +6,7 @@ import edu.wpi.axon.dsl.TaskConfigurationTestFixture
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tfdata.Verbosity
+import edu.wpi.inndie.tfdata.Verbosity
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe

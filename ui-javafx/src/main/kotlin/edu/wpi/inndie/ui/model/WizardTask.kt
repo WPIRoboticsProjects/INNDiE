@@ -1,8 +1,8 @@
 package edu.wpi.inndie.ui.model
 
-import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.Dataset
+import edu.wpi.inndie.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.training.ModelDeploymentTarget
 import kotlin.reflect.KClass
 

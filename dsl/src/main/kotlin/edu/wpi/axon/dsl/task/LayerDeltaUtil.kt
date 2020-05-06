@@ -2,7 +2,7 @@ package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.inndie.tfdata.code.pythonString
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Layer
 
 /**
  * Determines the layer operations to transform [oldLayers] into [newLayers].

@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.layereditor
 
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Layer
 import javafx.beans.property.SimpleBooleanProperty
 import tornadofx.ItemViewModel
 import tornadofx.getValue

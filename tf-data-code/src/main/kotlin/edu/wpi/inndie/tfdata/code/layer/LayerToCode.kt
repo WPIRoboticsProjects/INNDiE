@@ -1,8 +1,8 @@
 package edu.wpi.inndie.tfdata.code.layer
 
 import arrow.core.Either
-import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Activation
+import edu.wpi.inndie.tfdata.layer.Layer
 
 interface LayerToCode {
 

@@ -1,7 +1,7 @@
 package edu.wpi.inndie.tfdata.code.optimizer
 
 import edu.wpi.inndie.tfdata.code.pythonString
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 
 class DefaultOptimizerToCode : OptimizerToCode {
 

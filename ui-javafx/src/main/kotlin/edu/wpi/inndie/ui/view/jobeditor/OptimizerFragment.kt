@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.ui.model.AdamDto
 import edu.wpi.inndie.ui.model.AdamModel
 import edu.wpi.inndie.ui.model.FTRLDto

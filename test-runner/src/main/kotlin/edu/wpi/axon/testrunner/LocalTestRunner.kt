@@ -15,7 +15,7 @@ import edu.wpi.axon.dsl.task.RunInferenceTask
 import edu.wpi.axon.dsl.task.RunPluginTask
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.tfdata.Dataset
+import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.util.runCommand
 import java.io.File
 import java.nio.file.Path

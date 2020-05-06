@@ -8,8 +8,8 @@ import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.mockVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.code.layer.LayerToCode
-import edu.wpi.axon.tfdata.layer.Activation
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Activation
+import edu.wpi.inndie.tfdata.layer.Layer
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe

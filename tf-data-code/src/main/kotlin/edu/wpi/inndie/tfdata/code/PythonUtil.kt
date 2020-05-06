@@ -3,8 +3,8 @@ package edu.wpi.inndie.tfdata.code
 import arrow.core.Either
 import arrow.core.Option
 import arrow.core.Tuple2
-import edu.wpi.axon.tfdata.SerializableEither
-import edu.wpi.axon.tfdata.SerializableTuple2
+import edu.wpi.inndie.tfdata.SerializableEither
+import edu.wpi.inndie.tfdata.SerializableTuple2
 
 data class Unquoted(val value: String)
 data class ListAsList(val list: List<Any?>)

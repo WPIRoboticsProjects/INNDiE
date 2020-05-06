@@ -2,7 +2,7 @@ package edu.wpi.inndie.tfdata.code.layer
 
 import arrow.core.Either
 import arrow.core.right
-import edu.wpi.axon.tfdata.layer.Constraint
+import edu.wpi.inndie.tfdata.layer.Constraint
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments

@@ -1,7 +1,7 @@
 package edu.wpi.inndie.tfdata.code.layer
 
 import arrow.core.Either
-import edu.wpi.axon.tfdata.layer.Regularizer
+import edu.wpi.inndie.tfdata.layer.Regularizer
 
 interface RegularizerToCode {
 

@@ -1,6 +1,6 @@
 package edu.wpi.inndie.tflayerloader
 
-import edu.wpi.axon.tfdata.Model
+import edu.wpi.inndie.tfdata.Model
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import java.io.File

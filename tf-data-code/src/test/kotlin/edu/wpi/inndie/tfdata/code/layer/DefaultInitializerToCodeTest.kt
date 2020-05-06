@@ -2,8 +2,8 @@ package edu.wpi.inndie.tfdata.code.layer
 
 import arrow.core.Either
 import arrow.core.right
-import edu.wpi.axon.tfdata.SerializableEitherDLd
-import edu.wpi.axon.tfdata.layer.Initializer
+import edu.wpi.inndie.tfdata.SerializableEitherDLd
+import edu.wpi.inndie.tfdata.layer.Initializer
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -23,7 +23,8 @@ internal class DefaultInitializerToCodeTest {
         @Suppress("unused", "LongMethod", "StringLiteralDuplication")
         fun initializerSource() = listOf(
             Arguments.of(
-                Initializer.Constant(SerializableEitherDLd.Left(0.0)),
+                Initializer.Constant(
+                    SerializableEitherDLd.Left(0.0)),
                 "tf.keras.initializers.Constant(value=0.0)".right()
             ),
             Arguments.of(

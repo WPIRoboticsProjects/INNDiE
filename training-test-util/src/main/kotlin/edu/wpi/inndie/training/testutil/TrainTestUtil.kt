@@ -1,6 +1,6 @@
 package edu.wpi.inndie.training.testutil
 
-import edu.wpi.axon.tfdata.Model
+import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.tflayerloader.ModelLoaderFactory
 import edu.wpi.inndie.util.runCommand
 import io.kotlintest.assertions.arrow.either.shouldBeRight

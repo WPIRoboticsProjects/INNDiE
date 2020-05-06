@@ -1,6 +1,6 @@
 package edu.wpi.axon.dsl.task
 
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Layer
 
 internal sealed class LayerOperation(open val layer: Layer.MetaLayer) {
 

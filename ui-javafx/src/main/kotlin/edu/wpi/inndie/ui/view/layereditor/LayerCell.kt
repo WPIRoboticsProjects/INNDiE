@@ -2,7 +2,7 @@ package edu.wpi.inndie.ui.view.layereditor
 
 import com.fxgraph.cells.AbstractCell
 import com.fxgraph.graph.Graph
-import edu.wpi.axon.tfdata.layer.Layer
+import edu.wpi.inndie.tfdata.layer.Layer
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.layout.BorderPane

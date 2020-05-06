@@ -6,8 +6,8 @@ import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.inndie.tfdata.code.loss.LossToCode
 import edu.wpi.inndie.tfdata.code.optimizer.OptimizerToCode
-import edu.wpi.axon.tfdata.loss.Loss
-import edu.wpi.axon.tfdata.optimizer.Optimizer
+import edu.wpi.inndie.tfdata.loss.Loss
+import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.util.singleAssign
 import org.koin.core.inject
 

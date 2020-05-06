@@ -13,7 +13,7 @@ import edu.wpi.axon.dsl.running
 import edu.wpi.axon.dsl.task.ApplyFunctionalLayerDeltaTask
 import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.Model
+import edu.wpi.inndie.tfdata.Model
 import mu.KotlinLogging
 
 /**

@@ -1,6 +1,6 @@
 package edu.wpi.axon.examplemodel
 
-import edu.wpi.axon.tfdata.SerializableOptionB
+import edu.wpi.inndie.tfdata.SerializableOptionB
 import kotlinx.serialization.Serializable
 
 /**
