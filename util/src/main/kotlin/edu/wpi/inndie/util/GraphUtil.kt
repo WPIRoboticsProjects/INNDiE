@@ -7,7 +7,7 @@ import arrow.core.ForEither
 import arrow.core.Left
 import arrow.core.Right
 import com.google.common.graph.Graph
-import joinWithIndent
+import edu.wpi.inndie.logging.joinWithIndent
 
 /**
  * Checks if there are islands in this graph.

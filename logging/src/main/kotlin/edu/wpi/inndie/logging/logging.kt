@@ -1,3 +1,5 @@
+package edu.wpi.inndie.logging
+
 /**
  * Calls [joinToString] with an indent applied to each separated line.
  *
