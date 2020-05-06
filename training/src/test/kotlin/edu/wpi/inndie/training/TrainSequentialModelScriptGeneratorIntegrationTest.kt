@@ -3,8 +3,8 @@
 package edu.wpi.inndie.training
 
 import arrow.core.None
-import edu.wpi.axon.dsl.defaultBackendModule
-import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
+import edu.wpi.inndie.dsl.defaultBackendModule
+import edu.wpi.inndie.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.inndie.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.inndie.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.inndie.testutil.KoinTestFixture

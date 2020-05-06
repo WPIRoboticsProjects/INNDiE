@@ -1,7 +1,7 @@
 package edu.wpi.inndie.training
 
 import arrow.core.None
-import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.inndie.dsl.defaultBackendModule
 import edu.wpi.inndie.plugin.DatasetPlugins
 import edu.wpi.inndie.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.Dataset

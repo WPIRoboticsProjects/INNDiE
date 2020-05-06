@@ -2,7 +2,7 @@ package edu.wpi.inndie.training
 
 import arrow.core.None
 import arrow.core.Option
-import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.inndie.dsl.variable.Variable
 
 /**
  * Represents a dataset after it has been loaded into the script.

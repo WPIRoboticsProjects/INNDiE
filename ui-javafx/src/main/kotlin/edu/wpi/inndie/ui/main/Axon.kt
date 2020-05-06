@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.main
 
-import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.inndie.dsl.defaultBackendModule
 import edu.wpi.inndie.ui.view.Main
 import kotlin.reflect.KClass
 import org.koin.core.KoinComponent

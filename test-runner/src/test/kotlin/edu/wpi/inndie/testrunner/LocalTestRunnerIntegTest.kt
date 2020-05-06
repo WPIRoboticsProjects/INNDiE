@@ -1,6 +1,6 @@
 package edu.wpi.inndie.testrunner
 
-import edu.wpi.axon.dsl.defaultBackendModule
+import edu.wpi.inndie.dsl.defaultBackendModule
 import edu.wpi.inndie.plugin.Plugin
 import edu.wpi.inndie.testutil.KoinTestFixture
 import io.kotlintest.assertions.arrow.either.shouldBeLeft

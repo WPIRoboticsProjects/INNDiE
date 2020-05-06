@@ -5,14 +5,14 @@ import arrow.core.Validated
 import arrow.core.invalidNel
 import arrow.fx.IO
 import com.google.common.base.Throwables
-import edu.wpi.axon.dsl.ScriptGenerator
-import edu.wpi.axon.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
-import edu.wpi.axon.dsl.creating
-import edu.wpi.axon.dsl.runExactlyOnce
-import edu.wpi.axon.dsl.running
-import edu.wpi.axon.dsl.task.ApplySequentialLayerDeltaTask
-import edu.wpi.axon.dsl.task.EnableEagerExecutionTask
-import edu.wpi.axon.dsl.variable.Variable
+import edu.wpi.inndie.dsl.ScriptGenerator
+import edu.wpi.inndie.dsl.container.DefaultPolymorphicNamedDomainObjectContainer
+import edu.wpi.inndie.dsl.creating
+import edu.wpi.inndie.dsl.runExactlyOnce
+import edu.wpi.inndie.dsl.running
+import edu.wpi.inndie.dsl.task.ApplySequentialLayerDeltaTask
+import edu.wpi.inndie.dsl.task.EnableEagerExecutionTask
+import edu.wpi.inndie.dsl.variable.Variable
 import edu.wpi.inndie.tfdata.Model
 import mu.KotlinLogging
 
