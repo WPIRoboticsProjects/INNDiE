@@ -13,8 +13,8 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.training.testutil.loadModel
-import edu.wpi.axon.training.testutil.testTrainingScript
+import edu.wpi.inndie.training.testutil.loadModel
+import edu.wpi.inndie.training.testutil.testTrainingScript
 import edu.wpi.inndie.util.FilePath
 import edu.wpi.inndie.util.axonBucketName
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
@@ -74,7 +74,11 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
-                testTrainingScript(tempDir, script, newModelName)
+                testTrainingScript(
+                    tempDir,
+                    script,
+                    newModelName
+                )
             }
         }
     }
@@ -120,7 +124,11 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                 ),
                 it
             ).generateScript().shouldBeValid { (script) ->
-                testTrainingScript(tempDir, script, newModelName)
+                testTrainingScript(
+                    tempDir,
+                    script,
+                    newModelName
+                )
             }
         }
     }
@@ -166,7 +174,11 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             ).generateScript().shouldBeValid { (script) ->
                 Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
                     .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
-                testTrainingScript(tempDir, script, newModelName)
+                testTrainingScript(
+                    tempDir,
+                    script,
+                    newModelName
+                )
             }
         }
     }
@@ -212,7 +224,11 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
             ).generateScript().shouldBeValid { (script) ->
                 Paths.get(this::class.java.getResource("WPILib_reduced.tar").toURI()).toFile()
                     .copyTo(Paths.get(tempDir.absolutePath, "WPILib_reduced.tar").toFile())
-                testTrainingScript(tempDir, script, newModelName)
+                testTrainingScript(
+                    tempDir,
+                    script,
+                    newModelName
+                )
                 // Also test for the compiled output
                 tempDir.toPath().resolve(
                     RunEdgeTpuCompilerTask.getEdgeTpuCompiledModelFilename(newModelName)

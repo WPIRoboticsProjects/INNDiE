@@ -1,4 +1,4 @@
-package edu.wpi.axon.training.testutil
+package edu.wpi.inndie.training.testutil
 
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
