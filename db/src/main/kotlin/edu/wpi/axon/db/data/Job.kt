@@ -5,7 +5,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.inndie.training.ModelDeploymentTarget
 
 /**
  * @param userOldModelPath The path to the model to load.

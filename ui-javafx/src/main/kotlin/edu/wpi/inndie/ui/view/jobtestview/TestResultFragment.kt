@@ -1,7 +1,7 @@
 package edu.wpi.inndie.ui.view.jobtestview
 
-import edu.wpi.axon.ui.view.jobresult.LazyResult
-import edu.wpi.axon.ui.view.jobresult.ResultFragment
+import edu.wpi.inndie.ui.view.jobresult.LazyResult
+import edu.wpi.inndie.ui.view.jobresult.ResultFragment
 import java.io.File
 import javafx.collections.FXCollections
 import javafx.scene.control.SelectionMode

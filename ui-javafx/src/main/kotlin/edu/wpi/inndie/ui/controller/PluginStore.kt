@@ -24,7 +24,7 @@ abstract class PluginStore : Controller() {
     }
 }
 
-class DatasetPluginStore : _root_ide_package_.edu.wpi.inndie.ui.controller.PluginStore() {
+class DatasetPluginStore : PluginStore() {
     override val pluginManager by di<PluginManager>(datasetPluginManagerName)
 
     init {
@@ -32,7 +32,7 @@ class DatasetPluginStore : _root_ide_package_.edu.wpi.inndie.ui.controller.Plugi
     }
 }
 
-class LoadTestDataPluginStore : _root_ide_package_.edu.wpi.inndie.ui.controller.PluginStore() {
+class LoadTestDataPluginStore : PluginStore() {
     override val pluginManager by di<PluginManager>(loadTestDataPluginManagerName)
 
     init {
@@ -40,7 +40,7 @@ class LoadTestDataPluginStore : _root_ide_package_.edu.wpi.inndie.ui.controller.
     }
 }
 
-class ProcessTestOutputPluginStore : _root_ide_package_.edu.wpi.inndie.ui.controller.PluginStore() {
+class ProcessTestOutputPluginStore : PluginStore() {
     override val pluginManager by di<PluginManager>(processTestOutputPluginManagerName)
 
     init {

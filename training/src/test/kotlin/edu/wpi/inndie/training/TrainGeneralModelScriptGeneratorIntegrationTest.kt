@@ -1,6 +1,6 @@
 @file:SuppressWarnings("LongMethod", "LargeClass")
 
-package edu.wpi.axon.training
+package edu.wpi.inndie.training
 
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule

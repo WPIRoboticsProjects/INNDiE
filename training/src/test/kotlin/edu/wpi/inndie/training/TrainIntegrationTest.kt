@@ -1,4 +1,4 @@
-package edu.wpi.axon.training
+package edu.wpi.inndie.training
 
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
@@ -89,9 +89,11 @@ internal class TrainIntegrationTest : KoinTestFixture() {
 
         TrainGeneralModelScriptGenerator(
             TrainState(
-                userOldModelPath = FilePath.Local(Paths.get(
-                    this::class.java.getResource("badModel1.h5").toURI()
-                ).toString()),
+                userOldModelPath = FilePath.Local(
+                    Paths.get(
+                        this::class.java.getResource("badModel1.h5").toURI()
+                    ).toString()
+                ),
                 userDataset = Dataset.ExampleDataset.Mnist,
                 userOptimizer = Optimizer.Adam(0.001, 0.9, 0.999, 1e-7, false),
                 userLoss = Loss.SparseCategoricalCrossentropy,

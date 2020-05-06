@@ -12,7 +12,7 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.inndie.training.ModelDeploymentTarget
 import edu.wpi.inndie.ui.ModelManager
 import edu.wpi.inndie.util.FilePath
 import edu.wpi.inndie.util.getOutputModelName
@@ -144,7 +144,7 @@ class JobModel : ItemViewModel<JobDto>() {
 
 class JobWizardModel : ItemViewModel<JobDto>() {
 
-    private val modelManager by di<_root_ide_package_.edu.wpi.inndie.ui.ModelManager>()
+    private val modelManager by di<ModelManager>()
     private val exampleModelManager by di<ExampleModelManager>()
 
     val name = bind(JobDto::nameProperty, autocommit = true)

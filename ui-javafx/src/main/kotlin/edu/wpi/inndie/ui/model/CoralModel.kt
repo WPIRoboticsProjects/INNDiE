@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.model
 
-import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.inndie.training.ModelDeploymentTarget
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleDoubleProperty
 import tornadofx.ItemViewModel

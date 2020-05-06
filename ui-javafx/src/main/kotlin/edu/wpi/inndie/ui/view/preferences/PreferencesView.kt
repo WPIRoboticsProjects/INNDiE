@@ -1,11 +1,11 @@
 package edu.wpi.inndie.ui.view.preferences
 
-import edu.wpi.axon.ui.model.PreferencesModel
-import edu.wpi.axon.ui.view.isLongInRange
 import edu.wpi.inndie.ui.controller.DatasetPluginStore
 import edu.wpi.inndie.ui.controller.LoadTestDataPluginStore
 import edu.wpi.inndie.ui.controller.PluginStore
 import edu.wpi.inndie.ui.controller.ProcessTestOutputPluginStore
+import edu.wpi.inndie.ui.model.PreferencesModel
+import edu.wpi.inndie.ui.view.isLongInRange
 import javafx.geometry.Orientation
 import javafx.scene.control.ButtonBar
 import software.amazon.awssdk.services.ec2.model.InstanceType
@@ -32,9 +32,9 @@ import tornadofx.vbox
 class PreferencesView : View("Preferences") {
 
     private val model by inject<PreferencesModel>()
-    private val datasetPluginStore by inject<_root_ide_package_.edu.wpi.inndie.ui.controller.DatasetPluginStore>()
-    private val loadTestDataPluginManager by inject<_root_ide_package_.edu.wpi.inndie.ui.controller.LoadTestDataPluginStore>()
-    private val processTestOutputPluginManager by inject<_root_ide_package_.edu.wpi.inndie.ui.controller.ProcessTestOutputPluginStore>()
+    private val datasetPluginStore by inject<DatasetPluginStore>()
+    private val loadTestDataPluginManager by inject<LoadTestDataPluginStore>()
+    private val processTestOutputPluginManager by inject<ProcessTestOutputPluginStore>()
 
     override val root = vbox {
         form {
@@ -55,17 +55,17 @@ class PreferencesView : View("Preferences") {
             fieldset("Plugins", labelPosition = Orientation.VERTICAL) {
                 field("Dataset") {
                     val scope = Scope()
-                    FX.getComponents(scope)[_root_ide_package_.edu.wpi.inndie.ui.controller.PluginStore::class] = datasetPluginStore
+                    FX.getComponents(scope)[PluginStore::class] = datasetPluginStore
                     add(find<PluginManagerEditor>(scope))
                 }
                 field("Load Test Data") {
                     val scope = Scope()
-                    FX.getComponents(scope)[_root_ide_package_.edu.wpi.inndie.ui.controller.PluginStore::class] = loadTestDataPluginManager
+                    FX.getComponents(scope)[PluginStore::class] = loadTestDataPluginManager
                     add(find<PluginManagerEditor>(scope))
                 }
                 field("Process Test Output") {
                     val scope = Scope()
-                    FX.getComponents(scope)[_root_ide_package_.edu.wpi.inndie.ui.controller.PluginStore::class] = processTestOutputPluginManager
+                    FX.getComponents(scope)[PluginStore::class] = processTestOutputPluginManager
                     add(find<PluginManagerEditor>(scope))
                 }
             }

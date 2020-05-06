@@ -10,7 +10,7 @@ import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.training.ModelDeploymentTarget
+import edu.wpi.inndie.training.ModelDeploymentTarget
 import edu.wpi.inndie.util.FilePath
 import edu.wpi.inndie.util.getOutputModelName
 import kotlin.random.Random

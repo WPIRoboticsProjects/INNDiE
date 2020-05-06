@@ -1,8 +1,8 @@
 package edu.wpi.inndie.ui.view.jobresult
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.inndie.ui.JobLifecycleManager
+import edu.wpi.inndie.ui.model.JobModel
 import javafx.event.EventTarget
 import javafx.scene.chart.NumberAxis
 import javafx.scene.control.Label
@@ -26,7 +26,7 @@ import tornadofx.toObservable
 class JobResultsView : Fragment() {
 
     private val job by inject<JobModel>()
-    private val jobLifecycleManager by di<_root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager>()
+    private val jobLifecycleManager by di<JobLifecycleManager>()
 
     override val root = borderpane {
         centerProperty().bind(job.itemProperty.objectBinding(job.status) { jobDto ->

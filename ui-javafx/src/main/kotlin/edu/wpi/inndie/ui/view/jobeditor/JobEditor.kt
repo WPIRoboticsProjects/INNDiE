@@ -3,8 +3,8 @@ package edu.wpi.inndie.ui.view.jobeditor
 import arrow.core.Option
 import edu.wpi.axon.db.data.DesiredJobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.inndie.ui.JobLifecycleManager
+import edu.wpi.inndie.ui.model.JobModel
 import edu.wpi.inndie.util.axonBucketName
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.ButtonBar
@@ -25,7 +25,7 @@ import tornadofx.toObservable
 class JobEditor : Fragment() {
 
     private val job by inject<JobModel>()
-    private val jobLifecycleManager by di<_root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager>()
+    private val jobLifecycleManager by di<JobLifecycleManager>()
     private val bucketName by di<Option<String>>(axonBucketName)
 
     override val root = borderpane {

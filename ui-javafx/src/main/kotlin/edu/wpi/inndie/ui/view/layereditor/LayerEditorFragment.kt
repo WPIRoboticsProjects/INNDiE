@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.layereditor
 
-import edu.wpi.axon.ui.model.JobModel
+import edu.wpi.inndie.ui.model.JobModel
 import tornadofx.Fragment
 import tornadofx.action
 import tornadofx.borderpane

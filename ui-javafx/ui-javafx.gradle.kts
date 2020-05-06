@@ -60,8 +60,8 @@ javafx {
 }
 
 application {
-    mainClassName = "edu.wpi.axon.ui.main.Axon"
-//    mainClassName = "edu.wpi.axon.ui.MainUI"
+    mainClassName = "edu.wpi.inndie.ui.main.Axon"
+//    mainClassName = "edu.wpi.inndie.ui.MainUI"
     // https://github.com/edvin/tornadofx/issues/899#issuecomment-569709223
     applicationDefaultJvmArgs += "--add-opens=javafx.graphics/javafx.scene=ALL-UNNAMED"
     applicationDefaultJvmArgs += "--add-opens=javafx.controls/javafx.scene.control=ALL-UNNAMED"

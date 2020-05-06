@@ -11,10 +11,10 @@ import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.training.ModelDeploymentTarget
-import edu.wpi.axon.ui.model.JobModel
+import edu.wpi.inndie.training.ModelDeploymentTarget
 import edu.wpi.inndie.ui.ModelManager
 import edu.wpi.inndie.ui.controller.JobBoard
+import edu.wpi.inndie.ui.model.JobModel
 import edu.wpi.inndie.util.getOutputModelName
 import javafx.collections.ListChangeListener
 import javafx.scene.layout.Priority
@@ -32,11 +32,11 @@ import tornadofx.vgrow
 
 class JobList : View() {
 
-    private val jobBoard by inject<_root_ide_package_.edu.wpi.inndie.ui.controller.JobBoard>()
+    private val jobBoard by inject<JobBoard>()
     private val job by inject<JobModel>()
     private val database by di<JobDb>()
     private val exampleModelManager by di<ExampleModelManager>()
-    private val modelManager by di<_root_ide_package_.edu.wpi.inndie.ui.ModelManager>()
+    private val modelManager by di<ModelManager>()
 
     override val root = vbox {
         padding = insets(5)

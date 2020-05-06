@@ -27,9 +27,9 @@ import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
-import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
-import edu.wpi.axon.training.TrainState
+import edu.wpi.inndie.training.TrainGeneralModelScriptGenerator
+import edu.wpi.inndie.training.TrainSequentialModelScriptGenerator
+import edu.wpi.inndie.training.TrainState
 import edu.wpi.inndie.util.FilePath
 import edu.wpi.inndie.util.axonBucketName
 import edu.wpi.inndie.util.getLocalTrainingScriptRunnerWorkingDir
@@ -52,7 +52,7 @@ internal class JobRunner : KoinComponent {
     private val cancellers = mutableMapOf<Int, TrainingScriptCanceller>()
     private val resultSuppliers = mutableMapOf<Int, TrainingResultSupplier>()
     private val bucketName by inject<Option<String>>(named(axonBucketName))
-    private val modelManager by inject<_root_ide_package_.edu.wpi.inndie.ui.ModelManager>()
+    private val modelManager by inject<ModelManager>()
     private val jobDb by inject<JobDb>()
 
     /**
@@ -319,23 +319,24 @@ internal class JobRunner : KoinComponent {
         job: Job,
         modelPath: FilePath,
         workingDir: Path
-    ): TrainState<T> = TrainState(
-        userOldModelPath = modelPath,
-        userDataset = job.userDataset,
-        userOptimizer = job.userOptimizer,
-        userLoss = job.userLoss,
-        userMetrics = job.userMetrics,
-        userEpochs = job.userEpochs,
-        // TODO: Add userValidationSplit to Job and pull it from there so that the user can
-        //  configure it
-        userValidationSplit = None,
-        userNewModel = job.userNewModel as T,
-        generateDebugComments = job.generateDebugComments,
-        target = job.target,
-        workingDir = workingDir,
-        datasetPlugin = job.datasetPlugin,
-        jobId = job.id
-    )
+    ): TrainState<T> =
+        TrainState(
+            userOldModelPath = modelPath,
+            userDataset = job.userDataset,
+            userOptimizer = job.userOptimizer,
+            userLoss = job.userLoss,
+            userMetrics = job.userMetrics,
+            userEpochs = job.userEpochs,
+            // TODO: Add userValidationSplit to Job and pull it from there so that the user can
+            //  configure it
+            userValidationSplit = None,
+            userNewModel = job.userNewModel as T,
+            generateDebugComments = job.generateDebugComments,
+            target = job.target,
+            workingDir = workingDir,
+            datasetPlugin = job.datasetPlugin,
+            jobId = job.id
+        )
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }

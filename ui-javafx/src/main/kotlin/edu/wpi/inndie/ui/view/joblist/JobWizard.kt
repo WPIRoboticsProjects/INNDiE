@@ -2,11 +2,11 @@ package edu.wpi.inndie.ui.view.joblist
 
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.ui.model.JobDto
-import edu.wpi.axon.ui.model.JobWizardModel
-import edu.wpi.axon.ui.model.TaskInput
-import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
 import edu.wpi.inndie.ui.controller.WizardTaskService
+import edu.wpi.inndie.ui.model.JobDto
+import edu.wpi.inndie.ui.model.JobWizardModel
+import edu.wpi.inndie.ui.model.TaskInput
+import edu.wpi.inndie.ui.view.isIntGreaterThanOrEqualTo
 import javafx.geometry.Pos
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
@@ -66,7 +66,7 @@ class JobWizard : Wizard("Create job", "Provide job information") {
 }
 
 class TaskSelection : View("Task") {
-    private val taskService: _root_ide_package_.edu.wpi.inndie.ui.controller.WizardTaskService by inject()
+    private val taskService: WizardTaskService by inject()
     val job: JobWizardModel by inject()
 
     override val complete = job.task.booleanBinding { it != null }
@@ -180,7 +180,7 @@ class TrainingOptions : View("Training Options") {
 }
 
 class TargetSelection : View("Target") {
-    private val taskService: _root_ide_package_.edu.wpi.inndie.ui.controller.WizardTaskService by inject()
+    private val taskService: WizardTaskService by inject()
     val job: JobWizardModel by inject()
 
     override val complete = job.wizardTarget.booleanBinding { it != null }

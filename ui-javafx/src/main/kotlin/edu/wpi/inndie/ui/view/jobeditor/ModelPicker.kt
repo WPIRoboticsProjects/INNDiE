@@ -2,11 +2,11 @@ package edu.wpi.inndie.ui.view.jobeditor
 
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.model.ModelSourceType
-import edu.wpi.axon.ui.view.contentMap
-import edu.wpi.axon.ui.view.layereditor.LayerEditorFragment
 import edu.wpi.inndie.ui.ModelManager
+import edu.wpi.inndie.ui.model.JobModel
+import edu.wpi.inndie.ui.model.ModelSourceType
+import edu.wpi.inndie.ui.view.contentMap
+import edu.wpi.inndie.ui.view.layereditor.LayerEditorFragment
 import edu.wpi.inndie.util.FilePath
 import java.io.File
 import javafx.stage.FileChooser
@@ -26,7 +26,7 @@ class ModelPicker : ItemFragment<ModelSource>() {
 
     private val job by inject<JobModel>()
     private val exampleModelManager by di<ExampleModelManager>()
-    private val modelManager by di<_root_ide_package_.edu.wpi.inndie.ui.ModelManager>()
+    private val modelManager by di<ModelManager>()
 
     init {
         job.oldModelType.addListener { _, _, newValue ->

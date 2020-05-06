@@ -133,15 +133,15 @@ fun defaultFrontendModule() = module {
 
     single(createdAtStart = true) {
         // This needs to be eager so we eagerly resume tracking in-progress Jobs
-        _root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager(
+        JobLifecycleManager(
             jobRunner = get(),
             jobDb = get(),
             waitAfterStartingJobMs = 5000L
         ).apply { initialize() }
     }
 
-    single { _root_ide_package_.edu.wpi.inndie.ui.ModelManager() }
-    single { _root_ide_package_.edu.wpi.inndie.ui.JobRunner() }
+    single { ModelManager() }
+    single { JobRunner() }
     single<ExampleModelManager> { GitExampleModelManager().apply { updateCache().unsafeRunSync() } }
 }
 

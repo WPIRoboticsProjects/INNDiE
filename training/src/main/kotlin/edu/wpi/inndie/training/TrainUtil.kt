@@ -1,6 +1,6 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-package edu.wpi.axon.training
+package edu.wpi.inndie.training
 
 import arrow.core.None
 import arrow.core.Some

@@ -7,12 +7,12 @@ import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.plugin.PluginManager
 import edu.wpi.axon.testrunner.LocalTestRunner
 import edu.wpi.axon.testrunner.TestData
-import edu.wpi.axon.ui.model.JobDto
-import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.view.contentMap
-import edu.wpi.axon.ui.view.jobresult.LazyResult
-import edu.wpi.axon.ui.view.jobresult.ResultFragment
 import edu.wpi.inndie.ui.ModelManager
+import edu.wpi.inndie.ui.model.JobDto
+import edu.wpi.inndie.ui.model.JobModel
+import edu.wpi.inndie.ui.view.contentMap
+import edu.wpi.inndie.ui.view.jobresult.LazyResult
+import edu.wpi.inndie.ui.view.jobresult.ResultFragment
 import edu.wpi.inndie.util.FilePath
 import edu.wpi.inndie.util.getLocalTestRunnerWorkingDir
 import edu.wpi.inndie.util.getLocalTrainingScriptRunnerWorkingDir
@@ -93,7 +93,7 @@ class JobTestView : Fragment() {
     private val model = JobTestViewModel()
     private val testRunner = LocalTestRunner()
     private val testResults = FXCollections.observableHashMap<String, List<File>>()
-    private val modelManager = _root_ide_package_.edu.wpi.inndie.ui.ModelManager()
+    private val modelManager = ModelManager()
 
     override val root = borderpane {
         model.rebindOnChange(job.itemProperty)

@@ -1,11 +1,10 @@
 @file:SuppressWarnings("LongMethod", "LargeClass")
 
-package edu.wpi.axon.training
+package edu.wpi.inndie.training
 
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
-import edu.wpi.axon.plugin.DatasetPlugins
 import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.axon.testutil.KoinTestFixture
@@ -217,7 +216,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                     generateDebugComments = false,
                     target = ModelDeploymentTarget.Coral(0.0001),
                     workingDir = tempDir.toPath(),
-                    datasetPlugin = DatasetPlugins.datasetPassthroughPlugin,
+                    datasetPlugin = datasetPassthroughPlugin,
                     jobId = Random.nextInt(1, Int.MAX_VALUE)
                 ),
                 it

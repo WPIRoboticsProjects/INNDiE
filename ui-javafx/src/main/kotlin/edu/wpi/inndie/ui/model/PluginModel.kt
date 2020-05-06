@@ -9,7 +9,7 @@ import tornadofx.ItemViewModel
 
 class PluginModel : ItemViewModel<Plugin>() {
 
-    val store by inject<_root_ide_package_.edu.wpi.inndie.ui.controller.PluginStore>()
+    val store by inject<PluginStore>()
 
     val name = bind { SimpleStringProperty(item?.name ?: "") }
     val contents = bind { SimpleStringProperty(item?.contents ?: "") }

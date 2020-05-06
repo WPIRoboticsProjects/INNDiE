@@ -1,8 +1,8 @@
 package edu.wpi.inndie.ui.view
 
-import edu.wpi.axon.ui.view.jobeditor.JobEditor
-import edu.wpi.axon.ui.view.jobresult.JobResultsView
-import edu.wpi.axon.ui.view.jobtestview.JobTestView
+import edu.wpi.inndie.ui.view.jobeditor.JobEditor
+import edu.wpi.inndie.ui.view.jobresult.JobResultsView
+import edu.wpi.inndie.ui.view.jobtestview.JobTestView
 import javafx.scene.control.TabPane
 import tornadofx.Fragment
 import tornadofx.tab

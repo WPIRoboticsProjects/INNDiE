@@ -3,11 +3,11 @@ package edu.wpi.inndie.ui.controller
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.training.ModelDeploymentTarget
-import edu.wpi.axon.ui.model.DatasetType
-import edu.wpi.axon.ui.model.TaskInput
-import edu.wpi.axon.ui.model.WizardTarget
-import edu.wpi.axon.ui.model.WizardTask
+import edu.wpi.inndie.training.ModelDeploymentTarget
+import edu.wpi.inndie.ui.model.DatasetType
+import edu.wpi.inndie.ui.model.TaskInput
+import edu.wpi.inndie.ui.model.WizardTarget
+import edu.wpi.inndie.ui.model.WizardTask
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import tornadofx.Controller

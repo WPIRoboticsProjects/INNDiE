@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.preferences
 
-import edu.wpi.axon.ui.model.PluginModel
+import edu.wpi.inndie.ui.model.PluginModel
 import javafx.geometry.Orientation
 import javafx.scene.control.ButtonBar
 import javafx.scene.layout.Priority

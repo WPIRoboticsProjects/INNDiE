@@ -3,8 +3,8 @@ package edu.wpi.inndie.ui.view.preferences
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.ui.model.PluginModel
 import edu.wpi.inndie.ui.controller.PluginStore
+import edu.wpi.inndie.ui.model.PluginModel
 import javafx.scene.layout.Priority
 import tornadofx.Fragment
 import tornadofx.bindSelected
@@ -19,7 +19,7 @@ import tornadofx.vgrow
 class PluginManagerEditor : Fragment() {
 
     private val selected by inject<PluginModel>()
-    private val store by inject<_root_ide_package_.edu.wpi.inndie.ui.controller.PluginStore>()
+    private val store by inject<PluginStore>()
 
     override val root = vbox {
         listview(store.plugins) {

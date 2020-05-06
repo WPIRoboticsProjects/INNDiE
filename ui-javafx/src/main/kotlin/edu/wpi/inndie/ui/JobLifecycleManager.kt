@@ -24,7 +24,7 @@ private class JobCancelledByUserException : Throwable()
  * [JobRunner.waitForFinish] to ensure the Job has time to start.
  */
 class JobLifecycleManager internal constructor(
-    private val jobRunner: _root_ide_package_.edu.wpi.inndie.ui.JobRunner,
+    private val jobRunner: JobRunner,
     private val jobDb: JobDb,
     private val waitAfterStartingJobMs: Long
 ) : KoinComponent {
@@ -38,11 +38,11 @@ class JobLifecycleManager internal constructor(
      */
     fun initialize() {
         val runningJobs = jobDb.fetchRunningJobs()
-        _root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager.Companion.LOGGER.debug { "Running jobs:\n${runningJobs.joinToString("\n")}" }
+        LOGGER.debug { "Running jobs:\n${runningJobs.joinToString("\n")}" }
         runningJobs.forEach { job ->
             val jobJob = scope.launch {
                 jobRunner.startProgressReporting(job)
-                _root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager.Companion.LOGGER.debug { "Waiting for Job ${job.id} to finish." }
+                LOGGER.debug { "Waiting for Job ${job.id} to finish." }
                 jobRunner.waitForFinish(job.id) {
                     jobDb.update(job.id, status = it)
                 }
@@ -68,7 +68,7 @@ class JobLifecycleManager internal constructor(
 
             val trainingMethod = jobRunner.startJob(job, desiredJobTrainingMethod)
             jobDb.update(job.id, internalJobTrainingMethod = trainingMethod)
-            _root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager.Companion.LOGGER.debug { "Started job with id: ${job.id}" }
+            LOGGER.debug { "Started job with id: ${job.id}" }
 
             delay(waitAfterStartingJobMs)
 
@@ -79,16 +79,16 @@ class JobLifecycleManager internal constructor(
 
         setInvokeOnCompletion(jobJob, job)
 
-        _root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager.Companion.LOGGER.debug { "Started job with id ${job.id}" }
+        LOGGER.debug { "Started job with id ${job.id}" }
         jobJobs[job.id] = jobJob
     }
 
     private fun setInvokeOnCompletion(jobJob: kotlinx.coroutines.Job, job: Job) {
         jobJob.invokeOnCompletion {
             if (it == null) {
-                _root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager.Companion.LOGGER.debug { "Job ${job.id} completed." }
+                LOGGER.debug { "Job ${job.id} completed." }
             } else {
-                _root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager.Companion.LOGGER.debug(it) { "Job ${job.id} was cancelled." }
+                LOGGER.debug(it) { "Job ${job.id} was cancelled." }
 
                 // Try to cancel the Job in case there was a bug that caused this cancellation.
                 // If there was a bug then this isn't guaranteed to work correctly, but cancelling a
@@ -110,7 +110,7 @@ class JobLifecycleManager internal constructor(
      * @param id The id of the Job to cancel.
      */
     fun cancelJob(id: Int) {
-        _root_ide_package_.edu.wpi.inndie.ui.JobLifecycleManager.Companion.LOGGER.debug { "Cancelling job id $id" }
+        LOGGER.debug { "Cancelling job id $id" }
         scope.launch {
             val jobJob = jobJobs[id]!!
             while (jobJob.isActive) {
@@ -118,7 +118,7 @@ class JobLifecycleManager internal constructor(
                 // polling here without risk of an infinite loop.
                 if (jobRunner.cancelJob(id)) {
                     jobJob.cancel("Cancelled by user.",
-                        _root_ide_package_.edu.wpi.inndie.ui.JobCancelledByUserException()
+                        JobCancelledByUserException()
                     )
                     break
                 } else {

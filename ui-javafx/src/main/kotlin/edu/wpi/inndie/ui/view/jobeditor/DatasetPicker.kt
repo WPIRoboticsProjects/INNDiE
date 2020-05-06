@@ -1,10 +1,10 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.ui.model.DatasetModel
-import edu.wpi.axon.ui.model.DatasetType
-import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.view.contentMap
+import edu.wpi.inndie.ui.model.DatasetModel
+import edu.wpi.inndie.ui.model.DatasetType
+import edu.wpi.inndie.ui.model.JobModel
+import edu.wpi.inndie.ui.view.contentMap
 import edu.wpi.inndie.util.FilePath
 import javafx.stage.FileChooser
 import javafx.util.StringConverter

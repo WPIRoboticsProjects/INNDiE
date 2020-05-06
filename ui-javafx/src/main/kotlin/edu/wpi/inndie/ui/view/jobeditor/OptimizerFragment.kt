@@ -1,16 +1,16 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.ui.model.AdamDto
-import edu.wpi.axon.ui.model.AdamModel
-import edu.wpi.axon.ui.model.FTRLDto
-import edu.wpi.axon.ui.model.FTRLModel
-import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.model.RMSpropDto
-import edu.wpi.axon.ui.model.RMSpropModel
-import edu.wpi.axon.ui.view.isDoubleGreaterThanOrEqualToZero
-import edu.wpi.axon.ui.view.isDoubleLessThanOrEqualToZero
-import edu.wpi.axon.ui.view.textfield
+import edu.wpi.inndie.ui.model.AdamDto
+import edu.wpi.inndie.ui.model.AdamModel
+import edu.wpi.inndie.ui.model.FTRLDto
+import edu.wpi.inndie.ui.model.FTRLModel
+import edu.wpi.inndie.ui.model.JobModel
+import edu.wpi.inndie.ui.model.RMSpropDto
+import edu.wpi.inndie.ui.model.RMSpropModel
+import edu.wpi.inndie.ui.view.isDoubleGreaterThanOrEqualToZero
+import edu.wpi.inndie.ui.view.isDoubleLessThanOrEqualToZero
+import edu.wpi.inndie.ui.view.textfield
 import javafx.beans.property.Property
 import tornadofx.Fieldset
 import tornadofx.Fragment

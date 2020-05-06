@@ -1,4 +1,4 @@
-package edu.wpi.axon.training
+package edu.wpi.inndie.training
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

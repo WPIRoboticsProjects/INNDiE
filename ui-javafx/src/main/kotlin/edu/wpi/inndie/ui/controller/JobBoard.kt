@@ -3,8 +3,8 @@ package edu.wpi.inndie.ui.controller
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.JobDbOp
 import edu.wpi.axon.db.data.ModelSource
-import edu.wpi.axon.ui.model.JobDto
-import edu.wpi.axon.ui.model.ModelSourceType
+import edu.wpi.inndie.ui.model.JobDto
+import edu.wpi.inndie.ui.model.ModelSourceType
 import javafx.application.Platform
 import tornadofx.Controller
 import tornadofx.asObservable

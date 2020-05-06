@@ -1,10 +1,10 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
-import edu.wpi.axon.training.ModelDeploymentTarget
-import edu.wpi.axon.ui.model.CoralDto
-import edu.wpi.axon.ui.model.CoralModel
-import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.ui.view.isDoubleInRange
+import edu.wpi.inndie.training.ModelDeploymentTarget
+import edu.wpi.inndie.ui.model.CoralDto
+import edu.wpi.inndie.ui.model.CoralModel
+import edu.wpi.inndie.ui.model.JobModel
+import edu.wpi.inndie.ui.view.isDoubleInRange
 import javafx.beans.property.Property
 import javafx.util.StringConverter
 import tornadofx.Fieldset
