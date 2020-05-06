@@ -5,7 +5,7 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.ModelCheckpointSaveFrequency
-import edu.wpi.axon.tfdata.code.pythonString
+import edu.wpi.inndie.tfdata.code.pythonString
 import edu.wpi.inndie.util.singleAssign
 
 /**

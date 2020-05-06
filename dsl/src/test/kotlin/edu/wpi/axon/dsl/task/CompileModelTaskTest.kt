@@ -4,8 +4,8 @@ package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.testutil.KoinTestFixture
-import edu.wpi.axon.tfdata.code.loss.LossToCode
-import edu.wpi.axon.tfdata.code.optimizer.OptimizerToCode
+import edu.wpi.inndie.tfdata.code.loss.LossToCode
+import edu.wpi.inndie.tfdata.code.optimizer.OptimizerToCode
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import io.kotlintest.shouldBe

@@ -4,7 +4,7 @@ import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.mockVariableNameGenerator
 import edu.wpi.axon.testutil.KoinTestFixture
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.tfdata.code.ExampleDatasetToCode
+import edu.wpi.inndie.tfdata.code.ExampleDatasetToCode
 import io.kotlintest.shouldBe
 import io.mockk.confirmVerified
 import io.mockk.every

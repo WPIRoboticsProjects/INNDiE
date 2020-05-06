@@ -9,7 +9,7 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.tfdata.code.layer.LayerToCode
+import edu.wpi.inndie.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.inndie.tflayerloader.layerGraphIsValid
 import edu.wpi.inndie.util.singleAssign

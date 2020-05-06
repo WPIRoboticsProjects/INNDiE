@@ -4,8 +4,8 @@ import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.tfdata.code.loss.LossToCode
-import edu.wpi.axon.tfdata.code.optimizer.OptimizerToCode
+import edu.wpi.inndie.tfdata.code.loss.LossToCode
+import edu.wpi.inndie.tfdata.code.optimizer.OptimizerToCode
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.util.singleAssign
