@@ -1,7 +1,7 @@
 package edu.wpi.inndie.ui.controller
 
-import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.JobDbOp
+import edu.wpi.inndie.db.JobDb
+import edu.wpi.inndie.db.JobDbOp
 import edu.wpi.inndie.db.data.ModelSource
 import edu.wpi.inndie.ui.model.JobDto
 import edu.wpi.inndie.ui.model.ModelSourceType

@@ -20,7 +20,7 @@ import edu.wpi.axon.aws.TrainingScriptCanceller
 import edu.wpi.axon.aws.TrainingScriptProgressReporter
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.preferences.PreferencesManager
-import edu.wpi.axon.db.JobDb
+import edu.wpi.inndie.db.JobDb
 import edu.wpi.inndie.db.data.DesiredJobTrainingMethod
 import edu.wpi.inndie.db.data.InternalJobTrainingMethod
 import edu.wpi.inndie.db.data.Job

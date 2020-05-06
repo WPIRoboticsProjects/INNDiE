@@ -1,4 +1,4 @@
-package edu.wpi.axon.db
+package edu.wpi.inndie.db
 
 import com.beust.klaxon.Klaxon
 import edu.wpi.inndie.db.data.InternalJobTrainingMethod
@@ -197,7 +197,11 @@ class JobDb(private val database: Database) {
     }
 
     fun fetchAll(): List<Job> = transaction(database) {
-        Jobs.selectAll().map { Jobs.toDomain(it) }
+        Jobs.selectAll().map {
+            Jobs.toDomain(
+                it
+            )
+        }
     }
 
     fun fetch(limit: Int, offset: Int): List<Job> = transaction(database) {

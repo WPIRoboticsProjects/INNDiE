@@ -8,7 +8,7 @@ import edu.wpi.axon.aws.S3PreferencesManager
 import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.plugin.S3PluginManager
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
-import edu.wpi.axon.db.JobDb
+import edu.wpi.inndie.db.JobDb
 import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.examplemodel.GitExampleModelManager
 import edu.wpi.inndie.plugin.DatasetPlugins.datasetPassthroughPlugin

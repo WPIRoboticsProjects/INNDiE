@@ -2,7 +2,7 @@ package edu.wpi.inndie.ui.view.joblist
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import edu.wpi.axon.db.JobDb
+import edu.wpi.inndie.db.JobDb
 import edu.wpi.inndie.db.data.InternalJobTrainingMethod
 import edu.wpi.inndie.db.data.ModelSource
 import edu.wpi.inndie.db.data.TrainingScriptProgress

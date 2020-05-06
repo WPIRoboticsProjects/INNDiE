@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.joblist
 
-import edu.wpi.axon.db.JobDb
+import edu.wpi.inndie.db.JobDb
 import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.ui.controller.WizardTaskService
 import edu.wpi.inndie.ui.model.JobDto

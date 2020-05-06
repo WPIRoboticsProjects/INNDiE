@@ -1,4 +1,4 @@
-package edu.wpi.axon.db
+package edu.wpi.inndie.db
 
 import edu.wpi.inndie.db.data.TrainingScriptProgress
 import edu.wpi.inndie.db.data.nextJob

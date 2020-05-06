@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.model
 
-import edu.wpi.axon.db.JobDb
+import edu.wpi.inndie.db.JobDb
 import edu.wpi.inndie.db.data.InternalJobTrainingMethod
 import edu.wpi.inndie.db.data.Job
 import edu.wpi.inndie.db.data.ModelSource

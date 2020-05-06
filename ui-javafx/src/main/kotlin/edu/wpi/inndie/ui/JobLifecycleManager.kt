@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui
 
-import edu.wpi.axon.db.JobDb
+import edu.wpi.inndie.db.JobDb
 import edu.wpi.inndie.db.data.DesiredJobTrainingMethod
 import edu.wpi.inndie.db.data.Job
 import edu.wpi.inndie.db.data.TrainingScriptProgress
