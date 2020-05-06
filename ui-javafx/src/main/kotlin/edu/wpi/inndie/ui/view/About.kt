@@ -7,6 +7,6 @@ import tornadofx.vbox
 class About : View() {
     override val root = vbox {
         setMinSize(400.0, 400.0)
-        text("Axon")
+        text("INNDiE")
     }
 }

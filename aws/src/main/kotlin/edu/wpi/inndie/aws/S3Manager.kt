@@ -139,7 +139,7 @@ class S3Manager(
     }
 
     /**
-     * Creates a heartbeat that Axon uses to check if the training script is running properly.
+     * Creates a heartbeat that INNDiE uses to check if the training script is running properly.
      *
      * @param id The unique Job ID.
      */
@@ -153,7 +153,7 @@ class S3Manager(
     }
 
     /**
-     * Removes a heartbeat that Axon uses to check if the training script is running properly.
+     * Removes a heartbeat that INNDiE uses to check if the training script is running properly.
      *
      * @param id The unique Job ID.
      */

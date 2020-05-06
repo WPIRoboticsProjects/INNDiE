@@ -24,7 +24,7 @@ sealed class Activation {
     object SoftMax : Activation()
 
     /**
-     * A placeholder activation function for an activation function that Axon does not understand.
+     * A placeholder activation function for an activation function that INNDiE does not understand.
      */
     @Serializable
     data class UnknownActivation(val name: String) : Activation()

@@ -10,7 +10,7 @@ import tornadofx.App
 import tornadofx.DIContainer
 import tornadofx.FX
 
-class Axon : App(Main::class) {
+class INNDiE : App(Main::class) {
     init {
         startKoin {
             modules(
@@ -34,7 +34,7 @@ class Axon : App(Main::class) {
 
     companion object {
         fun main() {
-            tornadofx.launch<Axon>()
+            tornadofx.launch<INNDiE>()
         }
     }
 }

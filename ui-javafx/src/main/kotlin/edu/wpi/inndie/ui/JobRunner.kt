@@ -237,7 +237,7 @@ internal class JobRunner : KoinComponent {
     }
 
     /**
-     * Starts progress reporting after Axon has been restarted. After calling this, it's safe to
+     * Starts progress reporting after INNDiE has been restarted. After calling this, it's safe to
      * call [waitForFinish] to resume tracking progress updates for a Job.
      *
      * @param job The Job.

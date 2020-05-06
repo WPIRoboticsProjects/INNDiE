@@ -108,7 +108,7 @@ sealed class Layer {
     }
 
     /**
-     * A placeholder layer for a layer that Axon does not understand.
+     * A placeholder layer for a layer that INNDiE does not understand.
      */
     @Serializable
     data class UnknownLayer(

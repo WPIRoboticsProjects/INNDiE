@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException
  *
  * @param s3Manager Used for interacting with S3.
  * @param cacheName The name of the plugin cache.
- * @param officialPlugins The Axon-supported official plugins that should always be available to the
+ * @param officialPlugins The INNDiE-supported official plugins that should always be available to the
  * user.
  */
 class S3PluginManager(

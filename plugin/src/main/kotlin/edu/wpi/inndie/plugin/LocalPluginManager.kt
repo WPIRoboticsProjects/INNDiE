@@ -8,7 +8,7 @@ import mu.KotlinLogging
  * Saves plugin to the local filesystem.
  *
  * @param pluginCacheFile The plugin save file.
- * @param officialPlugins The Axon-supported official plugins that should always be available to the
+ * @param officialPlugins The INNDiE-supported official plugins that should always be available to the
  * user.
  */
 class LocalPluginManager(

@@ -34,7 +34,7 @@ class JobLifecycleManager internal constructor(
 
     /**
      * Synchronizes the state of this manager with the database. Resumes progress tracking for any
-     * Jobs that were running when Axon was last closed.
+     * Jobs that were running when INNDiE was last closed.
      */
     fun initialize() {
         val runningJobs = jobDb.fetchRunningJobs()

@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 
 /**
- * The method used to train a Job. Used to resume progress reporting after Axon is restarted.
+ * The method used to train a Job. Used to resume progress reporting after INNDiE is restarted.
  */
 @Serializable
 sealed class InternalJobTrainingMethod {

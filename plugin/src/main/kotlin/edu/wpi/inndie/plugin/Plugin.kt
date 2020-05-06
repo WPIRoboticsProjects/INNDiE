@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 
 /**
- * A plugin. Plugins are scripts that Axon includes in code generation for various purposes.
+ * A plugin. Plugins are scripts that INNDiE includes in code generation for various purposes.
  */
 @Serializable
 sealed class Plugin {
@@ -21,7 +21,7 @@ sealed class Plugin {
     abstract var contents: String
 
     /**
-     * An Axon-supported plugin that users get by default.
+     * An INNDiE-supported plugin that users get by default.
      */
     @Serializable
     data class Official(

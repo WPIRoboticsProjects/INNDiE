@@ -21,7 +21,7 @@ class EC2Manager {
      *
      * @param scriptData The data for the EC2 instance to run when it boots. This should not
      * contain the entire training script, as that would be too much data. Instead, this script
-     * should use Axon's CLI to download the training script from S3 at runtime.
+     * should use INNDiE's CLI to download the training script from S3 at runtime.
      * @param instanceType The type of the instance to start.
      * @return The ID of the instance that was started.
      */

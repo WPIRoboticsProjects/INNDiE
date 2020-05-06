@@ -4,7 +4,7 @@ import edu.wpi.inndie.tfdata.SerializableOptionB
 import kotlinx.serialization.Serializable
 
 /**
- * One of the models that Axon supports out of the box.
+ * One of the models that INNDiE supports out of the box.
  */
 @Serializable
 data class ExampleModel(

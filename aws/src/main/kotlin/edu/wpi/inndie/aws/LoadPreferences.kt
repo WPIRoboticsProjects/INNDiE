@@ -8,15 +8,15 @@ import software.amazon.awssdk.core.exception.SdkClientException
 import software.amazon.awssdk.services.s3.S3Client
 
 /**
- * Finds the S3 bucket Axon will work out of. Returns [None] if there is no matching bucket, which
- * causes Axon to run locally and not interface with AWS. The AWS region MUST be auto-detectable
+ * Finds the S3 bucket INNDiE will work out of. Returns [None] if there is no matching bucket, which
+ * causes INNDiE to run locally and not interface with AWS. The AWS region MUST be auto-detectable
  * from the environment (like when running on ECS). To use AWS when running locally, set
  * `AWS_REGION` to your preferred region. To not use AWS when running locally, do not set
  * `AWS_REGION`.
  *
  * @return The name of the bucket or [None] if the bucket could not be found.
  */
-fun findAxonS3Bucket(): Option<String> = try {
+fun findINNDiES3Bucket(): Option<String> = try {
     val s3Client = S3Client.builder().build()
 
     val bucket = s3Client.listBuckets().buckets().first {

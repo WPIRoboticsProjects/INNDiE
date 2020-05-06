@@ -12,7 +12,7 @@ import mu.KotlinLogging
 val localCacheDir: Path = Paths.get(
     System.getProperty("user.home"),
     ".wpilib",
-    "Axon"
+    "INNDiE"
 )
 
 val localScriptRunnerCache: Path = localCacheDir.resolve("local-script-runner-cache")
@@ -72,7 +72,7 @@ fun runCommand(
 
 /**
  * @param parentDir The directory the progress file is in.
- * @return The path to the progress reporting file used when Axon is running locally.
+ * @return The path to the progress reporting file used when INNDiE is running locally.
  */
 fun createLocalProgressFilepath(parentDir: Path): Path = parentDir.resolve(trainingLogCsvFilename)
 

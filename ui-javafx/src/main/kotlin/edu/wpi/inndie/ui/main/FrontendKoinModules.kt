@@ -5,7 +5,7 @@ import arrow.core.Option
 import arrow.core.Some
 import edu.wpi.inndie.aws.S3Manager
 import edu.wpi.inndie.aws.S3PreferencesManager
-import edu.wpi.inndie.aws.findAxonS3Bucket
+import edu.wpi.inndie.aws.findINNDiES3Bucket
 import edu.wpi.inndie.aws.plugin.S3PluginManager
 import edu.wpi.inndie.aws.preferences.LocalPreferencesManager
 import edu.wpi.inndie.db.JobDb
@@ -35,12 +35,12 @@ import org.koin.core.scope.Scope
 import org.koin.dsl.module
 
 fun defaultFrontendModule() = module {
-    single(qualifier = named(inndieBucketName), createdAtStart = true) { findAxonS3Bucket() }
+    single(qualifier = named(inndieBucketName), createdAtStart = true) { findINNDiES3Bucket() }
 
     single {
         JobDb(
             Database.connect(
-                url = "jdbc:h2:~/.wpilib/Axon/db;DB_CLOSE_DELAY=-1",
+                url = "jdbc:h2:~/.wpilib/INNDiE/db;DB_CLOSE_DELAY=-1",
                 driver = "org.h2.Driver"
             )
         ).apply {

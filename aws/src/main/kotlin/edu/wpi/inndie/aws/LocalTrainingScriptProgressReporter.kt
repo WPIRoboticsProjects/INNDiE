@@ -36,7 +36,7 @@ class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
     }
 
     /**
-     * Adds a Job that was pulled from the DB after Axon was restarted (so there is no progressMap
+     * Adds a Job that was pulled from the DB after INNDiE was restarted (so there is no progressMap
      * or thread data).
      *
      * @param config The config the Job was started with.

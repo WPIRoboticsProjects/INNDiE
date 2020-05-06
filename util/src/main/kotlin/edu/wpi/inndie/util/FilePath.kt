@@ -23,7 +23,7 @@ sealed class FilePath {
         get() = Paths.get(path).fileName.toString()
 
     /**
-     * A path in S3. This does not include any prefixes that Axon uses to sort files.
+     * A path in S3. This does not include any prefixes that INNDiE uses to sort files.
      */
     @Serializable
     data class S3(override val path: String) : FilePath()

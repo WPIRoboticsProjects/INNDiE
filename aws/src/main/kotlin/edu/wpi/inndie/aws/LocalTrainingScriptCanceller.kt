@@ -23,7 +23,7 @@ class LocalTrainingScriptCanceller : TrainingScriptCanceller {
     }
 
     /**
-     * Adds a Job that was pulled from the DB after Axon was restarted (so there is no thread data).
+     * Adds a Job that was pulled from the DB after INNDiE was restarted (so there is no thread data).
      *
      * @param jobId The Job ID.
      * @param updateProgress A callback used to update the progress of the Job.
