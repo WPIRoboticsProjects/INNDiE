@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.joblist
 
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 import edu.wpi.inndie.ui.model.JobDto
 import edu.wpi.inndie.ui.model.JobModel
 import javafx.geometry.Orientation

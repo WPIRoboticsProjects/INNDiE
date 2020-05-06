@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
-import edu.wpi.axon.db.data.ModelSource
+import edu.wpi.inndie.db.data.ModelSource
 import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.ui.ModelManager
 import edu.wpi.inndie.ui.model.JobModel

@@ -1,6 +1,6 @@
 package edu.wpi.axon.aws
 
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 import io.kotlintest.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments

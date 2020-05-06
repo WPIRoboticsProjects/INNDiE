@@ -1,4 +1,4 @@
-package edu.wpi.axon.db.data
+package edu.wpi.inndie.db.data
 
 import edu.wpi.inndie.plugin.Plugin
 import edu.wpi.inndie.tfdata.Dataset

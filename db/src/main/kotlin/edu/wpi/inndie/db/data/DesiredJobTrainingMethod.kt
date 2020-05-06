@@ -1,4 +1,4 @@
-package edu.wpi.axon.db.data
+package edu.wpi.inndie.db.data
 
 /**
  * The method the user wants to use to train the Job.

@@ -1,8 +1,8 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
 import arrow.core.Option
-import edu.wpi.axon.db.data.DesiredJobTrainingMethod
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.DesiredJobTrainingMethod
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 import edu.wpi.inndie.ui.JobLifecycleManager
 import edu.wpi.inndie.ui.model.JobModel
 import edu.wpi.inndie.util.axonBucketName

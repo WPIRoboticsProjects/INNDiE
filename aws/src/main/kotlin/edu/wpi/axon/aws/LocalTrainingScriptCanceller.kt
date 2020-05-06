@@ -1,6 +1,6 @@
 package edu.wpi.axon.aws
 
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 
 /**
  * A [TrainingScriptCanceller] that is designed for an [LocalTrainingScriptRunner].

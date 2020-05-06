@@ -1,7 +1,7 @@
 package edu.wpi.axon.db
 
-import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.db.data.nextJob
+import edu.wpi.inndie.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.nextJob
 import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.matchers.collections.shouldHaveSize

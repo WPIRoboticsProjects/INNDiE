@@ -21,11 +21,11 @@ import edu.wpi.axon.aws.TrainingScriptProgressReporter
 import edu.wpi.axon.aws.TrainingScriptRunner
 import edu.wpi.axon.aws.preferences.PreferencesManager
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.DesiredJobTrainingMethod
-import edu.wpi.axon.db.data.InternalJobTrainingMethod
-import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.ModelSource
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.DesiredJobTrainingMethod
+import edu.wpi.inndie.db.data.InternalJobTrainingMethod
+import edu.wpi.inndie.db.data.Job
+import edu.wpi.inndie.db.data.ModelSource
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.training.TrainGeneralModelScriptGenerator
 import edu.wpi.inndie.training.TrainSequentialModelScriptGenerator

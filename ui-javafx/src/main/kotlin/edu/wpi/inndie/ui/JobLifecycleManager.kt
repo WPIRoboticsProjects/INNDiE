@@ -1,9 +1,9 @@
 package edu.wpi.inndie.ui
 
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.DesiredJobTrainingMethod
-import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.DesiredJobTrainingMethod
+import edu.wpi.inndie.db.data.Job
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel

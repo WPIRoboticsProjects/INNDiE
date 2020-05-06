@@ -3,9 +3,9 @@ package edu.wpi.inndie.ui.view.joblist
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.db.data.InternalJobTrainingMethod
-import edu.wpi.axon.db.data.ModelSource
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.InternalJobTrainingMethod
+import edu.wpi.inndie.db.data.ModelSource
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.inndie.tfdata.Dataset

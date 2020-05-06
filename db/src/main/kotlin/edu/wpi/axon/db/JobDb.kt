@@ -1,10 +1,10 @@
 package edu.wpi.axon.db
 
 import com.beust.klaxon.Klaxon
-import edu.wpi.axon.db.data.InternalJobTrainingMethod
-import edu.wpi.axon.db.data.Job
-import edu.wpi.axon.db.data.ModelSource
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.InternalJobTrainingMethod
+import edu.wpi.inndie.db.data.Job
+import edu.wpi.inndie.db.data.ModelSource
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 import edu.wpi.inndie.plugin.Plugin
 import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.Model

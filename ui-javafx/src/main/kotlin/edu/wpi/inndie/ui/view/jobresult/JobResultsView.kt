@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.jobresult
 
-import edu.wpi.axon.db.data.TrainingScriptProgress
+import edu.wpi.inndie.db.data.TrainingScriptProgress
 import edu.wpi.inndie.ui.JobLifecycleManager
 import edu.wpi.inndie.ui.model.JobModel
 import javafx.event.EventTarget

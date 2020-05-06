@@ -1,4 +1,4 @@
-package edu.wpi.axon.db.data
+package edu.wpi.inndie.db.data
 
 import edu.wpi.axon.db.JobDb
 import edu.wpi.inndie.examplemodel.ExampleModel
@@ -43,13 +43,17 @@ fun Random.nextTrainingScriptProgress(): TrainingScriptProgress =
             )
         }
         4 -> TrainingScriptProgress.Completed
-        5 -> TrainingScriptProgress.Error(RandomStringUtils.randomAlphanumeric(50))
+        5 -> TrainingScriptProgress.Error(
+            RandomStringUtils.randomAlphanumeric(50)
+        )
         else -> error("Missing a TrainingScriptProgress case.")
     }
 
 fun Random.nextTrainingMethod(): InternalJobTrainingMethod =
     when (nextInt(InternalJobTrainingMethod::class.sealedSubclasses.count())) {
-        0 -> InternalJobTrainingMethod.EC2(RandomStringUtils.randomAlphabetic(10))
+        0 -> InternalJobTrainingMethod.EC2(
+            RandomStringUtils.randomAlphabetic(10)
+        )
         1 -> InternalJobTrainingMethod.Local
         2 -> InternalJobTrainingMethod.Untrained
         else -> error("Missing a JobTrainingMethod case.")

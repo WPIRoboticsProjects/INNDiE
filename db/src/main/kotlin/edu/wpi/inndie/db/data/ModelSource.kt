@@ -1,4 +1,4 @@
-package edu.wpi.axon.db.data
+package edu.wpi.inndie.db.data
 
 import edu.wpi.inndie.examplemodel.ExampleModel
 import edu.wpi.inndie.util.FilePath
