@@ -11,7 +11,7 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tflayerloader.layerGraphIsValid
+import edu.wpi.inndie.tflayerloader.layerGraphIsValid
 import edu.wpi.inndie.util.singleAssign
 import org.koin.core.inject
 import org.octogonapus.ktguava.collections.toImmutableList

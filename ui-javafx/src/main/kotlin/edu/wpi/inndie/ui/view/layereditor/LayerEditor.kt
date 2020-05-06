@@ -6,7 +6,7 @@ import com.fxgraph.graph.Graph
 import com.fxgraph.layout.AbegoTreeLayout
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tflayerloader.DefaultLayersToGraph
+import edu.wpi.inndie.tflayerloader.DefaultLayersToGraph
 import javafx.scene.layout.BorderPane
 import org.abego.treelayout.Configuration
 import tornadofx.action

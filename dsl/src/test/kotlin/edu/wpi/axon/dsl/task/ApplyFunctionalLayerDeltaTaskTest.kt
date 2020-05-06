@@ -17,7 +17,7 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.Activation
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.tflayerloader.layerGraphIsValid
+import edu.wpi.inndie.tflayerloader.layerGraphIsValid
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.matchers.ints.shouldBeGreaterThanOrEqual

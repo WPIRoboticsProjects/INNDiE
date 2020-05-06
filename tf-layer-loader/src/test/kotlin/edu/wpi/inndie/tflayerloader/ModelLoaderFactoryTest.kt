@@ -1,4 +1,4 @@
-package edu.wpi.axon.tflayerloader
+package edu.wpi.inndie.tflayerloader
 
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test

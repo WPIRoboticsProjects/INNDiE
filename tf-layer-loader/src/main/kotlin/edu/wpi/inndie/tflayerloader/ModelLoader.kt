@@ -1,4 +1,4 @@
-package edu.wpi.axon.tflayerloader
+package edu.wpi.inndie.tflayerloader
 
 import arrow.fx.IO
 import edu.wpi.axon.tfdata.Model

@@ -1,6 +1,6 @@
 @file:Suppress("UNCHECKED_CAST", "StringLiteralDuplication")
 
-package edu.wpi.axon.tflayerloader
+package edu.wpi.inndie.tflayerloader
 
 import arrow.core.Left
 import arrow.core.Right

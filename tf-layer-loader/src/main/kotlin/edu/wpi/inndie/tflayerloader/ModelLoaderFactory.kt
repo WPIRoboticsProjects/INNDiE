@@ -1,4 +1,4 @@
-package edu.wpi.axon.tflayerloader
+package edu.wpi.inndie.tflayerloader
 
 class ModelLoaderFactory {
 

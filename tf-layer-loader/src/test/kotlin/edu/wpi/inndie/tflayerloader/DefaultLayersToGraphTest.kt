@@ -1,7 +1,7 @@
 @file:SuppressWarnings("LongMethod", "LargeClass", "StringLiteralDuplication")
 @file:Suppress("UnstableApiUsage")
 
-package edu.wpi.axon.tflayerloader
+package edu.wpi.inndie.tflayerloader
 
 import com.google.common.graph.EndpointPair
 import edu.wpi.axon.tfdata.layer.Layer
@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Test
 
 internal class DefaultLayersToGraphTest {
 
-    private val layersToGraph = DefaultLayersToGraph()
+    private val layersToGraph =
+        DefaultLayersToGraph()
 
     @Test
     fun `no layers makes an empty graph`() {

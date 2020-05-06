@@ -1,7 +1,7 @@
 @file:SuppressWarnings("LongMethod", "LargeClass")
 @file:Suppress("UnstableApiUsage")
 
-package edu.wpi.axon.tflayerloader
+package edu.wpi.inndie.tflayerloader
 
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.SerializableEitherITii

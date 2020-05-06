@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-package edu.wpi.axon.tflayerloader
+package edu.wpi.inndie.tflayerloader
 
 import arrow.core.Either
 import arrow.core.extensions.either.monadError.monadError
