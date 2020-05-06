@@ -103,7 +103,7 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
                     )
                     is Dataset.ExampleDataset -> emptyList()
                 } + listOf(
-                    "wpilib/axon-ci:latest",
+                    "wpilib/inndie-ci:latest",
                     "/usr/bin/python3.6",
                     "/home/$scriptFilename"
                 ),

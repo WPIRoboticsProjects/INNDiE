@@ -27,7 +27,7 @@ class GitExampleModelManager : ExampleModelManager {
      * The URL to download the example models metadata from.
      */
     var exampleModelMetadataUrl =
-        "https://raw.githubusercontent.com/wpilibsuite/axon-example-models/master/exampleModels.json"
+        "https://raw.githubusercontent.com/wpilibsuite/inndie-example-models/master/exampleModels.json"
 
     override fun getAllExampleModels(): IO<Set<ExampleModel>> = IO {
         check(exampleModelMetadataFile.exists()) {

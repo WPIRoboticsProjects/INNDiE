@@ -16,7 +16,7 @@ import org.junit.jupiter.api.io.TempDir
 internal class GitExampleModelManagerTest {
 
     private val testExampleModelMetadataUrl =
-        "https://raw.githubusercontent.com/wpilibsuite/axon-example-models-testing/master/exampleModels.json"
+        "https://raw.githubusercontent.com/wpilibsuite/inndie-example-models-testing/master/exampleModels.json"
 
     @Test
     fun `update cache once`(@TempDir tempDir: File) {
@@ -56,7 +56,7 @@ internal class GitExampleModelManagerTest {
             ExampleModel(
                 "Model 1",
                 "model1.h5",
-                "https://raw.githubusercontent.com/wpilibsuite/axon-example-models-testing/master/models/model1.h5",
+                "https://raw.githubusercontent.com/wpilibsuite/inndie-example-models-testing/master/models/model1.h5",
                 "The first model.",
                 mapOf(
                     "input_1" to None,
@@ -66,7 +66,7 @@ internal class GitExampleModelManagerTest {
             ExampleModel(
                 "Model 2",
                 "model2.h5",
-                "https://raw.githubusercontent.com/wpilibsuite/axon-example-models-testing/master/models/model2.h5",
+                "https://raw.githubusercontent.com/wpilibsuite/inndie-example-models-testing/master/models/model2.h5",
                 "The second model.",
                 mapOf(
                     "input_1" to None,

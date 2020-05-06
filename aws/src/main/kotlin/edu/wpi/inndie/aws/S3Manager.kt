@@ -33,7 +33,7 @@ class S3Manager(
      * model will be the same as the filename of this file.
      */
     fun uploadModel(file: File) =
-        uploadLocalFile(file, "axon-models/${file.name}")
+        uploadLocalFile(file, "inndie-models/${file.name}")
 
     /**
      * Downloads a model.
@@ -42,7 +42,7 @@ class S3Manager(
      * @return A local file containing the model.
      */
     fun downloadModel(filename: String): File =
-        downloadToLocalFile(modelCacheDir, "axon-models/$filename")
+        downloadToLocalFile(modelCacheDir, "inndie-models/$filename")
 
     /**
      * Lists the training results for the Job.
@@ -51,7 +51,7 @@ class S3Manager(
      * @return The filenames of the results.
      */
     fun listTrainingResults(jobId: Int): List<String> {
-        val out = listObjectsWithPrefixAndRemovePrefix("axon-training-results/$jobId/")
+        val out = listObjectsWithPrefixAndRemovePrefix("inndie-training-results/$jobId/")
         LOGGER.debug { "Training results:\n$out" }
         return out
     }
@@ -64,14 +64,14 @@ class S3Manager(
      * @return A local file containing the result.
      */
     fun downloadTrainingResult(jobId: Int, resultFilename: String): File =
-        downloadToLocalFile(trainingResultCacheDir, "axon-training-results/$jobId/$resultFilename")
+        downloadToLocalFile(trainingResultCacheDir, "inndie-training-results/$jobId/$resultFilename")
 
     /**
      * Uploads a test data file.
      *
      * @param file The local test data file.
      */
-    fun uploadTestDataFile(file: File) = uploadLocalFile(file, "axon-test-data/${file.name}")
+    fun uploadTestDataFile(file: File) = uploadLocalFile(file, "inndie-test-data/${file.name}")
 
     /**
      * Downloads a test data file to a local file.
@@ -80,7 +80,7 @@ class S3Manager(
      * @return The test data in a local file.
      */
     fun downloadTestDataFile(filename: String): File =
-        downloadToLocalFile(testDataCacheDir, "axon-test-data/$filename")
+        downloadToLocalFile(testDataCacheDir, "inndie-test-data/$filename")
 
     /**
      * Lists all the model files.
@@ -88,7 +88,7 @@ class S3Manager(
      * @return A list of the model filenames.
      */
     fun listModels(): List<String> =
-        listObjectsWithPrefixAndRemovePrefix("axon-models/")
+        listObjectsWithPrefixAndRemovePrefix("inndie-models/")
 
     /**
      * Lists all the test data files.
@@ -96,7 +96,7 @@ class S3Manager(
      * @return A list of the test data filenames.
      */
     fun listTestDataFiles(): List<String> =
-        listObjectsWithPrefixAndRemovePrefix("axon-test-data/")
+        listObjectsWithPrefixAndRemovePrefix("inndie-test-data/")
 
     /**
      * Uploads a training script.
@@ -107,7 +107,7 @@ class S3Manager(
     fun uploadTrainingScript(scriptFilename: String, scriptContents: String) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName)
-                .key("axon-training-scripts/$scriptFilename").build(),
+                .key("inndie-training-scripts/$scriptFilename").build(),
             RequestBody.fromString(scriptContents)
         )
     }
@@ -185,7 +185,7 @@ class S3Manager(
     fun clearTrainingLogFile(id: Int) {
         s3.putObject(
             PutObjectRequest.builder().bucket(bucketName)
-                .key("axon-training-progress/$id/log.txt").build(),
+                .key("inndie-training-progress/$id/log.txt").build(),
             RequestBody.fromString("")
         )
     }
@@ -198,7 +198,7 @@ class S3Manager(
      */
     @UseExperimental(ExperimentalStdlibApi::class)
     fun getTrainingLogFile(id: Int) = s3.getObject {
-        it.bucket(bucketName).key("axon-training-progress/$id/log.txt")
+        it.bucket(bucketName).key("inndie-training-progress/$id/log.txt")
     }.readAllBytes().decodeToString()
 
     /**
@@ -208,7 +208,7 @@ class S3Manager(
      * @param file The plugin cache file.
      */
     fun uploadPluginCache(cacheName: String, file: File) =
-        uploadLocalFile(file, "axon-plugins/$cacheName/plugin_cache.json")
+        uploadLocalFile(file, "inndie-plugins/$cacheName/plugin_cache.json")
 
     /**
      * Downloads a plugin cache file.
@@ -217,7 +217,7 @@ class S3Manager(
      * @return A local file containing the plugin cache.
      */
     fun downloadPluginCache(cacheName: String): File =
-        downloadToLocalFile(pluginCacheDir, "axon-plugins/$cacheName/plugin_cache.json")
+        downloadToLocalFile(pluginCacheDir, "inndie-plugins/$cacheName/plugin_cache.json")
 
     /**
      * Uploads a custom dataset.
@@ -225,7 +225,7 @@ class S3Manager(
      * @param dataset The dataset file to upload.
      */
     fun uploadDataset(dataset: File) =
-        uploadLocalFile(dataset, "axon-datasets/${dataset.name}")
+        uploadLocalFile(dataset, "inndie-datasets/${dataset.name}")
 
     /**
      * Downloads a custom dataset to a local file.
@@ -234,7 +234,7 @@ class S3Manager(
      * @return A local file containing the dataset.
      */
     fun downloadDataset(datasetFilename: String): File =
-        downloadToLocalFile(datasetCacheDir, "axon-datasets/$datasetFilename")
+        downloadToLocalFile(datasetCacheDir, "inndie-datasets/$datasetFilename")
 
     /**
      * Downloads the preferences file to a local file. Throws an exception if there is no
@@ -310,7 +310,7 @@ class S3Manager(
             it.bucket(bucketName).prefix(prefix).maxKeys(1000)
         }.contents().map { it.key().substring(prefix.length) }
 
-    private fun createTrainingProgressPrefix(id: Int) = "axon-training-progress/$id"
+    private fun createTrainingProgressPrefix(id: Int) = "inndie-training-progress/$id"
 
     private fun createTrainingProgressFilePath(id: Int) =
         "${createTrainingProgressPrefix(id)}/progress.txt"
@@ -320,6 +320,6 @@ class S3Manager(
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
-        private const val preferencesFilename = "axon-preferences.json"
+        private const val preferencesFilename = "inndie-preferences.json"
     }
 }

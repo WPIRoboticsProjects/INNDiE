@@ -71,7 +71,7 @@ class EC2TrainingScriptRunner(
         val downloadDatasetString = when (config.dataset) {
             is Dataset.ExampleDataset -> ""
             is Dataset.Custom ->
-                """axon download-dataset "${config.dataset.path.path}""""
+                """inndie download-dataset "${config.dataset.path.path}""""
         }
 
         val scriptForEC2 = """
@@ -87,17 +87,17 @@ class EC2TrainingScriptRunner(
             |apt-cache policy docker-ce
             |apt install -y docker-ce
             |systemctl status docker
-            |pip3 install https://github.com/wpilibsuite/axon-cli/releases/download/v0.1.17/axon-0.1.17-py2.py3-none-any.whl
-            |axon create-heartbeat ${config.id}
-            |axon update-training-progress ${config.id} "initializing"
-            |axon download-model "${config.oldModelName.path}"
+            |pip3 install https://github.com/wpilibsuite/INNDiE-cli/releases/download/v0.1.18/inndie-0.1.18-py2.py3-none-any.whl
+            |inndie create-heartbeat ${config.id}
+            |inndie update-training-progress ${config.id} "initializing"
+            |inndie download-model "${config.oldModelName.path}"
             |$downloadDatasetString
-            |axon download-training-script "$scriptFileName"
-            |docker run -v ${'$'}(eval "pwd"):/home wpilib/axon-ci:latest "/usr/bin/python3.6" "/home/$scriptFileName"
-            |axon upload-training-results ${config.id} "${config.workingDir}"
-            |axon update-training-progress ${config.id} "completed"
-            |axon remove-heartbeat ${config.id}
-            |axon set-training-log-file ${config.id} "/var/log/syslog"
+            |inndie download-training-script "$scriptFileName"
+            |docker run -v ${'$'}(eval "pwd"):/home wpilib/inndie-ci:latest "/usr/bin/python3.6" "/home/$scriptFileName"
+            |inndie upload-training-results ${config.id} "${config.workingDir}"
+            |inndie update-training-progress ${config.id} "completed"
+            |inndie remove-heartbeat ${config.id}
+            |inndie set-training-log-file ${config.id} "/var/log/syslog"
             |shutdown -h now
             """.trimMargin()
 

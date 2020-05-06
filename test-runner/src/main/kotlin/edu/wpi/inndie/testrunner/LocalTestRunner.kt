@@ -162,7 +162,7 @@ class LocalTestRunner : TestRunner {
                     "${testData.filePath.parent.toAbsolutePath()}:/test-data"
                 )
             } + listOf(
-                "wpilib/axon-ci:latest",
+                "wpilib/inndie-ci:latest",
                 "/usr/bin/python3.6",
                 "/home/$scriptFilename"
             ),

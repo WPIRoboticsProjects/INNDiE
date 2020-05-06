@@ -34,7 +34,7 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
 
     override val imports: Set<Import> = setOf(
         makeImport("import tensorflow as tf"),
-        makeImport("import axon.client"),
+        makeImport("import inndie.client"),
         makeImport("import os.path")
     )
 
@@ -61,7 +61,7 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
         |    def on_epoch_end(self, epoch, logs=None):
         |        if os.path.isfile("$csvLogFile"):
         |            with open("$csvLogFile", "r") as f:
-        |                axon.client.impl_update_training_progress($jobId, f.read(),
+        |                inndie.client.impl_update_training_progress($jobId, f.read(),
         |                                                          "${(bucketName as Some<String>).t}",
         |                                                          None)
         |

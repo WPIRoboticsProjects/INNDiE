@@ -48,7 +48,7 @@ internal class S3ProgressReportingCallbackTaskTest : KoinTestFixture() {
             |    def on_epoch_end(self, epoch, logs=None):
             |        if os.path.isfile("./output/logFile.csv"):
             |            with open("./output/logFile.csv", "r") as f:
-            |                axon.client.impl_update_training_progress(${task.jobId}, f.read(),
+            |                inndie.client.impl_update_training_progress(${task.jobId}, f.read(),
             |                                                          "b",
             |                                                          None)
             |

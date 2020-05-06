@@ -105,7 +105,7 @@ fun defaultFrontendModule() = module {
                 processMnistTypeForMobilenetPlugin,
                 divideByTwoFiveFivePlugin
             ),
-            "axon-dataset-plugins",
+            "inndie-dataset-plugins",
             "dataset_plugin_cache.json"
         )
     }
@@ -115,7 +115,7 @@ fun defaultFrontendModule() = module {
             setOf(
                 loadExampleDatasetPlugin
             ),
-            "axon-load-test-data-plugins",
+            "inndie-load-test-data-plugins",
             "load_test_data_plugin_cache.json"
         )
     }
@@ -126,7 +126,7 @@ fun defaultFrontendModule() = module {
                 imageClassificationModelOutputPlugin,
                 autoMpgRegressionOutputPlugin
             ),
-            "axon-process-test-output-plugins",
+            "inndie-process-test-output-plugins",
             "process_test_output_plugin_cache.json"
         )
     }
