@@ -4,22 +4,22 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.fx.IO
-import edu.wpi.axon.aws.EC2Manager
-import edu.wpi.axon.aws.EC2TrainingResultSupplier
-import edu.wpi.axon.aws.EC2TrainingScriptCanceller
-import edu.wpi.axon.aws.EC2TrainingScriptProgressReporter
-import edu.wpi.axon.aws.EC2TrainingScriptRunner
-import edu.wpi.axon.aws.LocalTrainingResultSupplier
-import edu.wpi.axon.aws.LocalTrainingScriptCanceller
-import edu.wpi.axon.aws.LocalTrainingScriptProgressReporter
-import edu.wpi.axon.aws.LocalTrainingScriptRunner
-import edu.wpi.axon.aws.RunTrainingScriptConfiguration
-import edu.wpi.axon.aws.S3Manager
-import edu.wpi.axon.aws.TrainingResultSupplier
-import edu.wpi.axon.aws.TrainingScriptCanceller
-import edu.wpi.axon.aws.TrainingScriptProgressReporter
-import edu.wpi.axon.aws.TrainingScriptRunner
-import edu.wpi.axon.aws.preferences.PreferencesManager
+import edu.wpi.inndie.aws.EC2Manager
+import edu.wpi.inndie.aws.EC2TrainingResultSupplier
+import edu.wpi.inndie.aws.EC2TrainingScriptCanceller
+import edu.wpi.inndie.aws.EC2TrainingScriptProgressReporter
+import edu.wpi.inndie.aws.EC2TrainingScriptRunner
+import edu.wpi.inndie.aws.LocalTrainingResultSupplier
+import edu.wpi.inndie.aws.LocalTrainingScriptCanceller
+import edu.wpi.inndie.aws.LocalTrainingScriptProgressReporter
+import edu.wpi.inndie.aws.LocalTrainingScriptRunner
+import edu.wpi.inndie.aws.RunTrainingScriptConfiguration
+import edu.wpi.inndie.aws.S3Manager
+import edu.wpi.inndie.aws.TrainingResultSupplier
+import edu.wpi.inndie.aws.TrainingScriptCanceller
+import edu.wpi.inndie.aws.TrainingScriptProgressReporter
+import edu.wpi.inndie.aws.TrainingScriptRunner
+import edu.wpi.inndie.aws.preferences.PreferencesManager
 import edu.wpi.inndie.db.JobDb
 import edu.wpi.inndie.db.data.DesiredJobTrainingMethod
 import edu.wpi.inndie.db.data.InternalJobTrainingMethod
@@ -187,7 +187,9 @@ internal class JobRunner : KoinComponent {
             null
         } else {
             val newSupplier = when (job.internalTrainingMethod) {
-                is InternalJobTrainingMethod.EC2 -> EC2TrainingResultSupplier(S3Manager(getBucket()))
+                is InternalJobTrainingMethod.EC2 -> EC2TrainingResultSupplier(
+                    S3Manager(getBucket())
+                )
                 is InternalJobTrainingMethod.Local -> LocalTrainingResultSupplier().apply {
                     addJob(id,
                         getLocalTrainingScriptRunnerWorkingDir(
@@ -248,15 +250,21 @@ internal class JobRunner : KoinComponent {
                 val ec2Manager = EC2Manager()
                 val s3Manager = S3Manager(getBucket())
                 progressReporters[job.id] =
-                    EC2TrainingScriptProgressReporter(ec2Manager, s3Manager).apply {
+                    EC2TrainingScriptProgressReporter(
+                        ec2Manager,
+                        s3Manager
+                    ).apply {
                         addJob(job.id, trainingMethod.instanceId, job.userEpochs)
                     }
 
-                cancellers[job.id] = EC2TrainingScriptCanceller(ec2Manager).apply {
+                cancellers[job.id] = EC2TrainingScriptCanceller(
+                    ec2Manager
+                ).apply {
                     addJob(job.id, trainingMethod.instanceId)
                 }
 
-                resultSuppliers[job.id] = EC2TrainingResultSupplier(s3Manager)
+                resultSuppliers[job.id] =
+                    EC2TrainingResultSupplier(s3Manager)
             }
 
             is InternalJobTrainingMethod.Local -> {

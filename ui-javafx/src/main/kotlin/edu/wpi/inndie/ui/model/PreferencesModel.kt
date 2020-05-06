@@ -1,7 +1,7 @@
 package edu.wpi.inndie.ui.model
 
-import edu.wpi.axon.aws.preferences.Preferences
-import edu.wpi.axon.aws.preferences.PreferencesManager
+import edu.wpi.inndie.aws.preferences.Preferences
+import edu.wpi.inndie.aws.preferences.PreferencesManager
 import javafx.beans.property.SimpleLongProperty
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.ItemViewModel

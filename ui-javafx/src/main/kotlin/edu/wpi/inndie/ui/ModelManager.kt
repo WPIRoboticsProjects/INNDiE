@@ -2,7 +2,7 @@ package edu.wpi.inndie.ui
 
 import arrow.core.Option
 import arrow.core.getOrElse
-import edu.wpi.axon.aws.S3Manager
+import edu.wpi.inndie.aws.S3Manager
 import edu.wpi.inndie.db.data.ModelSource
 import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.tfdata.Model

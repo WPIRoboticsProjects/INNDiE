@@ -3,11 +3,11 @@ package edu.wpi.inndie.ui.main
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
-import edu.wpi.axon.aws.S3Manager
-import edu.wpi.axon.aws.S3PreferencesManager
-import edu.wpi.axon.aws.findAxonS3Bucket
-import edu.wpi.axon.aws.plugin.S3PluginManager
-import edu.wpi.axon.aws.preferences.LocalPreferencesManager
+import edu.wpi.inndie.aws.S3Manager
+import edu.wpi.inndie.aws.S3PreferencesManager
+import edu.wpi.inndie.aws.findAxonS3Bucket
+import edu.wpi.inndie.aws.plugin.S3PluginManager
+import edu.wpi.inndie.aws.preferences.LocalPreferencesManager
 import edu.wpi.inndie.db.JobDb
 import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.examplemodel.GitExampleModelManager
