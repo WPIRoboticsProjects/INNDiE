@@ -24,8 +24,8 @@ import edu.wpi.inndie.plugin.ProcessTestOutputPlugins.imageClassificationModelOu
 import edu.wpi.inndie.ui.JobLifecycleManager
 import edu.wpi.inndie.ui.JobRunner
 import edu.wpi.inndie.ui.ModelManager
-import edu.wpi.inndie.util.axonBucketName
 import edu.wpi.inndie.util.datasetPluginManagerName
+import edu.wpi.inndie.util.inndieBucketName
 import edu.wpi.inndie.util.loadTestDataPluginManagerName
 import edu.wpi.inndie.util.localCacheDir
 import edu.wpi.inndie.util.processTestOutputPluginManagerName
@@ -35,7 +35,7 @@ import org.koin.core.scope.Scope
 import org.koin.dsl.module
 
 fun defaultFrontendModule() = module {
-    single(qualifier = named(axonBucketName), createdAtStart = true) { findAxonS3Bucket() }
+    single(qualifier = named(inndieBucketName), createdAtStart = true) { findAxonS3Bucket() }
 
     single {
         JobDb(
@@ -88,7 +88,7 @@ fun defaultFrontendModule() = module {
     }
 
     single {
-        when (val bucketName = get<Option<String>>(named(axonBucketName))) {
+        when (val bucketName = get<Option<String>>(named(inndieBucketName))) {
             is Some -> S3PreferencesManager(S3Manager(bucketName.t)).apply { initialize() }
             is None -> LocalPreferencesManager(
                 localCacheDir.resolve("preferences.json")
@@ -150,7 +150,7 @@ private fun Scope.bindPluginManager(
     officialPlugins: Set<Plugin.Official>,
     cacheName: String,
     cacheFileName: String
-): PluginManager = when (val bucketName = get<Option<String>>(named(axonBucketName))) {
+): PluginManager = when (val bucketName = get<Option<String>>(named(inndieBucketName))) {
     is Some -> {
         S3PluginManager(
             S3Manager(bucketName.t),

@@ -8,7 +8,7 @@ import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.tflayerloader.ModelLoaderFactory
 import edu.wpi.inndie.util.FilePath
-import edu.wpi.inndie.util.axonBucketName
+import edu.wpi.inndie.util.inndieBucketName
 import java.io.File
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -16,7 +16,7 @@ import org.koin.core.qualifier.named
 
 class ModelManager : KoinComponent {
 
-    private val bucketName by inject<Option<String>>(named(axonBucketName))
+    private val bucketName by inject<Option<String>>(named(inndieBucketName))
     private val s3Manager by lazy { bucketName.map { S3Manager(it) } }
     private val exampleModelManager by inject<ExampleModelManager>()
 

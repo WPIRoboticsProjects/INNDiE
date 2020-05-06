@@ -15,7 +15,7 @@ import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.training.testutil.loadModel
 import edu.wpi.inndie.training.testutil.testTrainingScript
 import edu.wpi.inndie.util.FilePath
-import edu.wpi.inndie.util.axonBucketName
+import edu.wpi.inndie.util.inndieBucketName
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.matchers.types.shouldBeInstanceOf
@@ -40,7 +40,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                 listOf(
                     defaultBackendModule(),
                     module {
-                        single(named(axonBucketName)) { "dummy-bucket-name" }
+                        single(named(inndieBucketName)) { "dummy-bucket-name" }
                     }
                 )
             )
@@ -90,7 +90,7 @@ internal class TrainSequentialModelScriptGeneratorIntegrationTest : KoinTestFixt
                 listOf(
                     defaultBackendModule(),
                     module {
-                        single(named(axonBucketName)) { "dummy-bucket-name" }
+                        single(named(inndieBucketName)) { "dummy-bucket-name" }
                     }
                 )
             )

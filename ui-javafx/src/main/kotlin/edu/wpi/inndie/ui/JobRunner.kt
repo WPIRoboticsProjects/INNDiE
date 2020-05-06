@@ -31,8 +31,8 @@ import edu.wpi.inndie.training.TrainGeneralModelScriptGenerator
 import edu.wpi.inndie.training.TrainSequentialModelScriptGenerator
 import edu.wpi.inndie.training.TrainState
 import edu.wpi.inndie.util.FilePath
-import edu.wpi.inndie.util.axonBucketName
 import edu.wpi.inndie.util.getLocalTrainingScriptRunnerWorkingDir
+import edu.wpi.inndie.util.inndieBucketName
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlinx.coroutines.delay
@@ -51,7 +51,7 @@ internal class JobRunner : KoinComponent {
     private val progressReporters = mutableMapOf<Int, TrainingScriptProgressReporter>()
     private val cancellers = mutableMapOf<Int, TrainingScriptCanceller>()
     private val resultSuppliers = mutableMapOf<Int, TrainingResultSupplier>()
-    private val bucketName by inject<Option<String>>(named(axonBucketName))
+    private val bucketName by inject<Option<String>>(named(inndieBucketName))
     private val modelManager by inject<ModelManager>()
     private val jobDb by inject<JobDb>()
 
@@ -301,7 +301,7 @@ internal class JobRunner : KoinComponent {
     }
 
     private fun getBucket(): String {
-        val bucket = get<Option<String>>(named(axonBucketName))
+        val bucket = get<Option<String>>(named(inndieBucketName))
         check(bucket is Some) {
             "Tried to create an EC2TrainingScriptRunner but did not have a bucket configured."
         }

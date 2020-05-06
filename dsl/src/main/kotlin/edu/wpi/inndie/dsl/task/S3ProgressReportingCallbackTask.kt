@@ -7,7 +7,7 @@ import edu.wpi.inndie.dsl.UniqueVariableNameGenerator
 import edu.wpi.inndie.dsl.imports.Import
 import edu.wpi.inndie.dsl.imports.makeImport
 import edu.wpi.inndie.dsl.variable.Variable
-import edu.wpi.inndie.util.axonBucketName
+import edu.wpi.inndie.util.inndieBucketName
 import edu.wpi.inndie.util.singleAssign
 import org.koin.core.inject
 import org.koin.core.qualifier.named
@@ -48,7 +48,7 @@ class S3ProgressReportingCallbackTask(name: String) : BaseTask(name) {
     /**
      * The name of the S3 bucket to upload the progress to.
      */
-    private val bucketName: Option<String> by inject(named(axonBucketName))
+    private val bucketName: Option<String> by inject(named(inndieBucketName))
 
     private val variableNameGenerator: UniqueVariableNameGenerator by inject()
 

@@ -24,7 +24,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "axon"
+rootProject.name = "inndie"
 
 include(":aws")
 include(":db")

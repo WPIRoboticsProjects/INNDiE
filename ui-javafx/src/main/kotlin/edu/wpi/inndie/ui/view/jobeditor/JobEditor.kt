@@ -5,7 +5,7 @@ import edu.wpi.inndie.db.data.DesiredJobTrainingMethod
 import edu.wpi.inndie.db.data.TrainingScriptProgress
 import edu.wpi.inndie.ui.JobLifecycleManager
 import edu.wpi.inndie.ui.model.JobModel
-import edu.wpi.inndie.util.axonBucketName
+import edu.wpi.inndie.util.inndieBucketName
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.Label
@@ -26,7 +26,7 @@ class JobEditor : Fragment() {
 
     private val job by inject<JobModel>()
     private val jobLifecycleManager by di<JobLifecycleManager>()
-    private val bucketName by di<Option<String>>(axonBucketName)
+    private val bucketName by di<Option<String>>(inndieBucketName)
 
     override val root = borderpane {
         centerProperty().bind(job.itemProperty.objectBinding {

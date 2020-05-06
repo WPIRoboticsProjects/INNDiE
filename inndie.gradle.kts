@@ -112,7 +112,7 @@ buildscript {
 }
 
 allprojects {
-    version = property("axon.version") as String
+    version = property("inndie.version") as String
     group = "edu.wpi"
 
     apply {
@@ -468,7 +468,7 @@ configure(publishedProjects) {
         plugin("java-library")
     }
 
-    val projectName = "axon"
+    val projectName = "inndie"
 
     task<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
@@ -496,27 +496,6 @@ configure(publishedProjects) {
             }
         }
     }
-
-    // bintray {
-    //    val bintrayApiUser = properties["bintray.api.user"] ?: System.getenv("BINTRAY_USER")
-    //    val bintrayApiKey = properties["bintray.api.key"] ?: System.getenv("BINTRAY_API_KEY")
-    //    user = bintrayApiUser as String?
-    //    key = bintrayApiKey as String?
-    //    setPublications(publicationName)
-    //    with(pkg) {
-    //        repo = "maven-artifacts"
-    //        name = projectName
-    //        userOrg = "commonwealthrobotics"
-    //        publish = true
-    //        setLicenses("LGPL-3.0")
-    //        vcsUrl = "https://github.com/CommonWealthRobotics/bowler-kernel.git"
-    //        githubRepo = "https://github.com/CommonWealthRobotics/bowler-kernel"
-    //        kotlin.with(version) {
-    //            name = property("axon.version") as String
-    //            desc = "The heart of the Bowler stack."
-    //        }
-    //    }
-    // }
 }
 
 tasks.dokka {

@@ -4,7 +4,7 @@ import edu.wpi.inndie.dsl.TaskConfigurationTestFixture
 import edu.wpi.inndie.dsl.configuredCorrectly
 import edu.wpi.inndie.dsl.mockVariableNameGenerator
 import edu.wpi.inndie.testutil.KoinTestFixture
-import edu.wpi.inndie.util.axonBucketName
+import edu.wpi.inndie.util.inndieBucketName
 import io.kotlintest.shouldBe
 import kotlin.random.Random
 import org.junit.Test
@@ -31,7 +31,7 @@ internal class S3ProgressReportingCallbackTaskTest : KoinTestFixture() {
     fun `test code gen`() {
         startKoin {
             modules(module {
-                single(named(axonBucketName)) { "b" }
+                single(named(inndieBucketName)) { "b" }
                 mockVariableNameGenerator()
             })
         }
