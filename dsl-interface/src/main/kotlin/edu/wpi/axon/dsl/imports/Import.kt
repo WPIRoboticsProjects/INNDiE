@@ -1,8 +1,8 @@
 package edu.wpi.axon.dsl.imports
 
 import arrow.core.Some
-import edu.wpi.axon.patternmatch.Variable
-import edu.wpi.axon.patternmatch.match
+import edu.wpi.inndie.patternmatch.Variable
+import edu.wpi.inndie.patternmatch.match
 
 /**
  * An import statement.
@@ -46,20 +46,39 @@ sealed class Import(val components: Set<String>) {
 fun makeImport(import: String): Import {
     val components = import.split(Regex("\\s"))
     return (when (components.size) {
-        2, 4, 6 -> match<List<String>, String, Import>(components) {
+        2, 4, 6 -> match<List<String>, String, Import>(
+            components
+        ) {
             pattern("import", Variable) returns {
                 Import.ModuleOnly(firstMatch())
             }
 
-            pattern("from", Variable, "import", Variable) returns {
+            pattern(
+                "from",
+                Variable,
+                "import",
+                Variable
+            ) returns {
                 Import.ModuleAndIdentifier(firstMatch(), secondMatch())
             }
 
-            pattern("import", Variable, "as", Variable) returns {
+            pattern(
+                "import",
+                Variable,
+                "as",
+                Variable
+            ) returns {
                 Import.ModuleAndName(firstMatch(), secondMatch())
             }
 
-            pattern("from", Variable, "import", Variable, "as", Variable) returns {
+            pattern(
+                "from",
+                Variable,
+                "import",
+                Variable,
+                "as",
+                Variable
+            ) returns {
                 Import.FullImport(firstMatch(), secondMatch(), thirdMatch())
             }
         }
