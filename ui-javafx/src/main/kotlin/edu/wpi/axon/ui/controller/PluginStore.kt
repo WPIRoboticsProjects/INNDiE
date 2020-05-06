@@ -2,9 +2,9 @@ package edu.wpi.axon.ui.controller
 
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.plugin.PluginManager
-import edu.wpi.axon.util.datasetPluginManagerName
-import edu.wpi.axon.util.loadTestDataPluginManagerName
-import edu.wpi.axon.util.processTestOutputPluginManagerName
+import edu.wpi.inndie.util.datasetPluginManagerName
+import edu.wpi.inndie.util.loadTestDataPluginManagerName
+import edu.wpi.inndie.util.processTestOutputPluginManagerName
 import tornadofx.Controller
 import tornadofx.SortedFilteredList
 

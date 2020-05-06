@@ -6,7 +6,7 @@ import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.ModelCheckpointSaveFrequency
 import edu.wpi.axon.tfdata.code.pythonString
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.singleAssign
 
 /**
  * Makes a new `ModelCheckpoint` callback.

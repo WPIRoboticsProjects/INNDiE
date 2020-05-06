@@ -5,7 +5,7 @@ import edu.wpi.axon.ui.model.DatasetModel
 import edu.wpi.axon.ui.model.DatasetType
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.view.contentMap
-import edu.wpi.axon.util.FilePath
+import edu.wpi.inndie.util.FilePath
 import javafx.stage.FileChooser
 import javafx.util.StringConverter
 import tornadofx.ItemFragment

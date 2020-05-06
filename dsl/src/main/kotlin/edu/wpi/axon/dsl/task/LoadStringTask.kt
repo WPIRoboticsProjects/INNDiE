@@ -3,7 +3,7 @@ package edu.wpi.axon.dsl.task
 import edu.wpi.axon.dsl.Code
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.singleAssign
 
 /**
  * Puts a string into a variable.

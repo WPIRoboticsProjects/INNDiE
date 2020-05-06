@@ -6,9 +6,9 @@ import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.allS3OrLocal
-import edu.wpi.axon.util.getOutputModelName
+import edu.wpi.inndie.util.FilePath
+import edu.wpi.inndie.util.allS3OrLocal
+import edu.wpi.inndie.util.getOutputModelName
 import java.nio.file.Path
 
 /**
@@ -47,12 +47,18 @@ data class TrainState<T : Model>(
     // Just need to check one because of the [require] below
     val usesAWS = userOldModelPath is FilePath.S3
 
-    val trainedModelFilename = getOutputModelName(userOldModelPath.filename)
+    val trainedModelFilename =
+        getOutputModelName(userOldModelPath.filename)
 
     init {
         val s3Check = when (userDataset) {
-            is Dataset.ExampleDataset -> allS3OrLocal(userOldModelPath)
-            is Dataset.Custom -> allS3OrLocal(userOldModelPath, userDataset.path)
+            is Dataset.ExampleDataset -> allS3OrLocal(
+                userOldModelPath
+            )
+            is Dataset.Custom -> allS3OrLocal(
+                userOldModelPath,
+                userDataset.path
+            )
         }
 
         require(s3Check) {

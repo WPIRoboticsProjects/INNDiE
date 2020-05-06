@@ -8,7 +8,7 @@ import edu.wpi.axon.tfdata.code.loss.LossToCode
 import edu.wpi.axon.tfdata.code.optimizer.OptimizerToCode
 import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.singleAssign
 import org.koin.core.inject
 
 /**

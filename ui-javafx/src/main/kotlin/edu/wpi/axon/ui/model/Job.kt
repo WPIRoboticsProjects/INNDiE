@@ -14,8 +14,8 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.ModelManager
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.getOutputModelName
+import edu.wpi.inndie.util.FilePath
+import edu.wpi.inndie.util.getOutputModelName
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleSetProperty
@@ -131,7 +131,9 @@ class JobModel : ItemViewModel<JobDto>() {
             userMetrics = userMetrics.value,
             userEpochs = userEpochs.value.toInt(),
             userNewModel = userNewModel.value,
-            userNewModelFilename = FilePath.Local(getOutputModelName(userOldModelPath.value.filename)),
+            userNewModelFilename = FilePath.Local(
+                getOutputModelName(userOldModelPath.value.filename)
+            ),
             target = target.value,
             datasetPlugin = datasetPlugin.value
         )
@@ -190,7 +192,8 @@ class JobWizardModel : ItemViewModel<JobDto>() {
         lossType.value = taskInput.value.loss::class
         userMetrics.value = setOf("accuracy").toObservable()
         userNewModel.value = modelManager.loadModel(modelSource)
-        userNewModelFilename.value = getOutputModelName(modelSource.filename)
+        userNewModelFilename.value =
+            getOutputModelName(modelSource.filename)
         internalTrainingMethod.value = InternalJobTrainingMethod.Untrained
         targetType.value = wizardTarget.value.targetClass
         target.value = when (targetType.value) {

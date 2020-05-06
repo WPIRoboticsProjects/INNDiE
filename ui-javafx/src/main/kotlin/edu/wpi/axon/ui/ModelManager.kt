@@ -7,8 +7,8 @@ import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.examplemodel.ExampleModelManager
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.axonBucketName
+import edu.wpi.inndie.util.FilePath
+import edu.wpi.inndie.util.axonBucketName
 import java.io.File
 import org.koin.core.KoinComponent
 import org.koin.core.inject

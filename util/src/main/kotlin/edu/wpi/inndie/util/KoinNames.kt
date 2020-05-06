@@ -1,4 +1,4 @@
-package edu.wpi.axon.util
+package edu.wpi.inndie.util
 
 const val axonBucketName = "axon-bucket"
 const val datasetPluginManagerName = "axon-dataset-plugin-manager"

@@ -2,8 +2,8 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.getOutputModelName
+import edu.wpi.inndie.util.FilePath
+import edu.wpi.inndie.util.getOutputModelName
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.matchers.types.shouldBeInstanceOf
@@ -261,7 +261,11 @@ internal class LocalTrainingScriptRunnerIntegTest {
                     runner.cancelScript(id)
                     val progressAfterCancellation = runner.getTrainingProgress(id)
                     progressAfterCancellation.shouldBeInstanceOf<TrainingScriptProgress.Error>()
-                    tempDir.toPath().resolve(getOutputModelName(oldModelName)).toFile()
+                    tempDir.toPath().resolve(
+                        getOutputModelName(
+                            oldModelName
+                        )
+                    ).toFile()
                         .exists().shouldBeFalse()
                     return // Done with the test
                 }

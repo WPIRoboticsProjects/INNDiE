@@ -7,7 +7,7 @@ import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.model.ModelSourceType
 import edu.wpi.axon.ui.view.contentMap
 import edu.wpi.axon.ui.view.layereditor.LayerEditorFragment
-import edu.wpi.axon.util.FilePath
+import edu.wpi.inndie.util.FilePath
 import java.io.File
 import javafx.stage.FileChooser
 import javafx.stage.Modality

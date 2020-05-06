@@ -2,7 +2,7 @@ package edu.wpi.axon.training.testutil
 
 import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.tflayerloader.ModelLoaderFactory
-import edu.wpi.axon.util.runCommand
+import edu.wpi.inndie.util.runCommand
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.shouldBe

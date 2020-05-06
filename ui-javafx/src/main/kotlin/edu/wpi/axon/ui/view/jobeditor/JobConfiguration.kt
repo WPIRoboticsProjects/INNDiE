@@ -6,7 +6,7 @@ import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.ModelDeploymentTarget
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.view.isIntGreaterThanOrEqualTo
-import edu.wpi.axon.util.datasetPluginManagerName
+import edu.wpi.inndie.util.datasetPluginManagerName
 import javafx.stage.Modality
 import kotlin.reflect.KClass
 import tornadofx.Fragment

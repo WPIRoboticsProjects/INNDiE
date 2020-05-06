@@ -9,7 +9,7 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.Verbosity
 import edu.wpi.axon.tfdata.code.pythonString
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.singleAssign
 
 /**
  * Starts training on a model.

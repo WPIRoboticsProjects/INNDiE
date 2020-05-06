@@ -30,9 +30,9 @@ import edu.wpi.axon.tfdata.Model
 import edu.wpi.axon.training.TrainGeneralModelScriptGenerator
 import edu.wpi.axon.training.TrainSequentialModelScriptGenerator
 import edu.wpi.axon.training.TrainState
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.axonBucketName
-import edu.wpi.axon.util.getLocalTrainingScriptRunnerWorkingDir
+import edu.wpi.inndie.util.FilePath
+import edu.wpi.inndie.util.axonBucketName
+import edu.wpi.inndie.util.getLocalTrainingScriptRunnerWorkingDir
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlinx.coroutines.delay
@@ -90,7 +90,8 @@ internal class JobRunner : KoinComponent {
     }
 
     private fun startLocalJob(job: Job) {
-        val workingDir = getLocalTrainingScriptRunnerWorkingDir(job.id)
+        val workingDir =
+            getLocalTrainingScriptRunnerWorkingDir(job.id)
         val config = generateScriptAndCreateConfig(job, workingDir)
 
         val scriptRunner = LocalTrainingScriptRunner().apply { startScript(config) }
@@ -188,7 +189,11 @@ internal class JobRunner : KoinComponent {
             val newSupplier = when (job.internalTrainingMethod) {
                 is InternalJobTrainingMethod.EC2 -> EC2TrainingResultSupplier(S3Manager(getBucket()))
                 is InternalJobTrainingMethod.Local -> LocalTrainingResultSupplier().apply {
-                    addJob(id, getLocalTrainingScriptRunnerWorkingDir(id))
+                    addJob(id,
+                        getLocalTrainingScriptRunnerWorkingDir(
+                            id
+                        )
+                    )
                 }
                 else -> null
             }
@@ -262,7 +267,9 @@ internal class JobRunner : KoinComponent {
                     job,
                     FilePath.Local(""),
                     "",
-                    getLocalTrainingScriptRunnerWorkingDir(job.id)
+                    getLocalTrainingScriptRunnerWorkingDir(
+                        job.id
+                    )
                 )
 
                 progressReporters[job.id] = LocalTrainingScriptProgressReporter().apply {

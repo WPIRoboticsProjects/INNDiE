@@ -1,6 +1,6 @@
 package edu.wpi.axon.tfdata
 
-import edu.wpi.axon.util.FilePath
+import edu.wpi.inndie.util.FilePath
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration

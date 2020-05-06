@@ -11,7 +11,7 @@ import com.google.common.graph.GraphBuilder
 import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.tfdata.LayerGraph
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.util.checkIslands
+import edu.wpi.inndie.util.checkIslands
 
 class DefaultLayersToGraph : LayersToGraph {
 

@@ -7,8 +7,8 @@ import arrow.core.Either
 import arrow.typeclasses.MonadError
 import com.google.common.graph.Graph
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.util.allIn
-import edu.wpi.axon.util.breadthFirstSearch
+import edu.wpi.inndie.util.allIn
+import edu.wpi.inndie.util.breadthFirstSearch
 
 /**
  * Validated a layer graph.

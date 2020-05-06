@@ -1,6 +1,6 @@
 package edu.wpi.axon.tfdata
 
-import edu.wpi.axon.util.FilePath
+import edu.wpi.inndie.util.FilePath
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest

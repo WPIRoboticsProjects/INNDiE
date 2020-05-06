@@ -24,11 +24,11 @@ import edu.wpi.axon.plugin.ProcessTestOutputPlugins.imageClassificationModelOutp
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.JobRunner
 import edu.wpi.axon.ui.ModelManager
-import edu.wpi.axon.util.axonBucketName
-import edu.wpi.axon.util.datasetPluginManagerName
-import edu.wpi.axon.util.loadTestDataPluginManagerName
-import edu.wpi.axon.util.localCacheDir
-import edu.wpi.axon.util.processTestOutputPluginManagerName
+import edu.wpi.inndie.util.axonBucketName
+import edu.wpi.inndie.util.datasetPluginManagerName
+import edu.wpi.inndie.util.loadTestDataPluginManagerName
+import edu.wpi.inndie.util.localCacheDir
+import edu.wpi.inndie.util.processTestOutputPluginManagerName
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope

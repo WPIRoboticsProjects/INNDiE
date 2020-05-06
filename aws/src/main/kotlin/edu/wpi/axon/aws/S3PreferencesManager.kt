@@ -2,7 +2,7 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.aws.preferences.Preferences
 import edu.wpi.axon.aws.preferences.PreferencesManager
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.singleAssign
 import java.io.File
 import java.nio.file.Files
 import kotlin.concurrent.thread

@@ -1,4 +1,4 @@
-package edu.wpi.axon.util
+package edu.wpi.inndie.util
 
 /**
  * Thrown when a property that is already initialized is modified.

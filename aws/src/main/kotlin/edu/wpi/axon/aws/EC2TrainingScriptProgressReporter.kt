@@ -1,7 +1,7 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.util.getLatestEpochFromProgressCsv
+import edu.wpi.inndie.util.getLatestEpochFromProgressCsv
 import java.lang.NumberFormatException
 import mu.KotlinLogging
 import software.amazon.awssdk.services.ec2.model.InstanceStateName

@@ -13,11 +13,11 @@ import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.ui.view.contentMap
 import edu.wpi.axon.ui.view.jobresult.LazyResult
 import edu.wpi.axon.ui.view.jobresult.ResultFragment
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.getLocalTestRunnerWorkingDir
-import edu.wpi.axon.util.getLocalTrainingScriptRunnerWorkingDir
-import edu.wpi.axon.util.loadTestDataPluginManagerName
-import edu.wpi.axon.util.processTestOutputPluginManagerName
+import edu.wpi.inndie.util.FilePath
+import edu.wpi.inndie.util.getLocalTestRunnerWorkingDir
+import edu.wpi.inndie.util.getLocalTrainingScriptRunnerWorkingDir
+import edu.wpi.inndie.util.loadTestDataPluginManagerName
+import edu.wpi.inndie.util.processTestOutputPluginManagerName
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths

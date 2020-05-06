@@ -29,7 +29,7 @@ import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.plugin.Plugin
 import edu.wpi.axon.tfdata.Dataset
 import edu.wpi.axon.tfdata.Model
-import edu.wpi.axon.util.trainingLogCsvFilename
+import edu.wpi.inndie.util.trainingLogCsvFilename
 
 /**
  * Loads a model in to a variable using. Assumes the model is on disk.

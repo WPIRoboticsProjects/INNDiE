@@ -1,8 +1,8 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.util.createLocalProgressFilepath
-import edu.wpi.axon.util.getLatestEpochFromProgressCsv
+import edu.wpi.inndie.util.createLocalProgressFilepath
+import edu.wpi.inndie.util.getLatestEpochFromProgressCsv
 import java.lang.NumberFormatException
 import mu.KotlinLogging
 
@@ -62,7 +62,8 @@ class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
 
         // Create the progress file up here to share code but don't read from it unless we have to,
         // to avoid reading from it if it's not there but didn't have to be
-        val progressFile = createLocalProgressFilepath(config.workingDir).toFile()
+        val progressFile = createLocalProgressFilepath(config.workingDir)
+            .toFile()
 
         LOGGER.debug {
             "Getting training progress for Job $jobId from path ${progressFile.path}"
@@ -83,7 +84,10 @@ class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
                 TrainingScriptProgress.Initializing
             } else {
                 try {
-                    val latestEpoch = getLatestEpochFromProgressCsv(progressText)
+                    val latestEpoch =
+                        getLatestEpochFromProgressCsv(
+                            progressText
+                        )
                     if (latestEpoch == epochs) {
                         // We need to make sure the progress gets to Completed because the thread is no
                         // longer alive to do it for us.
@@ -141,7 +145,10 @@ class LocalTrainingScriptProgressReporter : TrainingScriptProgressReporter {
                             else -> {
                                 // Otherwise it must be InProgress
                                 try {
-                                    val latestEpoch = getLatestEpochFromProgressCsv(progressText)
+                                    val latestEpoch =
+                                        getLatestEpochFromProgressCsv(
+                                            progressText
+                                        )
                                     LOGGER.debug { "Latest epoch: $latestEpoch" }
                                     TrainingScriptProgress.InProgress(
                                         latestEpoch / epochs.toDouble(),

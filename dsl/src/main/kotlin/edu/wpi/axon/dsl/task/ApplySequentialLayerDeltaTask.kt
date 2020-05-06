@@ -6,7 +6,7 @@ import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
 import edu.wpi.axon.tfdata.code.layer.LayerToCode
 import edu.wpi.axon.tfdata.layer.Layer
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.singleAssign
 import org.koin.core.inject
 
 /**

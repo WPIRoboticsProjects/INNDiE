@@ -1,4 +1,4 @@
-package edu.wpi.axon.util
+package edu.wpi.inndie.util
 
 import kotlin.reflect.KProperty
 
@@ -26,7 +26,8 @@ interface SingleAssign<T> {
 private class SynchronizedSingleAssign<T> : UnsynchronizedSingleAssign<T>() {
 
     @Volatile
-    override var value: Any? = UninitializedValue
+    override var value: Any? =
+        UninitializedValue
 
     override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
         synchronized(this) {
@@ -34,11 +35,13 @@ private class SynchronizedSingleAssign<T> : UnsynchronizedSingleAssign<T>() {
         }
 }
 
-private open class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
+private open class UnsynchronizedSingleAssign<T> :
+    SingleAssign<T> {
 
     protected object UninitializedValue
 
-    protected open var value: Any? = UninitializedValue
+    protected open var value: Any? =
+        UninitializedValue
 
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         if (!isInitialized())

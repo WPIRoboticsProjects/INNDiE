@@ -1,4 +1,4 @@
-package edu.wpi.axon.util
+package edu.wpi.inndie.util
 
 import java.nio.file.Paths
 import kotlinx.serialization.Serializable

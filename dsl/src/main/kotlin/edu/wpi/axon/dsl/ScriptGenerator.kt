@@ -14,7 +14,7 @@ import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.task.EmptyBaseTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.singleAssign
 import joinWithIndent
 import mu.KotlinLogging
 

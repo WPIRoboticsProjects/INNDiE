@@ -1,7 +1,7 @@
 package edu.wpi.axon.aws
 
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.util.FilePath
+import edu.wpi.inndie.util.FilePath
 import io.kotlintest.shouldThrow
 import java.io.File
 import org.junit.jupiter.api.Test

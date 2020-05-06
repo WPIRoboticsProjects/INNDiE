@@ -2,10 +2,10 @@ package edu.wpi.axon.aws
 
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.tfdata.Dataset
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.createLocalProgressFilepath
-import edu.wpi.axon.util.getOutputModelName
-import edu.wpi.axon.util.runCommand
+import edu.wpi.inndie.util.FilePath
+import edu.wpi.inndie.util.createLocalProgressFilepath
+import edu.wpi.inndie.util.getOutputModelName
+import edu.wpi.inndie.util.runCommand
 import java.nio.file.Paths
 import kotlin.concurrent.thread
 import mu.KotlinLogging
@@ -129,7 +129,11 @@ class LocalTrainingScriptRunner : TrainingScriptRunner {
                     }
 
                     val newModelFile = config.workingDir
-                        .resolve(getOutputModelName(oldModelName.filename))
+                        .resolve(
+                            getOutputModelName(
+                                oldModelName.filename
+                            )
+                        )
                         .toFile()
                     if (newModelFile.exists()) {
                         scriptProgressMap[config.id] = TrainingScriptProgress.Completed

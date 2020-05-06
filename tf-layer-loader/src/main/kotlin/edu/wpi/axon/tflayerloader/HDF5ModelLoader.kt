@@ -20,7 +20,7 @@ import edu.wpi.axon.tfdata.layer.Interpolation
 import edu.wpi.axon.tfdata.layer.Layer
 import edu.wpi.axon.tfdata.layer.PoolingPadding
 import edu.wpi.axon.tfdata.layer.Regularizer
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.singleAssign
 import io.jhdf.HdfFile
 import java.io.File
 

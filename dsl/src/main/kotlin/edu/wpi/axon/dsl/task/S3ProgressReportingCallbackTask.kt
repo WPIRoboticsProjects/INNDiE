@@ -7,8 +7,8 @@ import edu.wpi.axon.dsl.UniqueVariableNameGenerator
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.makeImport
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.util.axonBucketName
-import edu.wpi.axon.util.singleAssign
+import edu.wpi.inndie.util.axonBucketName
+import edu.wpi.inndie.util.singleAssign
 import org.koin.core.inject
 import org.koin.core.qualifier.named
 

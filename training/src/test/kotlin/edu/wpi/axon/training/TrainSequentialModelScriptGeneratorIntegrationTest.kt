@@ -15,8 +15,8 @@ import edu.wpi.axon.tfdata.loss.Loss
 import edu.wpi.axon.tfdata.optimizer.Optimizer
 import edu.wpi.axon.training.testutil.loadModel
 import edu.wpi.axon.training.testutil.testTrainingScript
-import edu.wpi.axon.util.FilePath
-import edu.wpi.axon.util.axonBucketName
+import edu.wpi.inndie.util.FilePath
+import edu.wpi.inndie.util.axonBucketName
 import io.kotlintest.assertions.arrow.validation.shouldBeValid
 import io.kotlintest.matchers.file.shouldExist
 import io.kotlintest.matchers.types.shouldBeInstanceOf

@@ -5,7 +5,7 @@ import edu.wpi.axon.db.data.DesiredJobTrainingMethod
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.ui.JobLifecycleManager
 import edu.wpi.axon.ui.model.JobModel
-import edu.wpi.axon.util.axonBucketName
+import edu.wpi.inndie.util.axonBucketName
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.Label
