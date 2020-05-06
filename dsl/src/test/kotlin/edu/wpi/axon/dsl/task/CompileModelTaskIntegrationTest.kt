@@ -2,7 +2,7 @@ package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.defaultBackendModule
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.loss.Loss
 import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import io.kotlintest.shouldBe

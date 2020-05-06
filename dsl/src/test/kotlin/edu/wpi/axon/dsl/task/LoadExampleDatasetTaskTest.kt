@@ -2,7 +2,7 @@ package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.mockVariableNameGenerator
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.code.ExampleDatasetToCode
 import io.kotlintest.shouldBe

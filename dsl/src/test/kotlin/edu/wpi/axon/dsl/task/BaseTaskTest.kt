@@ -8,7 +8,7 @@ import edu.wpi.axon.dsl.configuredIncorrectly
 import edu.wpi.axon.dsl.imports.Import
 import edu.wpi.axon.dsl.imports.ImportValidator
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.mockk.every
 import io.mockk.mockk

@@ -7,7 +7,7 @@ import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
 import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.tfdata.loss.Loss

@@ -2,7 +2,7 @@ package edu.wpi.axon.dsl
 
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.shouldThrow
 import kotlin.reflect.KClass

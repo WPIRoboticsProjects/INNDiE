@@ -9,7 +9,7 @@ import edu.wpi.axon.dsl.runExactlyOnce
 import edu.wpi.axon.dsl.task.BaseTask
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.matchers.maps.shouldContainExactly
 import io.kotlintest.matchers.maps.shouldContainKey

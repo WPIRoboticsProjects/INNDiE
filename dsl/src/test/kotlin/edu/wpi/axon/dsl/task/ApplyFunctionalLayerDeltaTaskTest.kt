@@ -12,7 +12,7 @@ import com.google.common.graph.ImmutableGraph
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.mockVariableNameGenerator
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.tfdata.code.layer.LayerToCode
 import edu.wpi.inndie.tfdata.layer.Activation

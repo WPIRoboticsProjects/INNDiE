@@ -3,7 +3,7 @@
 package edu.wpi.axon.dsl.task
 
 import edu.wpi.axon.dsl.configuredCorrectly
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.code.loss.LossToCode
 import edu.wpi.inndie.tfdata.code.optimizer.OptimizerToCode
 import edu.wpi.inndie.tfdata.loss.Loss

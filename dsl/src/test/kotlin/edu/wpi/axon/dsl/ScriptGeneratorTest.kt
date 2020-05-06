@@ -3,7 +3,7 @@ package edu.wpi.axon.dsl
 import edu.wpi.axon.dsl.container.PolymorphicNamedDomainObjectContainer
 import edu.wpi.axon.dsl.task.Task
 import edu.wpi.axon.dsl.variable.Variable
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk

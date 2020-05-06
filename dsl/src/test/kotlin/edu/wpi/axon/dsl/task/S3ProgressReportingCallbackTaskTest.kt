@@ -3,7 +3,7 @@ package edu.wpi.axon.dsl.task
 import edu.wpi.axon.dsl.TaskConfigurationTestFixture
 import edu.wpi.axon.dsl.configuredCorrectly
 import edu.wpi.axon.dsl.mockVariableNameGenerator
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import edu.wpi.inndie.util.axonBucketName
 import io.kotlintest.shouldBe
 import kotlin.random.Random

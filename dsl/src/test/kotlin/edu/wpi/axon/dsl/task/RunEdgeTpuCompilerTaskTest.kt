@@ -3,7 +3,7 @@ package edu.wpi.axon.dsl.task
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.alwaysValidPathValidator
 import edu.wpi.axon.dsl.mockVariableNameGenerator
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import io.kotlintest.matchers.booleans.shouldBeTrue
 import io.kotlintest.shouldBe

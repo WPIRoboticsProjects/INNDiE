@@ -4,7 +4,7 @@ import edu.wpi.axon.dsl.alwaysInvalidPathValidator
 import edu.wpi.axon.dsl.alwaysValidImportValidator
 import edu.wpi.axon.dsl.alwaysValidPathValidator
 import edu.wpi.axon.dsl.configuredCorrectly
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import io.kotlintest.matchers.booleans.shouldBeFalse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

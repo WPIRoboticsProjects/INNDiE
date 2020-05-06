@@ -2,7 +2,7 @@ package edu.wpi.axon.testrunner
 
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.testutil.KoinTestFixture
+import edu.wpi.inndie.testutil.KoinTestFixture
 import io.kotlintest.assertions.arrow.either.shouldBeLeft
 import io.kotlintest.assertions.arrow.either.shouldBeRight
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
