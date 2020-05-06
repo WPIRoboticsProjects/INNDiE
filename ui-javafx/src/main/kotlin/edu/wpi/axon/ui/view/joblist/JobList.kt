@@ -17,21 +17,16 @@ import edu.wpi.axon.ui.controller.JobBoard
 import edu.wpi.axon.ui.model.JobModel
 import edu.wpi.axon.util.getOutputModelName
 import javafx.collections.ListChangeListener
-import javafx.geometry.Orientation
 import javafx.scene.layout.Priority
-import tornadofx.ValidationMessage
-import tornadofx.ValidationSeverity
+import tornadofx.Scope
 import tornadofx.View
-import tornadofx.action
 import tornadofx.bindSelected
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.enableWhen
-import tornadofx.field
+import tornadofx.find
 import tornadofx.insets
 import tornadofx.listview
-import tornadofx.textfield
-import tornadofx.validator
 import tornadofx.vbox
 import tornadofx.vgrow
 
@@ -69,54 +64,82 @@ class JobList : View() {
 
             button(graphic = FontAwesomeIconView(FontAwesomeIcon.PLUS)) {
                 setOnAction {
-                    dialog("Create New Job", labelPosition = Orientation.VERTICAL) {
-                        val tempJob = JobModel()
-                        field("Job Name") {
-                            textfield(tempJob.name) {
-                                validator {
-                                    if (it.isNullOrBlank()) {
-                                        ValidationMessage(
-                                            "Must not be empty.",
-                                            ValidationSeverity.Error
-                                        )
-                                    } else {
-                                        if (database.findByName(it) == null) {
-                                            null
-                                        } else {
-                                            ValidationMessage(
-                                                "A Job with that name already exists.",
-                                                ValidationSeverity.Error
-                                            )
-                                        }
-                                    }
-                                }
-                                action {
-                                    if (tempJob.isValid) {
-                                        createNewJob(tempJob.name.value)
-                                        close()
-                                    }
+                    // Force the wizard to operate in a new scope separate from its parent's scope
+                    find(JobWizard::class, Scope()).apply {
+                        onComplete {
+                            runAsync {
+                                with(job.item) {
+                                    println(this)
+                                    database.create(
+                                        name = name,
+                                        status = status,
+                                        userOldModelPath = userOldModelPath,
+                                        userDataset = userDataset,
+                                        userOptimizer = userOptimizer,
+                                        userLoss = userLoss,
+                                        userMetrics = userMetrics,
+                                        userEpochs = userEpochs,
+                                        userNewModel = userNewModel,
+                                        userNewModelFilename = userNewModelFilename,
+                                        generateDebugComments = false,
+                                        internalTrainingMethod = InternalJobTrainingMethod.Untrained,
+                                        target = target,
+                                        datasetPlugin = datasetPlugin
+                                    )
                                 }
                             }
                         }
-
-                        buttonbar {
-                            button("Save") {
-                                enableWhen(tempJob.valid)
-                                action {
-                                    if (tempJob.isValid) {
-                                        createNewJob(tempJob.name.value)
-                                        close()
-                                    }
-                                }
-                            }
-
-                            button("Cancel") {
-                                action {
-                                    close()
-                                }
-                            }
-                        }
+                        openModal()
                     }
+
+//                    dialog("Create New Job", labelPosition = Orientation.VERTICAL) {
+//                        val tempJob = JobModel()
+//                        field("Job Name") {
+//                            textfield(tempJob.name) {
+//                                validator {
+//                                    if (it.isNullOrBlank()) {
+//                                        ValidationMessage(
+//                                            "Must not be empty.",
+//                                            ValidationSeverity.Error
+//                                        )
+//                                    } else {
+//                                        if (database.findByName(it) == null) {
+//                                            null
+//                                        } else {
+//                                            ValidationMessage(
+//                                                "A Job with that name already exists.",
+//                                                ValidationSeverity.Error
+//                                            )
+//                                        }
+//                                    }
+//                                }
+//                                action {
+//                                    if (tempJob.isValid) {
+//                                        createNewJob(tempJob.name.value)
+//                                        close()
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//                        buttonbar {
+//                            button("Save") {
+//                                enableWhen(tempJob.valid)
+//                                action {
+//                                    if (tempJob.isValid) {
+//                                        createNewJob(tempJob.name.value)
+//                                        close()
+//                                    }
+//                                }
+//                            }
+//
+//                            button("Cancel") {
+//                                action {
+//                                    close()
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
         }
