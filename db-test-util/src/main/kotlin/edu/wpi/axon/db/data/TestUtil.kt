@@ -2,7 +2,7 @@ package edu.wpi.axon.db.data
 
 import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.examplemodel.ExampleModel
-import edu.wpi.axon.plugin.Plugin
+import edu.wpi.inndie.plugin.Plugin
 import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.tfdata.SerializableTuple2II

@@ -7,7 +7,7 @@ import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
+import edu.wpi.inndie.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.loss.Loss
 import edu.wpi.inndie.tfdata.optimizer.Optimizer

@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.model
 
-import edu.wpi.axon.plugin.Plugin
+import edu.wpi.inndie.plugin.Plugin
 import edu.wpi.inndie.ui.controller.PluginStore
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty

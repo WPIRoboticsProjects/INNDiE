@@ -1,10 +1,11 @@
-package edu.wpi.axon.plugin
+package edu.wpi.inndie.plugin
 
 object ProcessTestOutputPlugins {
 
-    val imageClassificationModelOutputPlugin = Plugin.Official(
-        "Image Classification",
-        """
+    val imageClassificationModelOutputPlugin =
+        Plugin.Official(
+            "Image Classification",
+            """
         |def process_model_output(model_input, expected_output, model_output):
         |    import numpy as np
         |
@@ -26,7 +27,7 @@ object ProcessTestOutputPlugins {
         |    with tf.Session() as session:
         |        session.run(fwrite)
         """.trimMargin()
-    )
+        )
 
     val autoMpgRegressionOutputPlugin = Plugin.Official(
         "Auto MPG Regression",

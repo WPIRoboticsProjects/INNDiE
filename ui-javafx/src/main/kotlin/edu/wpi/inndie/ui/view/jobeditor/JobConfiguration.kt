@@ -1,6 +1,6 @@
 package edu.wpi.inndie.ui.view.jobeditor
 
-import edu.wpi.axon.plugin.PluginManager
+import edu.wpi.inndie.plugin.PluginManager
 import edu.wpi.inndie.tfdata.loss.Loss
 import edu.wpi.inndie.tfdata.optimizer.Optimizer
 import edu.wpi.inndie.training.ModelDeploymentTarget

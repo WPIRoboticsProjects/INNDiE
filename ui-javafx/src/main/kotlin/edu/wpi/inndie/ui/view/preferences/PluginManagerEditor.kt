@@ -2,7 +2,7 @@ package edu.wpi.inndie.ui.view.preferences
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import edu.wpi.axon.plugin.Plugin
+import edu.wpi.inndie.plugin.Plugin
 import edu.wpi.inndie.ui.controller.PluginStore
 import edu.wpi.inndie.ui.model.PluginModel
 import javafx.scene.layout.Priority

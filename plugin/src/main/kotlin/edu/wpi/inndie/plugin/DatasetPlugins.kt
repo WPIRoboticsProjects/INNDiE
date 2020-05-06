@@ -1,4 +1,4 @@
-package edu.wpi.axon.plugin
+package edu.wpi.inndie.plugin
 
 object DatasetPlugins {
     val datasetPassthroughPlugin = Plugin.Official(
@@ -29,9 +29,10 @@ object DatasetPlugins {
         """.trimMargin()
     )
 
-    val processMnistTypeForMobilenetPlugin = Plugin.Official(
-        "Process MNIST-type for Mobilenet",
-        """
+    val processMnistTypeForMobilenetPlugin =
+        Plugin.Official(
+            "Process MNIST-type for Mobilenet",
+            """
         |def process_dataset(x, y):
         |    newX = tf.cast(x / 255.0, tf.float32)
         |    newX = newX[..., tf.newaxis]
@@ -40,5 +41,5 @@ object DatasetPlugins {
         |    newY = tf.keras.utils.to_categorical(y)
         |    return (newX, newY)
         """.trimMargin()
-    )
+        )
 }

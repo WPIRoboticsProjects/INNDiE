@@ -1,4 +1,4 @@
-package edu.wpi.axon.plugin
+package edu.wpi.inndie.plugin
 
 import java.io.File
 import kotlinx.serialization.json.JsonDecodingException
@@ -25,7 +25,9 @@ class LocalPluginManager(
         }
 
         val cache = try {
-            PluginCache.deserialize(pluginCacheFile.readText())
+            PluginCache.deserialize(
+                pluginCacheFile.readText()
+            )
         } catch (ex: JsonDecodingException) {
             LOGGER.warn(ex) { "Invalid plugin cache file contents. Creating new cache." }
             val newCache = PluginCache(setOf())
@@ -62,7 +64,10 @@ class LocalPluginManager(
     }
 
     private fun synchronizeCacheFile() {
-        pluginCacheFile.writeText(PluginCache(unofficialPlugins).serialize())
+        pluginCacheFile.writeText(
+            PluginCache(
+                unofficialPlugins
+            ).serialize())
     }
 
     companion object {

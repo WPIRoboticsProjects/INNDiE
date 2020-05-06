@@ -1,9 +1,9 @@
 package edu.wpi.axon.aws.plugin
 
 import edu.wpi.axon.aws.S3Manager
-import edu.wpi.axon.plugin.LocalPluginManager
-import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.plugin.PluginManager
+import edu.wpi.inndie.plugin.LocalPluginManager
+import edu.wpi.inndie.plugin.Plugin
+import edu.wpi.inndie.plugin.PluginManager
 import java.io.File
 import java.nio.file.Files
 import mu.KotlinLogging
@@ -33,7 +33,8 @@ class S3PluginManager(
             LOGGER.warn(ex) { "Failed to download plugin cache from S3. Creating a new one." }
             Files.createTempFile("", ".json").toFile().apply { createNewFile() }
         }
-        localPluginManager = LocalPluginManager(cacheFile, officialPlugins)
+        localPluginManager =
+            LocalPluginManager(cacheFile, officialPlugins)
         localPluginManager.initialize()
     }
 

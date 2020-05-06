@@ -1,7 +1,7 @@
 package edu.wpi.inndie.training
 
 import arrow.core.Option
-import edu.wpi.axon.plugin.Plugin
+import edu.wpi.inndie.plugin.Plugin
 import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.Model
 import edu.wpi.inndie.tfdata.loss.Loss

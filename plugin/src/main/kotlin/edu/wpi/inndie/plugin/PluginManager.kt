@@ -1,4 +1,4 @@
-package edu.wpi.axon.plugin
+package edu.wpi.inndie.plugin
 
 /**
  * Manages saving/loading plugins to/from persistent storage.

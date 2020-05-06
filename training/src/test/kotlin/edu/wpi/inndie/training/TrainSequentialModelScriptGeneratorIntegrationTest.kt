@@ -5,8 +5,8 @@ package edu.wpi.inndie.training
 import arrow.core.None
 import edu.wpi.axon.dsl.defaultBackendModule
 import edu.wpi.axon.dsl.task.RunEdgeTpuCompilerTask
-import edu.wpi.axon.plugin.DatasetPlugins.datasetPassthroughPlugin
-import edu.wpi.axon.plugin.DatasetPlugins.processMnistTypePlugin
+import edu.wpi.inndie.plugin.DatasetPlugins.datasetPassthroughPlugin
+import edu.wpi.inndie.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.inndie.testutil.KoinTestFixture
 import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.Model

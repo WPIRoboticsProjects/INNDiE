@@ -1,7 +1,7 @@
 package edu.wpi.inndie.ui.controller
 
-import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.plugin.PluginManager
+import edu.wpi.inndie.plugin.Plugin
+import edu.wpi.inndie.plugin.PluginManager
 import edu.wpi.inndie.util.datasetPluginManagerName
 import edu.wpi.inndie.util.loadTestDataPluginManagerName
 import edu.wpi.inndie.util.processTestOutputPluginManagerName

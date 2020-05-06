@@ -1,8 +1,8 @@
 package edu.wpi.axon.aws.plugin
 
 import edu.wpi.axon.aws.S3Manager
-import edu.wpi.axon.plugin.Plugin
-import edu.wpi.axon.plugin.PluginCache
+import edu.wpi.inndie.plugin.Plugin
+import edu.wpi.inndie.plugin.PluginCache
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.mockk.every
 import io.mockk.mockk
@@ -18,7 +18,13 @@ internal class S3PluginManagerTest {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         val plugin1 = Plugin.Unofficial("a", "a")
         val plugin2 = Plugin.Unofficial("b", "b")
-        pluginCacheFile.writeText(PluginCache(setOf(plugin1, plugin2)).serialize())
+        pluginCacheFile.writeText(
+            PluginCache(
+                setOf(
+                    plugin1,
+                    plugin2
+                )
+            ).serialize())
 
         val s3Manager = mockk<S3Manager> {
             every { downloadPluginCache(any()) } returns pluginCacheFile
@@ -62,7 +68,13 @@ internal class S3PluginManagerTest {
         val pluginCacheFile = File(tempDir, "cache.json").apply { createNewFile() }
         val plugin1 = Plugin.Unofficial("a", "a")
         val plugin2 = Plugin.Unofficial("b", "b")
-        pluginCacheFile.writeText(PluginCache(setOf(plugin1, plugin2)).serialize())
+        pluginCacheFile.writeText(
+            PluginCache(
+                setOf(
+                    plugin1,
+                    plugin2
+                )
+            ).serialize())
 
         val s3Manager = mockk<S3Manager> {
             every { downloadPluginCache(any()) } returns pluginCacheFile
@@ -88,7 +100,13 @@ internal class S3PluginManagerTest {
         val plugin1 = Plugin.Unofficial("a", "a")
         val plugin2 = Plugin.Unofficial("b", "b")
         val newPlugin1 = Plugin.Unofficial("a", "a1")
-        pluginCacheFile.writeText(PluginCache(setOf(plugin1, plugin2)).serialize())
+        pluginCacheFile.writeText(
+            PluginCache(
+                setOf(
+                    plugin1,
+                    plugin2
+                )
+            ).serialize())
 
         val s3Manager = mockk<S3Manager> {
             every { downloadPluginCache(any()) } returns pluginCacheFile

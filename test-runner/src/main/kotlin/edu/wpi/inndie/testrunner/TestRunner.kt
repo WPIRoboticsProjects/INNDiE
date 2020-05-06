@@ -1,7 +1,7 @@
 package edu.wpi.inndie.testrunner
 
 import arrow.core.Either
-import edu.wpi.axon.plugin.Plugin
+import edu.wpi.inndie.plugin.Plugin
 import java.io.File
 import java.nio.file.Path
 

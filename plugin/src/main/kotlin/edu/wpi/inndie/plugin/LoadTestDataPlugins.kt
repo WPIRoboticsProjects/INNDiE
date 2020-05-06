@@ -1,4 +1,4 @@
-package edu.wpi.axon.plugin
+package edu.wpi.inndie.plugin
 
 object LoadTestDataPlugins {
 
