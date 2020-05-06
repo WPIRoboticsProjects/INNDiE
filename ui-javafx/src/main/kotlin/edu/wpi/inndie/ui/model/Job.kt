@@ -5,7 +5,7 @@ import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.Job
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.examplemodel.ExampleModelManager
+import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.plugin.DatasetPlugins
 import edu.wpi.inndie.plugin.Plugin
 import edu.wpi.inndie.tfdata.Dataset

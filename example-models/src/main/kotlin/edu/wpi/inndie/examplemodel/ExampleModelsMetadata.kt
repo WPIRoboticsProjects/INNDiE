@@ -1,4 +1,4 @@
-package edu.wpi.axon.examplemodel
+package edu.wpi.inndie.examplemodel
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

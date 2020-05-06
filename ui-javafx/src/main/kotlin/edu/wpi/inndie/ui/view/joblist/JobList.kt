@@ -6,7 +6,7 @@ import edu.wpi.axon.db.JobDb
 import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
-import edu.wpi.axon.examplemodel.ExampleModelManager
+import edu.wpi.inndie.examplemodel.ExampleModelManager
 import edu.wpi.inndie.plugin.DatasetPlugins.processMnistTypePlugin
 import edu.wpi.inndie.tfdata.Dataset
 import edu.wpi.inndie.tfdata.loss.Loss

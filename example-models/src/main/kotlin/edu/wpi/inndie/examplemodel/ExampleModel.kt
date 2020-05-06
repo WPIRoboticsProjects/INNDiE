@@ -1,4 +1,4 @@
-package edu.wpi.axon.examplemodel
+package edu.wpi.inndie.examplemodel
 
 import edu.wpi.inndie.tfdata.SerializableOptionB
 import kotlinx.serialization.Serializable

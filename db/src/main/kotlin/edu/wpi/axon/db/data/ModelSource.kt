@@ -1,6 +1,6 @@
 package edu.wpi.axon.db.data
 
-import edu.wpi.axon.examplemodel.ExampleModel
+import edu.wpi.inndie.examplemodel.ExampleModel
 import edu.wpi.inndie.util.FilePath
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

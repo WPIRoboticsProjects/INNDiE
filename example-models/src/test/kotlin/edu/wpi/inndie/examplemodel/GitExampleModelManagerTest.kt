@@ -1,4 +1,4 @@
-package edu.wpi.axon.examplemodel
+package edu.wpi.inndie.examplemodel
 
 import arrow.core.None
 import arrow.core.Some

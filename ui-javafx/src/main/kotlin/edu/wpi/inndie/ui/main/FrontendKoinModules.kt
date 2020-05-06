@@ -9,8 +9,8 @@ import edu.wpi.axon.aws.findAxonS3Bucket
 import edu.wpi.axon.aws.plugin.S3PluginManager
 import edu.wpi.axon.aws.preferences.LocalPreferencesManager
 import edu.wpi.axon.db.JobDb
-import edu.wpi.axon.examplemodel.ExampleModelManager
-import edu.wpi.axon.examplemodel.GitExampleModelManager
+import edu.wpi.inndie.examplemodel.ExampleModelManager
+import edu.wpi.inndie.examplemodel.GitExampleModelManager
 import edu.wpi.inndie.plugin.DatasetPlugins.datasetPassthroughPlugin
 import edu.wpi.inndie.plugin.DatasetPlugins.divideByTwoFiveFivePlugin
 import edu.wpi.inndie.plugin.DatasetPlugins.processMnistTypeForMobilenetPlugin
@@ -142,7 +142,8 @@ fun defaultFrontendModule() = module {
 
     single { ModelManager() }
     single { JobRunner() }
-    single<ExampleModelManager> { GitExampleModelManager().apply { updateCache().unsafeRunSync() } }
+    single<ExampleModelManager> { GitExampleModelManager()
+        .apply { updateCache().unsafeRunSync() } }
 }
 
 private fun Scope.bindPluginManager(

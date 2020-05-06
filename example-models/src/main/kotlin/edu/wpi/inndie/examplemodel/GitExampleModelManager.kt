@@ -1,4 +1,4 @@
-package edu.wpi.axon.examplemodel
+package edu.wpi.inndie.examplemodel
 
 import arrow.fx.IO
 import edu.wpi.inndie.util.localCacheDir
@@ -35,7 +35,9 @@ class GitExampleModelManager : ExampleModelManager {
                 "disk. Try updating the cache."
         }
 
-        ExampleModelsMetadata.deserialize(exampleModelMetadataFile.readText()).exampleModels
+        ExampleModelsMetadata.deserialize(
+            exampleModelMetadataFile.readText()
+        ).exampleModels
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
