@@ -5,8 +5,8 @@ import edu.wpi.axon.db.data.InternalJobTrainingMethod
 import edu.wpi.axon.db.data.ModelSource
 import edu.wpi.axon.db.data.TrainingScriptProgress
 import edu.wpi.axon.plugin.PluginManager
-import edu.wpi.axon.testrunner.LocalTestRunner
-import edu.wpi.axon.testrunner.TestData
+import edu.wpi.inndie.testrunner.LocalTestRunner
+import edu.wpi.inndie.testrunner.TestData
 import edu.wpi.inndie.ui.ModelManager
 import edu.wpi.inndie.ui.model.JobDto
 import edu.wpi.inndie.ui.model.JobModel

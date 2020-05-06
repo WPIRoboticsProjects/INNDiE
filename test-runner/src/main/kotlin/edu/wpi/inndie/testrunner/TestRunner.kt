@@ -1,4 +1,4 @@
-package edu.wpi.axon.testrunner
+package edu.wpi.inndie.testrunner
 
 import arrow.core.Either
 import edu.wpi.axon.plugin.Plugin
