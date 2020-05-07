@@ -8,6 +8,7 @@ import java.nio.file.Files
 import kotlin.concurrent.thread
 import kotlin.properties.Delegates
 import software.amazon.awssdk.core.exception.SdkClientException
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
 /**
  * Manages the preferences data lifecycle. Stores preferences in S3.
@@ -27,9 +28,15 @@ class S3PreferencesManager(
             preferencesFile = s3Manager.downloadPreferences()
             workingPreferences = Preferences.deserialize(preferencesFile.readText())
         } catch (e: SdkClientException) {
-            preferencesFile = Files.createTempFile("", "").toFile()
-            workingPreferences = Preferences()
+            makeNewPreferences()
+        } catch (e: NoSuchKeyException) {
+            makeNewPreferences()
         }
+    }
+
+    private fun makeNewPreferences() {
+        preferencesFile = Files.createTempFile("", "").toFile()
+        workingPreferences = Preferences()
     }
 
     override fun put(preferences: Preferences) {
