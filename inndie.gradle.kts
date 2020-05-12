@@ -1,0 +1,510 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
+import com.github.spotbugs.SpotBugsTask
+import info.solidsoft.gradle.pitest.PitestTask
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    id("com.diffplug.gradle.spotless")
+    id("org.jlleitschuh.gradle.ktlint")
+    id("com.github.spotbugs")
+    id("io.gitlab.arturbosch.detekt")
+    id("org.jetbrains.dokka")
+    id("com.adarshr.test-logger")
+    id("info.solidsoft.pitest")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    `maven-publish`
+    `java-library`
+    jacoco
+    pmd
+    checkstyle
+}
+
+val awsProject = project(":aws")
+val dbProject = project(":db")
+val dbTestUtilProject = project(":db-test-util")
+val dslProject = project(":dsl")
+val dslInterfaceProject = project(":dsl-interface")
+val dslTestUtilProject = project(":dsl-test-util")
+val exampleModelsProject = project(":example-models")
+val loggingProject = project(":logging")
+val patternMatchProject = project(":pattern-match")
+val pluginProject = project(":plugin")
+val testRunnerProject = project(":test-runner")
+val testUtilProject = project(":test-util")
+val tfDataProject = project(":tf-data")
+val tfDataCode = project(":tf-data-code")
+val tfLayerLoaderProject = project(":tf-layer-loader")
+val uiJavaFxProject = project(":ui-javafx")
+val trainingProject = project(":training")
+val trainingTestUtilProject = project(":training-test-util")
+val utilProject = project(":util")
+
+val kotlinProjects = setOf(
+    awsProject,
+    dbProject,
+    dbTestUtilProject,
+    dslProject,
+    dslInterfaceProject,
+    dslTestUtilProject,
+    exampleModelsProject,
+    loggingProject,
+    patternMatchProject,
+    pluginProject,
+    testRunnerProject,
+    testUtilProject,
+    tfDataProject,
+    tfDataCode,
+    tfLayerLoaderProject,
+    uiJavaFxProject,
+    trainingProject,
+    trainingTestUtilProject,
+    utilProject
+)
+
+val javaProjects = setOf<Project>() + kotlinProjects
+
+val publishedProjects = setOf(
+    awsProject,
+    dbProject,
+    dslProject,
+    dslInterfaceProject,
+    exampleModelsProject,
+    loggingProject,
+    patternMatchProject,
+    pluginProject,
+    testRunnerProject,
+    tfDataProject,
+    tfDataCode,
+    tfLayerLoaderProject,
+    uiJavaFxProject,
+    trainingProject,
+    utilProject
+)
+
+val pitestProjects = setOf(
+    dslProject,
+    patternMatchProject,
+    tfDataProject,
+    tfDataCode,
+    tfLayerLoaderProject,
+    trainingProject,
+    utilProject
+)
+
+// val spotlessLicenseHeaderDelimiter = "(@|package|import)"
+
+buildscript {
+    repositories {
+        mavenCentral() // Needed for kotlin gradle plugin
+        maven("https://plugins.gradle.org/m2/")
+        maven("https://oss.sonatype.org/content/repositories/staging/")
+    }
+
+    configurations.maybeCreate("pitest")
+
+    dependencies {
+        // Gives us the KotlinJvmProjectExtension
+        classpath(kotlin("gradle-plugin", property("kotlinVersion") as String))
+        "pitest"("org.pitest:pitest-junit5-plugin:0.9")
+    }
+}
+
+allprojects {
+    version = property("inndie.version") as String
+    group = "edu.wpi"
+
+    apply {
+        plugin("com.diffplug.gradle.spotless")
+        plugin("com.adarshr.test-logger")
+    }
+
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven("https://oss.sonatype.org/content/repositories/staging/")
+        maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
+        maven("https://dl.bintray.com/jamesmudd/jhdf")
+        maven("https://dl.bintray.com/kotlin/exposed")
+        maven("https://dl.bintray.com/octogonapus/maven-artifacts")
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
+    }
+
+    // Configures the Jacoco tool version to be the same for all projects that have it applied.
+    pluginManager.withPlugin("jacoco") {
+        // If this project has the plugin applied, configure the tool version.
+        jacoco {
+            toolVersion = property("jacoco-tool.version") as String
+        }
+    }
+
+    tasks.withType<Test> {
+        testLogging {
+            showStandardStreams = true
+            exceptionFormat = TestExceptionFormat.FULL
+        }
+    }
+
+    testlogger {
+        theme = ThemeType.STANDARD_PARALLEL
+        showStandardStreams = true
+    }
+
+    spotless {
+        /*
+         * We use spotless to lint the Gradle Kotlin DSL files that make up the build.
+         * These checks are dependencies of the `check` task.
+         */
+        kotlinGradle {
+            ktlint(property("ktlint.version") as String)
+            trimTrailingWhitespace()
+        }
+        // freshmark {
+        //     trimTrailingWhitespace()
+        //     indentWithSpaces(2)
+        //     endWithNewline()
+        // }
+        format("extraneous") {
+            target("src/**/*.fxml")
+            trimTrailingWhitespace()
+            indentWithSpaces(2)
+            endWithNewline()
+        }
+    }
+}
+
+configure(javaProjects) {
+    apply {
+        plugin("java")
+        plugin("jacoco")
+        plugin("checkstyle")
+        plugin("com.github.spotbugs")
+        plugin("pmd")
+    }
+
+    dependencies {
+        testImplementation(
+            group = "org.junit.jupiter",
+            name = "junit-jupiter",
+            version = property("junit-jupiter.version") as String
+        )
+
+        // testImplementation(
+        //     group = "io.kotlintest",
+        //     name = "kotlintest-runner-junit5",
+        //     version = property("kotlintest.version") as String
+        // )
+
+        // TODO: Go back to the old dependencies once 4.x.x is out
+        //  https://github.com/wpilibsuite/INNDiE/issues/84
+        testImplementation(
+            files(
+                "$rootDir/libraries/kotlintest-runner-junit5-jvm-4.0.2631-SNAPSHOT.jar",
+                "$rootDir/libraries/kotlintest-runner-console-jvm-4.0.2631-SNAPSHOT.jar",
+                "$rootDir/libraries/kotlintest-runner-jvm-jvm-4.0.2631-SNAPSHOT.jar",
+                "$rootDir/libraries/kotlintest-core-jvm-4.0.2631-SNAPSHOT.jar"
+            )
+        )
+        testImplementation(
+            group = "org.slf4j",
+            name = "slf4j-api",
+            version = "1.7.25"
+        )
+
+        testRuntime(
+            group = "org.junit.platform",
+            name = "junit-platform-launcher",
+            version = property("junit-platform-launcher.version") as String
+        )
+    }
+
+    tasks.withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        options.isIncremental = true
+    }
+
+    val test by tasks.getting(Test::class) {
+        @Suppress("UnstableApiUsage")
+        useJUnitPlatform {
+            filter {
+                includeTestsMatching("*Test")
+                includeTestsMatching("*Tests")
+                includeTestsMatching("*Spec")
+            }
+
+            /*
+            These tests just test performance and should not run in CI.
+             */
+            excludeTags("performance")
+
+            /*
+            These tests are too slow to run in CI.
+             */
+            excludeTags("slow")
+
+            /*
+            These tests need some sort of software that can't be reasonably installed on CI servers.
+             */
+            excludeTags("needsSpecialSoftware")
+
+            // TODO: Get rid of the need for this by running tests that need TF in a Docker container
+            if (!project.hasProperty("hasTensorFlowSupport")) {
+                excludeTags("needsTensorFlowSupport")
+            }
+
+            if (project.hasProperty("noDocker")) {
+                excludeTags("needsDocker")
+            }
+        }
+
+        jvmArgs!!.add("-Xss512m")
+        // jvmArgs!!.add("-Djsse.enableSNIExtension=false")
+        if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
+            jvmArgs!!.addAll(
+                listOf(
+                    "-Djava.awt.headless=true",
+                    "-Dtestfx.robot=glass",
+                    "-Dtestfx.headless=true",
+                    "-Dprism.order=sw",
+                    "-Dprism.text=t2k"
+                )
+            )
+        }
+
+        testLogging {
+            events(
+                TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STARTED
+            )
+            displayGranularity = 0
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+            exceptionFormat = TestExceptionFormat.FULL
+            showStandardStreams = true
+        }
+
+        @Suppress("UnstableApiUsage")
+        reports.junitXml.destination = file("${rootProject.buildDir}/test-results/${project.name}")
+    }
+
+    tasks.withType<JacocoReport> {
+        reports {
+            html.isEnabled = true
+            xml.isEnabled = true
+            csv.isEnabled = false
+        }
+    }
+
+    spotless {
+        java {
+            googleJavaFormat()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            indentWithSpaces(2)
+            endWithNewline()
+            // @Suppress("INACCESSIBLE_TYPE")
+            // licenseHeaderFile(
+            //        "${rootProject.rootDir}/config/spotless/bowler-kernel.license",
+            //        spotlessLicenseHeaderDelimiter
+            // )
+        }
+    }
+
+    checkstyle {
+        toolVersion = property("checkstyle-tool.version") as String
+    }
+
+    spotbugs {
+        toolVersion = property("spotbugs-tool.version") as String
+        excludeFilter = file("${rootProject.rootDir}/config/spotbugs/spotbugs-excludeFilter.xml")
+    }
+
+    tasks.withType<SpotBugsTask> {
+        @Suppress("UnstableApiUsage")
+        reports {
+            xml.isEnabled = false
+            emacs.isEnabled = false
+            html.isEnabled = true
+        }
+    }
+
+    pmd {
+        toolVersion = property("pmd-tool.version") as String
+        ruleSets = emptyList() // Needed so PMD only uses our custom ruleset
+        ruleSetFiles = files("${rootProject.rootDir}/config/pmd/pmd-ruleset.xml")
+    }
+}
+
+configure(kotlinProjects) {
+    val kotlinVersion = property("kotlinVersion") as String
+
+    apply {
+        plugin("kotlin")
+        plugin("kotlinx-serialization")
+        plugin("org.jlleitschuh.gradle.ktlint")
+        plugin("io.gitlab.arturbosch.detekt")
+        plugin("org.jetbrains.dokka")
+    }
+
+    repositories {
+        maven("https://dl.bintray.com/kotlin/ktor")
+        maven("https://dl.bintray.com/kotlin/kotlinx")
+    }
+
+    dependencies {
+        implementation(kotlin("stdlib-jdk8", kotlinVersion))
+        implementation(kotlin("reflect", kotlinVersion))
+        implementation(
+            group = "org.jetbrains.kotlinx",
+            name = "kotlinx-coroutines-core",
+            version = property("kotlin-coroutines.version") as String
+        )
+        implementation(
+            group = "org.jetbrains.kotlinx",
+            name = "kotlinx-serialization-runtime",
+            version = property("kotlinx-serialization-runtime.version") as String
+        )
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = listOf(
+                "-Xjvm-default=enable",
+                "-Xinline-classes",
+                "-Xuse-experimental=kotlin.Experimental",
+                "-progressive"
+            )
+        }
+    }
+
+    spotless {
+        kotlin {
+            ktlint(property("ktlint.version") as String)
+            trimTrailingWhitespace()
+            indentWithSpaces(2)
+            endWithNewline()
+            // @Suppress("INACCESSIBLE_TYPE")
+            // licenseHeaderFile(
+            //        "${rootProject.rootDir}/config/spotless/bowler-kernel.license",
+            //        spotlessLicenseHeaderDelimiter
+            // )
+        }
+    }
+
+    detekt {
+        toolVersion = property("detekt-tool.version") as String
+        input = files("src/main/kotlin", "src/test/kotlin")
+        parallel = true
+        config = files("${rootProject.rootDir}/config/detekt/config.yml")
+    }
+}
+
+val jacocoRootReport by tasks.creating(JacocoReport::class) {
+    group = "verification"
+    val excludedProjects = listOf(uiJavaFxProject)
+    val includedProjects = subprojects.filter { it !in excludedProjects }
+
+    dependsOn(includedProjects.flatMap { it.tasks.withType(JacocoReport::class) } - this)
+
+    val allSrcDirs = includedProjects.map { it.sourceSets.main.get().allSource.srcDirs }
+    additionalSourceDirs.setFrom(allSrcDirs)
+    sourceDirectories.setFrom(allSrcDirs)
+    classDirectories.setFrom(includedProjects.map { it.sourceSets.main.get().output })
+    executionData.setFrom(includedProjects.filter {
+        File("${it.buildDir}/jacoco/test.exec").exists()
+    }.flatMap { it.tasks.withType(JacocoReport::class).map { it.executionData } })
+
+    reports {
+        html.isEnabled = true
+        xml.isEnabled = true
+        csv.isEnabled = false
+    }
+}
+
+configure(pitestProjects) {
+    apply {
+        plugin("info.solidsoft.pitest")
+    }
+
+    pitest {
+        testPlugin.set("junit5")
+        pitestVersion.set("1.4.10")
+        threads.set(4)
+        avoidCallsTo.set(setOf("kotlin.jvm.internal", "kotlinx.coroutines"))
+        excludedMethods.set(
+            setOf(
+                "hashCode",
+                "equals",
+                "checkIndexOverflow",
+                "throwIndexOverflow",
+                "collectionSizeOrDefault"
+            )
+        )
+        excludedClasses.set(
+            setOf(
+                "NoSuchElementException",
+                "NoWhenBranchMatchedException",
+                "IllegalStateException"
+            )
+        )
+        timeoutConstInMillis.set(10000)
+        mutators.set(setOf("NEW_DEFAULTS"))
+    }
+}
+
+tasks.withType<PitestTask> {
+    onlyIf { project in pitestProjects }
+}
+
+configure(publishedProjects) {
+    apply {
+        // plugin("com.jfrog.bintray")
+        plugin("maven-publish")
+        plugin("java-library")
+    }
+
+    val projectName = "inndie"
+
+    task<Jar>("sourcesJar") {
+        archiveClassifier.set("sources")
+        archiveBaseName.set("$projectName-${this@configure.name.toLowerCase()}")
+        from(sourceSets.main.get().allSource)
+    }
+
+    val dokkaJar by tasks.creating(Jar::class) {
+        group = JavaBasePlugin.DOCUMENTATION_GROUP
+        description = "Assembles Kotlin docs with Dokka"
+        archiveClassifier.set("javadoc")
+        archiveBaseName.set("$projectName-${this@configure.name.toLowerCase()}")
+        from(tasks.dokka)
+    }
+
+    val publicationName = "publication-$projectName-${name.toLowerCase()}"
+
+    publishing {
+        publications {
+            create<MavenPublication>(publicationName) {
+                artifactId = "$projectName-${this@configure.name.toLowerCase()}"
+                from(components["java"])
+                artifact(tasks["sourcesJar"])
+                artifact(dokkaJar)
+            }
+        }
+    }
+}
+
+tasks.dokka {
+    dependsOn(tasks.classes)
+    outputFormat = "html"
+    outputDirectory = "$buildDir/javadoc"
+}
+
+tasks.wrapper {
+    gradleVersion = rootProject.property("gradle-wrapper.version") as String
+    distributionType = Wrapper.DistributionType.ALL
+}
